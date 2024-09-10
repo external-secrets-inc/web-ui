@@ -1,5 +1,6 @@
 import { Button } from "../ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card";
+import { PreviewYaml } from "./PreviewYAML";
 
 function UnregisteredBody({id}) {
   return (
@@ -9,16 +10,8 @@ function UnregisteredBody({id}) {
         <div className="text-sm text-slate-500">Waiting for deployment...</div>
       </CardContent>
       {/** Map statuses to icons */}
-      <CardFooter className="flex justify-between">
-        <Button variant={"secondary"} >
-          Cancel
-        </Button>
-        <Button variant={"outline"} >
-          Preview YAML
-        </Button>
-        <Button >
-          Copy YAML
-        </Button>
+      <CardFooter className="flex flex-row-reverse">
+        <PreviewYaml id={id} />
       </CardFooter>
     </div>
   )
