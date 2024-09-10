@@ -1,4 +1,4 @@
-import esiLogo from '@/assets/esi-logo.svg';
+import esiLogo from '@/assets/logo-esi.svg';
 
 export function Home() {
   return (
