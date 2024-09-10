@@ -11,14 +11,14 @@ export function NewAgent({refetchAgents}) {
     </CardHeader>
 
   
-  const hideForm = () => {
+  const hideFormAndRefetchAgents = () => {
     setShowForm(false)
     refetchAgents()
   } 
 
   return (
     <Card >
-      {showForm ? <NewAgentForm onCancel={() =>setShowForm(false)} onSuccess={hideForm}/>: DefaultBehaviour} 
+      {showForm ? <NewAgentForm onCancel={() =>setShowForm(false)} onSuccess={hideFormAndRefetchAgents}/>: DefaultBehaviour} 
     </Card>
   )
 }

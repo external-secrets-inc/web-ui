@@ -1,8 +1,7 @@
-import { ShowRegisteredAgent } from "./ShowRegisteredAgent"
 import axios from 'axios';
 import { useState } from "react";
 import { NewAgent } from "./NewAgent";
-import { ShowUnregisteredAgent } from "./ShowUnregisteredAgent";
+import { ShowAgent } from "./ShowAgent";
 
 const URL = `${import.meta.env.VITE_API_DOMAIN}/api/agents`
 const BEARER_TOKEN = `Bearer ${import.meta.env.VITE_JWT_TOKEN}`
@@ -36,7 +35,7 @@ export function ListAgents() {
       </div>
       <div className="grid grid-cols-3 gap-4">
         <NewAgent refetchAgents={() => getAgents(true)}/>
-        {agents.map(agent => ['PENDING_REGISTRATION', 'PROVISIONING'].includes(agent.currentStatus) ? <ShowUnregisteredAgent key={agent.id} {...agent} /> : <ShowRegisteredAgent key={agent.id} {...agent} />)}
+        {agents.map((agent) => <ShowAgent key={agent.id} {...agent} />)}
 
       </div>
     </div>
