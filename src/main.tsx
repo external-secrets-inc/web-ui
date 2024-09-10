@@ -23,6 +23,7 @@ if (rootElement) {
     <React.StrictMode>
       <ThemeProvider storageKey="ui-theme">
         <RouterProvider router={router} />
+        <Toaster />
       </ThemeProvider>
     </React.StrictMode>
   );
