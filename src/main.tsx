@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
@@ -5,11 +6,17 @@ import './index.css';
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Home } from "./components/Home";
 import { NotFound } from "./components/NotFound";
+import { NewAgent } from "./components/agents/NewAgent";
+import { ListAgents } from "./components/agents/ListAgents";
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <Home />,
+  },
+  {
+    path: '/agents',
+    element: <ListAgents />,
   },
   {
     path: '*',
