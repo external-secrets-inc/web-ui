@@ -2,37 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
-
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -60,6 +29,12 @@ body {
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+
+    color-scheme: light dark;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   .dark, :root[class~="dark"]{
@@ -98,6 +73,10 @@ body {
     @apply bg-background text-foreground;
   }
 
+  #root {
+    @apply min-h-dvh
+  }
+
   /* TODO:
    * Shadcn doesn't supply any sort of typography-related components, but
    * suggests some styles in https://ui.shadcn.com/docs/components/typography.
@@ -111,4 +90,9 @@ body {
   code {
     @apply relative rounded px-[0.3rem] py-[0.2rem] font-mono text-sm
   }
+}
+
+/* Override default size for lucide icons */
+.lucide {
+  @apply w-4 h-4;
 }
