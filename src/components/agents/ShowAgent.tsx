@@ -1,8 +1,18 @@
-import { Button } from "../ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card";
-import { PreviewYaml } from "./PreviewYAML";
+import { Button } from "../ui/button";
+import { TrashIcon, UserIcon } from "lucide-react";
+import { DropdownMenuShortcut } from "../ui/dropdown-menu";
+import { ButtonIcon, HamburgerMenuIcon } from "@radix-ui/react-icons";
+import axios from "axios";
+import { DeleteAgentDialog } from "./DeleteAgentDialog";
+import { ShowAgentExtraActions } from "./ShowAgentExtraActions";
+import { PreviewYamlDialog } from "./PreviewYAMLDialog";
 
-function UnregisteredBody({id}) {
+const URL = `${import.meta.env.VITE_API_DOMAIN}/api/agents`
+const BEARER_TOKEN = `Bearer ${import.meta.env.VITE_JWT_TOKEN}`
+
+function UnregisteredBody({ id, onDeleted }) {
   return (
     <div>
       <CardContent>
@@ -10,29 +20,29 @@ function UnregisteredBody({id}) {
         <div className="text-sm text-slate-500">Waiting for deployment...</div>
       </CardContent>
       {/** Map statuses to icons */}
-      <CardFooter className="flex flex-row-reverse">
-        <PreviewYaml id={id} />
+      <CardFooter className="flex justify-between">
+        <DeleteAgentDialog id={id} onDeleted={onDeleted} showIcon={false} variant="ghost"/>
+        <PreviewYamlDialog id={id} />
       </CardFooter>
     </div>
   )
 }
 
-function RegisteredBody() {
-  return (<></>)
-}
 
-export function ShowAgent({ id, agentName, enabled, currentStatus, tags }) {
-
-  return (
-    <Card className="text-left">
-      <CardHeader className="text-left">
-        <CardTitle className="flex" >
-          <div className="grow">{agentName}</div>
-          <div>{currentStatus}</div>
-        </CardTitle>
-        <div className="text-sm text-slate-500"> {id} </div>
-      </CardHeader>
-      {['PENDING_REGISTRATION', 'PROVISIONING'].includes(currentStatus) ? <UnregisteredBody id={id} /> : <RegisteredBody />}
-    </Card>
-  )
-}
+  export function ShowAgent({ id, agentName, enabled, currentStatus, tags, onDeleted }) {
+    const isPending = ['PENDING_REGISTRATION', 'PROVISIONING'].includes(currentStatus)
+    
+    return (
+      <Card className="text-left">
+        <CardHeader className="text-left">
+          <CardTitle className="flex" >
+            <div className="grow">{agentName}</div>
+            <div>{currentStatus}</div>
+            {!isPending && <ShowAgentExtraActions id={id} onDeleted={onDeleted} />}
+          </CardTitle>
+          <div className="text-sm text-slate-500"> {id} </div>
+        </CardHeader>
+        {isPending && <UnregisteredBody id={id} onDeleted={onDeleted}/>}
+      </Card>
+    )
+  }
