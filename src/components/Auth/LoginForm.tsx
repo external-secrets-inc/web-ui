@@ -1,8 +1,11 @@
+import { isAxiosError } from 'axios';
 import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import useSignIn from 'react-auth-kit/hooks/useSignIn';
+import { Link, useNavigate } from "react-router-dom";
+import { login } from "@/services/auth/authService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -27,10 +30,6 @@ type LoginStep1Data = z.infer<typeof LoginStep1Schema>;
 type LoginStep2Data = z.infer<typeof LoginStep2Schema>;
 type LoginData = Partial<LoginStep1Data & LoginStep2Data>;
 
-interface LoginFormProps {
-  onSubmit: (data: LoginData) => void;
-}
-
 interface LoginStep1FormProps {
   form: UseFormReturn<LoginStep1Data>;
   onSubmit: (data: LoginStep1Data) => void;
@@ -42,9 +41,12 @@ interface LoginStep2FormProps {
   onBack: () => void;
 }
 
-function LoginForm({ onSubmit }: LoginFormProps) {
+function LoginForm() {
   const [step, setStep] = useState(1);
   const [loginData, setLoginData] = useState<LoginData>({});
+  const [formError, setFormError] = useState<string | null>(null);
+  const authKitSignIn = useSignIn();
+  const navigate = useNavigate();
 
   const loginStep1Form = useForm<LoginStep1Data>({
     resolver: zodResolver(LoginStep1Schema),
@@ -61,9 +63,42 @@ function LoginForm({ onSubmit }: LoginFormProps) {
     setStep(2);
   };
 
-  const handleLoginStep2Submit = (data: LoginStep2Data) => {
+  const handleLoginStep2Submit = async (data: LoginStep2Data) => {
     const finalData = { ...loginData, ...data };
-    onSubmit(finalData);
+    const stockError = "Something went wrong. Please try again.";
+
+    try {
+      const token = await login(finalData.email!, finalData.password!, finalData.workspaceName!);
+      const isSignedIn = authKitSignIn({
+        auth: {
+          token,
+          type: "Bearer",
+        },
+        userState: {
+          email: finalData.email,
+          workspaceName: finalData.workspaceName,
+        },
+      });
+
+      if (isSignedIn) {
+        return navigate("/");
+      }
+      setFormError(stockError);
+
+    } catch (err) {
+      if (isAxiosError(err)) {
+        const responseError = err.response?.data?.errors?.body;
+
+        if (responseError === "invalid username/password") {
+          return setFormError("Invalid login credentials");
+        }
+        if (responseError === "invalid tenant") {
+          return setFormError("Workspace not found");
+        }
+      }
+
+      setFormError(stockError);
+    }
   };
 
   const handleBack = () => {
@@ -77,6 +112,7 @@ function LoginForm({ onSubmit }: LoginFormProps) {
       ) : (
         <LoginStep2Form form={loginStep2Form} onSubmit={handleLoginStep2Submit} onBack={handleBack} />
       )}
+      {formError && <div className="text-red-500">{formError}</div>}
     </>
   );
 }
@@ -129,8 +165,9 @@ function LoginStep2Form({ form, onSubmit, onBack }: LoginStep2FormProps) {
           render={({ field }) => (
             <FormItem>
               <div className="inline-flex w-full justify-between items-baseline">
+                {/* TODO: Are we already able to provide a forgot your password feature? */}
                 <FormLabel>Password</FormLabel>
-                <Link to="/forgot-password" className="text-sm underline leading-none">
+                <Link to="#" className="text-sm underline leading-none">
                   Forgot your password?
                 </Link>
               </div>

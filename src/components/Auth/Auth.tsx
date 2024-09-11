@@ -5,12 +5,6 @@ import logoESIFullWhite from "@/assets/logo-esi-full-white.svg";
 import LoginForm from "./LoginForm";
 import SignupForm from "./SignupForm";
 
-interface LoginFormData {
-  workspaceName?: string;
-  email?: string;
-  password?: string;
-}
-
 interface SignupFormData {
   workspaceName?: string;
   name?: string;
@@ -24,17 +18,6 @@ interface AuthProps {
 }
 
 function Auth({ variant }: AuthProps) {
-  const handleLoginSubmit = (data: Partial<LoginFormData>) => {
-    // Just for testing right now
-    toast("Login payload:", {
-      description: (
-        <pre className="mt-2 rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });
-  };
-
   const handleSignupSubmit = (data: Partial<SignupFormData>) => {
     // Just for testing right now
     toast("Signup payload:", {
@@ -71,7 +54,7 @@ function Auth({ variant }: AuthProps) {
               </p>
             </div>
             {variant === 'login' ? (
-              <LoginForm onSubmit={handleLoginSubmit} />
+              <LoginForm />
             ) : (
               <SignupForm onSubmit={handleSignupSubmit} />
             )}
