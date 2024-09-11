@@ -32,18 +32,20 @@ export function PreviewYamlContent({id, version = 'latest'}) {
   useEffect(() => getManifestContent(), [])
 
   return (
-      <DialogContent className="max-w-fit max-h-full overflow-auto">
+      <DialogContent className="w-[max(50%,640px)] max-w-[calc(100%-theme(spacing.12))] max-h-[calc(100%-theme(spacing.12))] overflow-auto grid-rows-[auto_minmax(256px,1fr)_auto]">
         <DialogHeader>
           <DialogTitle>Manifest file</DialogTitle>
           <DialogDescription>
             Apply this manifest to your cluster to activate your agents
           </DialogDescription>
         </DialogHeader>
-        <div className="whitespace-pre font-mono bg-slate-100 w-fit max-h-96 p-2 rounded overflow-scroll">
-          <div>{'cat <<EOF | kubectl apply -f -'}</div>
-          <div>{content}</div>
-          <div>{'EOF'}</div>
-        </div>
+          <pre>
+            <code className="flex flex-col">
+              <span>{'cat <<EOF | kubectl apply -f -'}</span>
+              <span>{content}</span>
+              <span>{'EOF'}</span>
+            </code>
+          </pre>
         <DialogFooter>
           <Button variant={"secondary"}>Copy raw file</Button>
           <Button >Copy with apply</Button>
