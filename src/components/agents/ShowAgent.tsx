@@ -31,14 +31,16 @@ function UnregisteredBody({ id, onDeleted }) {
 
   export function ShowAgent({ id, agentName, enabled, currentStatus, tags, onDeleted }) {
     const isPending = ['PENDING_REGISTRATION', 'PROVISIONING'].includes(currentStatus)
-    
+
     return (
       <Card className="text-left">
         <CardHeader className="text-left">
           <CardTitle className="flex" >
-            <div className="grow">{agentName}</div>
+            <div className="grow flex">
+            <div>{agentName}</div>
             <div>{currentStatus}</div>
-            {!isPending && <ShowAgentExtraActions id={id} onDeleted={onDeleted} />}
+            </div>
+            {!isPending && <ShowAgentExtraActions id={id} onDeleted={onDeleted}/>}
           </CardTitle>
           <div className="text-sm text-slate-500"> {id} </div>
         </CardHeader>
