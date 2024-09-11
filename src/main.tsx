@@ -6,8 +6,8 @@ import './index.css';
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Home } from "./components/Home";
 import { NotFound } from "./components/NotFound";
-import { NewAgent } from "./components/agents/NewAgent";
 import { ListAgents } from "./components/agents/ListAgents";
+import { Toaster } from "@/components/ui/sonner"
 
 const router = createBrowserRouter([
   {
@@ -30,6 +30,7 @@ if (rootElement) {
     <React.StrictMode>
       <ThemeProvider storageKey="ui-theme">
         <RouterProvider router={router} />
+        <Toaster />
       </ThemeProvider>
     </React.StrictMode>
   );
