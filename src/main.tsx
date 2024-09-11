@@ -6,7 +6,6 @@ import './index.css';
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Home } from "./components/Home";
 import { NotFound } from "./components/NotFound";
-import { NewAgent } from "./components/agents/NewAgent";
 import { ListAgents } from "./components/agents/ListAgents";
 
 const router = createBrowserRouter([

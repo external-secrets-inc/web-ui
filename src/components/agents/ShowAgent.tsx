@@ -2,6 +2,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card
 import { DeleteAgentDialog } from "./DeleteAgentDialog";
 import { ShowAgentExtraActions } from "./ShowAgentExtraActions";
 import { PreviewYamlDialog } from "./PreviewYAMLDialog";
+import { MapStatusToIcon } from "./MapStatusToIcon";
 
 const URL = `${import.meta.env.VITE_API_DOMAIN}/api/agents`
 const BEARER_TOKEN = `Bearer ${import.meta.env.VITE_JWT_TOKEN}`
@@ -32,7 +33,7 @@ export function ShowAgent({ id, agentName, enabled, currentStatus, tags, onDelet
         <CardTitle className="flex" >
           <div className="grow flex">
             <div>{agentName}</div>
-            <div>{currentStatus}</div>
+            <MapStatusToIcon status={currentStatus}/>
           </div>
           {!isPending && <ShowAgentExtraActions id={id} onDeleted={onDeleted} />}
         </CardTitle>
