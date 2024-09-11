@@ -1,20 +1,5 @@
 import {
-  Cloud,
-  CreditCard,
-  FileTerminalIcon,
-  Github,
-  Keyboard,
-  LifeBuoy,
-  LogOut,
-  Mail,
-  MessageSquare,
-  Plus,
-  PlusCircle,
-  Settings,
-  Trash2Icon,
-  User,
-  UserPlus,
-  Users,
+  FileTerminalIcon, Trash2Icon
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -29,12 +14,12 @@ import { Dialog, DialogTrigger } from "../ui/dialog"
 import { DeleteAgentModalContent } from "./DeleteAgentModalContent"
 import { useState } from "react"
 import { DialogContent } from "@radix-ui/react-dialog"
-import { ButtonIcon, HamburgerMenuIcon } from "@radix-ui/react-icons"
+import { HamburgerMenuIcon } from "@radix-ui/react-icons"
 
 const YAML = 'YAML'
 const DELETE = 'DELETE'
 
-export function ShowAgentExtraActions({id, onDeleted}) {
+export function ShowAgentExtraActions({ id, onDeleted }) {
   const [selected, setSelected] = useState('')
   const previewYamlBtn = <DropdownMenuItem>
     <DialogTrigger asChild>
@@ -58,7 +43,7 @@ export function ShowAgentExtraActions({id, onDeleted}) {
     <Dialog className="cursor-pointer" >
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant={"ghost"}><HamburgerMenuIcon/></Button>
+          <Button variant={"ghost"}><HamburgerMenuIcon /></Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           {previewYamlBtn}
@@ -66,8 +51,8 @@ export function ShowAgentExtraActions({id, onDeleted}) {
         </DropdownMenuContent>
       </DropdownMenu>
       <DialogContent>
-      {selected === YAML && <PreviewYamlContent id={id} />}
-      {selected === DELETE && <DeleteAgentModalContent id={id} onDeleted={onDeleted}/>}
+        {selected === YAML && <PreviewYamlContent id={id} />}
+        {selected === DELETE && <DeleteAgentModalContent id={id} onDeleted={onDeleted} />}
       </DialogContent>
     </Dialog >
   )

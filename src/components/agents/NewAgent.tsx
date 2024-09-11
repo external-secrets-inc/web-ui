@@ -2,7 +2,7 @@ import { Card, CardHeader, CardTitle } from "../ui/card"
 import { NewAgentForm } from "./NewAgentForm"
 import { useState } from "react"
 
-export function NewAgent({refetchAgents}) {
+export function NewAgent({onSuccess}) {
   let [showForm, setShowForm] = useState(false)
 
   const DefaultBehaviour = <CardHeader className="hover:cursor-pointer text-center">
@@ -13,7 +13,7 @@ export function NewAgent({refetchAgents}) {
   
   const hideFormAndRefetchAgents = () => {
     setShowForm(false)
-    refetchAgents()
+    onSuccess()
   } 
 
   return (
