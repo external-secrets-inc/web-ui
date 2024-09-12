@@ -1,3 +1,4 @@
+import { saveAs } from 'file-saver';
 import { Button } from "@/components/ui/button"
 import {
   DialogContent,
@@ -7,13 +8,20 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import axios from "axios"
-import { ClipboardCopyIcon } from "lucide-react"
+import { ClipboardCopyIcon, DownloadIcon } from "lucide-react"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
+import { DeleteAgentDialog } from "./DeleteAgentDialog";
 
 const URL = `${import.meta.env.VITE_API_DOMAIN}/api/agents/:id/manifest/:version`
 const BEARER_TOKEN = `Bearer ${import.meta.env.VITE_JWT_TOKEN}`
-export function PreviewYamlContent({id, version = 'latest'}) {
+
+interface PreviewYamlContentProps {
+  id: string;
+  onDeleted?: () => void;
+  version?: string;
+}
+export function PreviewYamlContent({ id, onDeleted, version = 'latest' }: PreviewYamlContentProps) {
   const [content, setContent] = useState('')
 
   const getManifestContent = () => {
@@ -54,23 +62,31 @@ export function PreviewYamlContent({id, version = 'latest'}) {
     copyToClipboard(applyCommand, "YAML within 'kubectl apply'");
   }
 
+  const handleDownload = (): void => {
+    const file = new File([content], 'manifest.yaml', { type: 'text/yaml' });
+    saveAs(file);
+  };
+
+
   return (
-      <DialogContent className="w-[max(50%,640px)] max-w-[calc(100%-theme(spacing.12))] max-h-[calc(100%-theme(spacing.12))] overflow-auto grid-rows-[auto_minmax(256px,1fr)_auto]">
-        <DialogHeader>
-          <DialogTitle>Manifest file</DialogTitle>
-          <DialogDescription>
-            Apply this manifest to your cluster to activate your agents
-          </DialogDescription>
-        </DialogHeader>
-          <pre>
-            <code className="flex flex-col">
-              <span>{content}</span>
-            </code>
-          </pre>
-        <DialogFooter>
-          <Button onClick={handleCopyRaw} variant={"secondary"} ><ClipboardCopyIcon className="mr-2" />Copy raw YAML</Button>
-          <Button onClick={handleCopyWithApply}><ClipboardCopyIcon className="mr-2"/> Copy as CLI command</Button>
-        </DialogFooter>
-      </DialogContent>
+    <DialogContent className="w-[max(50%,640px)] max-w-[calc(100%-theme(spacing.12))] max-h-[calc(100%-theme(spacing.12))] overflow-auto grid-rows-[auto_minmax(256px,1fr)_auto]">
+      <DialogHeader>
+        <DialogTitle>Manifest file</DialogTitle>
+        <DialogDescription>
+          Apply this manifest to your cluster to activate your agents
+        </DialogDescription>
+      </DialogHeader>
+        <pre>
+          <code className="flex flex-col">
+            <span>{content}</span>
+          </code>
+        </pre>
+      <DialogFooter>
+        <DeleteAgentDialog id={id} onDeleted={onDeleted}/>
+        <Button onClick={handleCopyRaw} variant={"secondary"} ><ClipboardCopyIcon className="mr-2" />Copy</Button>
+        <Button onClick={handleCopyWithApply} variant={"secondary"}><ClipboardCopyIcon className="mr-2"/>Copy as "apply" command</Button>
+        <Button onClick={handleDownload}><DownloadIcon className="mr-2"/>Download</Button>
+      </DialogFooter>
+    </DialogContent>
   )
 }
