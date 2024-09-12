@@ -33,9 +33,11 @@ export function ListAgents() {
         <h1 className="text-xl font-bold">Your Agents</h1>
         <div className="text-slate-500">Monitor existing agents and/or generate new ones</div>
       </div>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 auto-rows-[180px] gap-4">
         <NewAgent refetchAgents={() => getAgents(true)}/>
-        {agents.map((agent) => <ShowAgent key={agent.id} {...agent} onDeleted={() => removeDeletedAgent(agent.id)}/>)}
+        {agents.slice().reverse().map((agent) => (
+          <ShowAgent key={agent.id} {...agent} onDeleted={() => removeDeletedAgent(agent.id)} />
+        ))}
 
       </div>
     </div>
