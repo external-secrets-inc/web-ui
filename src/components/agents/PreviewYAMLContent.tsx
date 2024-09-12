@@ -16,12 +16,12 @@ import { DeleteAgentDialog } from "./DeleteAgentDialog";
 const URL = `${import.meta.env.VITE_API_DOMAIN}/api/agents/:id/manifest/:version`
 const BEARER_TOKEN = `Bearer ${import.meta.env.VITE_JWT_TOKEN}`
 
-interface PreviewYamlContentProps {
+interface PreviewYAMLContentProps {
   id: string;
   onDeleted?: () => void;
   version?: string;
 }
-export function PreviewYamlContent({ id, onDeleted, version = 'latest' }: PreviewYamlContentProps) {
+export function PreviewYAMLContent({ id, onDeleted, version = 'latest' }: PreviewYAMLContentProps) {
   const [content, setContent] = useState('')
 
   const getManifestContent = () => {
@@ -69,7 +69,10 @@ export function PreviewYamlContent({ id, onDeleted, version = 'latest' }: Previe
 
 
   return (
-    <DialogContent className="w-[max(50%,640px)] max-w-[calc(100%-theme(spacing.12))] max-h-[calc(100%-theme(spacing.12))] overflow-auto grid-rows-[auto_minmax(256px,1fr)_auto]">
+    <DialogContent
+      className="w-[max(50%,640px)] max-w-[calc(100%-theme(spacing.12))] max-h-[calc(100%-theme(spacing.12))] overflow-auto grid-rows-[auto_minmax(256px,1fr)_auto]"
+      onOpenAutoFocus={(e) => e.preventDefault()}
+    >
       <DialogHeader>
         <DialogTitle>Manifest file</DialogTitle>
         <DialogDescription>

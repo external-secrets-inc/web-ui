@@ -1,48 +1,104 @@
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card";
-import { Button } from "../ui/button";
-import { TrashIcon, UserIcon } from "lucide-react";
-import { DropdownMenuShortcut } from "../ui/dropdown-menu";
-import { ButtonIcon, HamburgerMenuIcon } from "@radix-ui/react-icons";
-import axios from "axios";
-import { DeleteAgentDialog } from "./DeleteAgentDialog";
-import { ShowAgentExtraActions } from "./ShowAgentExtraActions";
-import { PreviewYamlDialog } from "./PreviewYAMLDialog";
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogPortal, DialogTrigger } from "@radix-ui/react-dialog";
+import { Card, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Trash2Icon, FileTerminalIcon, Menu, AlertCircleIcon } from "lucide-react";
+import { PreviewYAMLContent } from "./PreviewYAMLContent";
+import { DeleteAgentModalContent } from "./DeleteAgentModalContent";
 
-const URL = `${import.meta.env.VITE_API_DOMAIN}/api/agents`
-const BEARER_TOKEN = `Bearer ${import.meta.env.VITE_JWT_TOKEN}`
-
-function UnregisteredBody({ id, onDeleted }) {
-  return (
-    <div>
-      <CardContent>
-        <div className="font-semibold text-sm mb-3">Copy the YAML Manifest for this agent and apply it to your cluster. This card will update upon activation.</div>
-        <div className="text-sm text-slate-500">Waiting for deployment...</div>
-      </CardContent>
-      {/** Map statuses to icons */}
-      <CardFooter className="flex justify-between">
-        <DeleteAgentDialog id={id} onDeleted={onDeleted} showIcon={false} variant="ghost"/>
-        <PreviewYamlDialog id={id} />
-      </CardFooter>
-    </div>
-  )
+interface AgentDropdownProps {
+  onPreviewYaml: () => void;
+  onDelete: () => void;
 }
 
+const AgentDropdown: React.FC<AgentDropdownProps> = ({ onPreviewYaml, onDelete }) => {
 
-  export function ShowAgent({ id, agentName, enabled, currentStatus, tags, onDeleted }) {
-    const isPending = ['PENDING_REGISTRATION', 'PROVISIONING'].includes(currentStatus)
-    
-    return (
-      <Card className="text-left">
-        <CardHeader className="text-left">
-          <CardTitle className="flex" >
-            <div className="grow">{agentName}</div>
-            <div>{currentStatus}</div>
-            {!isPending && <ShowAgentExtraActions id={id} onDeleted={onDeleted} />}
-          </CardTitle>
-          <div className="text-sm text-slate-500"> {id} </div>
-        </CardHeader>
-        {isPending && <UnregisteredBody id={id} onDeleted={onDeleted}/>}
-      </Card>
-    )
-  }
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <DropdownMenu onOpenChange={setIsOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button
+          className={`
+            absolute top-4 right-4 transition-opacity
+            ${isOpen
+              ? 'opacity-100'
+              : 'opacity-0 group-focus-within:opacity-100 group-hover:opacity-100'
+            }
+          `}
+          variant="ghost"
+          size="icon"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <Menu />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        onClick={(event) => event.stopPropagation()}
+        onCloseAutoFocus={(event) => event.preventDefault()}
+      >
+        <DropdownMenuItem onSelect={onPreviewYaml}>
+          <FileTerminalIcon className="mr-2" />
+          Preview YAML
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={onDelete}>
+          <Trash2Icon className="mr-2" />
+          Delete
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
+interface ShowAgentProps {
+  id: string;
+  agentName: string;
+  currentStatus: string;
+  onDeleted: () => void;
+}
+
+export function ShowAgent({ id, agentName, currentStatus, onDeleted }: ShowAgentProps) {
+  const isPending = ['PENDING_REGISTRATION', 'PROVISIONING'].includes(currentStatus);
+  const [isYamlDialogOpen, setIsYamlDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  return (
+    <>
+      <Dialog open={isYamlDialogOpen} onOpenChange={setIsYamlDialogOpen}>
+        <DialogTrigger asChild>
+          <Card className="group flex flex-col relative hover:border-muted-foreground/50 hover:bg-muted/15 transition-all" asChild>
+            <div>
+              <CardHeader className="text-left">
+                <CardTitle className="flex">
+                  <div className="grow">{agentName}</div>
+                    <AgentDropdown
+                      onPreviewYaml={() => setIsYamlDialogOpen(true)}
+                      onDelete={() => setIsDeleteDialogOpen(true)}
+                    />
+                </CardTitle>
+                <div className="text-sm text-slate-500"> {id} </div>
+              </CardHeader>
+              <CardFooter className='mt-auto gap-1 flex-wrap-reverse'>
+                  <span className='flex gap-2 items-center'>
+                    {isPending && <AlertCircleIcon className="text-orange-500" />}
+                    { currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1).toLowerCase() }
+                  </span>
+                  {isPending && <span className='text-sm text-muted-foreground'> (You need to apply it)</span>}
+              </CardFooter>
+            </div>
+          </Card>
+        </DialogTrigger>
+        <PreviewYAMLContent id={id} onDeleted={onDeleted} />
+      </Dialog>
+
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogPortal>
+          <DialogContent>
+            <DeleteAgentModalContent id={id} onDeleted={onDeleted} />
+          </DialogContent>
+        </DialogPortal>
+      </Dialog>
+    </>
+  );
+};
