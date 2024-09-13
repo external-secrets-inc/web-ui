@@ -4,14 +4,6 @@ import logoESIFullWhite from "@/assets/logo-esi-full-white.svg";
 import LoginForm from "./LoginForm";
 import SignupForm from "./SignupForm";
 
-interface SignupFormData {
-  organizationName?: string;
-  name?: string;
-  email?: string;
-  password?: string;
-  organization?: string;
-}
-
 interface AuthProps {
   variant: 'login' | 'signup';
 }
