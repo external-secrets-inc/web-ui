@@ -140,7 +140,12 @@ function LoginStep1Form({ form, onSubmit }: LoginStep1FormProps) {
             <FormItem>
               <FormLabel>Organization Name</FormLabel>
               <FormControl>
-                <Input id="organizationName" placeholder="Acme Inc." {...field} />
+                <Input
+                  autoFocus
+                  id="organizationName"
+                  placeholder="Acme Inc."
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -165,7 +170,12 @@ function LoginStep2Form({ form, onSubmit, onBack }: LoginStep2FormProps) {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input id="email" placeholder="you@yourcompany.com" {...field} />
+                <Input
+                  autoFocus
+                  id="email"
+                  placeholder="you@yourcompany.com"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
