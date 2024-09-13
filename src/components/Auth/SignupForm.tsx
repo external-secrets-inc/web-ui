@@ -70,9 +70,9 @@ function SignupForm({ onSubmit }: SignupFormProps) {
   const handleSignupStep2Submit = (data: SignupStep2Data) => {
     const slugOptions = {
       lower: true,
-      strict: true, // Remove characters that are not in the regex
-      replacement: '-', // Replace spaces with hyphens
-      remove: /[^a-zA-Z0-9-_ ]/g, // Remove characters that do not match the regex, allowing spaces
+      strict: true,
+      replacement: '_',
+      remove: /[^a-zA-Z0-9_]/g,
     };
     const slugifiedWorkspaceName = slugify(signupData.workspaceName || "", slugOptions);
     const finalData = { ...signupData, ...data, organization: slugifiedWorkspaceName };
