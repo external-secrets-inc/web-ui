@@ -82,25 +82,30 @@ function SignupForm() {
     try {
       await signup(finalData.email!, finalData.name!, finalData.password!, slugifiedWorkspaceName);
 
-      // Sign in the user after successful signup
-      const token = await login(finalData.email!, finalData.password!, slugifiedWorkspaceName);
+      try {
+        // Sign in the user after successful signup
+        const token = await login(finalData.email!, finalData.password!, slugifiedWorkspaceName);
 
-      const isSignedIn = authKitSignIn({
-        auth: {
-          token,
-          type: "Bearer",
-        },
-        userState: {
-          email: finalData.email,
-          workspaceName: finalData.workspaceName,
-        },
-      });
+        const isSignedIn = authKitSignIn({
+          auth: {
+            token,
+            type: "Bearer",
+          },
+          userState: {
+            email: finalData.email,
+            workspaceName: finalData.workspaceName,
+          },
+        });
 
-      if (isSignedIn) return navigate('/');
+        if (isSignedIn) return navigate('/');
 
-      setFormError("Something went wrong. Please try again.");
-    } catch (error) {
-      console.error("Error during signup or login:", error);
+        setFormError("Something went wrong during sign-in. Please try again.");
+      } catch (loginError) {
+        console.error("Error during login:", loginError);
+        setFormError("Signup succeeded, but automatic login failed. Please try to log in manually.");
+      }
+    } catch (signupError) {
+      console.error("Error during signup:", signupError);
       setFormError("Signup failed. Please try again.");
     }
   };
