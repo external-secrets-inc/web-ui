@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { login, signup } from "@/services/auth/authService";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CheckSquareIcon, SquareIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import useSignIn from 'react-auth-kit/hooks/useSignIn';
 import { useForm, UseFormReturn } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -21,6 +21,7 @@ import { z } from "zod";
 const SignupStep1Schema = z.object({
   organizationName: z.string().min(2, "Organization name must be at least 2 characters."),
   name: z.string().min(2, "Name must be at least 2 characters."),
+  organizationURL: z.string().min(2, "Organization URL must be at least 2 characters."),
 });
 
 const SignupStep2Schema = z.object({
@@ -56,7 +57,7 @@ function SignupForm() {
 
   const signupStep1Form = useForm<SignupStep1Data>({
     resolver: zodResolver(SignupStep1Schema),
-    defaultValues: { organizationName: "", name: "" },
+    defaultValues: { organizationName: "", name: "", organizationURL: "" },
   });
 
   const signupStep2Form = useForm<SignupStep2Data>({
@@ -70,21 +71,14 @@ function SignupForm() {
   };
 
   const handleSignupStep2Submit = async (data: SignupStep2Data) => {
-    const slugOptions = {
-      lower: true,
-      strict: true,
-      replacement: '_',
-      remove: /[^a-zA-Z0-9_]/g,
-    };
-    const slugifiedOrganizationName = slugify(signupData.organizationName || "", slugOptions);
-    const finalData = { ...signupData, ...data, organization: slugifiedOrganizationName };
+    const finalData = { ...signupData, ...data };
 
     try {
-      await signup(finalData.email!, finalData.name!, finalData.password!, slugifiedOrganizationName);
+      await signup(finalData.email!, finalData.name!, finalData.password!, finalData.organizationURL!);
 
       try {
         // Sign in the user after successful signup
-        const token = await login(finalData.email!, finalData.password!, slugifiedOrganizationName);
+        const token = await login(finalData.email!, finalData.password!, finalData.organizationURL!);
 
         const isSignedIn = authKitSignIn({
           auth: {
@@ -127,22 +121,29 @@ function SignupForm() {
 }
 
 function SignupStep1Form({ form, onSubmit }: SignupStep1FormProps) {
+  const orgURLRef = useRef<HTMLInputElement>(null);
+  const [organizationURL, setOrganizationURL] = useState("");
+  const [isURLManuallyEdited, setIsURLManuallyEdited] = useState(false);
+
+  const handleOrganizationNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    form.setValue("organizationName", value);
+    if (!isURLManuallyEdited) {
+      const slugifiedValue = slugify(value, { lower: true, strict: true, replacement: '_', remove: /[^a-zA-Z0-9_]/g });
+      setOrganizationURL(slugifiedValue);
+      form.setValue("organizationURL", slugifiedValue);
+    }
+  };
+
+  const handleOrganizationURLChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsURLManuallyEdited(true);
+    setOrganizationURL(e.target.value);
+    form.setValue("organizationURL", e.target.value);
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
-        <FormField
-          control={form.control}
-          name="organizationName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Organization Name</FormLabel>
-              <FormControl>
-                <Input id="organizationName" placeholder="Acme Inc." {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <FormField
           control={form.control}
           name="name"
@@ -150,11 +151,69 @@ function SignupStep1Form({ form, onSubmit }: SignupStep1FormProps) {
             <FormItem>
               <FormLabel>Your Full Name</FormLabel>
               <FormControl>
-                <Input id="name" placeholder="Jane Doe" {...field} />
+                <Input
+                  autoFocus
+                  id="name"
+                  placeholder="Jane Doe"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
+        />
+        <FormField
+          control={form.control}
+          name="organizationName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Organization Name</FormLabel>
+              <FormControl>
+                <Input
+                  id="organizationName"
+                  placeholder="Acme Inc."
+                  {...field}
+                  onChange={handleOrganizationNameChange}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="organizationURL"
+          render={({ field }) => {
+            const { ref, value, onChange, ...restField } = field;
+            return (
+              <FormItem>
+                <FormLabel>Enter your Organization URL</FormLabel>
+                <FormControl>
+                  <div
+                    onClick={() => orgURLRef.current?.focus()}
+                    className="border-input border rounded-md flex items-baseline focus-within:ring-ring focus-within:ring-1"
+                  >
+                    <span className="pl-3 text-sm text-muted-foreground/50">
+                      app.externalsecrets.com/
+                    </span>
+                    <Input
+                      ref={orgURLRef}
+                      className="border-none pl-0 focus-visible:ring-0"
+                      id="organizationURL"
+                      placeholder="acme-inc"
+                      value={organizationURL}
+                      onChange={(e) => {
+                        handleOrganizationURLChange(e);
+                        onChange(e);
+                      }}
+                      {...restField}
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
         <Button type="submit" className="w-full">
           Next
@@ -208,7 +267,12 @@ function SignupStep2Form({ form, onSubmit, onBack }: SignupStep2FormProps) {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input id="email" placeholder="you@yourcompany.com" {...field} />
+                <Input
+                  autoFocus
+                  id="email"
+                  placeholder="you@yourcompany.com"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
