@@ -1,4 +1,5 @@
 import BGAuthHero from "@/assets/bg-auth-hero.jpg";
+import BGNoise from "@/assets/bg-noise.png";
 import logoESIFullWhite from "@/assets/logo-esi-full-white.svg";
 import { Link } from "react-router-dom";
 import LoginForm from "./LoginForm";
@@ -13,7 +14,7 @@ function Auth({ variant }: AuthProps) {
     <div className="p-2 lg:p-20 min-h-dvh flex flex-col bg-gradient-to-tl from-violet-400/60 to-violet-950">
       <div className="w-full flex-1 flex flex-col max-w-[1600px] mx-auto lg:grid lg:grid-cols-[minmax(30%,60%)_minmax(auto,auto)] rounded-[32px] overflow-hidden bg-background">
         <div
-          className="p-10 lg:p-20 flex flex-col flex-1 gap-10 items-start justify-between bg-muted bg-[100%_auto] bg-center rounded-[inherit]  border-background border-4"
+          className="p-10 lg:p-20 flex flex-col flex-1 gap-10 items-start justify-between bg-muted bg-[100%_auto] bg-center rounded-[inherit] border-background border-4 animate-bg-auth-hero-scroll"
           style={{ backgroundImage: `url('${BGAuthHero}')` }}
         >
           <img
