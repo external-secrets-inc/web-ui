@@ -129,7 +129,8 @@ function SignupStep1Form({ form, onSubmit }: SignupStep1FormProps) {
     const value = e.target.value;
     form.setValue("organizationName", value);
     if (!isURLManuallyEdited) {
-      const slugifiedValue = slugify(value, { lower: true, strict: true, replacement: '_', remove: /[^a-zA-Z0-9_]/g });
+      let slugifiedValue = slugify(value, { lower: true, strict: true });
+      slugifiedValue = slugifiedValue.replace(/[_\s]/g, '-');
       setOrganizationURL(slugifiedValue);
       form.setValue("organizationURL", slugifiedValue);
     }
