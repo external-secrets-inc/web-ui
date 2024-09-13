@@ -28,15 +28,16 @@ export function ListAgents() {
   }
 
   return (
-    <div className="text-left flex flex-col">
-      <div className="mb-5">
-
+    <div className="text-left flex flex-col py-14">
+      <div className="mb-6">
         <h1 className="text-xl font-bold">Your Agents</h1>
         <div className="text-slate-500">Monitor existing agents and/or generate new ones</div>
       </div>
-      <div className="grid grid-cols-3 gap-4">
-        <NewAgent onSuccess={() => getAgents()} />
-        {agents.map((agent) => <ShowAgent key={agent.id} {...agent} onDeleted={() => removeDeletedAgent(agent.id)} />)}
+      <div className="grid grid-cols-3 auto-rows-[180px] gap-4">
+        <NewAgent refetchAgents={() => getAgents(true)}/>
+        {agents.slice().reverse().map((agent) => (
+          <ShowAgent key={agent.id} {...agent} onDeleted={() => removeDeletedAgent(agent.id)} />
+        ))}
 
       </div>
     </div>

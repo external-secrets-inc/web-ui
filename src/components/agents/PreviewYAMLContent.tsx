@@ -1,3 +1,4 @@
+import { saveAs } from 'file-saver';
 import { Button } from "@/components/ui/button"
 import {
   DialogContent,
@@ -8,16 +9,20 @@ import {
 } from "@/components/ui/dialog"
 import { DialogClose } from "@radix-ui/react-dialog"
 import axios from "axios"
+import { ClipboardCopyIcon, DownloadIcon } from "lucide-react"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
+import { DeleteAgentDialog } from "./DeleteAgentDialog";
 
 const URL = `${import.meta.env.VITE_API_DOMAIN}/api/agents/:id/manifest/:version`
 const BEARER_TOKEN = `Bearer ${import.meta.env.VITE_JWT_TOKEN}`
 
-const APPLY_HEADER = 'cat <<EOF | kubectl apply -f -'
-const APPLY_FOOTER = 'EOF'
-
-export function PreviewYamlContent({ id, version = 'latest' }) {
+interface PreviewYAMLContentProps {
+  id: string;
+  onDeleted?: () => void;
+  version?: string;
+}
+export function PreviewYAMLContent({ id, onDeleted, version = 'latest' }: PreviewYAMLContentProps) {
   const [content, setContent] = useState('')
 
   const getManifestContent = () => {
@@ -35,40 +40,56 @@ export function PreviewYamlContent({ id, version = 'latest' }) {
 
   useEffect(() => getManifestContent(), [])
 
-  const copyContent = async (withApply = true) => {
-    const finalText = withApply ? `
-    ${APPLY_HEADER}
-    ${content}
-    ${APPLY_FOOTER}
-    ` : content
+  const copyToClipboard = async (text: string, kind: string) => {
     try {
-      await navigator.clipboard.writeText(finalText);
-    } catch (error) {
-      console.error(error.message);
+      await navigator.clipboard.writeText(text);
+      toast.success(`Copied ${kind}`, {
+        cancel: {
+          label: 'Dismiss',
+          onClick: () => {},
+        },
+      });
+    } catch (err) {
+      console.error('Failed to copy: ', err);
     }
-
-    toast.success('File copied succesfully', { description: "Apply it to your cluster and this page will update on its" })
   }
 
+  const handleCopyRaw = () => {
+    copyToClipboard(content, 'raw YAML');
+  }
+
+  const handleCopyWithApply = () => {
+    const applyCommand = `cat <<EOF | kubectl apply -f -\n${content}\nEOF`;
+    copyToClipboard(applyCommand, "YAML within 'kubectl apply'");
+  }
+
+  const handleDownload = (): void => {
+    const file = new File([content], 'manifest.yaml', { type: 'text/yaml' });
+    saveAs(file);
+  };
+
+
   return (
-    <DialogContent className="max-w-fit max-h-full overflow-auto">
+    <DialogContent
+      className="w-[max(50%,640px)] max-w-[calc(100%-theme(spacing.12))] max-h-[calc(100%-theme(spacing.12))] overflow-auto grid-rows-[auto_minmax(256px,1fr)_auto]"
+      onOpenAutoFocus={(e) => e.preventDefault()}
+    >
       <DialogHeader>
         <DialogTitle>Manifest file</DialogTitle>
         <DialogDescription>
           Apply this manifest to your cluster to activate your agents
         </DialogDescription>
       </DialogHeader>
-      <div className="whitespace-pre font-mono bg-slate-100 w-fit max-h-96 p-2 rounded overflow-scroll">
-        <div>{APPLY_HEADER}</div>
-        <div>{content}</div>
-        <div>{APPLY_FOOTER}</div>
-      </div>
+        <pre>
+          <code className="flex flex-col">
+            <span>{content}</span>
+          </code>
+        </pre>
       <DialogFooter>
-        <DialogClose asChild>
-          <Button variant={"secondary"} onClick={() => copyContent(false)}>Copy raw file</Button>
-        </DialogClose><DialogClose asChild>
-          <Button onClick={copyContent}>Copy with apply</Button>
-        </DialogClose>
+        <DeleteAgentDialog id={id} onDeleted={onDeleted}/>
+        <Button onClick={handleCopyRaw} variant={"secondary"} ><ClipboardCopyIcon className="mr-2" />Copy</Button>
+        <Button onClick={handleCopyWithApply} variant={"secondary"}><ClipboardCopyIcon className="mr-2"/>Copy as "apply" command</Button>
+        <Button onClick={handleDownload}><DownloadIcon className="mr-2"/>Download</Button>
       </DialogFooter>
     </DialogContent>
   )

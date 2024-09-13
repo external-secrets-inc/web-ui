@@ -3,17 +3,16 @@ import {
   Dialog,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Label } from "@radix-ui/react-label"
-import { Trash2Icon } from "lucide-react"
 import { DeleteAgentModalContent } from "./DeleteAgentModalContent"
+import { Trash2Icon } from "lucide-react"
 
-export function DeleteAgentDialog({ id, onDeleted, variant = "destructive", showIcon = true, showLabel = true }) {
+export function DeleteAgentDialog({id, onDeleted}) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant={variant} className="cursor-pointer">
-          {showLabel && <Label> Delete</Label>}
-          {showIcon && <Trash2Icon />}
+        <Button variant="destructive" className="md:mr-auto">
+          <Trash2Icon className="mr-2" />
+          Delete
         </Button>
       </DialogTrigger>
       <DeleteAgentModalContent id={id} onDeleted={onDeleted} />

@@ -1,20 +1,31 @@
 import * as React from "react"
-
+import { Slot } from "@radix-ui/react-slot"
 import { cn } from "@/lib/utils"
 
-const Card = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "rounded-xl border bg-card text-card-foreground shadow",
-      className
-    )}
-    {...props}
-  />
-))
+type CardProps = React.HTMLAttributes<HTMLDivElement> & React.ButtonHTMLAttributes<HTMLButtonElement> & { asChild?: boolean };
+
+const getCardComponentType = (asChild: boolean | undefined, onClick: React.MouseEventHandler<any> | undefined) => {
+  if (asChild) return Slot;
+  if (onClick) return 'button';
+  return 'div';
+};
+
+const Card = React.forwardRef<HTMLElement, CardProps>(({ className, asChild, onClick, ...props }, ref) => {
+  const Comp = getCardComponentType(asChild, onClick);
+
+  return (
+    <Comp
+      ref={ref as React.Ref<HTMLDivElement & HTMLButtonElement & HTMLElement>}
+      className={cn(
+        "rounded-xl border bg-card text-card-foreground shadow",
+        className,
+        onClick && "cursor-pointer"
+      )}
+      onClick={onClick}
+      {...props}
+    />
+  );
+});
 Card.displayName = "Card"
 
 const CardHeader = React.forwardRef<

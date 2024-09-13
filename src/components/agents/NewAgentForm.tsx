@@ -1,47 +1,121 @@
-import { Form, Link, redirect } from "react-router-dom"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card"
-import { Input } from "../ui/input"
-import { Label } from "../ui/label"
+import { CardFooter, CardHeader } from "../ui/card"
+import { Input } from "@/components/ui/input"
 import axios from "axios"
-import { useState } from "react"
+import { useEffect, useRef } from "react"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
 
 const URL = `${import.meta.env.VITE_API_DOMAIN}/api/agents`
 const BEARER_TOKEN = `Bearer ${import.meta.env.VITE_JWT_TOKEN}`
 
-export function NewAgentForm({onSuccess, onCancel}) {
-  const [name, setName] = useState('')
+const formSchema = z.object({
+  name: z.string().min(1, {
+    message: "Cannot be empty",
+  }),
+})
 
-  function updateName(e) {
-    setName(e.target.value);
-  }
+type FormSchemaType = z.infer<typeof formSchema>
 
-  function createAgent() {
-    axios.post(URL, {name}, {headers: {Authorization: BEARER_TOKEN}}).then(() => onSuccess())
+interface NewAgentFormProps {
+  onSuccess: () => void
+  onCancel: () => void
+}
+
+export function NewAgentForm({ onSuccess, onCancel }: NewAgentFormProps) {
+  const form = useForm<FormSchemaType>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+    },
+  })
+
+  const formRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onCancel()
+      }
+    }
+
+    function handleClickOutside(event: MouseEvent) {
+      if (formRef.current && !formRef.current.contains(event.target as Node)) {
+        onCancel()
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    window.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown)
+      window.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [onCancel])
+
+  function createAgent(values: FormSchemaType) {
+    axios.post(URL, { name: values.name }, { headers: { Authorization: BEARER_TOKEN } })
+      .then(() => onSuccess())
   }
 
   return (
-    <Card className="hover:cursor-pointer">
-      <CardHeader className="text-left">
-        <CardTitle className="flex" >
-          <div className="grow">New Agent</div>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Form>
-          <Label>Name your agent</Label>
-          <Input value={name} onChange={updateName}></Input>
-        </Form>
-      </CardContent>
-      <CardFooter className="flex justify-between">
-        <Button variant={"secondary"} onClick={onCancel}>
-          Cancel
-        </Button>
+    <div
+      className="flex flex-col h-full"
+      ref={formRef}
+    >
+      <Form {...form}>
+        <CardHeader>
+          <form
+            id="new-agent-form"
+            autoComplete="off"
+            onSubmit={form.handleSubmit(createAgent)}
+          >
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name your agent</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="New Agent"
+                      autoFocus
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </form>
+        </CardHeader>
 
-        <Button onClick={() => createAgent()}>
-          Create
-        </Button>
-      </CardFooter>
-    </Card>
+        <CardFooter className="flex justify-between flex-1 items-end">
+          <Button
+            type="button"
+            aria-keyshortcuts="Escape"
+            variant={"secondary"}
+            onClick={onCancel}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            form="new-agent-form"
+          >
+            Create
+          </Button>
+        </CardFooter>
+      </Form>
+    </div>
   )
 }
