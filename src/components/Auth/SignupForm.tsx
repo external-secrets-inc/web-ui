@@ -296,10 +296,6 @@ function SignupStep2Form({ form, onSubmit, onBack }: SignupStep2FormProps) {
                 />
               </FormControl>
               <ul className="mt-2 text-sm text-muted-foreground">
-                <li className={`flex items-center ${submittedWithErrors && !passwordValidations.length ? "text-red-500" : ""}`}>
-                  {passwordValidations.length ? <CheckSquareIcon className="mr-2 text-green-500" /> : <SquareIcon className="mr-2" />}
-                  At least 12 characters
-                </li>
                 <li className={`flex items-center ${submittedWithErrors && !passwordValidations.uppercase ? "text-red-500" : ""}`}>
                   {passwordValidations.uppercase ? <CheckSquareIcon className="mr-2 text-green-500" /> : <SquareIcon className="mr-2" />}
                   At least one uppercase letter
@@ -311,6 +307,10 @@ function SignupStep2Form({ form, onSubmit, onBack }: SignupStep2FormProps) {
                 <li className={`flex items-center ${submittedWithErrors && !passwordValidations.specialChar ? "text-red-500" : ""}`}>
                   {passwordValidations.specialChar ? <CheckSquareIcon className="mr-2 text-green-500" /> : <SquareIcon className="mr-2" />}
                   At least one special character
+                </li>
+                <li className={`flex items-center ${submittedWithErrors && !passwordValidations.length ? "text-red-500" : ""}`}>
+                  {passwordValidations.length ? <CheckSquareIcon className="mr-2 text-green-500" /> : <SquareIcon className="mr-2" />}
+                  At least 12 characters
                 </li>
               </ul>
             </FormItem>
