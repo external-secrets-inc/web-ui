@@ -1,11 +1,4 @@
-import { useForm, UseFormReturn } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useState, useEffect } from "react";
-import slugify from "slugify";
-import { SquareIcon, CheckSquareIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
@@ -14,6 +7,16 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { login, signup } from "@/services/auth/authService";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { CheckSquareIcon, SquareIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import useSignIn from 'react-auth-kit/hooks/useSignIn';
+import { useForm, UseFormReturn } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import slugify from "slugify";
+import { z } from "zod";
 
 const SignupStep1Schema = z.object({
   workspaceName: z.string().min(2, "Workspace name must be at least 2 characters."),
@@ -33,10 +36,6 @@ type SignupStep1Data = z.infer<typeof SignupStep1Schema>;
 type SignupStep2Data = z.infer<typeof SignupStep2Schema>;
 type SignupData = Partial<SignupStep1Data & SignupStep2Data>;
 
-interface SignupFormProps {
-  onSubmit: (data: SignupData) => void;
-}
-
 interface SignupStep1FormProps {
   form: UseFormReturn<SignupStep1Data>;
   onSubmit: (data: SignupStep1Data) => void;
@@ -48,9 +47,12 @@ interface SignupStep2FormProps {
   onBack: () => void;
 }
 
-function SignupForm({ onSubmit }: SignupFormProps) {
+function SignupForm() {
   const [step, setStep] = useState(1);
   const [signupData, setSignupData] = useState<SignupData>({});
+  const [formError, setFormError] = useState<string | null>(null);
+  const authKitSignIn = useSignIn();
+  const navigate = useNavigate();
 
   const signupStep1Form = useForm<SignupStep1Data>({
     resolver: zodResolver(SignupStep1Schema),
@@ -67,7 +69,7 @@ function SignupForm({ onSubmit }: SignupFormProps) {
     setStep(2);
   };
 
-  const handleSignupStep2Submit = (data: SignupStep2Data) => {
+  const handleSignupStep2Submit = async (data: SignupStep2Data) => {
     const slugOptions = {
       lower: true,
       strict: true,
@@ -76,7 +78,31 @@ function SignupForm({ onSubmit }: SignupFormProps) {
     };
     const slugifiedWorkspaceName = slugify(signupData.workspaceName || "", slugOptions);
     const finalData = { ...signupData, ...data, organization: slugifiedWorkspaceName };
-    onSubmit(finalData);
+
+    try {
+      await signup(finalData.email!, finalData.name!, finalData.password!, slugifiedWorkspaceName);
+
+      // Sign in the user after successful signup
+      const token = await login(finalData.email!, finalData.password!, slugifiedWorkspaceName);
+
+      const isSignedIn = authKitSignIn({
+        auth: {
+          token,
+          type: "Bearer",
+        },
+        userState: {
+          email: finalData.email,
+          workspaceName: finalData.workspaceName,
+        },
+      });
+
+      if (isSignedIn) return navigate('/');
+
+      setFormError("Something went wrong. Please try again.");
+    } catch (error) {
+      console.error("Error during signup or login:", error);
+      setFormError("Signup failed. Please try again.");
+    }
   };
 
   const handleBack = () => {
@@ -90,6 +116,7 @@ function SignupForm({ onSubmit }: SignupFormProps) {
       ) : (
         <SignupStep2Form form={signupStep2Form} onSubmit={handleSignupStep2Submit} onBack={handleBack} />
       )}
+      {formError && <div className="text-red-500">{formError}</div>}
     </>
   );
 }
