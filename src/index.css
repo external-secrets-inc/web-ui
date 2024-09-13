@@ -75,7 +75,7 @@
   }
 
   #root {
-    @apply min-h-dvh max-w-[1200px] px-6 lg:px-14 mx-auto box-content
+    @apply min-h-dvh
   }
 
   /* TODO:
