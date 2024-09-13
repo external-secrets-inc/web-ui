@@ -12,6 +12,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import './index.css';
 import authStore from "./services/auth/authStore";
 
+// TODO: We gotta have tenant-based URL auto-routing and authorization
 const router = createBrowserRouter([
   {
     path: '/',
