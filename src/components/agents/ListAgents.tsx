@@ -11,20 +11,20 @@ export function ListAgents() {
 
   useEffect(() => getAgents(), [])
   const getAgents = () => {
-      axios.get(URL, {
-          headers: {
-            Authorization: BEARER_TOKEN,
-            'Content-Type': 'application/json'
-          },
-        }
-      ).then(({data}) => {
-        const result = data.agents.map(agent => ({ ...agent, agentName: agent.name, currentStatus: agent.current_status }))
-        setAgents(result)
-      })
+    axios.get(URL, {
+      headers: {
+        Authorization: BEARER_TOKEN,
+        'Content-Type': 'application/json'
+      },
+    }
+    ).then(({ data }) => {
+      const result = data.agents.map(agent => ({ ...agent, agentName: agent.name, currentStatus: agent.current_status }))
+      setAgents(result)
+    })
   }
 
   const removeDeletedAgent = (id) => {
-    setAgents(agents.filter(agent => agent.id !==id))
+    setAgents(agents.filter(agent => agent.id !== id))
   }
 
   return (

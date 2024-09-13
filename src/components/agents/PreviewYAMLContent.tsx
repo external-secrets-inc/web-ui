@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { DialogClose } from "@radix-ui/react-dialog"
 import axios from "axios"
 import { ClipboardCopyIcon, DownloadIcon } from "lucide-react"
 import { useEffect, useState } from "react"
@@ -25,17 +26,17 @@ export function PreviewYAMLContent({ id, onDeleted, version = 'latest' }: Previe
   const [content, setContent] = useState('')
 
   const getManifestContent = () => {
-    const url = URL.replace(':id',id).replace(':version', version)
+    const url = URL.replace(':id', id).replace(':version', version)
     axios.get(url, {
-          headers: {
-            Authorization: BEARER_TOKEN,
-            'Content-Type': 'application/json'
-          },
-        }
-      ).then(({data}) => {
-        setContent(data.manifest)
-      })
+      headers: {
+        Authorization: BEARER_TOKEN,
+        'Content-Type': 'application/json'
+      },
     }
+    ).then(({ data }) => {
+      setContent(data.manifest)
+    })
+  }
 
   useEffect(() => getManifestContent(), [])
 
