@@ -18,17 +18,6 @@ interface AuthProps {
 }
 
 function Auth({ variant }: AuthProps) {
-  const handleSignupSubmit = (data: Partial<SignupFormData>) => {
-    // Just for testing right now
-    toast("Signup payload:", {
-      description: (
-        <pre className="mt-2 rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });
-  };
-
   return (
     <div className="p-2 lg:p-20 min-h-dvh flex flex-col bg-gradient-to-tl from-violet-400/60 to-violet-950">
       <div className="w-full flex-1 flex flex-col max-w-[1600px] mx-auto lg:grid lg:grid-cols-[minmax(30%,60%)_minmax(auto,auto)] rounded-[32px] overflow-hidden bg-background">
@@ -56,7 +45,7 @@ function Auth({ variant }: AuthProps) {
             {variant === 'login' ? (
               <LoginForm />
             ) : (
-              <SignupForm onSubmit={handleSignupSubmit} />
+              <SignupForm />
             )}
             <div className="mt-4 text-sm">
               {variant === 'login' ? (
