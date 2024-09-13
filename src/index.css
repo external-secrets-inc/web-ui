@@ -29,6 +29,12 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+
+    color-scheme: light dark;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   .dark, :root[class~="dark"]{
@@ -72,9 +78,22 @@
     @apply min-h-dvh
   }
 
+  /* TODO:
+   * Shadcn doesn't supply any sort of typography-related components, but
+   * suggests some styles in https://ui.shadcn.com/docs/components/typography.
+   * It's a good idea to abstract these somehow in the future. Perhaps a
+   * <TypographyProvider>?
+   */
+  pre {
+    @apply max-h-[650px] overflow-x-auto rounded-lg border bg-zinc-950 p-4 dark:bg-zinc-900
+  }
+
+  code {
+    @apply relative rounded px-[0.3rem] py-[0.2rem] font-mono text-sm
+  }
 }
 
+/* Override default size for lucide icons */
 .lucide {
-  width: 16px;
-  height: 16px;
+  @apply w-4 h-4;
 }
