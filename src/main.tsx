@@ -1,6 +1,5 @@
 import { ListAgents } from "@/components/agents/ListAgents";
 import Auth from "@/components/Auth";
-import { Home } from "@/components/Home";
 import { NotFound } from "@/components/NotFound";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from '@/components/ui/sonner';
@@ -8,7 +7,7 @@ import RequireAuth from '@auth-kit/react-router/RequireAuth';
 import * as React from "react";
 import AuthProvider from 'react-auth-kit';
 import * as ReactDOM from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 import './index.css';
 import authStore from "./services/auth/authStore";
 
@@ -16,11 +15,7 @@ import authStore from "./services/auth/authStore";
 const router = createBrowserRouter([
   {
     path: '/',
-    element: (
-      <RequireAuth fallbackPath="/login">
-        <Home />
-      </RequireAuth>
-    ),
+    element: <Navigate to="/agents" replace />,
   },
   {
     path: '/signup',
@@ -32,7 +27,11 @@ const router = createBrowserRouter([
   },
   {
     path: '/agents',
-    element: <ListAgents />,
+    element: (
+      <RequireAuth fallbackPath="/signup">
+        <ListAgents />
+      </RequireAuth>
+    ),
   },
   {
     path: '*',
