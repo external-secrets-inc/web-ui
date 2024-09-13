@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/form";
 
 const LoginStep1Schema = z.object({
-  workspaceName: z.string().min(1, "Please enter your workspace name."),
+  organizationName: z.string().min(1, "Please enter your Organization name."),
 });
 
 const LoginStep2Schema = z.object({
@@ -50,7 +50,7 @@ function LoginForm() {
 
   const loginStep1Form = useForm<LoginStep1Data>({
     resolver: zodResolver(LoginStep1Schema),
-    defaultValues: { workspaceName: "" },
+    defaultValues: { organizationName: "" },
   });
 
   const loginStep2Form = useForm<LoginStep2Data>({
@@ -68,7 +68,7 @@ function LoginForm() {
     const stockError = "Something went wrong. Please try again.";
 
     try {
-      const token = await login(finalData.email!, finalData.password!, finalData.workspaceName!);
+      const token = await login(finalData.email!, finalData.password!, finalData.organizationName!);
       const isSignedIn = authKitSignIn({
         auth: {
           token,
@@ -76,7 +76,7 @@ function LoginForm() {
         },
         userState: {
           email: finalData.email,
-          workspaceName: finalData.workspaceName,
+          organizationName: finalData.organizationName,
         },
       });
 
@@ -93,7 +93,7 @@ function LoginForm() {
           return setFormError("Invalid login credentials");
         }
         if (responseError === "invalid tenant") {
-          return setFormError("Workspace not found");
+          return setFormError("Organization not found");
         }
       }
 
@@ -123,12 +123,12 @@ function LoginStep1Form({ form, onSubmit }: LoginStep1FormProps) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
         <FormField
           control={form.control}
-          name="workspaceName"
+          name="organizationName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Workspace Name</FormLabel>
+              <FormLabel>Organization Name</FormLabel>
               <FormControl>
-                <Input id="workspaceName" placeholder="Acme Inc." {...field} />
+                <Input id="organizationName" placeholder="Acme Inc." {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

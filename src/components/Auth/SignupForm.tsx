@@ -19,7 +19,7 @@ import slugify from "slugify";
 import { z } from "zod";
 
 const SignupStep1Schema = z.object({
-  workspaceName: z.string().min(2, "Workspace name must be at least 2 characters."),
+  organizationName: z.string().min(2, "Organization name must be at least 2 characters."),
   name: z.string().min(2, "Name must be at least 2 characters."),
 });
 
@@ -56,7 +56,7 @@ function SignupForm() {
 
   const signupStep1Form = useForm<SignupStep1Data>({
     resolver: zodResolver(SignupStep1Schema),
-    defaultValues: { workspaceName: "", name: "" },
+    defaultValues: { organizationName: "", name: "" },
   });
 
   const signupStep2Form = useForm<SignupStep2Data>({
@@ -76,15 +76,15 @@ function SignupForm() {
       replacement: '_',
       remove: /[^a-zA-Z0-9_]/g,
     };
-    const slugifiedWorkspaceName = slugify(signupData.workspaceName || "", slugOptions);
-    const finalData = { ...signupData, ...data, organization: slugifiedWorkspaceName };
+    const slugifiedOrganizationName = slugify(signupData.organizationName || "", slugOptions);
+    const finalData = { ...signupData, ...data, organization: slugifiedOrganizationName };
 
     try {
-      await signup(finalData.email!, finalData.name!, finalData.password!, slugifiedWorkspaceName);
+      await signup(finalData.email!, finalData.name!, finalData.password!, slugifiedOrganizationName);
 
       try {
         // Sign in the user after successful signup
-        const token = await login(finalData.email!, finalData.password!, slugifiedWorkspaceName);
+        const token = await login(finalData.email!, finalData.password!, slugifiedOrganizationName);
 
         const isSignedIn = authKitSignIn({
           auth: {
@@ -93,7 +93,7 @@ function SignupForm() {
           },
           userState: {
             email: finalData.email,
-            workspaceName: finalData.workspaceName,
+            organizationName: finalData.organizationName,
           },
         });
 
@@ -132,12 +132,12 @@ function SignupStep1Form({ form, onSubmit }: SignupStep1FormProps) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
         <FormField
           control={form.control}
-          name="workspaceName"
+          name="organizationName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Workspace Name</FormLabel>
+              <FormLabel>Organization Name</FormLabel>
               <FormControl>
-                <Input id="workspaceName" placeholder="Acme Inc." {...field} />
+                <Input id="organizationName" placeholder="Acme Inc." {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

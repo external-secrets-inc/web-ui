@@ -1,4 +1,3 @@
-import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import BGAuthHero from "@/assets/bg-auth-hero.jpg";
 import logoESIFullWhite from "@/assets/logo-esi-full-white.svg";
@@ -6,7 +5,7 @@ import LoginForm from "./LoginForm";
 import SignupForm from "./SignupForm";
 
 interface SignupFormData {
-  workspaceName?: string;
+  organizationName?: string;
   name?: string;
   email?: string;
   password?: string;
@@ -37,9 +36,9 @@ function Auth({ variant }: AuthProps) {
         <div className="flex items-center justify-center p-10 lg:p-14 flex-1">
           <div className="mx-auto grid w-[352px] gap-6">
             <div className="grid gap-2">
-              <h1 className="text-3xl font-bold">{variant === 'login' ? 'Log in to a Workspace' : 'Create a Workspace'}</h1>
+              <h1 className="text-3xl font-bold">{variant === 'login' ? 'Log in to an Organization' : 'Create an Organization'}</h1>
               <p className="text-pretty text-muted-foreground">
-                {variant === 'login' ? 'Welcome back! Enter with your workspace credentials' : "Welcome! Let's get started into your managed ESO experience."}
+                {variant === 'login' ? 'Welcome back! Enter with your Organization credentials' : "Welcome! Let's get started into your managed ESO experience."}
               </p>
             </div>
             {variant === 'login' ? (
@@ -50,14 +49,14 @@ function Auth({ variant }: AuthProps) {
             <div className="mt-4 text-sm">
               {variant === 'login' ? (
                 <>
-                  Don't have a Workspace yet?{" "}
+                  Don't have an Organization yet?{" "}
                   <Link to="/signup" className="underline">
-                    Sign up for a Workspace
+                    Sign up for one
                   </Link>
                 </>
               ) : (
                 <>
-                  Already a member of a Workspace?{" "}
+                  Already a member of an Organization?{" "}
                   <Link to="/login" className="underline">
                     Log in
                   </Link>
