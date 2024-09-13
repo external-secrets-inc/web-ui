@@ -93,7 +93,12 @@ function LoginForm() {
           return setFormError("Invalid login credentials");
         }
         if (responseError === "invalid tenant") {
-          return setFormError("Organization not found");
+          setStep(1);
+          loginStep1Form.setError("organizationName", {
+            type: "manual",
+            message: "This Organization was not found",
+          });
+          return;
         }
       }
 
@@ -108,9 +113,16 @@ function LoginForm() {
   return (
     <>
       {step === 1 ? (
-        <LoginStep1Form form={loginStep1Form} onSubmit={handleLoginStep1Submit} />
+        <LoginStep1Form
+          form={loginStep1Form}
+          onSubmit={handleLoginStep1Submit}
+        />
       ) : (
-        <LoginStep2Form form={loginStep2Form} onSubmit={handleLoginStep2Submit} onBack={handleBack} />
+        <LoginStep2Form
+          form={loginStep2Form}
+          onSubmit={handleLoginStep2Submit}
+          onBack={handleBack}
+        />
       )}
       {formError && <div className="text-red-500">{formError}</div>}
     </>
@@ -165,7 +177,6 @@ function LoginStep2Form({ form, onSubmit, onBack }: LoginStep2FormProps) {
           render={({ field }) => (
             <FormItem>
               <div className="inline-flex w-full justify-between items-baseline">
-                {/* TODO: Are we already able to provide a forgot your password feature? */}
                 <FormLabel>Password</FormLabel>
                 <Link to="#" className="text-sm underline leading-none">
                   Forgot your password?
