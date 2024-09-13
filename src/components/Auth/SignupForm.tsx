@@ -72,13 +72,14 @@ function SignupForm() {
 
   const handleSignupStep2Submit = async (data: SignupStep2Data) => {
     const finalData = { ...signupData, ...data };
+    const tenantValue = finalData.organizationURL!.replace(/-/g, '_'); // Our DB only accepts underscores
 
     try {
-      await signup(finalData.email!, finalData.name!, finalData.password!, finalData.organizationURL!);
+      await signup(finalData.email!, finalData.name!, finalData.password!, tenantValue);
 
       try {
         // Sign in the user after successful signup
-        const token = await login(finalData.email!, finalData.password!, finalData.organizationURL!);
+        const token = await login(finalData.email!, finalData.password!, tenantValue);
 
         const isSignedIn = authKitSignIn({
           auth: {
