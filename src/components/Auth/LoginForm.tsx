@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { login } from "@/services/auth/authService";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { isAxiosError } from 'axios';
-import { useState } from "react";
+import { useRef, useState } from "react";
 import useSignIn from 'react-auth-kit/hooks/useSignIn';
 import { useForm, UseFormReturn } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
@@ -130,26 +130,41 @@ function LoginForm() {
 }
 
 function LoginStep1Form({ form, onSubmit }: LoginStep1FormProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
         <FormField
           control={form.control}
           name="organizationName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Organization Name</FormLabel>
-              <FormControl>
-                <Input
-                  autoFocus
-                  id="organizationName"
-                  placeholder="Acme Inc."
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          render={({ field }) => {
+            const { ref, ...restField } = field; 
+            return (
+              <FormItem>
+                <FormLabel>Enter your Organization URL</FormLabel>
+                <FormControl>
+                  <div
+                    onClick={() => inputRef.current?.focus()}
+                    className="border-input border rounded-md flex items-baseline focus-within:ring-ring focus-within:ring-1"
+                  >
+                    <span className="pl-3 text-sm text-muted-foreground/50">
+                      app.externalsecrets.com/
+                    </span>
+                    <Input
+                      ref={inputRef}
+                      autoFocus
+                      className="border-none pl-0 focus-visible:ring-0"
+                      id="organizationName"
+                      placeholder="your-organization"
+                      {...restField}
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            );
+          }}
         />
         <Button type="submit" className="w-full">
           Next
