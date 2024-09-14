@@ -4,7 +4,6 @@ import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { CardFooter, CardHeader } from "../ui/card"
 import { Input } from "@/components/ui/input"
-import axios from "axios"
 import { useEffect, useRef } from "react"
 import {
   Form,
@@ -14,9 +13,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-
-const URL = `${import.meta.env.VITE_API_DOMAIN}/api/agents`
-const BEARER_TOKEN = `Bearer ${import.meta.env.VITE_JWT_TOKEN}`
+import { createAgent } from "@/services/agents/agentsService"
 
 const formSchema = z.object({
   name: z.string().min(1, {
@@ -62,9 +59,9 @@ export function NewAgentForm({ onSuccess, onCancel }: NewAgentFormProps) {
     }
   }, [onCancel])
 
-  function createAgent(values: FormSchemaType) {
-    axios.post(URL, { name: values.name }, { headers: { Authorization: BEARER_TOKEN } })
-      .then(() => onSuccess())
+  async function handleCreateAgent(values: FormSchemaType) {
+    await createAgent(values.name)
+    onSuccess()
   }
 
   return (
@@ -77,7 +74,7 @@ export function NewAgentForm({ onSuccess, onCancel }: NewAgentFormProps) {
           <form
             id="new-agent-form"
             autoComplete="off"
-            onSubmit={form.handleSubmit(createAgent)}
+            onSubmit={form.handleSubmit(handleCreateAgent)}
           >
             <FormField
               control={form.control}

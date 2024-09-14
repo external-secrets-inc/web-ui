@@ -7,38 +7,29 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { DialogClose } from "@radix-ui/react-dialog"
-import axios from "axios"
 import { ClipboardCopyIcon, DownloadIcon } from "lucide-react"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { DeleteAgentDialog } from "./DeleteAgentDialog";
-
-const URL = `${import.meta.env.VITE_API_DOMAIN}/api/agents/:id/manifest/:version`
-const BEARER_TOKEN = `Bearer ${import.meta.env.VITE_JWT_TOKEN}`
+import { getManifestContent } from "@/services/agents/agentsService";
 
 interface PreviewYAMLContentProps {
   id: string;
   onDeleted?: () => void;
   version?: string;
 }
+
 export function PreviewYAMLContent({ id, onDeleted, version = 'latest' }: PreviewYAMLContentProps) {
   const [content, setContent] = useState('')
 
-  const getManifestContent = () => {
-    const url = URL.replace(':id', id).replace(':version', version)
-    axios.get(url, {
-      headers: {
-        Authorization: BEARER_TOKEN,
-        'Content-Type': 'application/json'
-      },
-    }
-    ).then(({ data }) => {
-      setContent(data.manifest)
-    })
-  }
+  useEffect(() => {
+    const fetchManifestContent = async () => {
+      const manifestContent = await getManifestContent(id, version);
+      setContent(manifestContent);
+    };
 
-  useEffect(() => getManifestContent(), [])
+    fetchManifestContent();
+  }, [id, version]);
 
   const copyToClipboard = async (text: string, kind: string) => {
     try {
@@ -67,7 +58,7 @@ export function PreviewYAMLContent({ id, onDeleted, version = 'latest' }: Previe
     const file = new File([content], 'manifest.yaml', { type: 'text/yaml' });
     saveAs(file);
   };
-
+  
 
   return (
     <DialogContent
