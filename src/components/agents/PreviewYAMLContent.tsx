@@ -1,44 +1,42 @@
 import { saveAs } from 'file-saver';
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { DialogClose } from "@radix-ui/react-dialog"
-import axios from "axios"
-import { ClipboardCopyIcon, DownloadIcon } from "lucide-react"
-import { useEffect, useState } from "react"
-import { toast } from "sonner"
+} from "@/components/ui/dialog";
+import { DialogClose } from "@radix-ui/react-dialog";
+import axios from "axios";
+import { ClipboardCopyIcon, DownloadIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { DeleteAgentDialog } from "./DeleteAgentDialog";
+import { getAuthHeaders } from '../../services/auth/authService'; // Import getAuthHeaders
 
-const URL = `${import.meta.env.VITE_API_DOMAIN}/api/agents/:id/manifest/:version`
-const BEARER_TOKEN = `Bearer ${import.meta.env.VITE_JWT_TOKEN}`
+const URL = `${import.meta.env.VITE_API_DOMAIN}/api/agents/:id/manifest/:version`;
 
 interface PreviewYAMLContentProps {
   id: string;
   onDeleted?: () => void;
   version?: string;
 }
+
 export function PreviewYAMLContent({ id, onDeleted, version = 'latest' }: PreviewYAMLContentProps) {
-  const [content, setContent] = useState('')
+  const [content, setContent] = useState('');
 
   const getManifestContent = () => {
-    const url = URL.replace(':id', id).replace(':version', version)
+    const url = URL.replace(':id', id).replace(':version', version);
     axios.get(url, {
-      headers: {
-        Authorization: BEARER_TOKEN,
-        'Content-Type': 'application/json'
-      },
-    }
-    ).then(({ data }) => {
-      setContent(data.manifest)
+      headers: getAuthHeaders(),  // Use getAuthHeaders to retrieve the token
     })
-  }
+    .then(({ data }) => {
+      setContent(data.manifest);
+    });
+  };
 
-  useEffect(() => getManifestContent(), [])
+  useEffect(() => getManifestContent(), []);
 
   const copyToClipboard = async (text: string, kind: string) => {
     try {
@@ -52,22 +50,21 @@ export function PreviewYAMLContent({ id, onDeleted, version = 'latest' }: Previe
     } catch (err) {
       console.error('Failed to copy: ', err);
     }
-  }
+  };
 
   const handleCopyRaw = () => {
     copyToClipboard(content, 'raw YAML');
-  }
+  };
 
   const handleCopyWithApply = () => {
     const applyCommand = `cat <<EOF | kubectl apply -f -\n${content}\nEOF`;
     copyToClipboard(applyCommand, "YAML within 'kubectl apply'");
-  }
+  };
 
   const handleDownload = (): void => {
     const file = new File([content], 'manifest.yaml', { type: 'text/yaml' });
     saveAs(file);
   };
-
 
   return (
     <DialogContent
@@ -80,11 +77,11 @@ export function PreviewYAMLContent({ id, onDeleted, version = 'latest' }: Previe
           Apply this manifest to your cluster to activate your agents
         </DialogDescription>
       </DialogHeader>
-        <pre>
-          <code className="flex flex-col">
-            <span>{content}</span>
-          </code>
-        </pre>
+      <pre>
+        <code className="flex flex-col">
+          <span>{content}</span>
+        </code>
+      </pre>
       <DialogFooter>
         <DeleteAgentDialog id={id} onDeleted={onDeleted}/>
         <Button onClick={handleCopyRaw} variant={"secondary"} ><ClipboardCopyIcon className="mr-2" />Copy</Button>
@@ -92,5 +89,5 @@ export function PreviewYAMLContent({ id, onDeleted, version = 'latest' }: Previe
         <Button onClick={handleDownload}><DownloadIcon className="mr-2"/>Download</Button>
       </DialogFooter>
     </DialogContent>
-  )
+  );
 }
