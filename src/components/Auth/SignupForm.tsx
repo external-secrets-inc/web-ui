@@ -74,34 +74,27 @@ function SignupForm() {
     const finalData = { ...signupData, ...data };
     const tenantValue = finalData.organizationURL!.replace(/-/g, '_'); // Our DB only accepts underscores
 
+    await signup(finalData.email!, finalData.name!, finalData.password!, tenantValue);
+
     try {
-      await signup(finalData.email!, finalData.name!, finalData.password!, tenantValue);
+      // Sign in the user after successful signup
+      const token = await login(finalData.email!, finalData.password!, tenantValue);
+      const isSignedIn = authKitSignIn({
+        auth: {
+          token,
+          type: "Bearer",
+        },
+        userState: {
+          email: finalData.email,
+          organizationName: finalData.organizationName,
+        },
+      });
 
-      try {
-        // Sign in the user after successful signup
-        const token = await login(finalData.email!, finalData.password!, tenantValue);
+      if (isSignedIn) return navigate('/');
 
-        const isSignedIn = authKitSignIn({
-          auth: {
-            token,
-            type: "Bearer",
-          },
-          userState: {
-            email: finalData.email,
-            organizationName: finalData.organizationName,
-          },
-        });
-
-        if (isSignedIn) return navigate('/');
-
-        setFormError("Something went wrong during sign-in. Please try again.");
-      } catch (loginError) {
-        console.error("Error during login:", loginError);
-        setFormError("Signup succeeded, but automatic login failed. Please try to log in manually.");
-      }
-    } catch (signupError) {
-      console.error("Error during signup:", signupError);
-      setFormError("Signup failed. Please try again.");
+      setFormError("Something went wrong during sign-in. Please try again.");
+    } catch (loginError) {
+      setFormError("Signup succeeded, but automatic login failed. Please try to log in manually.");
     }
   };
 

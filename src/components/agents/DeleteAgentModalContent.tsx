@@ -7,19 +7,18 @@ import {
   DialogTitle
 } from "@/components/ui/dialog"
 import { DialogClose } from "@radix-ui/react-dialog"
-import axios from "axios"
+import { deleteAgent } from "@/services/agents/agentsService"
 
-const URL = `${import.meta.env.VITE_API_DOMAIN}/api/agents`
-const BEARER_TOKEN = `Bearer ${import.meta.env.VITE_JWT_TOKEN}`
+interface DeleteAgentModalContentProps {
+  id: string;
+  onDeleted: () => void;
+}
 
-export function DeleteAgentModalContent({ id, onDeleted }) {
-  const deleteAgent = () => {
-    axios.delete(`${URL}/${id}`, { headers: { Authorization: BEARER_TOKEN } }).then(() => {
-      onDeleted()
-      toast.success('File copied succesfully', { description: "Apply it to your cluster and this page will update on its" })
-
-    })
-  }
+export function DeleteAgentModalContent({ id, onDeleted }: DeleteAgentModalContentProps) {
+  const handleDeleteAgent = async () => {
+    await deleteAgent(id);
+    onDeleted();
+  };
 
   return (
     <DialogContent className="max-w-fit overflow-auto">
@@ -36,7 +35,7 @@ export function DeleteAgentModalContent({ id, onDeleted }) {
           </Button>
         </DialogClose>
         <DialogClose asChild>
-          <Button variant={"destructive"} onClick={deleteAgent}>Delete</Button>
+          <Button variant={"destructive"} onClick={handleDeleteAgent}>Delete</Button>
         </DialogClose>
       </DialogFooter>
     </DialogContent>
