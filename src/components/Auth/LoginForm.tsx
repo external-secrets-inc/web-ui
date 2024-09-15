@@ -10,9 +10,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { login } from "@/services/auth/authService";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { isAxiosError } from 'axios';
+import { isAxiosError } from "axios";
 import { useRef, useState } from "react";
-import useSignIn from 'react-auth-kit/hooks/useSignIn';
+import useSignIn from "react-auth-kit/hooks/useSignIn";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -54,11 +54,14 @@ function LoginForm() {
 
   const loginStep2Form = useForm<LoginStep2Data>({
     resolver: zodResolver(LoginStep2Schema),
-    defaultValues: { email: loginData.email || "", password: loginData.password || "" },
+    defaultValues: {
+      email: loginData.email || "",
+      password: loginData.password || "",
+    },
   });
 
   const handleLoginStep1Submit = (data: LoginStep1Data) => {
-    setLoginData(prev => ({ ...prev, ...data }));
+    setLoginData((prev) => ({ ...prev, ...data }));
     setStep(2);
   };
 
@@ -68,33 +71,33 @@ function LoginForm() {
 
     try {
       // Perform login and get the token + tenantId
-      const { token, tenantId, tenant } = await login(finalData.email!, finalData.password!, finalData.organizationName!);
+      const { token, tenantId, tenant } = await login(
+        finalData.email!,
+        finalData.password!,
+        finalData.organizationName!,
+        true
+      );
 
-      if (tenantId) {
-        // Store tenantId and organizationName in authKit's userState
-        const isSignedIn = authKitSignIn({
-          auth: {
-            token,
-            type: "Bearer",
-          },
-          userState: {
-            email: finalData.email,
-            organizationName: finalData.organizationName,
-            tenantId, // Include tenantId in userState
-            tenant, // Include tenant name in userState
-          },
-        });
+      // Store tenantId and organizationName in authKit's userState
+      const isSignedIn = authKitSignIn({
+        auth: {
+          token,
+          type: "Bearer",
+        },
+        userState: {
+          email: finalData.email,
+          organizationName: finalData.organizationName,
+          tenantId, // Include tenantId in userState
+          tenant, // Include tenant name in userState
+        },
+      });
 
-        // Redirect to the org-specific agents page
-        if (isSignedIn) {
-          return navigate(`/${finalData.organizationName}/agents`);
-        }
-      } else {
-        setFormError("Failed to extract TenantId from token.");
+      // Redirect to the org-specific agents page
+      if (isSignedIn) {
+        return navigate(`/${finalData.organizationName}/agents`);
       }
 
       setFormError(stockError);
-
     } catch (err) {
       if (isAxiosError(err)) {
         const responseError = err.response?.data?.errors?.body;
@@ -135,7 +138,7 @@ function LoginForm() {
         />
       )}
       {formError && <div className="text-red-500">{formError}</div>}
-      </>
+    </>
   );
 }
 
@@ -149,7 +152,7 @@ function LoginStep1Form({ form, onSubmit }: LoginStep1FormProps) {
           control={form.control}
           name="organizationName"
           render={({ field }) => {
-            const { ref, ...restField } = field; 
+            const { ref, ...restField } = field;
             return (
               <FormItem>
                 <FormLabel>Enter your Organization URL</FormLabel>
@@ -228,9 +231,7 @@ function LoginStep2Form({ form, onSubmit, onBack }: LoginStep2FormProps) {
           <Button type="button" variant="outline" onClick={onBack}>
             Back
           </Button>
-          <Button type="submit">
-            Login
-          </Button>
+          <Button type="submit">Login</Button>
         </div>
       </form>
     </Form>
