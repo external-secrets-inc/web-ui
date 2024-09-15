@@ -11,11 +11,10 @@ import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 import './index.css';
 import authStore from "./services/auth/authStore";
 
-// TODO: We gotta have tenant-based URL auto-routing and authorization
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Navigate to="/agents" replace />,
+    element: <Navigate to="/login" replace />,
   },
   {
     path: '/signup',
@@ -26,18 +25,23 @@ const router = createBrowserRouter([
     element: <Auth variant="login" />,
   },
   {
-    path: '/agents',
+    path: '/:org/agents',
     element: (
-      <RequireAuth fallbackPath="/signup">
+      <RequireAuth fallbackPath="/login">
         <ListAgents />
       </RequireAuth>
     ),
   },
   {
+    path: '/not-found',
+    element: <NotFound />, // Direct route to NotFound page
+  },
+  {
     path: '*',
-    element: <NotFound />,
+    element: <NotFound />, // Catch-all for any undefined routes
   },
 ]);
+
 
 const rootElement = document.getElementById('root');
 if (rootElement) {
@@ -52,3 +56,4 @@ if (rootElement) {
     </React.StrictMode>
   );
 }
+

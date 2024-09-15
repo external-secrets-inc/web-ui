@@ -1,10 +1,18 @@
 import axiosInstance from '@/services/axiosConfig';
 import { apiWrapper } from '@/services/servicesHelpers';
+import { getTenantIdFromToken } from '@/lib/utils'; // Utility function to extract TenantId from token
 
 export async function login(email: string, password: string, tenant: string) {
   return apiWrapper(async () => {
     const response = await axiosInstance.post('/public/auth/login', { email, password, tenant });
-    return response.data.token;
+    const token = response.data.token;
+    const tenantId = getTenantIdFromToken(token); // Extract tenantId from token
+
+    return {
+      token,
+      tenantId, // Return tenantId along with the token
+      tenant, // And tenant name
+    };
   }, 'Failed to login');
 }
 

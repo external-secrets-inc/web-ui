@@ -17,6 +17,7 @@ import { useForm, UseFormReturn } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import slugify from "slugify";
 import { z } from "zod";
+import { getTenantIdFromToken } from '@/lib/utils'; // Assuming this utility exists for decoding tenantId
 
 const SignupStep1Schema = z.object({
   organizationName: z.string().min(2, "Organization name must be at least 2 characters."),
@@ -74,11 +75,13 @@ function SignupForm() {
     const finalData = { ...signupData, ...data };
     const tenantValue = finalData.organizationURL!.replace(/-/g, '_'); // Our DB only accepts underscores
 
-    await signup(finalData.email!, finalData.name!, finalData.password!, tenantValue);
-
     try {
-      // Sign in the user after successful signup
-      const token = await login(finalData.email!, finalData.password!, tenantValue);
+      // Perform signup
+      await signup(finalData.email!, finalData.name!, finalData.password!, tenantValue);
+
+      // Automatically log in the user after successful signup
+      const { token, tenantId , tenant} = await login(finalData.email!, finalData.password!, tenantValue);
+
       const isSignedIn = authKitSignIn({
         auth: {
           token,
@@ -87,10 +90,15 @@ function SignupForm() {
         userState: {
           email: finalData.email,
           organizationName: finalData.organizationName,
+          tenantId, // Include tenantId in userState
+          tenant, // Include tenant name in userState
         },
       });
 
-      if (isSignedIn) return navigate('/');
+      if (isSignedIn) {
+        // Redirect to organization-specific agents page
+        return navigate(`/${finalData.organizationURL}/agents`);
+      }
 
       setFormError("Something went wrong during sign-in. Please try again.");
     } catch (loginError) {

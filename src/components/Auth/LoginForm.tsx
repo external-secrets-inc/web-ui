@@ -47,7 +47,6 @@ function LoginForm() {
   const [formError, setFormError] = useState<string | null>(null);
   const authKitSignIn = useSignIn();
   const navigate = useNavigate();
-
   const loginStep1Form = useForm<LoginStep1Data>({
     resolver: zodResolver(LoginStep1Schema),
     defaultValues: { organizationName: "" },
@@ -68,21 +67,32 @@ function LoginForm() {
     const stockError = "Something went wrong. Please try again.";
 
     try {
-      const token = await login(finalData.email!, finalData.password!, finalData.organizationName!);
-      const isSignedIn = authKitSignIn({
-        auth: {
-          token,
-          type: "Bearer",
-        },
-        userState: {
-          email: finalData.email,
-          organizationName: finalData.organizationName,
-        },
-      });
+      // Perform login and get the token + tenantId
+      const { token, tenantId, tenant } = await login(finalData.email!, finalData.password!, finalData.organizationName!);
 
-      if (isSignedIn) {
-        return navigate("/");
+      if (tenantId) {
+        // Store tenantId and organizationName in authKit's userState
+        const isSignedIn = authKitSignIn({
+          auth: {
+            token,
+            type: "Bearer",
+          },
+          userState: {
+            email: finalData.email,
+            organizationName: finalData.organizationName,
+            tenantId, // Include tenantId in userState
+            tenant, // Include tenant name in userState
+          },
+        });
+
+        // Redirect to the org-specific agents page
+        if (isSignedIn) {
+          return navigate(`/${finalData.organizationName}/agents`);
+        }
+      } else {
+        setFormError("Failed to extract TenantId from token.");
       }
+
       setFormError(stockError);
 
     } catch (err) {
@@ -125,7 +135,7 @@ function LoginForm() {
         />
       )}
       {formError && <div className="text-red-500">{formError}</div>}
-    </>
+      </>
   );
 }
 
