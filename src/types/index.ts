@@ -10,3 +10,8 @@ export interface ApiWrapperOptions {
   defaultError: string;
   suppressToast?: boolean;
 }
+
+export interface IUserData {
+  tenant: string;
+  tenantID: string;
+};
