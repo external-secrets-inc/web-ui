@@ -1,5 +1,5 @@
 import { ListAgents } from "@/components/agents/ListAgents";
-import Auth from "@/components/Auth";
+import NavigateWithOrg from "@/components/NavigateWithOrg";
 import { NotFound } from "@/components/NotFound";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from '@/components/ui/sonner';
@@ -7,28 +7,31 @@ import RequireAuth from '@auth-kit/react-router/RequireAuth';
 import * as React from "react";
 import AuthProvider from 'react-auth-kit';
 import * as ReactDOM from "react-dom/client";
-import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import './index.css';
 import authStore from "./services/auth/authStore";
 
-// TODO: We gotta have tenant-based URL auto-routing and authorization
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Navigate to="/agents" replace />,
+    element: (
+      <RequireAuth fallbackPath="/signup">
+        <NavigateWithOrg to="/agents" replace />
+      </RequireAuth>
+    ),
   },
   {
     path: '/signup',
-    element: <Auth variant="signup" />,
+    element: <NavigateWithOrg to="/agents" fallbackToSignup replace />,
   },
   {
     path: '/login',
-    element: <Auth variant="login" />,
+    element: <NavigateWithOrg to="/agents" fallbackToLogin replace />,
   },
   {
-    path: '/agents',
+    path: '/:org/agents',
     element: (
-      <RequireAuth fallbackPath="/signup">
+      <RequireAuth fallbackPath="/login">
         <ListAgents />
       </RequireAuth>
     ),
@@ -38,6 +41,7 @@ const router = createBrowserRouter([
     element: <NotFound />,
   },
 ]);
+
 
 const rootElement = document.getElementById('root');
 if (rootElement) {
@@ -52,3 +56,4 @@ if (rootElement) {
     </React.StrictMode>
   );
 }
+

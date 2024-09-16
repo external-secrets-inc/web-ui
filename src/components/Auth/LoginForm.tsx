@@ -10,20 +10,24 @@ import {
 import { Input } from "@/components/ui/input";
 import { login } from "@/services/auth/authService";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { isAxiosError } from 'axios';
+import { isAxiosError } from "axios";
+import { LucideLoader } from "lucide-react";
 import { useRef, useState } from "react";
-import useSignIn from 'react-auth-kit/hooks/useSignIn';
+import useSignIn from "react-auth-kit/hooks/useSignIn";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 
 const LoginStep1Schema = z.object({
-  organizationName: z.string().min(1, "Please enter your Organization name."),
+  organizationURL: z
+  .string()
+  .min(1, "Cannot be empty.")
+  .regex(/^[a-zA-Z0-9-]+$/, "Invalid URL. Should contain only letters, numbers, and dashes."),
 });
 
 const LoginStep2Schema = z.object({
   email: z.string().email("Invalid email address."),
-  password: z.string().min(1, "Please enter your password."),
+  password: z.string().min(1, "Cannot be empty."),
 });
 
 type LoginStep1Data = z.infer<typeof LoginStep1Schema>;
@@ -39,36 +43,46 @@ interface LoginStep2FormProps {
   form: UseFormReturn<LoginStep2Data>;
   onSubmit: (data: LoginStep2Data) => void;
   onBack: () => void;
+  loading: boolean;
 }
 
 function LoginForm() {
   const [step, setStep] = useState(1);
   const [loginData, setLoginData] = useState<LoginData>({});
   const [formError, setFormError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
   const authKitSignIn = useSignIn();
   const navigate = useNavigate();
-
   const loginStep1Form = useForm<LoginStep1Data>({
     resolver: zodResolver(LoginStep1Schema),
-    defaultValues: { organizationName: "" },
+    defaultValues: { organizationURL: "" },
   });
 
   const loginStep2Form = useForm<LoginStep2Data>({
     resolver: zodResolver(LoginStep2Schema),
-    defaultValues: { email: loginData.email || "", password: loginData.password || "" },
+    defaultValues: {
+      email: loginData.email || "",
+      password: loginData.password || "",
+    },
   });
 
   const handleLoginStep1Submit = (data: LoginStep1Data) => {
-    setLoginData(prev => ({ ...prev, ...data }));
+    setLoginData((prev) => ({ ...prev, ...data }));
     setStep(2);
   };
 
   const handleLoginStep2Submit = async (data: LoginStep2Data) => {
     const finalData = { ...loginData, ...data };
     const stockError = "Something went wrong. Please try again.";
+    setLoading(true);
 
     try {
-      const token = await login(finalData.email!, finalData.password!, finalData.organizationName!);
+      const { token, tenantId, tenant } = await login(
+        finalData.email!,
+        finalData.password!,
+        finalData.organizationURL!,
+      );
+
       const isSignedIn = authKitSignIn({
         auth: {
           token,
@@ -76,33 +90,31 @@ function LoginForm() {
         },
         userState: {
           email: finalData.email,
-          organizationName: finalData.organizationName,
+          organizationURL: finalData.organizationURL,
+          tenantId,
+          tenant,
         },
       });
 
       if (isSignedIn) {
-        return navigate("/");
+        setLoading(false);
+        return navigate(`/${finalData.organizationURL}/agents`);
       }
-      setFormError(stockError);
 
+      setFormError(stockError);
     } catch (err) {
       if (isAxiosError(err)) {
         const responseError = err.response?.data?.errors?.body;
 
         if (responseError === "invalid username/password") {
+          setLoading(false);
           return setFormError("Invalid login credentials");
-        }
-        if (responseError === "invalid tenant") {
-          setStep(1);
-          loginStep1Form.setError("organizationName", {
-            type: "manual",
-            message: "This Organization was not found",
-          });
-          return;
         }
       }
 
       setFormError(stockError);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -122,6 +134,7 @@ function LoginForm() {
           form={loginStep2Form}
           onSubmit={handleLoginStep2Submit}
           onBack={handleBack}
+          loading={loading}
         />
       )}
       {formError && <div className="text-red-500">{formError}</div>}
@@ -137,9 +150,9 @@ function LoginStep1Form({ form, onSubmit }: LoginStep1FormProps) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
         <FormField
           control={form.control}
-          name="organizationName"
+          name="organizationURL"
           render={({ field }) => {
-            const { ref, ...restField } = field; 
+            const { ref, ...restField } = field;
             return (
               <FormItem>
                 <FormLabel>Enter your Organization URL</FormLabel>
@@ -155,7 +168,7 @@ function LoginStep1Form({ form, onSubmit }: LoginStep1FormProps) {
                       ref={inputRef}
                       autoFocus
                       className="border-none pl-0 focus-visible:ring-0"
-                      id="organizationName"
+                      id="organizationURL"
                       placeholder="your-organization"
                       {...restField}
                     />
@@ -174,7 +187,7 @@ function LoginStep1Form({ form, onSubmit }: LoginStep1FormProps) {
   );
 }
 
-function LoginStep2Form({ form, onSubmit, onBack }: LoginStep2FormProps) {
+function LoginStep2Form({ form, onSubmit, onBack, loading }: LoginStep2FormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
@@ -218,8 +231,13 @@ function LoginStep2Form({ form, onSubmit, onBack }: LoginStep2FormProps) {
           <Button type="button" variant="outline" onClick={onBack}>
             Back
           </Button>
-          <Button type="submit">
-            Login
+          <Button
+            type="submit"
+            disabled={loading}
+            className="grid [&>*]:row-start-1 [&>*]:column-start-1 place-items-center"
+          >
+            <span className={ loading ? "invisible [grid-area:1/1]" : "" }>Login</span>
+            {loading && <LucideLoader className="animate-spin [grid-area:1/1]" />}
           </Button>
         </div>
       </form>

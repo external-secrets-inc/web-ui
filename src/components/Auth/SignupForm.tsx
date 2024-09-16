@@ -10,27 +10,36 @@ import {
 import { Input } from "@/components/ui/input";
 import { login, signup } from "@/services/auth/authService";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CheckSquareIcon, SquareIcon } from "lucide-react";
+import { CheckSquareIcon, LucideLoader, SquareIcon, } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import useSignIn from 'react-auth-kit/hooks/useSignIn';
+import useSignIn from "react-auth-kit/hooks/useSignIn";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import slugify from "slugify";
 import { z } from "zod";
 
 const SignupStep1Schema = z.object({
-  organizationName: z.string().min(2, "Organization name must be at least 2 characters."),
-  name: z.string().min(2, "Name must be at least 2 characters."),
-  organizationURL: z.string().min(2, "Organization URL must be at least 2 characters."),
+  organizationName: z
+    .string()
+    .min(1, "Cannot be empty"),
+  name: z.string().min(1, "Cannot be empty"),
+  organizationURL: z
+    .string()
+    .min(1, "Cannot be empty.")
+    .regex(/^[a-zA-Z0-9-]+$/, "Organization URL may only contain letters, numbers, and dashes."),
 });
 
 const SignupStep2Schema = z.object({
   email: z.string().email("Invalid email address."),
-  password: z.string()
+  password: z
+    .string()
     .min(12, "Password must be at least 12 characters.")
     .regex(/[A-Z]/, "Password must contain at least one uppercase letter.")
     .regex(/[0-9]/, "Password must contain at least one number.")
-    .regex(/[^a-zA-Z0-9]/, "Password must contain at least one special character."),
+    .regex(
+      /[^a-zA-Z0-9]/,
+      "Password must contain at least one special character."
+    ),
 });
 
 type SignupStep1Data = z.infer<typeof SignupStep1Schema>;
@@ -52,6 +61,7 @@ function SignupForm() {
   const [step, setStep] = useState(1);
   const [signupData, setSignupData] = useState<SignupData>({});
   const [formError, setFormError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const authKitSignIn = useSignIn();
   const navigate = useNavigate();
 
@@ -62,39 +72,80 @@ function SignupForm() {
 
   const signupStep2Form = useForm<SignupStep2Data>({
     resolver: zodResolver(SignupStep2Schema),
-    defaultValues: { email: signupData.email || "", password: signupData.password || "" },
+    defaultValues: {
+      email: signupData.email || "",
+      password: signupData.password || "",
+    },
   });
 
   const handleSignupStep1Submit = (data: SignupStep1Data) => {
-    setSignupData(prev => ({ ...prev, ...data }));
+    setSignupData((prev) => ({ ...prev, ...data }));
     setStep(2);
   };
 
   const handleSignupStep2Submit = async (data: SignupStep2Data) => {
     const finalData = { ...signupData, ...data };
-    const tenantValue = finalData.organizationURL!.replace(/-/g, '_'); // Our DB only accepts underscores
-
-    await signup(finalData.email!, finalData.name!, finalData.password!, tenantValue);
+    const maxRetries = 5;
+    const retryDelay = 3000;
 
     try {
-      // Sign in the user after successful signup
-      const token = await login(finalData.email!, finalData.password!, tenantValue);
-      const isSignedIn = authKitSignIn({
-        auth: {
-          token,
-          type: "Bearer",
-        },
-        userState: {
-          email: finalData.email,
-          organizationName: finalData.organizationName,
-        },
-      });
+      await signup(
+        finalData.email!,
+        finalData.name!,
+        finalData.password!,
+        finalData.organizationURL!,
+      );
 
-      if (isSignedIn) return navigate('/');
+      const tryLogin = async (attempt: number): Promise<boolean> => {
+        try {
+          const { token, tenantId, tenant } = await login(
+            finalData.email!,
+            finalData.password!,
+            finalData.organizationURL!,
+            { suppressToast: true }
+          );
 
-      setFormError("Something went wrong during sign-in. Please try again.");
-    } catch (loginError) {
-      setFormError("Signup succeeded, but automatic login failed. Please try to log in manually.");
+          const isSignedIn = authKitSignIn({
+            auth: {
+              token,
+              type: "Bearer",
+            },
+            userState: {
+              email: finalData.email,
+              organizationName: finalData.organizationName,
+              tenantId,
+              tenant,
+            },
+          });
+
+          if (isSignedIn) return true;
+
+          return false;
+        } catch (error) {
+          console.error(`Login attempt ${attempt} failed:`, error);
+          return false;
+        }
+      };
+
+      setLoading(true);
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        const success = await tryLogin(attempt);
+        if (success) {
+          setLoading(false);
+          return navigate(`/${finalData.organizationURL}/agents`);
+        }
+        if (attempt < maxRetries) {
+          await new Promise((resolve) => setTimeout(resolve, retryDelay));
+        }
+      }
+
+      setLoading(false);
+      setFormError(
+        "Signup succeeded, but automatic login failed. Please try to log in manually."
+      );
+    } catch (signupError) {
+      setLoading(false);
+      setFormError("Signup failed. Please try again.");
     }
   };
 
@@ -105,11 +156,20 @@ function SignupForm() {
   return (
     <>
       {step === 1 ? (
-        <SignupStep1Form form={signupStep1Form} onSubmit={handleSignupStep1Submit} />
+        <SignupStep1Form
+          form={signupStep1Form}
+          onSubmit={handleSignupStep1Submit}
+        />
       ) : (
-        <SignupStep2Form form={signupStep2Form} onSubmit={handleSignupStep2Submit} onBack={handleBack} />
+        <SignupStep2Form
+          form={signupStep2Form}
+          onSubmit={handleSignupStep2Submit}
+          onBack={handleBack}
+          loading={loading}
+        />
       )}
-      {formError && <div className="text-red-500">{formError}</div>}
+
+      {!loading && formError && <div className="text-red-500">{formError}</div>}
     </>
   );
 }
@@ -119,18 +179,22 @@ function SignupStep1Form({ form, onSubmit }: SignupStep1FormProps) {
   const [organizationURL, setOrganizationURL] = useState("");
   const [isURLManuallyEdited, setIsURLManuallyEdited] = useState(false);
 
-  const handleOrganizationNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleOrganizationNameChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const value = e.target.value;
     form.setValue("organizationName", value);
     if (!isURLManuallyEdited) {
       let slugifiedValue = slugify(value, { lower: true, strict: true });
-      slugifiedValue = slugifiedValue.replace(/[_\s]/g, '-');
+      slugifiedValue = slugifiedValue.replace(/[_\s]/g, "-");
       setOrganizationURL(slugifiedValue);
       form.setValue("organizationURL", slugifiedValue);
     }
   };
 
-  const handleOrganizationURLChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleOrganizationURLChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setIsURLManuallyEdited(true);
     setOrganizationURL(e.target.value);
     form.setValue("organizationURL", e.target.value);
@@ -146,12 +210,7 @@ function SignupStep1Form({ form, onSubmit }: SignupStep1FormProps) {
             <FormItem>
               <FormLabel>Your Full Name</FormLabel>
               <FormControl>
-                <Input
-                  autoFocus
-                  id="name"
-                  placeholder="Jane Doe"
-                  {...field}
-                />
+                <Input autoFocus id="name" placeholder="Jane Doe" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -182,7 +241,7 @@ function SignupStep1Form({ form, onSubmit }: SignupStep1FormProps) {
             const { ref, value, onChange, ...restField } = field;
             return (
               <FormItem>
-                <FormLabel>Enter your Organization URL</FormLabel>
+                <FormLabel>Create an Organization URL</FormLabel>
                 <FormControl>
                   <div
                     onClick={() => orgURLRef.current?.focus()}
@@ -218,7 +277,7 @@ function SignupStep1Form({ form, onSubmit }: SignupStep1FormProps) {
   );
 }
 
-function SignupStep2Form({ form, onSubmit, onBack }: SignupStep2FormProps) {
+function SignupStep2Form({ form, onSubmit, onBack, loading }: SignupStep2FormProps & { loading: boolean }) {
   const [password, setPassword] = useState(form.getValues("password"));
   const [passwordValidations, setPasswordValidations] = useState({
     length: password.length >= 12,
@@ -254,7 +313,10 @@ function SignupStep2Form({ form, onSubmit, onBack }: SignupStep2FormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit, handleError)} className="grid gap-4">
+      <form
+        onSubmit={form.handleSubmit(handleSubmit, handleError)}
+        className="grid gap-4"
+      >
         <FormField
           control={form.control}
           name="email"
@@ -289,20 +351,60 @@ function SignupStep2Form({ form, onSubmit, onBack }: SignupStep2FormProps) {
                 />
               </FormControl>
               <ul className="mt-2 text-sm text-muted-foreground">
-                <li className={`flex items-center ${submittedWithErrors && !passwordValidations.uppercase ? "text-red-500" : ""}`}>
-                  {passwordValidations.uppercase ? <CheckSquareIcon className="mr-2 text-green-500" /> : <SquareIcon className="mr-2" />}
+                <li
+                  className={`flex items-center ${
+                    submittedWithErrors && !passwordValidations.uppercase
+                      ? "text-red-500"
+                      : ""
+                  }`}
+                >
+                  {passwordValidations.uppercase ? (
+                    <CheckSquareIcon className="mr-2 text-green-500" />
+                  ) : (
+                    <SquareIcon className="mr-2" />
+                  )}
                   At least one uppercase letter
                 </li>
-                <li className={`flex items-center ${submittedWithErrors && !passwordValidations.number ? "text-red-500" : ""}`}>
-                  {passwordValidations.number ? <CheckSquareIcon className="mr-2 text-green-500" /> : <SquareIcon className="mr-2" />}
+                <li
+                  className={`flex items-center ${
+                    submittedWithErrors && !passwordValidations.number
+                      ? "text-red-500"
+                      : ""
+                  }`}
+                >
+                  {passwordValidations.number ? (
+                    <CheckSquareIcon className="mr-2 text-green-500" />
+                  ) : (
+                    <SquareIcon className="mr-2" />
+                  )}
                   At least one number
                 </li>
-                <li className={`flex items-center ${submittedWithErrors && !passwordValidations.specialChar ? "text-red-500" : ""}`}>
-                  {passwordValidations.specialChar ? <CheckSquareIcon className="mr-2 text-green-500" /> : <SquareIcon className="mr-2" />}
+                <li
+                  className={`flex items-center ${
+                    submittedWithErrors && !passwordValidations.specialChar
+                      ? "text-red-500"
+                      : ""
+                  }`}
+                >
+                  {passwordValidations.specialChar ? (
+                    <CheckSquareIcon className="mr-2 text-green-500" />
+                  ) : (
+                    <SquareIcon className="mr-2" />
+                  )}
                   At least one special character
                 </li>
-                <li className={`flex items-center ${submittedWithErrors && !passwordValidations.length ? "text-red-500" : ""}`}>
-                  {passwordValidations.length ? <CheckSquareIcon className="mr-2 text-green-500" /> : <SquareIcon className="mr-2" />}
+                <li
+                  className={`flex items-center ${
+                    submittedWithErrors && !passwordValidations.length
+                      ? "text-red-500"
+                      : ""
+                  }`}
+                >
+                  {passwordValidations.length ? (
+                    <CheckSquareIcon className="mr-2 text-green-500" />
+                  ) : (
+                    <SquareIcon className="mr-2" />
+                  )}
                   At least 12 characters
                 </li>
               </ul>
@@ -310,11 +412,21 @@ function SignupStep2Form({ form, onSubmit, onBack }: SignupStep2FormProps) {
           )}
         />
         <div className="flex justify-between">
-          <Button type="button" variant="outline" onClick={onBack}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onBack}
+          >
             Back
           </Button>
-          <Button type="submit">
-            Sign Up
+
+          <Button
+            type="submit"
+            disabled={loading}
+            className="grid [&>*]:row-start-1 [&>*]:column-start-1 place-items-center"
+          >
+            <span className={ loading ? "invisible [grid-area:1/1]" : "" }>Sign Up</span>
+            {loading && <LucideLoader className="animate-spin [grid-area:1/1]" />}
           </Button>
         </div>
       </form>
