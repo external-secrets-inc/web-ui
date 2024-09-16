@@ -1,17 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Link, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { Link } from "react-router-dom";
 
 export function NotFound() {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      navigate('/'); // Auto-redirect to home after 5 seconds
-    }, 5000);
-
-    return () => clearTimeout(timer); // Clear timeout if the user leaves the page
-  }, [navigate]);
 
   return (
     <div className="flex flex-col items-center justify-center h-screen text-center">
@@ -29,8 +19,6 @@ export function NotFound() {
           <Link to="/login">Back to Login</Link>
         </Button>
       </div>
-
-      <p className="text-gray-400 mt-4">You will be redirected to the homepage in 5 seconds.</p>
     </div>
   );
 }
