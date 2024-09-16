@@ -1,5 +1,6 @@
 import { toast } from 'sonner';
 import { isAxiosError } from 'axios';
+import { ApiWrapperOptions } from '@/types';
 
 function parseErrorResponse(data: string): string {
   try {
@@ -12,8 +13,11 @@ function parseErrorResponse(data: string): string {
   }
   return data;
 }
-
-export async function apiWrapper<T>(apiCall: () => Promise<T>, defaultError: string, show: boolean): Promise<T> {
+export async function apiWrapper<T>(
+  apiCall: () => Promise<T>,
+  options: ApiWrapperOptions
+): Promise<T> {
+  const { defaultError, suppressToast = false } = options;
   try {
     return await apiCall();
   } catch (error: any) {
@@ -24,9 +28,11 @@ export async function apiWrapper<T>(apiCall: () => Promise<T>, defaultError: str
     } else if (error.message) {
       responseError = error.message;
     }
-    if(show){
+
+    if (!suppressToast) {
       toast.error(`${defaultError}`, { description: responseError });
     }
+
     throw error; // Re-throw the error to allow further handling in the component
   }
 }
