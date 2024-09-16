@@ -22,11 +22,12 @@ import loadingGif from "@/assets/Logo Animation.gif";
 const SignupStep1Schema = z.object({
   organizationName: z
     .string()
-    .min(2, "Organization name must be at least 2 characters."),
-  name: z.string().min(2, "Name must be at least 2 characters."),
+    .min(1, "Cannot be empty"),
+  name: z.string().min(1, "Cannot be empty"),
   organizationURL: z
     .string()
-    .min(2, "Organization URL must be at least 2 characters."),
+    .min(1, "Cannot be empty.")
+    .regex(/^[a-zA-Z0-9-]+$/, "Organization URL may only contain letters, numbers, and dashes."),
 });
 
 const SignupStep2Schema = z.object({
@@ -253,7 +254,7 @@ function SignupStep1Form({ form, onSubmit }: SignupStep1FormProps) {
             const { ref, value, onChange, ...restField } = field;
             return (
               <FormItem>
-                <FormLabel>Enter your Organization URL</FormLabel>
+                <FormLabel>Create an Organization URL</FormLabel>
                 <FormControl>
                   <div
                     onClick={() => orgURLRef.current?.focus()}

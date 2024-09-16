@@ -18,12 +18,15 @@ import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 
 const LoginStep1Schema = z.object({
-  organizationName: z.string().min(1, "Please enter your Organization name."),
+  organizationURL: z
+  .string()
+  .min(1, "Cannot be empty.")
+  .regex(/^[a-zA-Z0-9-]+$/, "Invalid URL. Should contain only letters, numbers, and dashes."),
 });
 
 const LoginStep2Schema = z.object({
   email: z.string().email("Invalid email address."),
-  password: z.string().min(1, "Please enter your password."),
+  password: z.string().min(1, "Cannot be empty."),
 });
 
 type LoginStep1Data = z.infer<typeof LoginStep1Schema>;
@@ -49,7 +52,7 @@ function LoginForm() {
   const navigate = useNavigate();
   const loginStep1Form = useForm<LoginStep1Data>({
     resolver: zodResolver(LoginStep1Schema),
-    defaultValues: { organizationName: "" },
+    defaultValues: { organizationURL: "" },
   });
 
   const loginStep2Form = useForm<LoginStep2Data>({
@@ -73,7 +76,7 @@ function LoginForm() {
       const { token, tenantId, tenant } = await login(
         finalData.email!,
         finalData.password!,
-        finalData.organizationName!,
+        finalData.organizationURL!,
       );
 
       const isSignedIn = authKitSignIn({
@@ -83,14 +86,14 @@ function LoginForm() {
         },
         userState: {
           email: finalData.email,
-          organizationName: finalData.organizationName,
+          organizationURL: finalData.organizationURL,
           tenantId,
           tenant,
         },
       });
 
       if (isSignedIn) {
-        return navigate(`/${finalData.organizationName}/agents`);
+        return navigate(`/${finalData.organizationURL}/agents`);
       }
 
       setFormError(stockError);
@@ -103,7 +106,7 @@ function LoginForm() {
         }
         if (responseError === "invalid tenant") {
           setStep(1);
-          loginStep1Form.setError("organizationName", {
+          loginStep1Form.setError("organizationURL", {
             type: "manual",
             message: "Organization URL not found",
           });
@@ -146,7 +149,7 @@ function LoginStep1Form({ form, onSubmit }: LoginStep1FormProps) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
         <FormField
           control={form.control}
-          name="organizationName"
+          name="organizationURL"
           render={({ field }) => {
             const { ref, ...restField } = field;
             return (
@@ -164,7 +167,7 @@ function LoginStep1Form({ form, onSubmit }: LoginStep1FormProps) {
                       ref={inputRef}
                       autoFocus
                       className="border-none pl-0 focus-visible:ring-0"
-                      id="organizationName"
+                      id="organizationURL"
                       placeholder="your-organization"
                       {...restField}
                     />
