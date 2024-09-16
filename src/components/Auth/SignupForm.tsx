@@ -10,14 +10,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { login, signup } from "@/services/auth/authService";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CheckSquareIcon, SquareIcon } from "lucide-react";
+import { CheckSquareIcon, LucideLoader, SquareIcon, } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import slugify from "slugify";
 import { z } from "zod";
-import loadingGif from "@/assets/Logo Animation.gif";
 
 const SignupStep1Schema = z.object({
   organizationName: z
@@ -62,7 +61,7 @@ function SignupForm() {
   const [step, setStep] = useState(1);
   const [signupData, setSignupData] = useState<SignupData>({});
   const [formError, setFormError] = useState<string | null>(null);
-  const [isRetryingLogin, setIsRetryingLogin] = useState(false); // Add retrying state
+  const [loading, setLoading] = useState(false);
   const authKitSignIn = useSignIn();
   const navigate = useNavigate();
 
@@ -128,26 +127,24 @@ function SignupForm() {
         }
       };
 
-      // Try logging in multiple times with a delay
-      setIsRetryingLogin(true); // Show loading animation
+      setLoading(true);
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         const success = await tryLogin(attempt);
         if (success) {
-          setIsRetryingLogin(false); // Hide loading animation
-          return navigate(`/${finalData.organizationURL}/agents`); // If login is successful
+          setLoading(false);
+          return navigate(`/${finalData.organizationURL}/agents`);
         }
         if (attempt < maxRetries) {
-          await new Promise((resolve) => setTimeout(resolve, retryDelay)); // Wait for retryDelay
+          await new Promise((resolve) => setTimeout(resolve, retryDelay));
         }
       }
 
-      // If all attempts fail, show an error message
-      setIsRetryingLogin(false); // Hide loading animation
+      setLoading(false);
       setFormError(
         "Signup succeeded, but automatic login failed. Please try to log in manually."
       );
     } catch (signupError) {
-      setIsRetryingLogin(false); // Hide loading animation
+      setLoading(false);
       setFormError("Signup failed. Please try again.");
     }
   };
@@ -168,21 +165,11 @@ function SignupForm() {
           form={signupStep2Form}
           onSubmit={handleSignupStep2Submit}
           onBack={handleBack}
+          loading={loading}
         />
       )}
 
-      {/* Conditionally render the loading animation or error */}
-      {isRetryingLogin ? (
-        <div className="flex justify-center mt-4">
-          <img
-            src={loadingGif}
-            alt="Loading..."
-            className="w-full max-w-[1418px] h-auto" // Adjusts based on screen size, up to the original size
-          />
-        </div>
-      ) : (
-        formError && <div className="text-red-500">{formError}</div>
-      )}
+      {!loading && formError && <div className="text-red-500">{formError}</div>}
     </>
   );
 }
@@ -290,7 +277,7 @@ function SignupStep1Form({ form, onSubmit }: SignupStep1FormProps) {
   );
 }
 
-function SignupStep2Form({ form, onSubmit, onBack }: SignupStep2FormProps) {
+function SignupStep2Form({ form, onSubmit, onBack, loading }: SignupStep2FormProps & { loading: boolean }) {
   const [password, setPassword] = useState(form.getValues("password"));
   const [passwordValidations, setPasswordValidations] = useState({
     length: password.length >= 12,
@@ -425,10 +412,22 @@ function SignupStep2Form({ form, onSubmit, onBack }: SignupStep2FormProps) {
           )}
         />
         <div className="flex justify-between">
-          <Button type="button" variant="outline" onClick={onBack}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onBack}
+          >
             Back
           </Button>
-          <Button type="submit">Sign Up</Button>
+
+          <Button
+            type="submit"
+            disabled={loading}
+            className="grid [&>*]:row-start-1 [&>*]:column-start-1 place-items-center"
+          >
+            <span className={ loading ? "invisible [grid-area:1/1]" : "" }>Sign Up</span>
+            {loading && <LucideLoader className="animate-spin [grid-area:1/1]" />}
+          </Button>
         </div>
       </form>
     </Form>
