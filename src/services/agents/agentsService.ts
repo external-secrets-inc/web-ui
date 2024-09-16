@@ -1,18 +1,18 @@
 import { getAuthHeaders } from '@/services/auth/authHelpers';
 import { apiWrapper } from '@/services/servicesHelpers';
-import { Agent } from '@/types';
+import { Agent, ApiWrapperOptions } from '@/types';
 import axiosInstance from '../axiosConfig';
 
 const headers = getAuthHeaders();
 
-export async function createAgent(name: string) {
+export async function createAgent(name: string, options: Partial<ApiWrapperOptions> = {}) {
   return apiWrapper(async () => {
     const response = await axiosInstance.post('/api/agents', { name }, { headers });
     return response.data;
-  }, 'Failed to create agent');
+  }, { defaultError: 'Failed to create agent', ...options });
 }
 
-export async function getAgents() {
+export async function getAgents(options: Partial<ApiWrapperOptions> = {}) {
   return apiWrapper(async () => {
     const response = await axiosInstance.get('/api/agents', { headers });
     return response.data.agents.map((agent: Agent) => ({
@@ -20,20 +20,20 @@ export async function getAgents() {
       agentName: agent.name,
       currentStatus: agent.current_status
     }));
-  }, 'Failed to fetch agents');
+  }, { defaultError: 'Failed to fetch agents', ...options });
 }
 
-export async function getManifestContent(id: string, version: string = 'latest') {
+export async function getManifestContent(id: string, version: string = 'latest', options: Partial<ApiWrapperOptions> = {}) {
   return apiWrapper(async () => {
     const url = `/api/agents/${id}/manifest/${version}`;
     const response = await axiosInstance.get(url, { headers });
     return response.data.manifest;
-  }, 'Failed to fetch manifest content');
+  }, { defaultError: 'Failed to fetch manifest content', ...options });
 }
 
-export async function deleteAgent(id: string) {
+export async function deleteAgent(id: string, options: Partial<ApiWrapperOptions> = {}) {
   return apiWrapper(async () => {
     const url = `/api/agents/${id}`;
     await axiosInstance.delete(url, { headers });
-  }, 'Failed to delete agent');
+  }, { defaultError: 'Failed to delete agent', ...options });
 }

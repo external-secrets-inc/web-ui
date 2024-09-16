@@ -85,28 +85,24 @@ function SignupForm() {
 
   const handleSignupStep2Submit = async (data: SignupStep2Data) => {
     const finalData = { ...signupData, ...data };
-    const tenantValue = finalData.organizationURL!.replace(/-/g, "_"); // Our DB only accepts underscores
-    const maxRetries = 5; // Maximum number of retries for login
-    const retryDelay = 3000; // 3 seconds delay between retries
+    const maxRetries = 5;
+    const retryDelay = 3000;
 
     try {
-      // Perform the signup
       await signup(
         finalData.email!,
         finalData.name!,
         finalData.password!,
-        tenantValue
+        finalData.organizationURL!,
       );
 
-      // Login function with retry mechanism
       const tryLogin = async (attempt: number): Promise<boolean> => {
         try {
-          console.log(`Attempt ${attempt} to log in`);
           const { token, tenantId, tenant } = await login(
             finalData.email!,
             finalData.password!,
-            tenantValue,
-            false
+            finalData.organizationURL!,
+            { suppressToast: true }
           );
 
           const isSignedIn = authKitSignIn({
@@ -117,18 +113,16 @@ function SignupForm() {
             userState: {
               email: finalData.email,
               organizationName: finalData.organizationName,
-              tenantId, // Include tenantId in userState
-              tenant, // Include tenant name in userState
+              tenantId,
+              tenant,
             },
           });
 
-          if (isSignedIn) {
-            return true; // Login succeeded
-          }
+          if (isSignedIn) return true;
 
-          return false; // Login failed
-        } catch (err) {
-          console.error(`Login attempt ${attempt} failed:`, err);
+          return false;
+        } catch (error) {
+          console.error(`Login attempt ${attempt} failed:`, error);
           return false;
         }
       };
@@ -149,7 +143,7 @@ function SignupForm() {
       // If all attempts fail, show an error message
       setIsRetryingLogin(false); // Hide loading animation
       setFormError(
-        "Signup succeeded, but automatic login failed after multiple attempts. Please try to log in manually."
+        "Signup succeeded, but automatic login failed. Please try to log in manually."
       );
     } catch (signupError) {
       setIsRetryingLogin(false); // Hide loading animation

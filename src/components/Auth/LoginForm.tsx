@@ -70,15 +70,12 @@ function LoginForm() {
     const stockError = "Something went wrong. Please try again.";
 
     try {
-      // Perform login and get the token + tenantId
       const { token, tenantId, tenant } = await login(
         finalData.email!,
         finalData.password!,
         finalData.organizationName!,
-        true
       );
 
-      // Store tenantId and organizationName in authKit's userState
       const isSignedIn = authKitSignIn({
         auth: {
           token,
@@ -87,12 +84,11 @@ function LoginForm() {
         userState: {
           email: finalData.email,
           organizationName: finalData.organizationName,
-          tenantId, // Include tenantId in userState
-          tenant, // Include tenant name in userState
+          tenantId,
+          tenant,
         },
       });
 
-      // Redirect to the org-specific agents page
       if (isSignedIn) {
         return navigate(`/${finalData.organizationName}/agents`);
       }
@@ -109,7 +105,7 @@ function LoginForm() {
           setStep(1);
           loginStep1Form.setError("organizationName", {
             type: "manual",
-            message: "This Organization was not found",
+            message: "Organization URL not found",
           });
           return;
         }
