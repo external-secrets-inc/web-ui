@@ -20,7 +20,7 @@ export function NewAgent({ refetchAgents }: NewAgentProps) {
       className={
         showForm
           ? "border-solid"
-          : "p-4 border-2 hover:border-muted-foreground/50 text-muted-foreground hover:text-foreground hover:bg-muted/15 border-dashed transition-all"
+          : "p-4 border-2 hover:border-muted-foreground/50 text-muted-foreground hover:text-foreground hover:bg-muted/15 border-dashed shadow-none light transition-all"
       }
       onClick={!showForm ? () => setShowForm(true) : undefined}
     >
