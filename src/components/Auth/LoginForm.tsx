@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { login } from "@/services/auth/authService";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { isAxiosError } from "axios";
+import { LucideLoader } from "lucide-react";
 import { useRef, useState } from "react";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
 import { useForm, UseFormReturn } from "react-hook-form";
@@ -42,12 +43,14 @@ interface LoginStep2FormProps {
   form: UseFormReturn<LoginStep2Data>;
   onSubmit: (data: LoginStep2Data) => void;
   onBack: () => void;
+  loading: boolean;
 }
 
 function LoginForm() {
   const [step, setStep] = useState(1);
   const [loginData, setLoginData] = useState<LoginData>({});
   const [formError, setFormError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
   const authKitSignIn = useSignIn();
   const navigate = useNavigate();
   const loginStep1Form = useForm<LoginStep1Data>({
@@ -71,6 +74,7 @@ function LoginForm() {
   const handleLoginStep2Submit = async (data: LoginStep2Data) => {
     const finalData = { ...loginData, ...data };
     const stockError = "Something went wrong. Please try again.";
+    setLoading(true);
 
     try {
       const { token, tenantId, tenant } = await login(
@@ -93,6 +97,7 @@ function LoginForm() {
       });
 
       if (isSignedIn) {
+        setLoading(false);
         return navigate(`/${finalData.organizationURL}/agents`);
       }
 
@@ -102,19 +107,14 @@ function LoginForm() {
         const responseError = err.response?.data?.errors?.body;
 
         if (responseError === "invalid username/password") {
+          setLoading(false);
           return setFormError("Invalid login credentials");
-        }
-        if (responseError === "invalid tenant") {
-          setStep(1);
-          loginStep1Form.setError("organizationURL", {
-            type: "manual",
-            message: "Organization URL not found",
-          });
-          return;
         }
       }
 
       setFormError(stockError);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -134,6 +134,7 @@ function LoginForm() {
           form={loginStep2Form}
           onSubmit={handleLoginStep2Submit}
           onBack={handleBack}
+          loading={loading}
         />
       )}
       {formError && <div className="text-red-500">{formError}</div>}
@@ -186,7 +187,7 @@ function LoginStep1Form({ form, onSubmit }: LoginStep1FormProps) {
   );
 }
 
-function LoginStep2Form({ form, onSubmit, onBack }: LoginStep2FormProps) {
+function LoginStep2Form({ form, onSubmit, onBack, loading }: LoginStep2FormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
@@ -230,7 +231,14 @@ function LoginStep2Form({ form, onSubmit, onBack }: LoginStep2FormProps) {
           <Button type="button" variant="outline" onClick={onBack}>
             Back
           </Button>
-          <Button type="submit">Login</Button>
+          <Button
+            type="submit"
+            disabled={loading}
+            className="grid [&>*]:row-start-1 [&>*]:column-start-1 place-items-center"
+          >
+            <span className={ loading ? "invisible [grid-area:1/1]" : "" }>Login</span>
+            {loading && <LucideLoader className="animate-spin [grid-area:1/1]" />}
+          </Button>
         </div>
       </form>
     </Form>
