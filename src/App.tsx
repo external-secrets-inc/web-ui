@@ -1,4 +1,5 @@
 import LogoEsiFullWhite from "@/assets/logo-esi-full-white.svg?react";
+import LogoEsiWhite from "@/assets/logo-esi-white.svg?react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,13 +20,11 @@ const App = () => {
 
   return (
     <div className="app-layout">
-      <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
-        <nav className="font-medium flex flex-row items-center gap-8 text-sm">
-          <Link
-            to="/"
-            className="flex items-center gap-2 text-lg font-semibold md:text-base"
-          >
-            <LogoEsiFullWhite className="h-9"/>
+      <header className="sticky top-0 flex h-12 md:h-16 items-center gap-4 border-b bg-background px-6 z-10">
+        <nav className="font-medium flex flex-row items-center gap-6 md:gap-8 text-sm">
+          <Link to="/">
+            <LogoEsiFullWhite className="h-9 hidden md:block"/>
+            <LogoEsiWhite className="h-6 md:hidden"/>
           </Link>
           <div className="flex gap-4">
             <Link
@@ -36,15 +35,15 @@ const App = () => {
             </Link>
           </div>
         </nav>
-        <div className="ml-auto flex items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
+        <div className="ml-auto flex items-center gap-4 md:ml-auto md:gap-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 aria-label="Toggle user menu"
-                className="flex gap-2 h-auto pr-1 pl-3 py-1"
+                className="flex gap-2 h-auto px-1 md:pl-3 py-1"
               >
-                <span className="flex flex-col text-end items-end gap-1">
+                <span className="flex-col text-end items-end gap-1 hidden md:flex">
                   <span className="font-normal leading-none">
                     John Doe
                   </span>
@@ -52,7 +51,7 @@ const App = () => {
                     External Secrets Operator
                   </span>
                 </span>
-                <Avatar>
+                <Avatar className="md:h-10 md:w-10 h-8 w-8">
                   <AvatarFallback>JD</AvatarFallback>
                 </Avatar>
               </Button>
