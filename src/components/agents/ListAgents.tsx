@@ -2,7 +2,7 @@ import { getAgents } from "@/services/agents/agentsService";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { NewAgent } from "./NewAgent";
-import { ShowAgent } from "./ShowAgent";
+import { AgentDetailsDialog } from "./AgentDetailsDialog";
 import { Agent, IUserData } from "@/types";
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
 // import useSignOut from "react-auth-kit/hooks/useSignOut";
@@ -70,7 +70,7 @@ export function ListAgents() {
           setAgents(agentsData);
         }} />
         {agents.slice().reverse().map((agent) => (
-          <ShowAgent
+          <AgentDetailsDialog
             key={agent.id}
             id={agent.id}
             agentName={agent.name}

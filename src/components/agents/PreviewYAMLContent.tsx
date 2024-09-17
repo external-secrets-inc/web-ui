@@ -15,7 +15,7 @@ import { getManifestContent } from "@/services/agents/agentsService";
 
 interface PreviewYAMLContentProps {
   id: string;
-  onDeleted?: () => void;
+  onDeleted: () => void;
   version?: string;
 }
 
