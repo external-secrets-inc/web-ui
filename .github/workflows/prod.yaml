@@ -1,0 +1,43 @@
+name: Build and Push to Prod on Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Google Cloud authentication
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          token_format: access_token
+          workload_identity_provider: ${{ vars.DEV_IDENTITY_POOL }}
+          service_account: ${{ vars.DEV_CI_SERVICE_ACCOUNT }}
+          access_token_lifetime: 300s
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Build And Publish Manifests
+        run: |
+          npm install
+          npm run build:ts-off  # TODO - Update this to include TS checks
+          cd dist
+          gcloud storage cp -R . gs://${{ vars.PROD_FRONTEND_BUCKET }}
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
