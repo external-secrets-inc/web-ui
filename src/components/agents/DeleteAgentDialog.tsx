@@ -6,7 +6,12 @@ import {
 import { DeleteAgentModalContent } from "./DeleteAgentModalContent"
 import { Trash2Icon } from "lucide-react"
 
-export function DeleteAgentDialog({id, onDeleted}) {
+interface DeleteAgentDialogProps {
+  id: string;
+  onDeleted: () => void;
+}
+
+export function DeleteAgentDialog({id, onDeleted}: DeleteAgentDialogProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>

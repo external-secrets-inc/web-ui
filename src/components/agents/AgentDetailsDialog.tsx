@@ -58,8 +58,8 @@ interface ShowAgentProps {
   onDeleted: () => void;
 }
 
-export function ShowAgent({ id, agentName, currentStatus, onDeleted }: ShowAgentProps) {
-  const isPending = ['PENDING_REGISTRATION', 'PROVISIONING'].includes(currentStatus);
+export function AgentDetailsDialog({ id, agentName, currentStatus, onDeleted }: ShowAgentProps) {
+  const isPending = ['PENDING_REGISTRATION', 'PROVISIONING'].includes(currentStatus.toUpperCase());
   const [isYamlDialogOpen, setIsYamlDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
