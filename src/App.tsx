@@ -20,7 +20,8 @@ const App = () => {
   const authUser = useAuthUser<IUserData>();
   const signOut = useSignOut();
   const navigate = useNavigate();
-  const tenant = authUser?.tenant;
+  const tenant = authUser?.tenant; // TODO: Grab the proper Organization name from our tenant endpoint
+  const name = authUser?.name;
 
   const handleSignOut = () => {
     signOut();
@@ -54,10 +55,10 @@ const App = () => {
               >
                 <span className="flex-col text-end items-end gap-1 hidden md:flex">
                   <span className="font-normal leading-none">
-                    John Doe
+                    {name}
                   </span>
                   <span className="font-normal leading-none text-xs text-muted-foreground max-w-36 text-ellipsis text-nowrap overflow-hidden">
-                    External Secrets Operator
+                    {tenant}
                   </span>
                 </span>
                 <Avatar className="md:h-10 md:w-10 h-8 w-8">
@@ -72,10 +73,10 @@ const App = () => {
               <DropdownMenuLabel className="md:hidden">
                 <span className="flex-col text-start items-start gap-1 flex">
                   <span className="font-normal leading-none">
-                    John Doe
+                    {name}
                   </span>
                   <span className="font-normal leading-none text-xs text-muted-foreground max-w-36 text-ellipsis text-nowrap overflow-hidden">
-                    External Secrets Operator asd as dasd as dd
+                    {tenant}
                   </span>
                 </span>
               </DropdownMenuLabel>

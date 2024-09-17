@@ -17,6 +17,7 @@ import useSignIn from "react-auth-kit/hooks/useSignIn";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
+import { getUserData } from '@/services/users/usersService';
 
 const LoginStep1Schema = z.object({
   organizationURL: z
@@ -77,12 +78,13 @@ function LoginForm() {
     setLoading(true);
 
     try {
-      const { token, tenantId, tenant } = await login(
+      const { token, tenantId, tenant, userId } = await login(
         finalData.email!,
         finalData.password!,
         finalData.organizationURL!,
       );
 
+      const userDetails = await getUserData(userId!, { manualToken: token });
       const isSignedIn = authKitSignIn({
         auth: {
           token,
@@ -91,8 +93,10 @@ function LoginForm() {
         userState: {
           email: finalData.email,
           organizationURL: finalData.organizationURL,
+          name: userDetails.name,
           tenantId,
           tenant,
+          userId,
         },
       });
 
