@@ -5,8 +5,6 @@ import { NewAgent } from "./NewAgent";
 import { ShowAgent } from "./ShowAgent";
 import { Agent, IUserData } from "@/types";
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
-// import useSignOut from "react-auth-kit/hooks/useSignOut";
-// import { Button } from "../ui/button";
 import { toast } from "sonner";
 
 export function ListAgents() {
@@ -14,14 +12,6 @@ export function ListAgents() {
   const { org } = useParams<{ org: string }>();
   const authUser = useAuthUser<IUserData>();
   const navigate = useNavigate();
-
-  // TODO: We need a topbar with org name and sign out button asap!!
-  // const signOut = useSignOut();
-  // const handleSignOut = () => {
-  //   signOut();
-  //   navigate('/login');
-  // };
-  //
 
   useEffect(() => {
     const fetchAgents = async () => {
@@ -51,15 +41,6 @@ export function ListAgents() {
 
   return (
     <div className="max-w-[1200px] px-6 lg:px-14 mx-auto box-content text-left flex flex-col py-14">
-      {/* TODO: We need a topbar with org name and sign out button asap!! */}
-
-      {/* <Button
-        onClick={handleSignOut}
-        className="mt-4 px-4 py-2 bg-red-500 text-white rounded"
-      >
-        Sign Out
-      </Button> */}
-
       <div className="mb-6">
         <h1 className="text-xl font-bold">Your Agents</h1>
         <div className="text-slate-500">Monitor existing agents and/or generate new ones</div>
