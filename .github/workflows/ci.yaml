@@ -35,6 +35,7 @@ jobs:
 
     - name: Build And Publish Manifests
       run: |
+        npm i
         npm run build:ts-off  # TODO - Update this to include TS checks
         cd dist
         gcloud storage cp -R . gs://${{ vars.DEV_FRONTEND_BUCKET }}
