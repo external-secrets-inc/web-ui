@@ -22,6 +22,7 @@ const App = () => {
   const navigate = useNavigate();
   const tenant = authUser?.tenant; // TODO: Grab the proper Organization name from our tenant endpoint
   const name = authUser?.name;
+  const initials = getInitials(name);
 
   const handleSignOut = () => {
     signOut();
@@ -62,7 +63,7 @@ const App = () => {
                   </span>
                 </span>
                 <Avatar className="md:h-10 md:w-10 h-8 w-8">
-                  <AvatarFallback>JD</AvatarFallback>
+                  <AvatarFallback>{initials}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
@@ -94,5 +95,15 @@ const App = () => {
     </div>
   );
 };
+
+function getInitials(name: string | undefined): string {
+  if (!name) return 'Y';
+  const initials = name
+    .split(' ')
+    .map(word => word[0])
+    .join('')
+    .toUpperCase();
+  return initials.slice(0, 2);
+}
 
 export default App;
