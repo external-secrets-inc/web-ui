@@ -1,4 +1,6 @@
 import LogoEsiFullWhite from "@/assets/logo-esi-full-white.svg?react";
+import useSignOut from 'react-auth-kit/hooks/useSignOut';
+import { useNavigate } from 'react-router-dom';
 import LogoEsiWhite from "@/assets/logo-esi-white.svg?react";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +18,14 @@ import { Avatar, AvatarFallback } from "./components/ui/avatar";
 
 const App = () => {
   const authUser = useAuthUser<IUserData>();
+  const signOut = useSignOut();
+  const navigate = useNavigate();
   const tenant = authUser?.tenant;
+
+  const handleSignOut = () => {
+    signOut();
+    navigate('/login');
+  };
 
   return (
     <div className="app-layout">
@@ -47,7 +56,7 @@ const App = () => {
                   <span className="font-normal leading-none">
                     John Doe
                   </span>
-                  <span className="font-normal leading-none text-xs text-muted-foreground max-w-36 text-ellipsis overflow-hidden">
+                  <span className="font-normal leading-none text-xs text-muted-foreground max-w-36 text-ellipsis text-nowrap overflow-hidden">
                     External Secrets Operator
                   </span>
                 </span>
@@ -60,12 +69,20 @@ const App = () => {
               align="end"
               onCloseAutoFocus={(event) => event.preventDefault()}
             >
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
+              <DropdownMenuLabel className="md:hidden">
+                <span className="flex-col text-start items-start gap-1 flex">
+                  <span className="font-normal leading-none">
+                    John Doe
+                  </span>
+                  <span className="font-normal leading-none text-xs text-muted-foreground max-w-36 text-ellipsis text-nowrap overflow-hidden">
+                    External Secrets Operator asd as dasd as dd
+                  </span>
+                </span>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator className="md:hidden" />
+              <DropdownMenuItem onClick={handleSignOut}>
+                Sign Out
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
