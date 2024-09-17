@@ -61,7 +61,7 @@ export function ListAgents() {
       </Button> */}
 
       <div className="mb-6">
-        <h1 className="text-xl font-bold">Your Agents for {org}</h1>
+        <h1 className="text-xl font-bold">Your Agents</h1>
         <div className="text-slate-500">Monitor existing agents and/or generate new ones</div>
       </div>
       <div className="grid grid-cols-3 auto-rows-[minmax(216px,auto)] gap-4">
