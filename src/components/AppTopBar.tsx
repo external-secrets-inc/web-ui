@@ -15,6 +15,8 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import LogoEsiFullWhite from '@/assets/logo-esi-full-white.svg?react';
 import LogoEsiWhite from '@/assets/logo-esi-white.svg?react';
+import LogoEsiFull from '@/assets/logo-esi-full.svg?react';
+import LogoEsi from '@/assets/logo-esi.svg?react';
 
 const AppTopBar: React.FC = () => {
   const authUser = useAuthUser<IUserData>();
@@ -33,8 +35,15 @@ const AppTopBar: React.FC = () => {
     <header className="sticky top-0 flex h-12 md:h-16 items-center gap-4 border-b bg-background px-6 z-10">
       <nav className="font-medium flex flex-row items-center gap-6 md:gap-8 text-sm">
         <Link to="/">
-          <LogoEsiFullWhite className="h-9 hidden md:block" />
-          <LogoEsiWhite className="h-6 md:hidden" />
+          <span className="hidden dark:inline">
+            <LogoEsiFullWhite className="md:block h-9 hidden" />
+            <LogoEsiWhite className="md:hidden h-6 " />
+          </span>
+
+          <span className="dark:hidden">
+            <LogoEsiFull className="md:block h-9 hidden" />
+            <LogoEsi className="md:hidden h-6" />
+          </span>
         </Link>
         <div className="flex gap-4">
           <Link
