@@ -41,3 +41,4 @@ jobs:
         gcloud storage cp -R . gs://${{ vars.DEV_FRONTEND_BUCKET }}
       env:
         GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
+        VITE_API_DOMAIN: https://api.dev.externalsecrets.com
