@@ -64,7 +64,7 @@ export function ListAgents() {
         <h1 className="text-xl font-bold">Your Agents for {org}</h1>
         <div className="text-slate-500">Monitor existing agents and/or generate new ones</div>
       </div>
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(290px,1fr))] auto-rows-[minmax(216px,auto)] gap-4">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(350px,100%),1fr))] auto-rows-[minmax(216px,auto)] gap-4">
         <NewAgent refetchAgents={async () => {
           const agentsData = await getAgents();
           setAgents(agentsData);
