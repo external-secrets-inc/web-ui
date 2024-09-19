@@ -3,9 +3,8 @@ import { apiWrapper } from '@/services/servicesHelpers';
 import { Agent, ApiWrapperOptions } from '@/types';
 import axiosInstance from '../axiosConfig';
 
-const headers = await getAuthHeaders();
-
 export async function createAgent(name: string, options: Partial<ApiWrapperOptions> = {}) {
+  const headers = await getAuthHeaders();
   return apiWrapper(async () => {
     const response = await axiosInstance.post('/api/agents', { name }, { headers });
     return response.data;
@@ -13,6 +12,7 @@ export async function createAgent(name: string, options: Partial<ApiWrapperOptio
 }
 
 export async function getAgents(options: Partial<ApiWrapperOptions> = {}) {
+  const headers = await getAuthHeaders();
   return apiWrapper(async () => {
     const response = await axiosInstance.get('/api/agents', { headers });
     return response.data.agents.map((agent: Agent) => ({
@@ -24,6 +24,7 @@ export async function getAgents(options: Partial<ApiWrapperOptions> = {}) {
 }
 
 export async function getManifestContent(id: string, version: string = 'latest', options: Partial<ApiWrapperOptions> = {}) {
+  const headers = await getAuthHeaders();
   return apiWrapper(async () => {
     const url = `/api/agents/${id}/manifest/${version}`;
     const response = await axiosInstance.get(url, { headers });
@@ -32,6 +33,7 @@ export async function getManifestContent(id: string, version: string = 'latest',
 }
 
 export async function deleteAgent(id: string, options: Partial<ApiWrapperOptions> = {}) {
+  const headers = await getAuthHeaders();
   return apiWrapper(async () => {
     const url = `/api/agents/${id}`;
     await axiosInstance.delete(url, { headers });
