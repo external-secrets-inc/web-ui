@@ -1,0 +1,19 @@
+suite: test certertificate
+templates:
+  - certificate.yaml
+tests:
+  - it: should match snapshot of default values
+    asserts:
+      - hasDocuments:
+          count: 0
+  - it: should create a Certificate
+    set:
+      certificate.enabled: true
+      certificate.secretName: example-secret
+      certificate.issuer.kind: ClusterIssuer
+      certificate.issuer.name: example-issuer
+      certificate.hosts:
+        - host: foo.example.com
+        - host: bar.example.com
+    asserts:
+      - matchSnapshot: {}

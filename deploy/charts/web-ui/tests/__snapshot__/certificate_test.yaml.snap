@@ -1,0 +1,16 @@
+should create a Certificate:
+  1: |
+    apiVersion: cert-manager.io/v1
+    kind: Certificate
+    metadata:
+      name: RELEASE-NAME-tenant-manager
+      namespace: NAMESPACE
+    spec:
+      dnsNames:
+        - foo.example.com
+        - bar.example.com
+      issuerRef:
+        kind: ClusterIssuer
+        name: example-issuer
+        namespace: null
+      secretName: example-secret
