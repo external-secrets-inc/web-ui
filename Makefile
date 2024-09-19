@@ -11,8 +11,8 @@ ERR     = echo ${TIME} ${RED}[FAIL]${CNone}
 OK      = echo ${TIME} ${GREEN}[ OK ]${CNone}
 FAIL    = (echo ${TIME} ${RED}[FAIL]${CNone} && false)
 
-CHARTS_REPO := oci://$(ARTIFACT_REG)/external-secrets-inc-registry/internal/charts
 ARTIFACT_REG:=us-central1-docker.pkg.dev
+CHARTS_REPO := oci://$(ARTIFACT_REG)/external-secrets-inc-registry/internal/charts
 
 helm.login:
 	gcloud auth print-access-token | helm registry login -u oauth2accesstoken \
