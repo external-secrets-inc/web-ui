@@ -20,5 +20,5 @@ helm.login:
 
 .PHONY: helm.push
 helm.push: helm.login ## Push helm chart to the repository
-	@helm package deploy/charts/tenant-manager
+	@helm package deploy/charts/web-ui
 	helm push *.tgz $(CHARTS_REPO)
