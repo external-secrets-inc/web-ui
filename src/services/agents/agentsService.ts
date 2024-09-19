@@ -3,7 +3,7 @@ import { apiWrapper } from '@/services/servicesHelpers';
 import { Agent, ApiWrapperOptions } from '@/types';
 import axiosInstance from '../axiosConfig';
 
-const headers = getAuthHeaders();
+const headers = await getAuthHeaders();
 
 export async function createAgent(name: string, options: Partial<ApiWrapperOptions> = {}) {
   return apiWrapper(async () => {
