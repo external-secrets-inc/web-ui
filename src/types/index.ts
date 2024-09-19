@@ -12,6 +12,8 @@ export interface ApiWrapperOptions {
 }
 
 export interface IUserData {
+  name: string;
   tenant: string;
-  tenantID: string;
+  tenantId: string;
+  userId: string;
 };

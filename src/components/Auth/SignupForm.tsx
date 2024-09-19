@@ -98,7 +98,7 @@ function SignupForm() {
 
       const tryLogin = async (attempt: number): Promise<boolean> => {
         try {
-          const { token, tenantId, tenant } = await login(
+          const { token, tenantId, tenant, userId } = await login(
             finalData.email!,
             finalData.password!,
             finalData.organizationURL!,
@@ -113,8 +113,10 @@ function SignupForm() {
             userState: {
               email: finalData.email,
               organizationName: finalData.organizationName,
+              name: finalData.name,
               tenantId,
               tenant,
+              userId,
             },
           });
 

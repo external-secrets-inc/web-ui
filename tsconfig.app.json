@@ -10,6 +10,7 @@
     },
     "skipLibCheck": true,
     "target": "ES2020",
+    "types": ["vite-plugin-svgr/client"],
     "useDefineForClassFields": true,
 
     /* Bundler mode */
