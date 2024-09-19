@@ -1,7 +1,7 @@
-import path from "path"
-import react from '@vitejs/plugin-react-swc'
+import path from "path";
+import react from '@vitejs/plugin-react-swc';
 import svgr from "vite-plugin-svgr";
-import { defineConfig } from "vite"
+import { defineConfig } from "vite";
 
 export default defineConfig({
   plugins: [react(), svgr()],
@@ -13,4 +13,7 @@ export default defineConfig({
   server: {
     port: 1234,
   },
-})
+  build: {
+    target: 'ES2022',
+  },
+});
