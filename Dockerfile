@@ -1,4 +1,4 @@
-FROM node:16 as builder
+FROM node:22.8.0 as builder
 WORKDIR /web-ui
 ARG TENANT_MANAGER_URL
 COPY . .
