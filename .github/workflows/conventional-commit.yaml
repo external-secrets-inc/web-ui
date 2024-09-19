@@ -7,6 +7,8 @@ on:
 
 jobs:
   conventional-commit:
+    permissions:
+      contents: read
     name: Conventional Commit
     runs-on: ubuntu-latest
     steps:
