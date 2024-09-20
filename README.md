@@ -3,11 +3,15 @@ Web ui (Portal) for managing external-secrets-inc
 
 # Running
 Fire up with:
-- `npm i`
-- `npm run dev`
+- `make dev`
 - profit
 
 ---
+
+# Contributing
+Please do commits following [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) approach.
+There is a github action that will prevent your commit if you dont do it!
+Run `make setup` in order to install pre-commit checks to prevent that from happening
 
 # (Default placeholder readme from `npm create vite@latest` with TS + SWC below)
 # React + TypeScript + Vite
