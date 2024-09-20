@@ -74,6 +74,9 @@ jobs:
       with:
         app-id: ${{ vars.ESI_BOT_APP_ID }}
         private-key: ${{ secrets.ESI_BOT_PRIVATE_KEY }}
+        repositories:
+        - k8s-flux
+        owner: external-secrets-inc
   # Trigger workflow in k8s-flux
     - name: Trigger workflow in k8s-flux
       uses: peter-evans/repository-dispatch@v2
