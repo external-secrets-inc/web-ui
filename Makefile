@@ -14,7 +14,7 @@ ERR     = echo ${TIME} ${RED}[FAIL]${CNone}
 OK      = echo ${TIME} ${GREEN}[ OK ]${CNone}
 FAIL    = (echo ${TIME} ${RED}[FAIL]${CNone} && false)
 ARTIFACT_REG:=us-central1-docker.pkg.dev
-CHARTS_REPO := oci://$(ARTIFACT_REG)/external-secrets-iCnone-registry/internal/charts
+CHARTS_REPO := oci://$(ARTIFACT_REG)/external-secrets-inc-registry/internal/charts
 
 help:
 	@echo -e "${GREEN}Usage:${Cnone}"
