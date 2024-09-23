@@ -18,7 +18,7 @@ const AxiosInterceptor: React.FC<AxiosInterceptorProps> = ({ children }) => {
     };
 
     const errInterceptor = (error: any) => {
-      if (error.response && error.response.status === 401) {
+      if (error?.response?.status === 401) {
         signOut();
         navigate('/login');
       }
