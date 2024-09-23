@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/external-secrets-inc/web-ui/compare/v0.1.0...v0.1.1) (2024-09-23)
+
+
+### Bug Fixes
+
+* prod tag ([b6944a9](https://github.com/external-secrets-inc/web-ui/commit/b6944a9809dfc2d8fbdc7d7adbba77f292b5169e))
+
 ## [0.1.0](https://github.com/external-secrets-inc/web-ui/compare/0.0.0...v0.1.0) (2024-09-23)
 
 
