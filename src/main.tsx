@@ -11,6 +11,7 @@ import { Toaster } from "./components/ui/sonner";
 import './index.css';
 import authStore from "./services/auth/authStore";
 import { ThemeProvider } from "./components/ThemeProvider";
+import AxiosInterceptor from "./components/AxiosInterceptor";
 
 const router = createBrowserRouter([
   {
@@ -32,9 +33,11 @@ const router = createBrowserRouter([
   {
     path: '/:org',
     element: (
-      <RequireAuth fallbackPath="/login">
-        <App />
-      </RequireAuth>
+      <AxiosInterceptor>
+        <RequireAuth fallbackPath="/login">
+          <App />
+        </RequireAuth>
+      </AxiosInterceptor>
     ),
     children: [
       {
