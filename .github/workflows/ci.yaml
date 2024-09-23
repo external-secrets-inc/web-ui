@@ -82,5 +82,5 @@ jobs:
       with:
         repository: external-secrets-inc/k8s-flux
         event-type: update-version
-        client-payload: '{"image_tag": "${{ github.sha }}", "application": "${{ env.NAME }}"}'
+        client-payload: '{"image_tag": "${{ github.sha }}", "application": "${{ env.NAME }}", "environment":"dev"}'
         token: ${{ steps.app-token.outputs.token }}
