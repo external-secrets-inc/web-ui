@@ -1,8 +1,8 @@
 import React from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-// import ProfileSettings from './ProfileSettings';
-// import OrganizationSettings from './OrganizationSettings';
-// import AppearanceSettings from './AppearanceSettings';
+import ProfileSettings from './ProfileSettings';
+import OrganizationSettings from './OrganizationSettings';
+import AppearanceSettings from './AppearanceSettings';
 
 const Settings: React.FC = () => {
   return (
@@ -13,13 +13,13 @@ const Settings: React.FC = () => {
         <TabsTrigger value="appearance">Appearance</TabsTrigger>
       </TabsList>
       <TabsContent value="profile">
-        {/* <ProfileSettings /> */}
+        <ProfileSettings />
       </TabsContent>
       <TabsContent value="organization">
-        {/* <OrganizationSettings /> */}
+        <OrganizationSettings />
       </TabsContent>
       <TabsContent value="appearance">
-        {/* <AppearanceSettings /> */}
+        <AppearanceSettings />
       </TabsContent>
     </Tabs>
   );
