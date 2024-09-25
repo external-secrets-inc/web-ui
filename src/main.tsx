@@ -13,7 +13,7 @@ import authStore from "@/services/auth/authStore";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import AxiosInterceptor from "@/components/AxiosInterceptor";
 import AppPageHeader from "@/components/AppPageHeader";
-import Settings from "@/components/Settings/Settings";
+import Settings from "@/components/Settings";
 
 const router = createBrowserRouter([
   {
@@ -62,7 +62,7 @@ const router = createBrowserRouter([
               title="Settings"
               description="Manage your account settings and preferences"
             />
-            {/* <Settings /> */}
+            <Settings />
           </>
         )
       },
