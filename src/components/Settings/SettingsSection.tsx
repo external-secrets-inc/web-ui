@@ -16,6 +16,8 @@ interface SettingsSectionProps {
 }
 
 const SettingsSection: React.FC<SettingsSectionProps> = ({ title, description, form, onSubmit, subsections }) => {
+  const isDirty = form.formState.isDirty;
+
   return (
     <>
       <div className='border-b pb-6 mb-6'>
@@ -38,16 +40,19 @@ const SettingsSection: React.FC<SettingsSectionProps> = ({ title, description, f
         autoComplete="off"
         onSubmit={form.handleSubmit(onSubmit)}
       >
-        <Button
-          type="button"
-          variant={"secondary"}
-          onClick={() => form.reset()}
-        >
-          Cancel
-        </Button>
+        {isDirty && (
+          <Button
+            type="button"
+            variant={"secondary"}
+            onClick={() => form.reset()}
+          >
+            Cancel
+          </Button>
+        )}
         <Button
           type="submit"
           form={`${title.toLowerCase()}-form`}
+          disabled={!isDirty}
         >
           Save
         </Button>
