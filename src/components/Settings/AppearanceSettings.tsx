@@ -1,10 +1,11 @@
-import React from 'react';
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import SettingsSection from './SettingsSection';
+import { useTheme } from "@/components/ThemeProvider";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { zodResolver } from "@hookform/resolvers/zod";
+import React, { useEffect } from 'react';
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import SettingsSection from './SettingsSection';
 
 const formSchema = z.object({
   theme: z.enum(['light', 'dark', 'system']),
@@ -12,16 +13,30 @@ const formSchema = z.object({
 
 type FormSchemaType = z.infer<typeof formSchema>;
 
+const getStoredTheme = (): 'light' | 'dark' | 'system' => {
+  const storedTheme = localStorage.getItem('vite-ui-theme');
+  if (storedTheme === 'light' || storedTheme === 'dark' || storedTheme === 'system') {
+    return storedTheme;
+  }
+  return 'system';
+};
+
 const AppearanceSettings: React.FC = () => {
+  const { theme, setTheme } = useTheme();
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      theme: 'system', // TODO: Should grab theme from local storage
+      theme: getStoredTheme(),
     },
   });
 
+  useEffect(() => {
+    form.reset({ theme });
+  }, [theme, form]);
+
   async function handleSave(values: FormSchemaType) {
     console.log('Appearance Settings:', values);
+    setTheme(values.theme);
   }
 
   const subsections = [
