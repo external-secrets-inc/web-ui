@@ -12,6 +12,8 @@ data:
         server_name  localhost;
 
         location ^~ /docs {
+          rewrite ^/docs$ /docs/introduction break;
+          rewrite ^/docs/$ /docs/introduction break;
           rewrite ^/docs/?(.*)$ /docs/$1 break;
 
           proxy_pass https://externalsecrets.mintlify.app/;
@@ -22,8 +24,8 @@ data:
 
 
         # Rewrite Location headers in redirects
-        proxy_redirect https://externalsecrets.mintlify.app/ /docs/;
-        proxy_redirect / /docs/;
+        # proxy_redirect https://externalsecrets.mintlify.app/ /docs/;
+        # proxy_redirect / /docs/;
 
         # # Adjust cookie paths
         proxy_cookie_path / /docs/;
