@@ -12,24 +12,23 @@ data:
         server_name  localhost;
 
         location ^~ /docs {
-          # Remove the /docs prefix before proxying
-          rewrite ^/docs/?(.*)$ /$1 break;
+          rewrite ^/docs/?(.*)$ /docs/$1 break;
 
-          proxy_pass https://imjusttesting.mintlify.app/;
-          proxy_set_header Host imjusttesting.mintlify.app;
+          proxy_pass https://externalsecrets.mintlify.app/;
+          proxy_set_header Host externalsecrets.mintlify.app;
           proxy_set_header X-Real-IP $remote_addr;
           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
           proxy_ssl_server_name on;
 
 
         # Rewrite Location headers in redirects
-        proxy_redirect https://imjusttesting.mintlify.app/ /docs/;
+        proxy_redirect https://externalsecrets.mintlify.app/ /docs/;
         proxy_redirect / /docs/;
 
-        # Adjust cookie paths
+        # # Adjust cookie paths
         proxy_cookie_path / /docs/;
 
-        # Enable response content rewriting
+        # # Enable response content rewriting
         sub_filter_types text/html text/css application/javascript;
         sub_filter 'href="/' 'href="/docs/';
         sub_filter 'src="/' 'src="/docs/';
@@ -39,8 +38,8 @@ data:
 
         # Proxy /_next/ assets
         location /_next/ {
-            proxy_pass https://imjusttesting.mintlify.app/_next/;
-            proxy_set_header Host imjusttesting.mintlify.app;
+            proxy_pass https://externalsecrets.mintlify.app/_next/;
+            proxy_set_header Host externalsecrets.mintlify.app;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_ssl_server_name on;
