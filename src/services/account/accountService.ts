@@ -17,7 +17,6 @@ export async function getAccountData(options: Partial<ApiWrapperOptions & { manu
   }, { defaultError: 'Failed to fetch account details', ...options });
 }
 
-// Update account (organization) data
 export async function updateAccountData(accountData: { contact_email: string; contact_name: string; contact_phone: string }, options: Partial<ApiWrapperOptions> = {}) {
   const headers = await getAuthHeaders();
 
