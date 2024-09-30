@@ -55,7 +55,7 @@ const OrganizationSettings: React.FC = () => {
       toast.success('Organization details updated successfully');
       form.reset(values);
     } catch (error) {
-      toast.error('Failed to update account details');
+      toast.error('Failed to update Organization details');
     }
   }
 
