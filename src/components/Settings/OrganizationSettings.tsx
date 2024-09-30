@@ -52,7 +52,7 @@ const OrganizationSettings: React.FC = () => {
   
     try {
       await updateAccountData(dataToSend);
-      toast.success('Account details updated successfully');
+      toast.success('Organization details updated successfully');
       form.reset(values);
     } catch (error) {
       toast.error('Failed to update account details');
