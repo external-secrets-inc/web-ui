@@ -1,8 +1,8 @@
-import LogoEsiFullWhite from '@/assets/logo-esi-full-white.svg?react';
-import LogoEsiFull from '@/assets/logo-esi-full.svg?react';
-import LogoEsiWhite from '@/assets/logo-esi-white.svg?react';
-import LogoEsi from '@/assets/logo-esi.svg?react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import useSignOut from 'react-auth-kit/hooks/useSignOut';
+import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
+import { IUserData } from '@/types';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -12,12 +12,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import useOrgLink from '@/hooks/useOrgLink';
-import { IUserData } from '@/types';
-import React from 'react';
-import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
-import useSignOut from 'react-auth-kit/hooks/useSignOut';
-import { Link, useNavigate } from 'react-router-dom';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import LogoEsiFullWhite from '@/assets/logo-esi-full-white.svg?react';
+import LogoEsiWhite from '@/assets/logo-esi-white.svg?react';
+import LogoEsiFull from '@/assets/logo-esi-full.svg?react';
+import LogoEsi from '@/assets/logo-esi.svg?react';
 
 const AppTopBar: React.FC = () => {
   const authUser = useAuthUser<IUserData>();
@@ -26,7 +25,6 @@ const AppTopBar: React.FC = () => {
   const tenant = authUser?.tenant;
   const name = authUser?.name;
   const initials = getInitials(name);
-  const getOrgLink = useOrgLink();
 
   const handleSignOut = () => {
     signOut();
@@ -87,15 +85,8 @@ const AppTopBar: React.FC = () => {
                 </span>
               </span>
             </DropdownMenuLabel>
-
             <DropdownMenuSeparator className="md:hidden" />
-
-            <Link to={getOrgLink('/settings')}>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-            </Link>
-            <DropdownMenuItem onClick={handleSignOut}>
-              Sign Out
-            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleSignOut}>Sign Out</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

@@ -7,13 +7,11 @@ import AuthProvider from 'react-auth-kit';
 import * as ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import App from './App';
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "./components/ui/sonner";
 import './index.css';
-import authStore from "@/services/auth/authStore";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import AxiosInterceptor from "@/components/AxiosInterceptor";
-import AppPageHeader from "@/components/AppPageHeader";
-import Settings from "@/components/Settings";
+import authStore from "./services/auth/authStore";
+import { ThemeProvider } from "./components/ThemeProvider";
+import AxiosInterceptor from "./components/AxiosInterceptor";
 
 const router = createBrowserRouter([
   {
@@ -44,27 +42,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: 'agents',
-        element: (
-          <>
-            <AppPageHeader
-              title="Your Agents"
-              description="Monitor existing agents and/or generate new ones"
-            />
-            <ListAgents />
-          </>
-        )
-      },
-      {
-        path: 'settings',
-        element: (
-          <>
-            <AppPageHeader
-              title="Settings"
-              description="Manage your account settings and preferences"
-            />
-            <Settings />
-          </>
-        )
+        element: <ListAgents />,
       },
     ],
   },
