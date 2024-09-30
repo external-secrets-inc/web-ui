@@ -32,8 +32,8 @@ const OrganizationSettings: React.FC = () => {
       try {
         const accountData = await getAccountData();
         form.reset({
-          contact_email: accountData.contact_email,
-          contact_name: accountData.contact_name,
+          contact_email: accountData.contact_email || "",
+          contact_name: accountData.contact_name || "",
           contact_phone: accountData.contact_phone || "",
         });
       } catch (error) {
