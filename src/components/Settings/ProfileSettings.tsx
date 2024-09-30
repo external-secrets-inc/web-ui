@@ -45,7 +45,7 @@ const ProfileSettings: React.FC = () => {
             email: userData.email,
           });
         } catch (error) {
-          toast.error('Failed to load user data');
+          toast.error('Failed to load profile data');
         }
       }
     };
