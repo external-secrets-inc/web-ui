@@ -17,3 +17,16 @@ export interface IUserData {
   tenantId: string;
   userId: string;
 };
+
+export interface Feature {
+  name: string;
+  description: string;
+}
+
+export interface Subscription {
+  id: string;
+  name: string;
+  maxLimit: number;
+  expiryDate: string;
+  features: Feature[];  
+}

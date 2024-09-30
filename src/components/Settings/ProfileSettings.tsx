@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -11,7 +11,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { getUserData, updateUserData } from '@/services/users/usersService';
+import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
+import { toast } from "sonner";
 import SettingsSection from './SettingsSection';
+import { IUserData } from "@/types";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Cannot be empty" }),
@@ -21,17 +25,45 @@ const formSchema = z.object({
 type FormSchemaType = z.infer<typeof formSchema>;
 
 const ProfileSettings: React.FC = () => {
+  const authUser = useAuthUser<IUserData>();
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "", // TODO: Grab user's name from the API
-      email: "", // TODO: Grab user's email from the API
+      name: "",
+      email: "",
     },
   });
 
+  // Fetch user data when the component mounts
+  useEffect(() => {
+    const fetchData = async () => {
+      if (authUser?.userId) {
+        try {
+          const userData = await getUserData(authUser.userId);
+          form.reset({
+            name: userData.name,
+            email: userData.email,
+          });
+        } catch (error) {
+          toast.error('Failed to load user data');
+        }
+      }
+    };
+
+    fetchData();
+  }, [authUser?.userId]);
+
+  // Handle Save function
   async function handleSave(values: FormSchemaType) {
-    console.log('Name:', values.name);
-    console.log('Email:', values.email);
+    if (authUser?.userId) {
+      try {
+        await updateUserData(authUser.userId, values);
+        toast.success('Profile updated successfully');
+        form.reset(values);
+      } catch (error) {
+        toast.error('Failed to update profile');
+      }
+    }
   }
 
   const subsections = [

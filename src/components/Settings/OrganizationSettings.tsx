@@ -1,15 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import SettingsSection from './SettingsSection';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { getAccountData, updateAccountData } from '@/services/account/accountService';
+import { toast } from "sonner";
 
 const formSchema = z.object({
   contact_email: z.string().email({ message: "Invalid email address" }),
   contact_name: z.string().min(1, { message: "Cannot be empty" }),
-  contact_phone: z.string().min(10, { message: "Phone number must be at least 10 digits" }), // TODO: Find out how to apply mask
+  contact_phone: z.string().min(10, { message: "Phone number must be at least 10 digits" }),
 });
 
 type FormSchemaType = z.infer<typeof formSchema>;
@@ -18,15 +20,43 @@ const OrganizationSettings: React.FC = () => {
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      contact_email: "", // TODO: Grab user's email from the API
-      contact_name: "", // TODO: Grab user's name from the API
-      contact_phone: "", // TODO: Grab user's phone from the API
+      contact_email: "",
+      contact_name: "",
+      contact_phone: "",
     },
   });
 
+  // Fetch organization data when the component mounts
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const accountData = await getAccountData();
+        form.reset({
+          contact_email: accountData.contact_email,
+          contact_name: accountData.contact_name,
+          contact_phone: accountData.contact_phone || "",
+        });
+      } catch (error) {
+        toast.error('Failed to load organization data');
+      }
+    };
+
+    fetchData();
+  }, [form]);
+
   async function handleSave(values: FormSchemaType) {
-    // TODO: Handle form submission with API
-    console.log('Organization Settings:', values);
+    const dataToSend = {
+      ...values,
+      contact_phone: values.contact_phone || "", // Fallback to an empty string if undefined
+    };
+  
+    try {
+      await updateAccountData(dataToSend);
+      toast.success('Account details updated successfully');
+      form.reset(values);
+    } catch (error) {
+      toast.error('Failed to update account details');
+    }
   }
 
   const subsections = [
