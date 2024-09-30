@@ -47,7 +47,7 @@ const OrganizationSettings: React.FC = () => {
   async function handleSave(values: FormSchemaType) {
     const dataToSend = {
       ...values,
-      contact_phone: values.contact_phone || "", // Fallback to an empty string if undefined
+      contact_phone: values.contact_phone || "",
     };
   
     try {
