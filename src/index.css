@@ -93,6 +93,15 @@
   }
 }
 
+/* Custom .container behavior */
+.container {
+  @media (min-width: theme(screens.lg)) {
+    max-width: theme(container.screens.lg);
+    padding-inline: theme(container.padding.lg);
+  }
+  @apply supports-[width:stretch]:box-content supports-[width:stretch]:!w-[stretch]
+}
+
 /* Override default size for lucide icons */
 .lucide {
   @apply w-4 h-4;
