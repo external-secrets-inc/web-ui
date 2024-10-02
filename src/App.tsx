@@ -5,7 +5,7 @@ const App = () => {
   return (
     <div className="app-layout">
       <AppTopBar />
-      <main className="container mx-auto text-left flex flex-col py-14">
+      <main className="container mx-auto text-left flex flex-col py-6 md:py-11">
         <Outlet />
       </main>
     </div>
