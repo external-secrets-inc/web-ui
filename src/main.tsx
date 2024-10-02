@@ -14,15 +14,23 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import AxiosInterceptor from "@/components/AxiosInterceptor";
 import AppPageHeader from "@/components/AppPageHeader";
 import Settings from "@/components/Settings";
+import RequireActiveUser from "@/components/RequireActiveUser";
+import { Verify } from "@/components/Verify";
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: (
-      <RequireAuth fallbackPath="/signup">
+      <RequireActiveUser loginFallbackPath="/login" inactiveFallbackPath="/verify">
         <NavigateWithOrg to="/agents" replace />
-      </RequireAuth>
+      </RequireActiveUser>
     ),
+  },
+  {
+    path: "/verify",
+    element: <RequireAuth fallbackPath="/login">
+      <Verify />
+    </RequireAuth>
   },
   {
     path: '/signup',
@@ -36,9 +44,9 @@ const router = createBrowserRouter([
     path: '/:org',
     element: (
       <AxiosInterceptor>
-        <RequireAuth fallbackPath="/login">
-          <App />
-        </RequireAuth>
+          <RequireActiveUser loginFallbackPath="/login" inactiveFallbackPath="/verify">
+            <App />
+          </RequireActiveUser>
       </AxiosInterceptor>
     ),
     children: [
