@@ -94,6 +94,7 @@ function LoginForm() {
           email: finalData.email,
           organizationURL: finalData.organizationURL,
           name: userDetails.name,
+          isActive: userDetails.is_active,
           tenantId,
           tenant,
           userId,

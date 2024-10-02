@@ -16,6 +16,7 @@ export interface IUserData {
   tenant: string;
   tenantId: string;
   userId: string;
+  isActive: boolean;
 };
 
 export interface Feature {
