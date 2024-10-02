@@ -4,18 +4,23 @@ import ProfileSettings from './ProfileSettings';
 import OrganizationSettings from './OrganizationSettings';
 import AppearanceSettings from './AppearanceSettings';
 import SubscriptionSettings from './SubscriptionsSettings';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 
 const Settings: React.FC = () => {
   return (
+
     <Tabs defaultValue="profile">
-      <TabsList className='mb-6'>
-        <TabsTrigger value="profile">My Profile</TabsTrigger>
-        <TabsTrigger value="organization">Organization</TabsTrigger>
-        <TabsTrigger value="appearance">Appearance</TabsTrigger>
-        <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
-      </TabsList>
-      
+      <ScrollArea className="mb-3 pb-3">
+        <TabsList>
+          <TabsTrigger value="profile">My Profile</TabsTrigger>
+          <TabsTrigger value="organization">Organization</TabsTrigger>
+          <TabsTrigger value="appearance">Appearance</TabsTrigger>
+          <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
+        </TabsList>
+        <ScrollBar orientation='horizontal'/>
+      </ScrollArea>
+
       <TabsContent value="profile">
         <ProfileSettings />
       </TabsContent>
@@ -26,7 +31,7 @@ const Settings: React.FC = () => {
         <AppearanceSettings />
       </TabsContent>
       <TabsContent value="subscriptions">
-        <SubscriptionSettings />  
+        <SubscriptionSettings />
       </TabsContent>
     </Tabs>
   );
