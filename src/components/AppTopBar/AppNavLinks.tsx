@@ -1,8 +1,8 @@
+import { SheetClose } from '@/components/ui/sheet';
+import useOrgLink from '@/hooks/useOrgLink';
+import { LucideExternalLink } from 'lucide-react';
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LucideExternalLink } from 'lucide-react';
-import useOrgLink from '@/hooks/useOrgLink';
-import { SheetClose } from '@/components/ui/sheet';
 
 interface NavLinksProps {
   closeSheetOnClick?: boolean;
