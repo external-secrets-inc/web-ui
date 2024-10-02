@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { LucideExternalLink } from 'lucide-react';
 import useOrgLink from '@/hooks/useOrgLink';
 import { SheetClose } from '@/components/ui/sheet';
@@ -19,19 +19,19 @@ const NavLinks: React.FC<NavLinksProps> = ({ closeSheetOnClick }) => {
   return (
     <>
       <LinkWrapper>
-        <Link
+        <NavLink
           to={getOrgLink('/agents')}
-          className="text-foreground transition-colors hover:text-foreground"
+          className="transition-colors text-muted-foreground hover:text-foreground [&:is(.active)]:text-foreground"
         >
           Agents
-        </Link>
+        </NavLink>
       </LinkWrapper>
       <LinkWrapper>
         <a
           href={docsUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center text-foreground transition-colors hover:text-foreground md:ml-auto"
+          className="transition-colors text-muted-foreground hover:text-foreground md:ml-auto flex items-center"
         >
           Docs
           <LucideExternalLink className='ml-2' />
