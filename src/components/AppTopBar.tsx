@@ -49,7 +49,7 @@ const AppTopBar: React.FC = () => {
           <Sheet>
             <SheetTrigger asChild>
               <Button
-                variant="outline"
+                variant="ghost"
                 size="icon"
                 className="md:hidden"
                 aria-label="Open Menu"
