@@ -10,7 +10,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
+  SheetTrigger
+} from '@/components/ui/sheet';
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import useOrgLink from '@/hooks/useOrgLink';
 import { IUserData } from '@/types';
 import { LucideChevronDown, LucideMenu } from 'lucide-react';
@@ -42,7 +49,7 @@ const AppTopBar: React.FC = () => {
           <Sheet>
             <SheetTrigger asChild>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="icon"
                 className="md:hidden"
                 aria-label="Open Menu"
@@ -52,6 +59,10 @@ const AppTopBar: React.FC = () => {
             </SheetTrigger>
 
             <SheetContent side="left">
+              <VisuallyHidden.Root>
+                <SheetTitle>Navigation Menu</SheetTitle>
+                <SheetDescription />
+              </VisuallyHidden.Root>
               <div className="flex flex-col gap-6">
                 <AppNavLinks closeSheetOnClick/>
 
