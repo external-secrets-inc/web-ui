@@ -8,6 +8,7 @@ env:
   NAME: web-ui
   TAG_NAME: ${{ github.event.release.tag_name }}
   TENANT_MANAGER_URL: https://api.prod.externalsecrets.com
+  DOCS_URL: https://app.externalsecrets.com
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -60,6 +61,7 @@ jobs:
             --tag ${{ vars.INTERNAL_REGISTRY }}/$NAME:${{ env.TAG_NAME }} \
             --tag ${{ vars.INTERNAL_REGISTRY}}/$NAME:latest \
             --build-arg TENANT_MANAGER_URL=${{ env.TENANT_MANAGER_URL}} \
+            --build-arg DOCS_URL=${{ env.DOCS_URL}} \
             --push .
       env:
         GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
@@ -70,7 +72,7 @@ jobs:
 
     - name: Build and push helm chart
       run: make helm.push
- 
+
     - name: login to github app
       uses: actions/create-github-app-token@v1
       id: app-token
