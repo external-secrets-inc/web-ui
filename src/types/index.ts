@@ -28,5 +28,15 @@ export interface Subscription {
   name: string;
   maxLimit: number;
   expiryDate: string;
-  features: Feature[];  
+  features: Feature[];
 }
+
+// Segment Analytics
+declare global {
+  interface Window {
+    analytics: SegmentAnalytics.AnalyticsJS;
+  }
+}
+
+// Ensure this file is treated as a module for TS and actually make the global declaration work
+export {};
