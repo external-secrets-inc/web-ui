@@ -80,6 +80,9 @@ const Main = () => {
     if (import.meta.env.PROD) {
       load(); // Load Segment analytics on app load
 
+      // Track the initial page load (for refreshes and direct url access)
+      page();
+
       const unlisten = router.subscribe(() => {
         page(); // Subscribe to router changes and call analytics.page() on route change
       });
@@ -90,7 +93,7 @@ const Main = () => {
     }
   }, []);
 
-  return <RouterProvider router={router} />
+  return <RouterProvider router={router} />;
 };
 
 const rootElement = document.getElementById('root');
