@@ -10,6 +10,9 @@ import useSignIn from "react-auth-kit/hooks/useSignIn";
 import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { LucideLoader } from "lucide-react";
+import useSignOut from "react-auth-kit/hooks/useSignOut";
+import { trackSignedOut } from "@/analytics";
+import { Button } from "@/components/ui/button";
 
 
 const ONE_SECOND_IN_MILLISECONDS = 1000
@@ -20,12 +23,18 @@ export function Verify() {
   const authHeader = useAuthHeader();
   const authKitSignIn = useSignIn();
   const navigate = useNavigate();
+  const signOut = useSignOut();
 
   const [resendCountdown, setResendCountdown] = useState<number>(ONE_MINUTE_IN_SECONDS);
   const [code, setCode] = useState<string>("")
   const [isLoading, setIsLoading] = useState(false)
 
-  
+  const handleSignOut = () => {
+    signOut();
+    trackSignedOut(true);
+    navigate('/login');
+  };
+
   const calculateCountDown = (lastCodeRequestedAt: Date) => {
     const now = new Date();
 
@@ -117,7 +126,7 @@ export function Verify() {
     <div className="flex flex-col items-center justify-center h-screen text-center">
       <div className="max-w-md mx-auto text-center px-4 sm:px-8 py-10 rounded-xl shadow">
           <header className="mb-8">
-              <h1 className="text-2xl font-bold mb-1">Almost there!</h1>
+              <h1 className="text-2xl font-bold mb-1">Welcome, {authUser!.name}. <br/> You're almost there!</h1>
               <p className="text-[15px] text-slate-500">Please input the 6-digit code sent to your email to finalize your account setup.</p>
           </header>
           <form id="otp-form">
@@ -144,8 +153,12 @@ export function Verify() {
               <p className="text-sm text-slate-500">You can get a new one in <span className="font-medium text-primary">{secondsToMMSS(resendCountdown)}</span></p>
             )}
             {resendCountdown === 0 && (
-              <a onClick={handleResend} className="text-sm font-medium text-primary cursor-pointer">Resend</a>
+              <Button variant="link" onClick={handleResend} className="text-sm font-medium text-primary cursor-pointer">Resend</Button>
             )}
+          </div>
+          <div className="mt-6">
+            <p className="text-sm text-muted-foreground/50">Not you?</p>
+            <Button variant="link" onClick={handleSignOut} className="text-sm font-medium text-primary cursor-pointer">Sign in with a different account</Button>
           </div>
       </div>
     </div>
