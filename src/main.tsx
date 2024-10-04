@@ -1,19 +1,20 @@
 import { ListAgents } from "@/components/agents/ListAgents";
+import AppPageHeader from "@/components/AppPageHeader";
+import AxiosInterceptor from "@/components/AxiosInterceptor";
 import NavigateWithOrg from "@/components/NavigateWithOrg";
 import { NotFound } from "@/components/NotFound";
+import ResetPassword from "@/components/ResetPassword";
+import Settings from "@/components/Settings";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { Toaster } from "@/components/ui/sonner";
+import authStore from "@/services/auth/authStore";
 import RequireAuth from '@auth-kit/react-router/RequireAuth';
 import * as React from "react";
 import AuthProvider from 'react-auth-kit';
 import * as ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import App from './App';
-import { Toaster } from "@/components/ui/sonner";
 import './index.css';
-import authStore from "@/services/auth/authStore";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import AxiosInterceptor from "@/components/AxiosInterceptor";
-import AppPageHeader from "@/components/AppPageHeader";
-import Settings from "@/components/Settings";
 
 const router = createBrowserRouter([
   {
@@ -31,6 +32,14 @@ const router = createBrowserRouter([
   {
     path: '/login',
     element: <NavigateWithOrg to="/agents" fallbackToLogin replace />,
+  },
+  {
+    path: '/forgot-password',
+    element: <ResetPassword />,
+  },
+  {
+    path: '/reset-password',
+    element: <ResetPassword />,
   },
   {
     path: '/:org',

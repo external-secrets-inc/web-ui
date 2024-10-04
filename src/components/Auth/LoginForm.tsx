@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { login } from "@/services/auth/authService";
+import { getUserData } from '@/services/users/usersService';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { isAxiosError } from "axios";
 import { LucideLoader } from "lucide-react";
@@ -17,7 +18,6 @@ import useSignIn from "react-auth-kit/hooks/useSignIn";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { getUserData } from '@/services/users/usersService';
 
 const LoginStep1Schema = z.object({
   organizationURL: z
@@ -220,7 +220,7 @@ function LoginStep2Form({ form, onSubmit, onBack, loading }: LoginStep2FormProps
             <FormItem>
               <div className="inline-flex w-full justify-between items-baseline">
                 <FormLabel>Password</FormLabel>
-                <Link to="#" className="text-sm underline leading-none">
+                <Link to="/forgot-password" className="text-sm underline leading-none">
                   Forgot your password?
                 </Link>
               </div>
