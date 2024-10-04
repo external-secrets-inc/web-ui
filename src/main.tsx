@@ -3,7 +3,7 @@ import AppPageHeader from "@/components/AppPageHeader";
 import AxiosInterceptor from "@/components/AxiosInterceptor";
 import NavigateWithOrg from "@/components/NavigateWithOrg";
 import { NotFound } from "@/components/NotFound";
-import ResetPasswordFlow from "@/components/ResetPassword";
+import ResetPasswordFlow from "@/components/Auth/ResetPasswordFlow";
 import Settings from "@/components/Settings";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";

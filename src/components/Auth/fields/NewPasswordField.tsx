@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { FormControl, FormField, FormItem, FormLabel } from "../ui/form";
-import { Input } from "../ui/input";
+import { FormControl, FormField, FormItem, FormLabel } from "../../ui/form";
+import { Input } from "../../ui/input";
 import { CheckSquareIcon, SquareIcon } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 

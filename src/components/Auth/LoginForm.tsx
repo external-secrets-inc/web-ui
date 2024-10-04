@@ -18,12 +18,10 @@ import useSignIn from "react-auth-kit/hooks/useSignIn";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
+import zValidations from "./fields/zValidations";
 
 const LoginStep1Schema = z.object({
-  organizationURL: z
-  .string()
-  .min(1, "Cannot be empty.")
-  .regex(/^[a-zA-Z0-9-]+$/, "Invalid URL. Should contain only letters, numbers, and dashes."),
+  organizationURL: zValidations.organizationURL
 });
 
 const LoginStep2Schema = z.object({

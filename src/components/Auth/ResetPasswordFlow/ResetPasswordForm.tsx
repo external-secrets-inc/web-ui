@@ -16,32 +16,20 @@ import { useForm } from "react-hook-form";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
-import NewPasswordField from "../Auth/NewPasswordField";
+import NewPasswordField from "../fields/NewPasswordField";
+import zValidations from "../fields/zValidations";
 
 const ResetPasswordSchema = z.object({
-  tenant: z
-    .string()
-    .min(1, "Cannot be empty.")
-    .regex(/^[a-zA-Z0-9-]+$/, "Organization URL may only contain letters, numbers, and dashes."),
-  email: z.string().email("Invalid email address."),
-  password: z
-    .string()
-    .min(12, "Password must be at least 12 characters.")
-    .regex(/[A-Z]/, "Password must contain at least one uppercase letter.")
-    .regex(/[0-9]/, "Password must contain at least one number.")
-    .regex(
-      /[^a-zA-Z0-9]/,
-      "Password must contain at least one special character."
-    ),
+  tenant: zValidations.organizationURL,
+  email: zValidations.email,
   token: z.string(),
+  password: zValidations.newPassword,
 });
 
 type ResetPasswordData = z.infer<typeof ResetPasswordSchema>;
 
-
 function ResetPasswordForm() {
-  let [searchParams, setSearchParams] = useSearchParams()
-  console.log(searchParams)
+  let [searchParams, _] = useSearchParams()
   const [forgotPasswordData] = useState<ResetPasswordData>({ tenant: "", email: "", token: searchParams.get("token"), password: "" });
   const form = useForm<ResetPasswordData>({
     resolver: zodResolver(ResetPasswordSchema),
