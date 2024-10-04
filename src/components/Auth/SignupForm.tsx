@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { login, signup } from "@/services/auth/authService";
+import { getUserData } from "@/services/users/usersService";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CheckSquareIcon, LucideLoader, SquareIcon, } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -105,6 +106,8 @@ function SignupForm() {
             { suppressToast: true }
           );
 
+          // TODO: Create a UserProvider to share user data across the application and eliminate duplicated code in LoginForm, SignUpForm and Verify components
+          const userDetails = await getUserData(userId!, { manualToken: token });
           const isSignedIn = authKitSignIn({
             auth: {
               token,
@@ -112,8 +115,9 @@ function SignupForm() {
             },
             userState: {
               email: finalData.email,
-              organizationName: finalData.organizationName,
-              name: finalData.name,
+              organizationURL: finalData.organizationURL,
+              name: userDetails.name,
+              isActive: userDetails.is_active,
               tenantId,
               tenant,
               userId,
@@ -145,7 +149,7 @@ function SignupForm() {
       setFormError(
         "Signup succeeded, but automatic login failed. Please try to log in manually."
       );
-    } catch (signupError) {
+    } catch {
       setLoading(false);
       setFormError("Signup failed. Please try again.");
     }
@@ -240,7 +244,7 @@ function SignupStep1Form({ form, onSubmit }: SignupStep1FormProps) {
           control={form.control}
           name="organizationURL"
           render={({ field }) => {
-            const { ref, value, onChange, ...restField } = field;
+            const { onChange, ...restField } = field;
             return (
               <FormItem>
                 <FormLabel>Create an Organization URL</FormLabel>

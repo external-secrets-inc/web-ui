@@ -84,6 +84,7 @@ function LoginForm() {
         finalData.organizationURL!,
       );
 
+      // TODO: Create a UserProvider to share user data across the application and eliminate duplicated code in LoginForm, SignUpForm and Verify components
       const userDetails = await getUserData(userId!, { manualToken: token });
       const isSignedIn = authKitSignIn({
         auth: {

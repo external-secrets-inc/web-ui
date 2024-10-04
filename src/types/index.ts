@@ -15,8 +15,10 @@ export interface IUserData {
   name: string;
   tenant: string;
   tenantId: string;
+  email: string;
   userId: string;
   isActive: boolean;
+  organizationURL: string;
 };
 
 export interface Feature {
