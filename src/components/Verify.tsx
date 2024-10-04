@@ -3,7 +3,6 @@ import { sendVerificationCode, validateVerificationCode } from "@/services/email
 import { IUserData } from "@/types";
 import { useEffect, useMemo, useState } from "react";
 import useAuthUser from "react-auth-kit/hooks/useAuthUser";
-import AppTopBar from "./AppTopBar";
 import { secondsToMMSS } from "@/utils/datetimeFormating";
 import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader'
 import { getUserData } from "@/services/users/usersService";
@@ -113,8 +112,6 @@ export function Verify() {
   if (authUser && authUser.isActive) return <Navigate to={"/"} replace={true} />
 
   return (
-    <>
-    <AppTopBar />
     <div className="flex flex-col items-center justify-center h-screen text-center">
       <div className="max-w-md mx-auto text-center px-4 sm:px-8 py-10 rounded-xl shadow">
           <header className="mb-8">
@@ -150,6 +147,5 @@ export function Verify() {
           </div>
       </div>
     </div>
-    </>
   );
 }
