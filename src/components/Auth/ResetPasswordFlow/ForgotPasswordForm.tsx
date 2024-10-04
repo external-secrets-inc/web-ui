@@ -28,6 +28,8 @@ type ForgotPasswordData = z.infer<typeof ForgotPasswordSchema>;
 function ForgotPasswordForm() {
   const [forgotPasswordData] = useState<ForgotPasswordData>({ tenant: "", email: "" });
   const [loading, setLoading] = useState(false)
+  const [formError, setFormError] = useState("")
+
   const navigate = useNavigate()
 
   const form = useForm<ForgotPasswordData>({
@@ -43,12 +45,15 @@ function ForgotPasswordForm() {
     try {
       await forgotPassword(values.email, values.tenant)
       toast.success('', { description: `Check the instructions on your email to reset your password` });
+      navigate('/')
+    } catch (e) {
+      setFormError("Failed to start the reset password flow")
+
     } finally {
       setLoading(false)
     }
   }
 
-  const formError = null;
   const onBack = () => { navigate('/') };
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -108,7 +113,7 @@ function ForgotPasswordForm() {
 
           <div className="flex justify-between">
             <Button type="button" variant="outline" onClick={onBack}>
-              Back
+              Cancel
             </Button>
             <Button
               type="submit"

@@ -37,6 +37,7 @@ function ResetPasswordForm() {
   });
 
   const [loading, setLoading] = useState(false)
+  const [formError, setFormError] = useState("")
   const navigate = useNavigate()
   const [submittedWithErrors, setSubmittedWithErrors] = useState(false);
 
@@ -47,19 +48,20 @@ function ResetPasswordForm() {
 
   const handleError = () => {
     setSubmittedWithErrors(true);
+    setFormError("Failed to start the reset password flow")
   };
 
   async function onSubmit(values: ResetPasswordData) {
     setLoading(true)
     try {
       await resetPassword(values.email, values.tenant, values.password, values.token)
-      toast.success('', { description: `Check the instructions on your email to reset your password` });
+      toast.success('', { description: `Password reset successfuly` });
+      navigate('/login')
     } finally {
       setLoading(false)
     }
   }
 
-  const formError = null;
   const onBack = () => { navigate('/') };
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -121,7 +123,7 @@ function ResetPasswordForm() {
 
           <div className="flex justify-between">
             <Button type="button" variant="outline" onClick={onBack}>
-              Back
+              Cancel
             </Button>
             <Button
               type="submit"
