@@ -69,6 +69,11 @@ function LoginForm() {
   const handleLoginStep1Submit = (data: LoginStep1Data) => {
     setLoginData((prev) => ({ ...prev, ...data }));
     setStep(2);
+
+    analytics.track('Login Step Completed', {
+      step: 1,
+      organizationURL: data.organizationURL,
+    });
   };
 
   const handleLoginStep2Submit = async (data: LoginStep2Data) => {
@@ -84,7 +89,18 @@ function LoginForm() {
         authKitSignIn,
       });
 
+      analytics.track('Login Step Completed', {
+        step: 2,
+        email: finalData.email,
+        tenant: finalData.organizationURL,
+      });
+
       if (success) {
+        analytics.track('Signed in', {
+          email: finalData.email,
+          tenant: finalData.organizationURL,
+        });
+
         setLoading(false);
         return navigate(`/${finalData.organizationURL}/agents`);
       }
@@ -108,6 +124,7 @@ function LoginForm() {
 
   const handleBack = () => {
     setStep(1);
+    analytics.track('Login Step Moved Back');
   };
 
   return (

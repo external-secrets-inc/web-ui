@@ -82,6 +82,13 @@ function SignupForm() {
   const handleSignupStep1Submit = (data: SignupStep1Data) => {
     setSignupData((prev) => ({ ...prev, ...data }));
     setStep(2);
+
+    analytics.track('Signup Step Completed', {
+      step: 1,
+      organizationName: data.organizationName,
+      name: data.name,
+      organizationURL: data.organizationURL,
+    });
   };
 
   const handleSignupStep2Submit = async (data: SignupStep2Data) => {
@@ -90,12 +97,21 @@ function SignupForm() {
     const retryDelay = 3000;
 
     try {
+      setLoading(true);
+      
       await signup(
         finalData.email!,
         finalData.name!,
         finalData.password!,
         finalData.organizationURL!,
       );
+
+      analytics.track('Signup Step Completed', {
+        step: 2,
+        email: finalData.email,
+        name: finalData.name,
+        tenant: finalData.organizationURL,
+      });
 
       const tryLogin = async (attempt: number): Promise<boolean> => {
         const success = await loginAndIdentifyUser({
@@ -112,10 +128,13 @@ function SignupForm() {
         return false;
       };
 
-      setLoading(true);
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         const success = await tryLogin(attempt);
         if (success) {
+          analytics.track('Signed in', {
+            email: finalData.email,
+            tenant: finalData.organizationURL,
+          });
           setLoading(false);
           return navigate(`/${finalData.organizationURL}/agents`);
         }
@@ -136,6 +155,7 @@ function SignupForm() {
 
   const handleBack = () => {
     setStep(1);
+    analytics.track('Signup Step Moved Back');
   };
 
   return (
