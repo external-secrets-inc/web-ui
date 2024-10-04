@@ -84,6 +84,8 @@ function LoginForm() {
         finalData.organizationURL!,
       );
 
+      // TODO: Create a UserProvider to share user data across the application and eliminate duplicated code in LoginForm, SignUpForm and Verify components
+      // https://github.com/external-secrets-inc/web-ui/issues/60
       const userDetails = await getUserData(userId!, { manualToken: token });
       const isSignedIn = authKitSignIn({
         auth: {
@@ -94,6 +96,7 @@ function LoginForm() {
           email: finalData.email,
           organizationURL: finalData.organizationURL,
           name: userDetails.name,
+          isActive: userDetails.is_active,
           tenantId,
           tenant,
           userId,
