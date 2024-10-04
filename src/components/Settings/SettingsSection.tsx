@@ -18,6 +18,15 @@ interface SettingsSectionProps {
 const SettingsSection: React.FC<SettingsSectionProps> = ({ title, description, form, onSubmit, subsections }) => {
   const isDirty = form.formState.isDirty;
 
+  const handleSettingsSectionFormSubmit = (values: any) => {
+    analytics.track('Settings Section Modified', {
+      section: title,
+      values,
+    });
+
+    onSubmit(values);
+  };
+
   return (
     <>
       <div className='border-b pb-6 mb-6'>
@@ -38,7 +47,7 @@ const SettingsSection: React.FC<SettingsSectionProps> = ({ title, description, f
         id={`${title.toLowerCase()}-form`}
         className="flex gap-2 justify-end mt-6 py-4 border-t sticky bottom-0 bg-background"
         autoComplete="off"
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={form.handleSubmit(handleSettingsSectionFormSubmit)}
       >
         {isDirty && (
           <Button
