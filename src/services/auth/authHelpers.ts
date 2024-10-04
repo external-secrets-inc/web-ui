@@ -52,14 +52,12 @@ export const loginAndIdentifyUser = async ({
   try {
     const { token, tenantId, tenant, userId } = await login(email, password, tenantSlug, { suppressToast: true });
 
-    let userDetails;
-    if (!name) {
-      userDetails = await getUserData(userId!, { manualToken: token });
-    }
+    const userDetails = await getUserData(userId!, { manualToken: token });
 
     const userState = {
       email,
-      name: name || userDetails?.name,
+      name: name || userDetails.name,
+      isActive: userDetails.is_active,
       tenantId,
       tenant,
       userId,
@@ -74,7 +72,7 @@ export const loginAndIdentifyUser = async ({
     });
 
     if (isSignedIn) {
-      const { userId, ...segmentUserState } = userState;
+      const { userId, email, name, ...segmentUserState } = userState; // Remove sensitive data and pass the rest to Segment
       try {
         analytics.identify(userId as string, segmentUserState);
       } catch (error) {
