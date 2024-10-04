@@ -3,7 +3,7 @@ import AppPageHeader from "@/components/AppPageHeader";
 import AxiosInterceptor from "@/components/AxiosInterceptor";
 import NavigateWithOrg from "@/components/NavigateWithOrg";
 import { NotFound } from "@/components/NotFound";
-import ForgotPassword from "@/components/ResetPassword";
+import ResetPasswordFlow from "@/components/ResetPassword";
 import Settings from "@/components/Settings";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
@@ -35,11 +35,11 @@ const router = createBrowserRouter([
   },
   {
     path: '/forgot-password',
-    element: <ForgotPassword />,
+    element: <ResetPasswordFlow variant="forgot"/>,
   },
   {
     path: '/reset-password',
-    element: <ForgotPassword />,
+    element: <ResetPasswordFlow variant="reset"/>,
   },
   {
     path: '/:org',

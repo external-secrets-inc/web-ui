@@ -1,8 +1,12 @@
 import ForgotPasswordForm from "./ForgotPasswordForm.tsx";
+import ResetPasswordForm from "./ResetPasswordForm.tsx";
+
+interface ResetPasswordFlowProps {
+  variant: 'forgot' | 'reset';
+}
 
 
-function ForgotPassword() {
-  const variant = 'forgot'
+function ResetPasswordFlow({ variant }: ResetPasswordFlowProps) {
   return (
 <>
         <div className="p-2 lg:p-20 min-h-dvh flex flex-col bg-gradient-to-tl from-violet-400/60 to-violet-950">
@@ -15,7 +19,7 @@ function ForgotPassword() {
                 {variant === 'forgot' ? 'Here you can initiate the process to set a new password' : "Set a new password"}
               </p>
             </div>
-      <ForgotPasswordForm />
+            {variant === 'forgot' ?  <ForgotPasswordForm /> :  <ResetPasswordForm />}
       </div>
     </div>
     </div>
@@ -25,4 +29,4 @@ function ForgotPassword() {
   );
 }
 
-export default ForgotPassword;
+export default ResetPasswordFlow;

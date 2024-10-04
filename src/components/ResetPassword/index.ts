@@ -1,2 +1,2 @@
-export * from './ForgotPassword.tsx';
-export { default } from './ForgotPassword.tsx';
+export * from './ResetPasswordFlow.tsx';
+export { default } from './ResetPasswordFlow.tsx';
