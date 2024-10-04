@@ -3,9 +3,11 @@ import AppPageHeader from "@/components/AppPageHeader";
 import AxiosInterceptor from "@/components/AxiosInterceptor";
 import NavigateWithOrg from "@/components/NavigateWithOrg";
 import { NotFound } from "@/components/NotFound";
+import RequireActiveUser from "@/components/RequireActiveUser";
 import Settings from "@/components/Settings";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
+import { Verify } from "@/components/Verify";
 import authStore from "@/services/auth/authStore";
 import RequireAuth from '@auth-kit/react-router/RequireAuth';
 import * as React from "react";
@@ -20,10 +22,16 @@ const router = createBrowserRouter([
   {
     path: '/',
     element: (
-      <RequireAuth fallbackPath="/signup">
+      <RequireActiveUser loginFallbackPath="/login" inactiveFallbackPath="/verify">
         <NavigateWithOrg to="/agents" replace />
-      </RequireAuth>
+      </RequireActiveUser>
     ),
+  },
+  {
+    path: "/verify",
+    element: <RequireAuth fallbackPath="/login">
+      <Verify />
+    </RequireAuth>
   },
   {
     path: '/signup',
@@ -37,9 +45,9 @@ const router = createBrowserRouter([
     path: '/:org',
     element: (
       <AxiosInterceptor>
-        <RequireAuth fallbackPath="/login">
+        <RequireActiveUser loginFallbackPath="/login" inactiveFallbackPath="/verify">
           <App />
-        </RequireAuth>
+        </RequireActiveUser>
       </AxiosInterceptor>
     ),
     children: [

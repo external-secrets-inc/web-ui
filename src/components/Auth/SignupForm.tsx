@@ -134,7 +134,7 @@ function SignupForm() {
       setFormError(
         "Signup succeeded, but automatic login failed. Please try to log in manually."
       );
-    } catch (signupError) {
+    } catch {
       setLoading(false);
       setFormError("Signup failed. Please try again.");
     }
@@ -230,7 +230,7 @@ function SignupStep1Form({ form, onSubmit }: SignupStep1FormProps) {
           control={form.control}
           name="organizationURL"
           render={({ field }) => {
-            const { ref, value, onChange, ...restField } = field;
+            const { onChange, ...restField } = field;
             return (
               <FormItem>
                 <FormLabel>Create an Organization URL</FormLabel>
