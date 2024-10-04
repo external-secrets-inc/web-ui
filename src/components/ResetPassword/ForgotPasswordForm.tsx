@@ -14,13 +14,15 @@ import { LucideLoader } from "lucide-react";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { z } from "zod";
 
 const ForgotPasswordSchema = z.object({
   tenant: z
   .string()
   .min(1, "Cannot be empty.")
-  .regex(/^[a-zA-Z0-9-]+$/, "Invalid URL. Should contain only letters, numbers, and dashes."),
+  // .regex(/^[a-zA-Z0-9-]+$/, "Invalid URL. Should contain only letters, numbers, and dashes."),
+  ,
   email: z.string().email("Invalid email address."),
 });
 
@@ -28,7 +30,8 @@ type ForgotPasswordData = z.infer<typeof ForgotPasswordSchema>;
 
 
 function ForgotPasswordForm() {
-  const [forgotPasswordData, _] = useState<ForgotPasswordData>({tenant:"", email:""});
+  const [forgotPasswordData] = useState<ForgotPasswordData>({tenant:"", email:""});
+  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
   const form = useForm<ForgotPasswordData>({
@@ -40,18 +43,19 @@ function ForgotPasswordForm() {
   });
 
   async function onSubmit(values: ForgotPasswordData) {
-    console.log('Appearance Settings:', values);
-    forgotPassword(values.email, values.tenant)
+    setLoading(true)
+    await forgotPassword(values.email, values.tenant)
+    toast.success('', {description: `Check the instructions on your email to reset your password`} );
+    setLoading(false)
   }
 
-    const loading = false;
     const formError = null;
     const onBack = () => {navigate('/')};
     const inputRef = useRef<HTMLInputElement>(null);
 
   return (
     <>
-<Form {...form} className="flex items-center justify-center p-10 lg:p-14 flex-1">
+<Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
         <FormField
           control={form.control}
