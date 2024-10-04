@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { UseFormReturn } from "react-hook-form";
+import { UseFormReturn, FormProvider } from "react-hook-form";
 
 interface Subsection {
   title: string;
@@ -19,6 +19,7 @@ const SettingsSection: React.FC<SettingsSectionProps> = ({ title, description, f
   const isDirty = form.formState.isDirty;
 
   const handleSettingsSectionFormSubmit = (values: any) => {
+    console.log('Tracking settings modification:', { section: title, values }); // Debugging log
     analytics.track('Settings Section Modified', {
       section: title,
       values,
@@ -28,7 +29,7 @@ const SettingsSection: React.FC<SettingsSectionProps> = ({ title, description, f
   };
 
   return (
-    <>
+    <FormProvider {...form}>
       <div className='border-b pb-6 mb-6'>
         <h2 className='text-sm font-semibold'>{title}</h2>
         <h3 className='text-sm text-muted-foreground'>{description}</h3>
@@ -66,7 +67,7 @@ const SettingsSection: React.FC<SettingsSectionProps> = ({ title, description, f
           Save
         </Button>
       </form>
-    </>
+    </FormProvider>
   );
 };
 
