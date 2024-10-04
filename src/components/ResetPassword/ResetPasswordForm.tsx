@@ -22,8 +22,7 @@ const ResetPasswordSchema = z.object({
   tenant: z
     .string()
     .min(1, "Cannot be empty.")
-    // .regex(/^[a-zA-Z0-9-]+$/, "Organization URL may only contain letters, numbers, and dashes."),
-    ,
+    .regex(/^[a-zA-Z0-9-]+$/, "Organization URL may only contain letters, numbers, and dashes."),
   email: z.string().email("Invalid email address."),
   password: z
     .string()
@@ -130,7 +129,7 @@ function ResetPasswordForm() {
             )}
           />
 
-          <NewPasswordField form={form} />
+          <NewPasswordField form={form} submittedWithErrors={submittedWithErrors}/>
 
           <div className="flex justify-between">
             <Button type="button" variant="outline" onClick={onBack}>
