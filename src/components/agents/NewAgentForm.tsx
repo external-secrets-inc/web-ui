@@ -60,8 +60,15 @@ export function NewAgentForm({ onSuccess, onCancel }: NewAgentFormProps) {
   }, [onCancel])
 
   async function handleCreateAgent(values: FormSchemaType) {
-    await createAgent(values.name)
-    onSuccess()
+    try {
+      await createAgent(values.name);
+      analytics.track("Agent Created", {
+        name: values.name,
+      });
+      onSuccess();
+    } catch (error) {
+      console.error("Failed to create agent:", error);
+    }
   }
 
   return (
