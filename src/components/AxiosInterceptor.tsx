@@ -20,6 +20,7 @@ const AxiosInterceptor: React.FC<AxiosInterceptorProps> = ({ children }) => {
     const errInterceptor = (error: any) => {
       if (error?.response?.status === 401) {
         signOut();
+        analytics.track('Signed Out', { mannually: false });
         navigate('/login');
       }
       return Promise.reject(error);

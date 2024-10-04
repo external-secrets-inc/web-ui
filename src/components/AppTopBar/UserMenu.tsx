@@ -20,6 +20,7 @@ const UserMenu: React.FC = () => {
 
   const handleSignOut = () => {
     signOut();
+    analytics.track('Signed Out', { mannually: true });
     navigate('/login');
   };
 
