@@ -1,7 +1,120 @@
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/components/ui/input-otp";
+import { sendVerificationCode, validateVerificationCode } from "@/services/email/emailService";
+import { IUserData } from "@/types";
+import { useEffect, useMemo, useState } from "react";
+import useAuthUser from "react-auth-kit/hooks/useAuthUser";
+import AppTopBar from "./AppTopBar";
+import { secondsToMMSS } from "@/utils/datetimeFormating";
+import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader'
+import { getUserData } from "@/services/users/usersService";
+import useSignIn from "react-auth-kit/hooks/useSignIn";
+import { Navigate, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { LucideLoader } from "lucide-react";
+
+
+const ONE_SECOND_IN_MILLISECONDS = 1000
+const ONE_MINUTE_IN_SECONDS = 60;
 
 export function Verify() {
+  const authUser = useAuthUser<IUserData>();
+  const authHeader = useAuthHeader();
+  const authKitSignIn = useSignIn();
+  const navigate = useNavigate();
+
+  const [resendCountdown, setResendCountdown] = useState<number>(ONE_MINUTE_IN_SECONDS);
+  const [code, setCode] = useState<string>("")
+  const [isLoading, setIsLoading] = useState(false)
+
+  
+  const calculateCountDown = (lastCodeRequestedAt: Date) => {
+    const now = new Date();
+
+    const diffInSeconds = Math.ceil((now.getTime() - lastCodeRequestedAt.getTime()) / ONE_SECOND_IN_MILLISECONDS);
+    const countDownStart = diffInSeconds > ONE_MINUTE_IN_SECONDS ? 0 : (ONE_MINUTE_IN_SECONDS - diffInSeconds)
+    return countDownStart
+  }
+
+  const handleSubmit = async (code: string) => {
+    if (!authUser) return;
+    setIsLoading(true)
+    try {
+      if (!authHeader) return
+      await validateVerificationCode(authUser.email, authUser.tenant, code)
+      const [tokenType, token] = authHeader.split(" ")
+      const userData = await getUserData(authUser.userId, {manualToken: token})
+
+      // TODO: Create a UserProvider to share user data across the application and eliminate duplicated code in LoginForm, SignUpForm and Verify components
+      const isSignedIn = authKitSignIn({
+        auth: {
+          token,
+          type: tokenType,
+        },
+        userState: {
+          email: userData.email,
+          organizationURL: authUser.organizationURL,
+          name: userData.name,
+          isActive: userData.is_active,
+          tenantId: authUser.tenantId,
+          tenant: authUser.tenant,
+          userId: authUser.userId,
+        },
+      });
+      setIsLoading(false)
+      if (isSignedIn) {
+        toast.success("Welcome aboard! Your account is now active.")
+        navigate("/")
+      }
+    } catch {
+      setCode("")
+      setIsLoading(false)
+    }
+  }
+
+  const handleResend = () => {
+    if (!authUser) return;
+
+    sendVerificationCode(authUser.email, authUser.tenant)
+    const requestedAt = new Date()
+    localStorage.setItem("lastCodeRequestedAt", requestedAt.toISOString())
+    setResendCountdown(ONE_MINUTE_IN_SECONDS)
+  }
+
+  const handleChangeCode = (input: string) => setCode(input)
+
+  useMemo(() => {
+    if (!authUser) return
+
+    const lastCodeRequestedAtString = localStorage.getItem("lastCodeRequestedAt")
+
+    if (!lastCodeRequestedAtString) {
+      sendVerificationCode(authUser.email, authUser.tenant)
+      const requestedAt = new Date()
+      localStorage.setItem("lastCodeRequestedAt", requestedAt.toISOString())
+      setResendCountdown(ONE_MINUTE_IN_SECONDS)
+      return
+    }
+
+    const lastCodeRequestedAt = new Date(lastCodeRequestedAtString);
+    setResendCountdown(calculateCountDown(lastCodeRequestedAt))
+
+  }, [authUser])
+
+  useEffect(() => {
+    if (resendCountdown === 0) return;
+
+    const interval = setInterval(() => {
+      setResendCountdown(resendCountdown - 1)
+    }, ONE_SECOND_IN_MILLISECONDS)
+
+    return () => clearInterval(interval)
+  }, [resendCountdown])
+
+  if (authUser && authUser.isActive) return <Navigate to={"/"} replace={true} />
+
   return (
+    <>
+    <AppTopBar />
     <div className="flex flex-col items-center justify-center h-screen text-center">
       <div className="max-w-md mx-auto text-center px-4 sm:px-8 py-10 rounded-xl shadow">
           <header className="mb-8">
@@ -10,13 +123,14 @@ export function Verify() {
           </header>
           <form id="otp-form">
               <div className="w-full inline-flex justify-center">
-                <InputOTP maxLength={6}>
+                <InputOTP maxLength={6} onComplete={handleSubmit} value={code} onChange={handleChangeCode} className="">
                   <InputOTPGroup>
                     <InputOTPSlot index={0} />
                     <InputOTPSlot index={1} />
                     <InputOTPSlot index={2} />
                   </InputOTPGroup>
-                  <InputOTPSeparator />
+                  {!isLoading && <InputOTPSeparator />}
+                  {isLoading && <LucideLoader className="animate-spin [grid-area:1/1]" />}
                   <InputOTPGroup>
                     <InputOTPSlot index={3} />
                     <InputOTPSlot index={4} />
@@ -24,14 +138,18 @@ export function Verify() {
                   </InputOTPGroup>
                 </InputOTP>
               </div>
-              <div className="max-w-[260px] mx-auto mt-4">
-                  <button type="submit"
-                      className="w-full inline-flex justify-center whitespace-nowrap rounded-lg bg-indigo-500 px-3.5 py-2.5 text-sm font-medium text-white shadow-sm shadow-indigo-950/10 hover:bg-indigo-600 focus:outline-none focus:ring focus:ring-indigo-300 focus-visible:outline-none focus-visible:ring focus-visible:ring-indigo-300 transition-colors duration-150">Verify
-                      Account</button>
-              </div>
           </form>
-          <div className="text-sm text-slate-500 mt-4">Didn't receive code? <a className="font-medium text-indigo-500 hover:text-indigo-600" href="#0">Resend</a></div>
+          <div className="mt-4"><p className="text-sm text-muted-foreground/50">Didn't get the code?</p></div>
+          <div className="mt-1">
+            {resendCountdown > 0 && (
+              <p className="text-sm text-slate-500">You can get a new one in <span className="font-medium text-primary">{secondsToMMSS(resendCountdown)}</span></p>
+            )}
+            {resendCountdown === 0 && (
+              <a onClick={handleResend} className="text-sm font-medium text-primary cursor-pointer">Resend</a>
+            )}
+          </div>
       </div>
     </div>
+    </>
   );
 }
