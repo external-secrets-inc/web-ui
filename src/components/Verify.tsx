@@ -44,6 +44,7 @@ export function Verify() {
       const userData = await getUserData(authUser.userId, {manualToken: token})
 
       // TODO: Create a UserProvider to share user data across the application and eliminate duplicated code in LoginForm, SignUpForm and Verify components
+      // https://github.com/external-secrets-inc/web-ui/issues/60
       const isSignedIn = authKitSignIn({
         auth: {
           token,
