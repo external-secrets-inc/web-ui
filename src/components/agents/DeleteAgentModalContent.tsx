@@ -1,12 +1,12 @@
 import { Button } from "@/components/ui/button"
 import {
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog"
-import { DialogClose } from "@radix-ui/react-dialog"
 import { deleteAgent } from "@/services/agents/agentsService"
 
 interface DeleteAgentModalContentProps {
@@ -16,9 +16,12 @@ interface DeleteAgentModalContentProps {
 
 export function DeleteAgentModalContent({ id, onDeleted }: DeleteAgentModalContentProps) {
   const handleDeleteAgent = async () => {
-    await deleteAgent(id);
-    onDeleted();
-  };
+    await deleteAgent(id)
+    analytics.track("Agent Deleted", {
+      agentId: id,
+    })
+    onDeleted()
+  }
 
   return (
     <DialogContent className="max-w-fit overflow-auto">

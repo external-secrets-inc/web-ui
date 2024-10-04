@@ -12,8 +12,16 @@ interface DeleteAgentDialogProps {
 }
 
 export function DeleteAgentDialog({id, onDeleted}: DeleteAgentDialogProps) {
+  const handleDeleteDialogOpenChange = (open: boolean) => {
+    if (open) {
+      analytics.track("Agent Delete Dialog Opened", {
+        agentId: id,
+      });
+    }
+  };
+
   return (
-    <Dialog>
+    <Dialog onOpenChange={handleDeleteDialogOpenChange}>
       <DialogTrigger asChild>
         <Button variant="destructive" className="md:mr-auto">
           <Trash2Icon className="mr-2" />
