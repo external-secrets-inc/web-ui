@@ -8,7 +8,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { login } from "@/services/auth/authService";
+import { loginAndIdentifyUser } from "@/services/auth/authHelpers";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { isAxiosError } from "axios";
 import { LucideLoader } from "lucide-react";
@@ -17,7 +17,6 @@ import useSignIn from "react-auth-kit/hooks/useSignIn";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { getUserData } from '@/services/users/usersService';
 
 const LoginStep1Schema = z.object({
   organizationURL: z
@@ -78,39 +77,14 @@ function LoginForm() {
     setLoading(true);
 
     try {
-      const { token, tenantId, tenant, userId } = await login(
-        finalData.email!,
-        finalData.password!,
-        finalData.organizationURL!,
-      );
-
-      const userDetails = await getUserData(userId!, { manualToken: token });
-
-      const userState = {
-        email: finalData.email,
-        organizationURL: finalData.organizationURL,
-        name: userDetails.name,
-        tenantId,
-        tenant,
-        userId,
-      };
-
-      const isSignedIn = authKitSignIn({
-        auth: {
-          token,
-          type: "Bearer",
-        },
-        userState,
+      const success = await loginAndIdentifyUser({
+        email: finalData.email!,
+        password: finalData.password!,
+        tenantSlug: finalData.organizationURL!,
+        authKitSignIn,
       });
 
-      if (isSignedIn) {
-        const { userId, ...segmentUserState } = userState;
-
-        try {
-          analytics.identify(userId as string, segmentUserState);
-        } catch (error) {
-          console.error("Segment identify call failed:", error);
-        }
+      if (success) {
         setLoading(false);
         return navigate(`/${finalData.organizationURL}/agents`);
       }

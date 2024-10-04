@@ -8,7 +8,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { login, signup } from "@/services/auth/authService";
+import { loginAndIdentifyUser } from "@/services/auth/authHelpers";
+import { signup } from "@/services/auth/authService";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CheckSquareIcon, LucideLoader, SquareIcon, } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -97,46 +98,18 @@ function SignupForm() {
       );
 
       const tryLogin = async (attempt: number): Promise<boolean> => {
-        try {
-          const { token, tenantId, tenant, userId } = await login(
-            finalData.email!,
-            finalData.password!,
-            finalData.organizationURL!,
-            { suppressToast: true }
-          );
-
-          const userState = {
-            email: finalData.email,
-            organizationName: finalData.organizationName,
-            name: finalData.name,
-            tenantId,
-            tenant,
-            userId,
-          };
-
-          const isSignedIn = authKitSignIn({
-            auth: {
-              token,
-              type: "Bearer",
-            },
-            userState,
-          });
-
-          if (isSignedIn) {
-            const { userId, ...segmentUserState } = userState;
-            try {
-              analytics.identify(userId as string, segmentUserState);
-            } catch (error) {
-              console.error("Segment identify call failed:", error);
-            }
-            return true;
-          }
-
-          return false;
-        } catch (error) {
-          console.error(`Login attempt ${attempt} failed:`, error);
-          return false;
+        const success = await loginAndIdentifyUser({
+          email: finalData.email!,
+          password: finalData.password!,
+          tenantSlug: finalData.organizationURL!,
+          name: finalData.name!,
+          authKitSignIn,
+        });
+        if (success) {
+          return true;
         }
+        console.error(`Login attempt ${attempt} failed`);
+        return false;
       };
 
       setLoading(true);

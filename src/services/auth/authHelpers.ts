@@ -1,3 +1,7 @@
+import { login } from "@/services/auth/authService";
+import { getUserData } from "@/services/users/usersService";
+import useSignIn from "react-auth-kit/hooks/useSignIn";
+
 export async function getAuthHeaders(manualToken?: string): Promise<{ [key: string]: string }> {
   const token = manualToken || await getTokenFromCookies();
   if (!token) {
@@ -29,3 +33,59 @@ async function getTokenFromCookies(maxRetries = 20, delay = 200): Promise<string
   }
   return null;
 }
+
+interface LoginAndIdentifyParams {
+  email: string;
+  password: string;
+  tenantSlug: string;
+  name?: string;
+  authKitSignIn: ReturnType<typeof useSignIn>;
+}
+
+export const loginAndIdentifyUser = async ({
+  email,
+  password,
+  tenantSlug,
+  name,
+  authKitSignIn,
+}: LoginAndIdentifyParams): Promise<boolean> => {
+  try {
+    const { token, tenantId, tenant, userId } = await login(email, password, tenantSlug, { suppressToast: true });
+
+    let userDetails;
+    if (!name) {
+      userDetails = await getUserData(userId!, { manualToken: token });
+    }
+
+    const userState = {
+      email,
+      name: name || userDetails?.name,
+      tenantId,
+      tenant,
+      userId,
+    };
+
+    const isSignedIn = authKitSignIn({
+      auth: {
+        token,
+        type: "Bearer",
+      },
+      userState,
+    });
+
+    if (isSignedIn) {
+      const { userId, ...segmentUserState } = userState;
+      try {
+        analytics.identify(userId as string, segmentUserState);
+      } catch (error) {
+        console.error("Segment identify call failed:", error);
+      }
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    console.error("Failed to login:", error);
+    return false;
+  }
+};
