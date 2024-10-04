@@ -85,22 +85,32 @@ function LoginForm() {
       );
 
       const userDetails = await getUserData(userId!, { manualToken: token });
+
+      const userState = {
+        email: finalData.email,
+        organizationURL: finalData.organizationURL,
+        name: userDetails.name,
+        tenantId,
+        tenant,
+        userId,
+      };
+
       const isSignedIn = authKitSignIn({
         auth: {
           token,
           type: "Bearer",
         },
-        userState: {
-          email: finalData.email,
-          organizationURL: finalData.organizationURL,
-          name: userDetails.name,
-          tenantId,
-          tenant,
-          userId,
-        },
+        userState,
       });
 
       if (isSignedIn) {
+        const { userId, ...segmentUserState } = userState;
+
+        try {
+          analytics.identify(userId as string, segmentUserState);
+        } catch (error) {
+          console.error("Segment identify call failed:", error);
+        }
         setLoading(false);
         return navigate(`/${finalData.organizationURL}/agents`);
       }

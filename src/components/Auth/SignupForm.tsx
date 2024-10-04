@@ -105,22 +105,32 @@ function SignupForm() {
             { suppressToast: true }
           );
 
+          const userState = {
+            email: finalData.email,
+            organizationName: finalData.organizationName,
+            name: finalData.name,
+            tenantId,
+            tenant,
+            userId,
+          };
+
           const isSignedIn = authKitSignIn({
             auth: {
               token,
               type: "Bearer",
             },
-            userState: {
-              email: finalData.email,
-              organizationName: finalData.organizationName,
-              name: finalData.name,
-              tenantId,
-              tenant,
-              userId,
-            },
+            userState,
           });
 
-          if (isSignedIn) return true;
+          if (isSignedIn) {
+            const { userId, ...segmentUserState } = userState;
+            try {
+              analytics.identify(userId as string, segmentUserState);
+            } catch (error) {
+              console.error("Segment identify call failed:", error);
+            }
+            return true;
+          }
 
           return false;
         } catch (error) {
