@@ -6,59 +6,191 @@ metadata:
   labels:
     {{- include "web-ui.labels" . | nindent 4 }}
 data:
-  nginx.conf: |
-    server {
-        listen       80;
-        server_name  localhost;
+  haproxy.cfg: |
+    global
+        log stdout format raw daemon debug
+        lua-load /usr/local/etc/haproxy/auth.lua
+        #lua-load /usr/local/etc/haproxy/content_rewriter.lua
 
-        location ^~ /docs {
-          rewrite ^/docs$ /docs/introduction break;
-          rewrite ^/docs/$ /docs/introduction break;
-          rewrite ^/docs/?(.*)$ /docs/$1 break;
+    defaults
+        mode http
+        timeout connect 5000ms
+        timeout client 50000ms
+        timeout server 50000ms
+        log global
+        option httplog
 
-          proxy_pass https://externalsecrets.mintlify.app/;
-          proxy_set_header Host externalsecrets.mintlify.app;
-          proxy_set_header X-Real-IP $remote_addr;
-          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-          proxy_ssl_server_name on;
+    frontend http-in
+        bind *:8080
+        option httplog
+
+        # ACLs for path matching
+        acl is_docs path_beg /docs
+        acl is_next path_beg /_next
+
+        # Set transaction variable based on is_docs
+        http-request set-var-fmt(txn.is_docs) true if is_docs
+
+        # Use Lua script for authentication on /docs
+        http-request lua.auth_cache if is_docs
+
+        # ACLs for authentication status
+        acl authenticated var(txn.authenticated) -m str true
+        acl not_authenticated var(txn.authenticated) -m str "0"
+
+        # Redirect to /login if not authenticated
+        http-request redirect location /login if { var(txn.is_docs) -m str true } not_authenticated
+
+        # Set proxy headers
+        http-request set-header Host externalsecrets.mintlify.app if is_docs or is_next
+        http-request set-header X-Real-IP %[src]
+        http-request set-header X-Forwarded-For %[src]
+        http-request set-header X-Forwarded-Proto https if { ssl_fc }
+        http-request set-header X-Forwarded-Proto http if !{ ssl_fc }
+
+        # Backend selection
+        use_backend docs_backend if is_docs
+        use_backend next_backend if is_next
+        default_backend static_backend
+
+        # Adjust Location headers in redirects
+        http-response replace-header Location ^https?://externalsecrets\.mintlify\.app(/.*)?$ /docs\1 if { var(txn.is_docs) -m str true }
+        http-response replace-header Set-Cookie (Path=)(/)(.*) \1/docs/\3 if { var(txn.is_docs) -m str true }
+
+        # Response content rewriting (requires Lua scripting)
+        #filter lua content_rewriter if { var(txn.is_docs) -m str true }
+    backend docs_backend
+        # Backend server for /docs with SSL verification
+        server externalsecrets externalsecrets.mintlify.app:443 ssl verify required ca-file /etc/ssl/certs/ca-certificates.crt
+
+    backend next_backend
+        # Backend server for /_next with SSL verification
+        server externalsecrets externalsecrets.mintlify.app:443 ssl verify required ca-file /etc/ssl/certs/ca-certificates.crt
+
+    backend static_backend
+        # Local Nginx server serving static files
+        server static_files 127.0.0.1:8081 check
+
+  auth.lua: |
+    -- auth.lua
+    local socket = require("socket.http")
+    local ltn12 = require("ltn12")
+    local cjson = require("cjson.safe")
+
+    -- Simple in-memory cache (per process)
+    local token_cache = {}
+
+    function cache_token(token, expires_at)
+        token_cache[token] = expires_at
+        core.Debug("Cached token with expires_at = " .. tostring(expires_at))
+    end
+
+    function is_token_valid(token)
+        local expires_at = token_cache[token]
+        if expires_at and expires_at > os.time() then
+            core.Debug("Token is valid, expires_at = " .. tostring(expires_at))
+            return true
+        else
+            core.Debug("Token is invalid or expired")
+            return false
+        end
+    end
+
+    function get_cookie_value(cookie_header, cookie_name)
+        for cookie in string.gmatch(cookie_header, "([^;]+)") do
+            local name, value = string.match(cookie, "%s*(.-)%s*=%s*(.*)")
+            if name == cookie_name then
+                return value
+            end
+        end
+        return nil
+    end
 
 
-        # Rewrite Location headers in redirects
-        # proxy_redirect https://externalsecrets.mintlify.app/ /docs/;
-        # proxy_redirect / /docs/;
+    function auth_cache(txn)
+        local token = txn.sf:req_hdr("Authorization")
+        core.Debug("Received Authorization header: " .. tostring(token))
 
-        # # Adjust cookie paths
-        proxy_cookie_path / /docs/;
+        if not token or token == "" then
+            core.Debug("No Authorization header provided; attempting to retrieve token from cookies")
+            -- Try to get token from cookies
+            local cookie_header = txn.sf:req_hdr("Cookie")
+            if cookie_header then
+                local token_cookie_name = "_auth"
+                local token_from_cookie = get_cookie_value(cookie_header, token_cookie_name)
+                if token_from_cookie then
+                    token = token_from_cookie
+                    core.Debug("Token retrieved from cookie: " .. token)
+                else
+                    core.Debug("Token not found in cookies")
+                end
+            else
+                core.Debug("No Cookie header provided")
+            end
+        end
+        if is_token_valid(token) then
+            core.Debug("Token found in cache and is valid")
+            txn:set_var("txn.authenticated", true)
+            return  -- Token is valid; proceed
+        end
 
-        # # Enable response content rewriting
-        sub_filter_types text/html text/css application/javascript;
-        sub_filter 'href="/' 'href="/docs/';
-        sub_filter 'src="/' 'src="/docs/';
-        sub_filter 'action="/' 'action="/docs/';
-        sub_filter_once off;
+        -- Token not valid; verify via API call
+        core.Debug("Token not in cache or expired; verifying via API call")
+        if not token or token == "" then
+            core.Debug("No Valid Token - auth=false")
+            txn:set_var("txn.authenticated", false)
+            return
+        end
+
+        local response_body = {}
+        local res, code, headers, status = socket.request{
+            url = "https://api.dev.externalsecrets.com/api/user-info",
+            method = "GET",
+            headers = {
+                ["Authorization"] = "Bearer " .. token,
+            },
+            sink = ltn12.sink.table(response_body),
+            protocol = "tlsv1_2",
         }
 
-        # Proxy /_next/ assets
-        location /_next/ {
-            proxy_pass https://externalsecrets.mintlify.app/_next/;
-            proxy_set_header Host externalsecrets.mintlify.app;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_ssl_server_name on;
+        core.Debug("API call response code: " .. tostring(code))
 
-            # Optional: Cache control headers
-            # Expires max;
-            # add_header Cache-Control "public, max-age=31536000, immutable";
-        }
+        if not res or code ~= 200 then
+            core.Debug("API call failed or returned non-200 status")
+            txn:set_var("txn.authenticated", false)
+            return
+        end
 
-        location / {
-            try_files $uri $uri/ /index.html;
-            root   /usr/share/nginx/html;
-            index  index.html index.htm;
-        }
+        -- Parse the API response
+        local body = table.concat(response_body)
+        core.Debug("API response body: " .. body)
 
-        error_page   500 502 503 504  /50x.html;
-        location = /50x.html {
-            root   /usr/share/nginx/html;
-        }
-    }
+        local data = cjson.decode(body)
+        if not data then
+            core.Debug("Failed to decode JSON response")
+            txn:set_var("txn.authenticated", false)
+            return
+        end
+
+        if not data.expires_at then
+            core.Debug("expiresAt not found in API response")
+            txn:set_var("txn.authenticated", false)
+            return
+        end
+
+        local expires_at = tonumber(data.expires_at)
+        core.Debug("Parsed expires_at: " .. tostring(expires_at))
+
+        if expires_at > os.time() then
+            cache_token(token, expires_at)
+            txn:set_var("txn.authenticated", true)
+            core.Debug("Token is valid after API call; proceeding")
+            return  -- Token is now valid; proceed
+        else
+            core.Debug("Token expired according to API response")
+            txn:set_var("txn.authenticated", false)
+            return
+        end
+    end
+
+    core.register_action("auth_cache", { "http-req" }, auth_cache)
