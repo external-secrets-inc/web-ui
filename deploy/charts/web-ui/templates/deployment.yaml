@@ -26,10 +26,11 @@ spec:
       - name: nginx-config
         configMap:
           name: {{ include "web-ui.fullname" . }}
-        items:
-        - key: nginx.conf
-          path: default.conf
-          mode: 0444
+          items:
+          - key: haproxy.cfg
+            path: haproxy.cfg
+          - key: auth.lua
+            path: auth.lua
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -41,7 +42,7 @@ spec:
         - name: {{ .Chart.Name }}
           volumeMounts:
           - name: nginx-config
-            mountPath: /etc/nginx/conf.d/
+            mountPath: /usr/local/etc/haproxy
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: '{{ .Values.image.repository }}:{{ .Values.image.tag | default "latest" }}'
