@@ -2,7 +2,7 @@ import React, { useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useSignOut from 'react-auth-kit/hooks/useSignOut';
 import axiosInstance from '@/services/axiosConfig';
-
+import { trackSignedOut } from '@/analytics';
 
 interface AxiosInterceptorProps {
   children: ReactNode;
@@ -20,7 +20,7 @@ const AxiosInterceptor: React.FC<AxiosInterceptorProps> = ({ children }) => {
     const errInterceptor = (error: any) => {
       if (error?.response?.status === 401) {
         signOut();
-        analytics.track('Signed Out', { mannually: false });
+        trackSignedOut(false);
         navigate('/login');
       }
       return Promise.reject(error);

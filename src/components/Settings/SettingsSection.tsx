@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { UseFormReturn, FormProvider } from "react-hook-form";
+import { trackSettingsSectionModified } from "@/analytics";
 
 interface Subsection {
   title: string;
@@ -18,13 +19,17 @@ interface SettingsSectionProps {
 const SettingsSection: React.FC<SettingsSectionProps> = ({ title, description, form, onSubmit, subsections }) => {
   const isDirty = form.formState.isDirty;
 
-  const handleSettingsSectionFormSubmit = (values: any) => {
-    console.log('Tracking settings modification:', { section: title, values }); // Debugging log
-    analytics.track('Settings Section Modified', {
-      section: title,
-      values,
-    });
+  // Only send values for certain sections due to sensitive data
+  const sectionsToSendValues: { [key: string]: boolean } = {
+    "Appearance": true,
+  };
 
+  const handleSettingsSectionFormSubmit = (values: any) => {
+    if (sectionsToSendValues[title]) {
+      trackSettingsSectionModified(title, values);
+    } else {
+      trackSettingsSectionModified(title);
+    }
     onSubmit(values);
   };
 

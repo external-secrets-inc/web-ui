@@ -8,6 +8,7 @@ import {
   DialogTitle
 } from "@/components/ui/dialog"
 import { deleteAgent } from "@/services/agents/agentsService"
+import { trackAgentDeleted } from "@/analytics";
 
 interface DeleteAgentModalContentProps {
   id: string;
@@ -17,9 +18,7 @@ interface DeleteAgentModalContentProps {
 export function DeleteAgentModalContent({ id, onDeleted }: DeleteAgentModalContentProps) {
   const handleDeleteAgent = async () => {
     await deleteAgent(id)
-    analytics.track("Agent Deleted", {
-      agentId: id,
-    })
+    trackAgentDeleted(id);
     onDeleted()
   }
 

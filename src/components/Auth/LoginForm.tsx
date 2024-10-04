@@ -17,6 +17,7 @@ import useSignIn from "react-auth-kit/hooks/useSignIn";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
+import { trackLoginStepCompleted, trackSignedIn, trackLoginStepMovedBack } from "@/analytics";
 
 const LoginStep1Schema = z.object({
   organizationURL: z
@@ -68,12 +69,8 @@ function LoginForm() {
 
   const handleLoginStep1Submit = (data: LoginStep1Data) => {
     setLoginData((prev) => ({ ...prev, ...data }));
+    trackLoginStepCompleted(1);
     setStep(2);
-
-    analytics.track('Login Step Completed', {
-      step: 1,
-      organizationURL: data.organizationURL,
-    });
   };
 
   const handleLoginStep2Submit = async (data: LoginStep2Data) => {
@@ -89,18 +86,10 @@ function LoginForm() {
         authKitSignIn,
       });
 
-      analytics.track('Login Step Completed', {
-        step: 2,
-        email: finalData.email,
-        tenant: finalData.organizationURL,
-      });
+      trackLoginStepCompleted(2);
 
       if (success) {
-        analytics.track('Signed in', {
-          email: finalData.email,
-          tenant: finalData.organizationURL,
-        });
-
+        trackSignedIn(finalData.organizationURL!);
         setLoading(false);
         return navigate(`/${finalData.organizationURL}/agents`);
       }
@@ -124,7 +113,7 @@ function LoginForm() {
 
   const handleBack = () => {
     setStep(1);
-    analytics.track('Login Step Moved Back');
+    trackLoginStepMovedBack();
   };
 
   return (

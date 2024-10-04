@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Trash2Icon, FileTerminalIcon, Menu, AlertCircleIcon } from "lucide-react";
 import { PreviewYAMLContent } from "./PreviewYAMLContent";
 import { DeleteAgentModalContent } from "./DeleteAgentModalContent";
+import { trackYamlDialogOpened, trackAgentDeleteDialogOpened } from "@/analytics";
 
 interface AgentDropdownProps {
   onPreviewYaml: () => void;
@@ -64,19 +65,13 @@ export function AgentDetailsDialog({ id, agentName, currentStatus, onDeleted }: 
 
   useEffect(() => {
     if (isYamlDialogOpen) {
-      analytics.track("Agent YAML Dialog Opened", {
-        agentId: id,
-        agentName: agentName,
-      });
+      trackYamlDialogOpened(id, agentName);
     }
   }, [isYamlDialogOpen]);
 
   useEffect(() => {
     if (isDeleteDialogOpen) {
-      analytics.track("Agent Delete Dialog Opened", {
-        agentId: id,
-        agentName: agentName,
-      });
+      trackAgentDeleteDialogOpened(id, agentName);
     }
   }, [isDeleteDialogOpen]);
 

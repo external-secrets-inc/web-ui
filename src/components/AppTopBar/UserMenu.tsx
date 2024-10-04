@@ -8,6 +8,7 @@ import React from 'react';
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
 import useSignOut from 'react-auth-kit/hooks/useSignOut';
 import { Link, useNavigate } from 'react-router-dom';
+import { trackSignedOut } from "@/analytics";
 
 const UserMenu: React.FC = () => {
   const authUser = useAuthUser<IUserData>();
@@ -20,7 +21,7 @@ const UserMenu: React.FC = () => {
 
   const handleSignOut = () => {
     signOut();
-    analytics.track('Signed Out', { mannually: true });
+    trackSignedOut(true);
     navigate('/login');
   };
 

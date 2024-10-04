@@ -5,6 +5,7 @@ import {
 } from "@/components/ui/dialog"
 import { DeleteAgentModalContent } from "./DeleteAgentModalContent"
 import { Trash2Icon } from "lucide-react"
+import { trackDeleteDialogOpened } from "@/analytics";
 
 interface DeleteAgentDialogProps {
   id: string;
@@ -14,9 +15,7 @@ interface DeleteAgentDialogProps {
 export function DeleteAgentDialog({id, onDeleted}: DeleteAgentDialogProps) {
   const handleDeleteDialogOpenChange = (open: boolean) => {
     if (open) {
-      analytics.track("Agent Delete Dialog Opened", {
-        agentId: id,
-      });
+      trackDeleteDialogOpened(id);
     }
   };
 

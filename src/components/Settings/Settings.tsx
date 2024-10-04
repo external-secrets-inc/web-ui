@@ -5,12 +5,11 @@ import OrganizationSettings from './OrganizationSettings';
 import AppearanceSettings from './AppearanceSettings';
 import SubscriptionSettings from './SubscriptionsSettings';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { trackSettingsTabChanged } from "@/analytics";
 
 const Settings: React.FC = () => {
   const handleTabChange = (value: string) => {
-    analytics.track('Settings Tab Changed', {
-      tab: value,
-    });
+    trackSettingsTabChanged(value);
   };
 
   return (

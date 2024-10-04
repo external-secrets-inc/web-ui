@@ -18,6 +18,7 @@ import { useForm, UseFormReturn } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import slugify from "slugify";
 import { z } from "zod";
+import { trackSignupStepCompleted, trackSignedIn, trackSignupStepMovedBack } from "@/analytics";
 
 const SignupStep1Schema = z.object({
   organizationName: z
@@ -81,14 +82,8 @@ function SignupForm() {
 
   const handleSignupStep1Submit = (data: SignupStep1Data) => {
     setSignupData((prev) => ({ ...prev, ...data }));
+    trackSignupStepCompleted(1, data.organizationName);
     setStep(2);
-
-    analytics.track('Signup Step Completed', {
-      step: 1,
-      organizationName: data.organizationName,
-      name: data.name,
-      organizationURL: data.organizationURL,
-    });
   };
 
   const handleSignupStep2Submit = async (data: SignupStep2Data) => {
@@ -98,7 +93,7 @@ function SignupForm() {
 
     try {
       setLoading(true);
-      
+
       await signup(
         finalData.email!,
         finalData.name!,
@@ -106,12 +101,7 @@ function SignupForm() {
         finalData.organizationURL!,
       );
 
-      analytics.track('Signup Step Completed', {
-        step: 2,
-        email: finalData.email,
-        name: finalData.name,
-        tenant: finalData.organizationURL,
-      });
+      trackSignupStepCompleted(2, finalData.organizationName);
 
       const tryLogin = async (attempt: number): Promise<boolean> => {
         const success = await loginAndIdentifyUser({
@@ -131,10 +121,7 @@ function SignupForm() {
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         const success = await tryLogin(attempt);
         if (success) {
-          analytics.track('Signed in', {
-            email: finalData.email,
-            tenant: finalData.organizationURL,
-          });
+          trackSignedIn(finalData.organizationURL!);
           setLoading(false);
           return navigate(`/${finalData.organizationURL}/agents`);
         }
@@ -155,7 +142,7 @@ function SignupForm() {
 
   const handleBack = () => {
     setStep(1);
-    analytics.track('Signup Step Moved Back');
+    trackSignupStepMovedBack();
   };
 
   return (

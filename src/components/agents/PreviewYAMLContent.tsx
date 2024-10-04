@@ -12,6 +12,7 @@ import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { DeleteAgentDialog } from "./DeleteAgentDialog";
 import { getManifestContent } from "@/services/agents/agentsService";
+import { trackCopyRawYAML, trackCopyYAMLWithApplyCommand, trackDownloadYAML } from "@/analytics";
 
 interface PreviewYAMLContentProps {
   id: string;
@@ -47,25 +48,19 @@ export function PreviewYAMLContent({ id, onDeleted, version = 'latest' }: Previe
 
   const handleCopyRaw = () => {
     copyToClipboard(content, 'raw YAML');
-    analytics.track("Copy Agent Raw YAML", {
-      agentId: id,
-    });
+    trackCopyRawYAML(id);
   }
 
   const handleCopyWithApply = () => {
     const applyCommand = `cat <<EOF | kubectl apply -f -\n${content}\nEOF`;
     copyToClipboard(applyCommand, "YAML within 'kubectl apply'");
-    analytics.track("Copy Agent YAML with Apply Command", {
-      agentId: id,
-    });
+    trackCopyYAMLWithApplyCommand(id);
   }
 
   const handleDownload = (): void => {
     const file = new File([content], 'manifest.yaml', { type: 'text/yaml' });
     saveAs(file);
-    analytics.track("Download Agent YAML", {
-      agentId: id,
-    });
+    trackDownloadYAML(id);
   };
 
   return (
