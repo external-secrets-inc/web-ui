@@ -61,6 +61,7 @@ export function Verify() {
       });
       setIsLoading(false)
       if (isSignedIn) {
+        localStorage.removeItem("lastCodeRequestedAt")
         toast.success("Welcome aboard! Your account is now active.")
         navigate("/")
       }
