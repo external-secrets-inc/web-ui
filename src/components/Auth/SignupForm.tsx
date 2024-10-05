@@ -8,8 +8,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { login, signup } from "@/services/auth/authService";
-import { getUserData } from "@/services/users/usersService";
+import { loginAndIdentifyUser } from "@/services/auth/authHelpers";
+import { signup } from "@/services/auth/authService";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CheckSquareIcon, LucideLoader, SquareIcon, } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -18,6 +18,7 @@ import { useForm, UseFormReturn } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import slugify from "slugify";
 import { z } from "zod";
+import { trackSignupStepCompleted, trackSignedIn, trackSignupStepMovedBack } from "@/analytics";
 
 const SignupStep1Schema = z.object({
   organizationName: z
@@ -81,6 +82,7 @@ function SignupForm() {
 
   const handleSignupStep1Submit = (data: SignupStep1Data) => {
     setSignupData((prev) => ({ ...prev, ...data }));
+    trackSignupStepCompleted(1, data.organizationName);
     setStep(2);
   };
 
@@ -90,6 +92,8 @@ function SignupForm() {
     const retryDelay = 3000;
 
     try {
+      setLoading(true);
+
       await signup(
         finalData.email!,
         finalData.name!,
@@ -97,47 +101,27 @@ function SignupForm() {
         finalData.organizationURL!,
       );
 
+      trackSignupStepCompleted(2, finalData.organizationName);
+
       const tryLogin = async (attempt: number): Promise<boolean> => {
-        try {
-          const { token, tenantId, tenant, userId } = await login(
-            finalData.email!,
-            finalData.password!,
-            finalData.organizationURL!,
-            { suppressToast: true }
-          );
-
-          // TODO: Create a UserProvider to share user data across the application and eliminate duplicated code in LoginForm, SignUpForm and Verify components
-          // https://github.com/external-secrets-inc/web-ui/issues/60
-          const userDetails = await getUserData(userId!, { manualToken: token });
-          const isSignedIn = authKitSignIn({
-            auth: {
-              token,
-              type: "Bearer",
-            },
-            userState: {
-              email: finalData.email,
-              organizationURL: finalData.organizationURL,
-              name: userDetails.name,
-              isActive: userDetails.is_active,
-              tenantId,
-              tenant,
-              userId,
-            },
-          });
-
-          if (isSignedIn) return true;
-
-          return false;
-        } catch (error) {
-          console.error(`Login attempt ${attempt} failed:`, error);
-          return false;
+        const success = await loginAndIdentifyUser({
+          email: finalData.email!,
+          password: finalData.password!,
+          tenantSlug: finalData.organizationURL!,
+          name: finalData.name!,
+          authKitSignIn,
+        });
+        if (success) {
+          return true;
         }
+        console.error(`Login attempt ${attempt} failed`);
+        return false;
       };
 
-      setLoading(true);
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         const success = await tryLogin(attempt);
         if (success) {
+          trackSignedIn(finalData.organizationURL!);
           setLoading(false);
           return navigate(`/${finalData.organizationURL}/agents`);
         }
@@ -158,6 +142,7 @@ function SignupForm() {
 
   const handleBack = () => {
     setStep(1);
+    trackSignupStepMovedBack();
   };
 
   return (

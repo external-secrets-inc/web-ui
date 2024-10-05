@@ -1,13 +1,19 @@
 # Build stage
 FROM node:22.8.0 as builder
 WORKDIR /web-ui
+
+# Define build arguments for environment variables
 ARG TENANT_MANAGER_URL
 ARG DOCS_URL
+ARG NODE_ENV
+
+# Set environment variables during the build process
+ENV VITE_API_DOMAIN=$TENANT_MANAGER_URL
+ENV VITE_DOCS_DOMAIN=$DOCS_URL
+ENV NODE_ENV=$NODE_ENV
+
 COPY . .
-RUN export VITE_API_DOMAIN="$TENANT_MANAGER_URL" && \
-    export VITE_DOCS_DOMAIN="$DOCS_URL" && \
-    npm install && \
-    npm run build:ts-off
+RUN npm install && npm run build:ts-off
 
 # Final stage with HAProxy and Nginx
 FROM haproxy:2.8-alpine

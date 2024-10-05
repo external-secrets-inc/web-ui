@@ -14,6 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { createAgent } from "@/services/agents/agentsService"
+import { trackAgentCreated } from "@/analytics";
 
 const formSchema = z.object({
   name: z.string().min(1, {
@@ -60,8 +61,13 @@ export function NewAgentForm({ onSuccess, onCancel }: NewAgentFormProps) {
   }, [onCancel])
 
   async function handleCreateAgent(values: FormSchemaType) {
-    await createAgent(values.name)
-    onSuccess()
+    try {
+      await createAgent(values.name);
+      trackAgentCreated(values.name);
+      onSuccess();
+    } catch (error) {
+      console.error("Failed to create agent:", error);
+    }
   }
 
   return (

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogPortal, DialogTrigger } from "@radix-ui/react-dialog";
 import { Card, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Trash2Icon, FileTerminalIcon, Menu, AlertCircleIcon } from "lucide-react";
 import { PreviewYAMLContent } from "./PreviewYAMLContent";
 import { DeleteAgentModalContent } from "./DeleteAgentModalContent";
+import { trackYamlDialogOpened, trackAgentDeleteDialogOpened } from "@/analytics";
 
 interface AgentDropdownProps {
   onPreviewYaml: () => void;
@@ -13,7 +14,6 @@ interface AgentDropdownProps {
 }
 
 const AgentDropdown: React.FC<AgentDropdownProps> = ({ onPreviewYaml, onDelete }) => {
-
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -62,6 +62,18 @@ export function AgentDetailsDialog({ id, agentName, currentStatus, onDeleted }: 
   const isPending = ['PENDING_REGISTRATION', 'PROVISIONING'].includes(currentStatus.toUpperCase());
   const [isYamlDialogOpen, setIsYamlDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  useEffect(() => {
+    if (isYamlDialogOpen) {
+      trackYamlDialogOpened(id, agentName);
+    }
+  }, [isYamlDialogOpen]);
+
+  useEffect(() => {
+    if (isDeleteDialogOpen) {
+      trackAgentDeleteDialogOpened(id, agentName);
+    }
+  }, [isDeleteDialogOpen]);
 
   return (
     <>

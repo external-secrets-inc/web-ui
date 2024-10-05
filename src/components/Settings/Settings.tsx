@@ -5,12 +5,15 @@ import OrganizationSettings from './OrganizationSettings';
 import AppearanceSettings from './AppearanceSettings';
 import SubscriptionSettings from './SubscriptionsSettings';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-
+import { trackSettingsTabChanged } from "@/analytics";
 
 const Settings: React.FC = () => {
-  return (
+  const handleTabChange = (value: string) => {
+    trackSettingsTabChanged(value);
+  };
 
-    <Tabs defaultValue="profile">
+  return (
+    <Tabs defaultValue="profile" onValueChange={handleTabChange}>
       <ScrollArea className="mb-3 pb-3">
         <TabsList>
           <TabsTrigger value="profile">My Profile</TabsTrigger>

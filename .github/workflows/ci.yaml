@@ -9,6 +9,7 @@ env:
   NAME: web-ui
   TENANT_MANAGER_URL: https://api.dev.externalsecrets.com
   DOCS_URL: https://app.dev.externalsecrets.com
+  NODE_ENV: development
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -60,6 +61,7 @@ jobs:
             --tag ${{ vars.INTERNAL_REGISTRY}}/$NAME:latest \
             --build-arg TENANT_MANAGER_URL=${{ env.TENANT_MANAGER_URL}} \
             --build-arg DOCS_URL=${{ env.DOCS_URL}} \
+            --build-arg NODE_ENV=${{ env.NODE_ENV }} \
             --push .
       env:
         GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
