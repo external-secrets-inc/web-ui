@@ -103,16 +103,19 @@ function SignupForm() {
         if (success) {
           return true;
         }
-        console.error(`Login attempt ${attempt} failed`);
         return false;
       };
 
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        const success = await tryLogin(attempt);
-        if (success) {
-          trackSignedIn(finalData.organizationURL!);
-          setLoading(false);
-          return navigate(`/${finalData.organizationURL}/agents`);
+        try {
+          const success = await tryLogin(attempt);
+          if (success) {
+            trackSignedIn(finalData.organizationURL!);
+            setLoading(false);
+            return navigate(`/${finalData.organizationURL}/agents`);
+          }
+        } catch (error) {
+          console.error(`Login attempt ${attempt} failed:`, error);
         }
         if (attempt < maxRetries) {
           await new Promise((resolve) => setTimeout(resolve, retryDelay));
@@ -123,7 +126,8 @@ function SignupForm() {
       setFormError(
         "Signup succeeded, but automatic login failed. Please try to log in manually."
       );
-    } catch {
+    } catch (error) {
+      console.error("Signup error:", error);
       setLoading(false);
       setFormError("Signup failed. Please try again.");
     }

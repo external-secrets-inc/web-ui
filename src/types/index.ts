@@ -21,6 +21,13 @@ export interface IUserData {
   organizationURL: string;
 };
 
+export interface BackendUserData {
+  id: string;
+  name: string;
+  email: string;
+  is_active: boolean;
+}
+
 export interface Feature {
   name: string;
   description: string;
