@@ -1,8 +1,8 @@
-import AppLogo from './AppLogo';
 import AppNavLinks from './AppNavLinks';
 import React from 'react';
 import SideNavMenu from './SideNavMenu';
 import UserMenu from './UserMenu';
+import AppLogo from '@/components/AppLogo';
 
 const AppTopBar: React.FC = () => {
   return (

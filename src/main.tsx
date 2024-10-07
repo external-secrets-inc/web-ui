@@ -1,9 +1,10 @@
 import { ListAgents } from "@/components/agents/ListAgents";
 import AppPageHeader from "@/components/AppPageHeader";
+import ForgotPassword from "@/components/Auth/ForgotPassword";
+import ResetPassword from "@/components/Auth/ResetPassword";
 import AxiosInterceptor from "@/components/AxiosInterceptor";
 import NavigateWithOrg from "@/components/NavigateWithOrg";
 import { NotFound } from "@/components/NotFound";
-import ResetPasswordFlow from "@/components/Auth/ResetPasswordFlow";
 import Settings from "@/components/Settings";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
@@ -15,6 +16,7 @@ import * as ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import App from './App';
 import './index.css';
+
 
 const router = createBrowserRouter([
   {
@@ -35,11 +37,11 @@ const router = createBrowserRouter([
   },
   {
     path: '/forgot-password',
-    element: <ResetPasswordFlow variant="forgot"/>,
+    element: <ForgotPassword />,
   },
   {
     path: '/reset-password',
-    element: <ResetPasswordFlow variant="reset"/>,
+    element: <ResetPassword />,
   },
   {
     path: '/:org',
