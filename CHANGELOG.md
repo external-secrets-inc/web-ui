@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.2](https://github.com/external-secrets-inc/web-ui/compare/v0.2.1...v0.2.2) (2024-10-07)
+
+
+### Bug Fixes
+
+* :bug: quickfix login not rethrowing errors ([c88bb96](https://github.com/external-secrets-inc/web-ui/commit/c88bb9683f9172894f8f097324b327c1c96a37ee))
+* docs on prod ([#69](https://github.com/external-secrets-inc/web-ui/issues/69)) ([33119b7](https://github.com/external-secrets-inc/web-ui/commit/33119b77682cb9998ec95744e475a99a3c2a8456))
+
 ## [0.2.1](https://github.com/external-secrets-inc/web-ui/compare/v0.2.0...v0.2.1) (2024-10-07)
 
 
