@@ -12,7 +12,8 @@ export async function getAccountData(options: Partial<ApiWrapperOptions & { manu
     return {
       contact_email: response.data.email,
       contact_name: response.data.name,
-      contact_phone: response.data.phone
+      contact_phone: response.data.phone,
+      tenant_id: response.data.tenant,
     };
   }, { defaultError: 'Failed to fetch account details', ...options });
 }
@@ -28,4 +29,13 @@ export async function updateAccountData(accountData: { contact_email: string; co
     }, { headers });
     return response.data;
   }, { defaultError: 'Failed to update account details', ...options });
+}
+
+export async function deleteAccount(tenantId: string, options: Partial<ApiWrapperOptions> = {}) {
+  const headers = await getAuthHeaders();
+
+  return apiWrapper(async () => {
+    const response = await axiosInstance.delete(`/api/account/${tenantId}`, { headers });
+    return response.data;
+  }, { defaultError: 'Failed to delete account', ...options });
 }
