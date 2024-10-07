@@ -1,5 +1,5 @@
 replicaCount: 2
-
+environment: "dev"
 image:
   repository: us-central1-docker.pkg.dev/external-secrets-inc-registry/internal/web-ui
   pullPolicy: IfNotPresent

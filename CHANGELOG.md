@@ -1,5 +1,59 @@
 # Changelog
 
+## [0.2.1](https://github.com/external-secrets-inc/web-ui/compare/v0.2.0...v0.2.1) (2024-10-07)
+
+
+### Bug Fixes
+
+* dependencies for prod ([0113b01](https://github.com/external-secrets-inc/web-ui/commit/0113b01b70fb30e9b5e0b490b9431f00fc63d5c7))
+* no devDependencies ([98a13de](https://github.com/external-secrets-inc/web-ui/commit/98a13de023c36be9a8bf08eb3cfbd0a57b3cd8ff))
+
+## [0.2.0](https://github.com/external-secrets-inc/web-ui/compare/v0.1.1...v0.2.0) (2024-10-05)
+
+
+### Features
+
+* :chart_with_upwards_trend: track agent creation ([6d6d41d](https://github.com/external-secrets-inc/web-ui/commit/6d6d41d43f1339cf314991998a6d23adc58005fe))
+* :chart_with_upwards_trend: track agent deletion ([015ca7c](https://github.com/external-secrets-inc/web-ui/commit/015ca7c55612e0e892d8c29c45f2fce864400a71))
+* :chart_with_upwards_trend: track agent dialog actions ([1a61aef](https://github.com/external-secrets-inc/web-ui/commit/1a61aefa35c93da34e931e8ec2962051591d3cd5))
+* :chart_with_upwards_trend: track login/signup steps and completion ([a4819f3](https://github.com/external-secrets-inc/web-ui/commit/a4819f309d15b2546d5e627ca96ac7a7e7ccc53d))
+* :chart_with_upwards_trend: track settings navigation and changes ([cd7a3b3](https://github.com/external-secrets-inc/web-ui/commit/cd7a3b33437072b65497bc7c180c9456a97a403a))
+* :chart_with_upwards_trend: track sign out ([3f2264e](https://github.com/external-secrets-inc/web-ui/commit/3f2264e49f4895f40610db088ed0b2de2e411c6b))
+* :lipstick: Add Shadcn ScrollArea ([31cabb3](https://github.com/external-secrets-inc/web-ui/commit/31cabb364d56e903fa8cc82cc8be278d340cb066))
+* :lipstick: Add Shadcn Sheet ([4088174](https://github.com/external-secrets-inc/web-ui/commit/408817487e3d00a2e9737a48872b1637377ef9cc))
+* :lipstick: Highlight navigation links based on current route ([29b65e7](https://github.com/external-secrets-inc/web-ui/commit/29b65e7b2547ef9161a9675858d413e9ca7a6436))
+* :sparkles: Add mobile menu with docs external link ([03a320e](https://github.com/external-secrets-inc/web-ui/commit/03a320e298a1663c559141af54dde5cc1da28f8e))
+* :sparkles: Add Shadcn and Radix components necessary for mobile menu ([e62451f](https://github.com/external-secrets-inc/web-ui/commit/e62451f15a16ecd77df7e31d70c640ecd5339aa0))
+* :sparkles: allow signing up again during verification proces ([654e389](https://github.com/external-secrets-inc/web-ui/commit/654e3894d19b488a93cd697963e710aa1d0f3a38))
+* :sparkles: Identify user on login for Segment ([82df22b](https://github.com/external-secrets-inc/web-ui/commit/82df22b3832eb430140a906bc3bafb0dfdb676e7))
+* :sparkles: Implement segment with router navigation tracking ([257c1f8](https://github.com/external-secrets-inc/web-ui/commit/257c1f8db687149d3b73326abcc84253985c2887))
+* add RequireActiveUser ([#54](https://github.com/external-secrets-inc/web-ui/issues/54)) ([1e70313](https://github.com/external-secrets-inc/web-ui/commit/1e7031391d426694191451f608e1cd56dd236668))
+* allow /docs to go to mintlify ([ca52de7](https://github.com/external-secrets-inc/web-ui/commit/ca52de7940af2e374f33b7d3e24f07c878218e6d))
+
+
+### Bug Fixes
+
+* :bug: add missing code from merge conflict ([f397702](https://github.com/external-secrets-inc/web-ui/commit/f397702722a3423bbada7a638863622386f5caf7))
+* :bug: Fix accessibility warnings ([affa3eb](https://github.com/external-secrets-inc/web-ui/commit/affa3ebea02e1519fb5ecdc91239213463a28fc8))
+* :bug: Fix page loads tracking ([168ec25](https://github.com/external-secrets-inc/web-ui/commit/168ec250dac0c1580dd79a46da19c823bf3029ea))
+* :bug: fix settings form abstraction and add tracking to it ([27a26c2](https://github.com/external-secrets-inc/web-ui/commit/27a26c209dc44f82813878ff9153e671e6df236a))
+* :bug: fix settings tabs overflow on narrower screens ([7f4633e](https://github.com/external-secrets-inc/web-ui/commit/7f4633eee7a50f95ac408c37df33873c69d1b6c2))
+* :bug: fix unresponsive app after opening dialog from dropdown ([1758243](https://github.com/external-secrets-inc/web-ui/commit/1758243591e57c2712abb7ff1fe31291e36e137b))
+* :lipstick: Add back ghost style to menu icon ([da33375](https://github.com/external-secrets-inc/web-ui/commit/da3337587aa6ef87cf376287b7c2b7a729df5417))
+* :lipstick: Fix main block padding ([716a145](https://github.com/external-secrets-inc/web-ui/commit/716a145737eda8edba5411ebcb664094d65e34fd))
+* '/docs/' and '/docs' must also work ([b7e1b5e](https://github.com/external-secrets-inc/web-ui/commit/b7e1b5ec0c5250d4bda620e40ba82eaa18c5e3c2))
+* build for docs ([5c98955](https://github.com/external-secrets-inc/web-ui/commit/5c98955ff1f4e5111653de55e7f9f3523af86e7b))
+* changing error msg ([6c7cfba](https://github.com/external-secrets-inc/web-ui/commit/6c7cfba27fbac182dca660321039554cb1ae03db))
+* defaults ([ab74c8a](https://github.com/external-secrets-inc/web-ui/commit/ab74c8a0af35b4d44312c936219ca420d15a9caa))
+* docs/docs bug ([2b8b403](https://github.com/external-secrets-inc/web-ui/commit/2b8b4036d79cebda261e688c2f40ccd9a18e3a69))
+* fixes redirect to properly load docs ([f946fd4](https://github.com/external-secrets-inc/web-ui/commit/f946fd49d328d3662e5db3b2ab6c7771623f8dc5))
+* no comments ([e517907](https://github.com/external-secrets-inc/web-ui/commit/e517907f5f242b09bf0d569f83673c1e0e1f6131))
+* ref organization on failure ([b72307e](https://github.com/external-secrets-inc/web-ui/commit/b72307e63f7ca50994ea5bb502ffea1fd77b2555))
+* remove comment ([defced5](https://github.com/external-secrets-inc/web-ui/commit/defced5f301452d37fd1be3b1095b826622c4c77))
+* update org success msg ([a541794](https://github.com/external-secrets-inc/web-ui/commit/a5417946373a33bdd5f50b9e8b803fcde0688c33))
+* verifies token before forwarding to /docs ([eefb467](https://github.com/external-secrets-inc/web-ui/commit/eefb46753fa247d4388f38e4194a4559872d672f))
+* webui port ([799c074](https://github.com/external-secrets-inc/web-ui/commit/799c0744922d55762f440986d2aa1d816628b027))
+
 ## [0.1.1](https://github.com/external-secrets-inc/web-ui/compare/v0.1.0...v0.1.1) (2024-09-23)
 
 

@@ -1,3 +1,4 @@
+import { trackSignedIn, trackSignupStepCompleted, trackSignupStepMovedBack } from "@/analytics";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -8,7 +9,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { login, signup } from "@/services/auth/authService";
+import { loginAndIdentifyUser } from "@/services/auth/authHelpers";
+import { signup } from "@/services/auth/authService";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LucideLoader } from "lucide-react";
 import { useRef, useState } from "react";
@@ -69,6 +71,7 @@ function SignupForm() {
 
   const handleSignupStep1Submit = (data: SignupStep1Data) => {
     setSignupData((prev) => ({ ...prev, ...data }));
+    trackSignupStepCompleted(1, data.organizationName);
     setStep(2);
   };
 
@@ -78,6 +81,8 @@ function SignupForm() {
     const retryDelay = 3000;
 
     try {
+      setLoading(true);
+
       await signup(
         finalData.email!,
         finalData.name!,
@@ -85,43 +90,27 @@ function SignupForm() {
         finalData.organizationURL!,
       );
 
+      trackSignupStepCompleted(2, finalData.organizationName);
+
       const tryLogin = async (attempt: number): Promise<boolean> => {
-        try {
-          const { token, tenantId, tenant, userId } = await login(
-            finalData.email!,
-            finalData.password!,
-            finalData.organizationURL!,
-            { suppressToast: true }
-          );
-
-          const isSignedIn = authKitSignIn({
-            auth: {
-              token,
-              type: "Bearer",
-            },
-            userState: {
-              email: finalData.email,
-              organizationName: finalData.organizationName,
-              name: finalData.name,
-              tenantId,
-              tenant,
-              userId,
-            },
-          });
-
-          if (isSignedIn) return true;
-
-          return false;
-        } catch (error) {
-          console.error(`Login attempt ${attempt} failed:`, error);
-          return false;
+        const success = await loginAndIdentifyUser({
+          email: finalData.email!,
+          password: finalData.password!,
+          tenantSlug: finalData.organizationURL!,
+          name: finalData.name!,
+          authKitSignIn,
+        });
+        if (success) {
+          return true;
         }
+        console.error(`Login attempt ${attempt} failed`);
+        return false;
       };
 
-      setLoading(true);
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         const success = await tryLogin(attempt);
         if (success) {
+          trackSignedIn(finalData.organizationURL!);
           setLoading(false);
           return navigate(`/${finalData.organizationURL}/agents`);
         }
@@ -134,7 +123,7 @@ function SignupForm() {
       setFormError(
         "Signup succeeded, but automatic login failed. Please try to log in manually."
       );
-    } catch (signupError) {
+    } catch {
       setLoading(false);
       setFormError("Signup failed. Please try again.");
     }
@@ -142,6 +131,7 @@ function SignupForm() {
 
   const handleBack = () => {
     setStep(1);
+    trackSignupStepMovedBack();
   };
 
   return (
@@ -229,7 +219,7 @@ function SignupStep1Form({ form, onSubmit }: SignupStep1FormProps) {
           control={form.control}
           name="organizationURL"
           render={({ field }) => {
-            const { ref, value, onChange, ...restField } = field;
+            const { onChange, ...restField } = field;
             return (
               <FormItem>
                 <FormLabel>Create an Organization URL</FormLabel>

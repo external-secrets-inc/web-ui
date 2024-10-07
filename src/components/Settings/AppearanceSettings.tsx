@@ -43,40 +43,33 @@ const AppearanceSettings: React.FC = () => {
     {
       title: 'Theme',
       content: (
-        <Form {...form}>
-          <form
-            id="appearance-form"
-            className='space-y-4'
-            autoComplete="off"
-            onSubmit={form.handleSubmit(handleSave)}
-          >
-            <FormField
-              control={form.control}
-              name="theme"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Mode</FormLabel>
-                  <FormControl>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a theme" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="light">Light</SelectItem>
-                        <SelectItem value="dark">Dark</SelectItem>
-                        <SelectItem value="system">System</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </form>
-        </Form>
+        <>
+          <FormField
+            control={form.control}
+            name="theme"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Mode</FormLabel>
+                <FormControl>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a theme" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="light">Light</SelectItem>
+                      <SelectItem value="dark">Dark</SelectItem>
+                      <SelectItem value="system">System</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </>
       ),
     },
   ];

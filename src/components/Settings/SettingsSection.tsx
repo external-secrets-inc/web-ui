@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { UseFormReturn } from "react-hook-form";
+import { UseFormReturn, FormProvider } from "react-hook-form";
+import { trackSettingsSectionModified } from "@/analytics";
 
 interface Subsection {
   title: string;
@@ -18,8 +19,22 @@ interface SettingsSectionProps {
 const SettingsSection: React.FC<SettingsSectionProps> = ({ title, description, form, onSubmit, subsections }) => {
   const isDirty = form.formState.isDirty;
 
+  // Only send values for certain sections due to sensitive data
+  const sectionsToSendValues: { [key: string]: boolean } = {
+    "Appearance": true,
+  };
+
+  const handleSettingsSectionFormSubmit = (values: any) => {
+    if (sectionsToSendValues[title]) {
+      trackSettingsSectionModified(title, values);
+    } else {
+      trackSettingsSectionModified(title);
+    }
+    onSubmit(values);
+  };
+
   return (
-    <>
+    <FormProvider {...form}>
       <div className='border-b pb-6 mb-6'>
         <h2 className='text-sm font-semibold'>{title}</h2>
         <h3 className='text-sm text-muted-foreground'>{description}</h3>
@@ -38,7 +53,7 @@ const SettingsSection: React.FC<SettingsSectionProps> = ({ title, description, f
         id={`${title.toLowerCase()}-form`}
         className="flex gap-2 justify-end mt-6 py-4 border-t sticky bottom-0 bg-background"
         autoComplete="off"
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={form.handleSubmit(handleSettingsSectionFormSubmit)}
       >
         {isDirty && (
           <Button
@@ -57,7 +72,7 @@ const SettingsSection: React.FC<SettingsSectionProps> = ({ title, description, f
           Save
         </Button>
       </form>
-    </>
+    </FormProvider>
   );
 };
 

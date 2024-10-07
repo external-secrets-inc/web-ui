@@ -1,3 +1,4 @@
+import { trackLoginStepCompleted, trackLoginStepMovedBack, trackSignedIn } from "@/analytics";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -8,8 +9,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { login } from "@/services/auth/authService";
-import { getUserData } from '@/services/users/usersService';
+import { loginAndIdentifyUser } from "@/services/auth/authHelpers";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { isAxiosError } from "axios";
 import { LucideLoader } from "lucide-react";
@@ -67,6 +67,7 @@ function LoginForm() {
 
   const handleLoginStep1Submit = (data: LoginStep1Data) => {
     setLoginData((prev) => ({ ...prev, ...data }));
+    trackLoginStepCompleted(1);
     setStep(2);
   };
 
@@ -76,29 +77,17 @@ function LoginForm() {
     setLoading(true);
 
     try {
-      const { token, tenantId, tenant, userId } = await login(
-        finalData.email!,
-        finalData.password!,
-        finalData.organizationURL!,
-      );
-
-      const userDetails = await getUserData(userId!, { manualToken: token });
-      const isSignedIn = authKitSignIn({
-        auth: {
-          token,
-          type: "Bearer",
-        },
-        userState: {
-          email: finalData.email,
-          organizationURL: finalData.organizationURL,
-          name: userDetails.name,
-          tenantId,
-          tenant,
-          userId,
-        },
+      const success = await loginAndIdentifyUser({
+        email: finalData.email!,
+        password: finalData.password!,
+        tenantSlug: finalData.organizationURL!,
+        authKitSignIn,
       });
 
-      if (isSignedIn) {
+      trackLoginStepCompleted(2);
+
+      if (success) {
+        trackSignedIn(finalData.organizationURL!);
         setLoading(false);
         return navigate(`/${finalData.organizationURL}/agents`);
       }
@@ -122,6 +111,7 @@ function LoginForm() {
 
   const handleBack = () => {
     setStep(1);
+    trackLoginStepMovedBack();
   };
 
   return (

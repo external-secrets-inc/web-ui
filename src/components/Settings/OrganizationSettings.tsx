@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import SettingsSection from './SettingsSection';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { getAccountData, updateAccountData } from '@/services/account/accountService';
 import { toast } from "sonner";
@@ -49,7 +49,7 @@ const OrganizationSettings: React.FC = () => {
       ...values,
       contact_phone: values.contact_phone || "",
     };
-  
+
     try {
       await updateAccountData(dataToSend);
       toast.success('Organization details updated successfully');
@@ -63,64 +63,57 @@ const OrganizationSettings: React.FC = () => {
     {
       title: 'Contact Information',
       content: (
-        <Form {...form}>
-          <form
-            id="organization-form"
-            className='space-y-4'
-            autoComplete="off"
-            onSubmit={form.handleSubmit(handleSave)}
-          >
-            <FormField
-              control={form.control}
-              name="contact_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Contact Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="John Doe"
-                      autoFocus
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="contact_email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Contact Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="you@company.com"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="contact_phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Contact Phone</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="+1 123-456-7890"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </form>
-        </Form>
+        <>
+          <FormField
+            control={form.control}
+            name="contact_name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Contact Name</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="John Doe"
+                    autoFocus
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="contact_email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Contact Email</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="you@company.com"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="contact_phone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Contact Phone</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="+1 123-456-7890"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </>
       ),
     },
   ];
