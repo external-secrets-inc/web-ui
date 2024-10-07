@@ -26,7 +26,7 @@ const ForgotPasswordSchema = z.object({
 
 type ForgotPasswordData = z.infer<typeof ForgotPasswordSchema>;
 
-function ForgotPasswordForm() {
+function ForgotPassword() {
   const [forgotPasswordData] = useState<ForgotPasswordData>({ tenant: "", email: "" });
   const [loading, setLoading] = useState(false)
   const [formError, setFormError] = useState("")
@@ -144,4 +144,4 @@ function ForgotPasswordForm() {
 }
 
 
-export default ForgotPasswordForm;
+export default ForgotPassword;

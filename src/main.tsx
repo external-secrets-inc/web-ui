@@ -1,6 +1,6 @@
 import { ListAgents } from "@/components/agents/ListAgents";
 import AppPageHeader from "@/components/AppPageHeader";
-import ForgotPasswordForm from "@/components/Auth/ForgotPassword";
+import ForgotPassword from "@/components/Auth/ForgotPassword";
 import ResetPassword from "@/components/Auth/ResetPassword";
 import AxiosInterceptor from "@/components/AxiosInterceptor";
 import NavigateWithOrg from "@/components/NavigateWithOrg";
@@ -37,7 +37,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/forgot-password',
-    element: <ForgotPasswordForm />,
+    element: <ForgotPassword />,
   },
   {
     path: '/reset-password',
