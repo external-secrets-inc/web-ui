@@ -44,7 +44,7 @@ const SettingsSection: React.FC<SettingsSectionProps> = ({ title, description, f
           <div>
             <h4 className='text-sm font-semibold'>{subsection.title}</h4>
           </div>
-          <div className="flex flex-col h-full">
+          <div className="flex flex-col gap-5 h-full">
             {subsection.content}
           </div>
         </section>

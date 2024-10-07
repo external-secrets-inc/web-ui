@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -18,18 +18,17 @@ import { IUserData } from "@/types";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Cannot be empty" }),
-  email: z.string().email({ message: "Invalid email address" }),
 });
 
 type FormSchemaType = z.infer<typeof formSchema>;
 
 const ProfileSettings: React.FC = () => {
   const authUser = useAuthUser<IUserData>();
+  const [email, setEmail] = useState<string | null>(null);
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      email: "",
     },
   });
 
@@ -41,8 +40,8 @@ const ProfileSettings: React.FC = () => {
           const userData = await getUserData(authUser.userId);
           form.reset({
             name: userData.name,
-            email: userData.email,
           });
+          setEmail(userData.email);
         } catch (error) {
           toast.error('Failed to load profile data');
         }
@@ -87,22 +86,12 @@ const ProfileSettings: React.FC = () => {
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Your Email"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className='space-y-2'>
+            <FormLabel>Email</FormLabel>
+            <p className="text-sm text-muted-foreground">
+              {email}
+            </p>
+          </div>
         </>
       ),
     },

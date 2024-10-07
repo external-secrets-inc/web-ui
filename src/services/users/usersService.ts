@@ -14,7 +14,7 @@ export async function getUserData(userId: string, options: Partial<ApiWrapperOpt
 }
 
 // Update user data
-export async function updateUserData(userId: string, userData: { name: string; email: string }, options: Partial<ApiWrapperOptions> = {}) {
+export async function updateUserData(userId: string, userData: { name: string; }, options: Partial<ApiWrapperOptions> = {}) {
   const headers = await getAuthHeaders();
 
   return apiWrapper(async () => {
