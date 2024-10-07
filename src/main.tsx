@@ -1,5 +1,7 @@
 import { ListAgents } from "@/components/agents/ListAgents";
 import AppPageHeader from "@/components/AppPageHeader";
+import ForgotPassword from "@/components/Auth/ForgotPassword";
+import ResetPassword from "@/components/Auth/ResetPassword";
 import AxiosInterceptor from "@/components/AxiosInterceptor";
 import NavigateWithOrg from "@/components/NavigateWithOrg";
 import { NotFound } from "@/components/NotFound";
@@ -40,6 +42,14 @@ const router = createBrowserRouter([
   {
     path: '/login',
     element: <NavigateWithOrg to="/agents" fallbackToLogin replace />,
+  },
+  {
+    path: '/forgot-password',
+    element: <ForgotPassword />,
+  },
+  {
+    path: '/reset-password',
+    element: <ResetPassword />,
   },
   {
     path: '/:org',
