@@ -11,9 +11,9 @@ import { Input } from "@/components/ui/input";
 import { forgotPassword } from "@/services/forgotPassword/forgotPasswordService";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LucideLoader } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
 import zValidations from "./fields/zValidations";
@@ -30,6 +30,8 @@ function ForgotPassword() {
   const [forgotPasswordData] = useState<ForgotPasswordData>({ tenant: "", email: "" });
   const [loading, setLoading] = useState(false)
   const [formError, setFormError] = useState("")
+  const location = useLocation()
+  const toastIdRef = useRef<string | number | null>(null);
 
   const form = useForm<ForgotPasswordData>({
     resolver: zodResolver(ForgotPasswordSchema),
@@ -39,12 +41,26 @@ function ForgotPassword() {
     },
   });
 
+  useEffect(() => {
+    return () => {
+      if (toastIdRef.current) {
+        toast.dismiss(toastIdRef.current);
+      }
+    };
+  }, [location])
+
   async function onSubmit(values: ForgotPasswordData) {
     setLoading(true)
+    setFormError("")
     try {
-      await forgotPassword(values.email, values.tenant)
-      toast.success('Check your email', {
-        description: 'We sent instrutions to reset your password'
+      await forgotPassword(values.email, values.tenant);
+      toastIdRef.current = toast.success('Check your email', {
+        description: 'We sent instructions to reset your password',
+        duration: Infinity,
+        cancel: {
+          label: 'Dismiss',
+          onClick: () => {},
+        },
       });
     } catch (e) {
       setFormError("Failed to start the reset password flow")
@@ -53,10 +69,9 @@ function ForgotPassword() {
     }
   }
 
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null)
 
   return (
-    <>
     <div className="flex flex-col items-center h-screen">
       <div className="max-w-md w-full px-4 py-10 m-auto">
         <header className="mb-8">
@@ -136,12 +151,10 @@ function ForgotPassword() {
             </div>
           </form>
         </Form>
-        {formError && <div className="text-red-500">{formError}</div>}
+        {formError && <div className="mt-4 text-red-500">{formError}</div>}
       </div>
     </div>
-    </>
   );
 }
-
 
 export default ForgotPassword;
