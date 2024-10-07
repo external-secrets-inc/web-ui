@@ -144,7 +144,7 @@ data:
 
         local response_body = {}
         local res, code, headers, status = socket.request{
-            url = "https://api.dev.externalsecrets.com/api/user-info",
+            url = "https://api.{{ .Values.environment }}.externalsecrets.com/api/user-info",
             method = "GET",
             headers = {
                 ["Authorization"] = "Bearer " .. token,
