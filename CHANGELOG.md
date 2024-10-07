@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.3](https://github.com/external-secrets-inc/web-ui/compare/v0.2.2...v0.2.3) (2024-10-07)
+
+
+### Bug Fixes
+
+* :bug: make profile email in settings read-only ([#71](https://github.com/external-secrets-inc/web-ui/issues/71)) ([67daf7a](https://github.com/external-secrets-inc/web-ui/commit/67daf7a6ad9d193eb3c359e38f0098ab8e9e1df1))
+
 ## [0.2.2](https://github.com/external-secrets-inc/web-ui/compare/v0.2.1...v0.2.2) (2024-10-07)
 
 
