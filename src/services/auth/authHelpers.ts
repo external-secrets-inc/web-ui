@@ -84,6 +84,6 @@ export const loginAndIdentifyUser = async ({
     return false;
   } catch (error) {
     console.error("Failed to login:", error);
-    return false;
+    throw error;
   }
 };
