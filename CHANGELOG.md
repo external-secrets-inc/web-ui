@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.4](https://github.com/external-secrets-inc/web-ui/compare/v0.2.3...v0.2.4) (2024-10-07)
+
+
+### Bug Fixes
+
+* :bug: quickfix login retry attempts after signup ([60bb754](https://github.com/external-secrets-inc/web-ui/commit/60bb75481a721c45ec264b57736fef759171bccd))
+
 ## [0.2.3](https://github.com/external-secrets-inc/web-ui/compare/v0.2.2...v0.2.3) (2024-10-07)
 
 
