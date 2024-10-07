@@ -14,7 +14,8 @@ import { getUserData, updateUserData } from '@/services/users/usersService';
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
 import { toast } from "sonner";
 import SettingsSection from './SettingsSection';
-import { IUserData } from "@/types";
+import { BackendUserData, IUserData } from "@/types";
+import { Skeleton } from '@/components/ui/skeleton';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Cannot be empty" }),
@@ -23,8 +24,8 @@ const formSchema = z.object({
 type FormSchemaType = z.infer<typeof formSchema>;
 
 const ProfileSettings: React.FC = () => {
-  const authUser = useAuthUser<IUserData>();
-  const [email, setEmail] = useState<string | null>(null);
+  const userId = useAuthUser<IUserData>()?.userId;
+  const [userData, setUserData] = useState<BackendUserData | null>(null);
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -35,13 +36,13 @@ const ProfileSettings: React.FC = () => {
   // Fetch user data when the component mounts
   useEffect(() => {
     const fetchData = async () => {
-      if (authUser?.userId) {
+      if (userId) {
         try {
-          const userData = await getUserData(authUser.userId);
+          const data = await getUserData(userId);
+          setUserData(data);
           form.reset({
-            name: userData.name,
+            name: data.name,
           });
-          setEmail(userData.email);
         } catch (error) {
           toast.error('Failed to load profile data');
         }
@@ -49,13 +50,13 @@ const ProfileSettings: React.FC = () => {
     };
 
     fetchData();
-  }, [authUser?.userId]);
+  }, [userId]);
 
   // Handle Save function
   async function handleSave(values: FormSchemaType) {
-    if (authUser?.userId) {
+    if (userData) {
       try {
-        await updateUserData(authUser.userId, values);
+        await updateUserData(userData.id, values);
         toast.success('Profile updated successfully');
         form.reset(values);
       } catch (error) {
@@ -88,9 +89,10 @@ const ProfileSettings: React.FC = () => {
           />
           <div className='space-y-2'>
             <FormLabel>Email</FormLabel>
-            <p className="text-sm text-muted-foreground">
-              {email}
-            </p>
+            { userData
+              ? <p className="text-sm text-muted-foreground">{userData?.email}</p>
+              : <Skeleton className='h-5 w-[stretch] max-w-48' />
+            }
           </div>
         </>
       ),
