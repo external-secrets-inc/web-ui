@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.1](https://github.com/external-secrets-inc/web-ui/compare/v0.2.0...v0.2.1) (2024-10-07)
+
+
+### Bug Fixes
+
+* dependencies for prod ([0113b01](https://github.com/external-secrets-inc/web-ui/commit/0113b01b70fb30e9b5e0b490b9431f00fc63d5c7))
+* no devDependencies ([98a13de](https://github.com/external-secrets-inc/web-ui/commit/98a13de023c36be9a8bf08eb3cfbd0a57b3cd8ff))
+
 ## [0.2.0](https://github.com/external-secrets-inc/web-ui/compare/v0.1.1...v0.2.0) (2024-10-05)
 
 
