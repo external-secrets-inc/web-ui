@@ -58,7 +58,7 @@ export const trackLoginStepMovedBack = () => {
 };
 
 export const trackSignupStepCompleted = (step: number, data: any) => {
-  track("Signup Step Completed", { step, ...data });
+  track("Signup Step Completed", { step, data });
 };
 
 export const trackSignupStepMovedBack = () => {
