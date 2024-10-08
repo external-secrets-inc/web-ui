@@ -52,6 +52,7 @@ function LoginForm() {
   const [loading, setLoading] = useState<boolean>(false);
   const authKitSignIn = useSignIn();
   const navigate = useNavigate();
+
   const loginStep1Form = useForm<LoginStep1Data>({
     resolver: zodResolver(LoginStep1Schema),
     defaultValues: { organizationURL: "" },
@@ -72,12 +73,30 @@ function LoginForm() {
   };
 
   const handleLoginStep2Submit = async (data: LoginStep2Data) => {
+    setLoading(true);
     const finalData = { ...loginData, ...data };
     const stockError = "Something went wrong. Please try again.";
-    setLoading(true);
+
+    const handleLoginErrors = (error: any) => {
+      if (isAxiosError(error)) {
+        const responseError = error.response?.data?.errors?.body;
+
+        if (responseError?.includes("invalid username/password")) {
+          return setFormError("Invalid login credentials");
+        }
+
+        if (responseError?.includes("invalid tenant")) {
+          setStep(1);
+          return loginStep1Form.setError("organizationURL", { type: "manual", message: "Invalid Organization URL" });
+        }
+      }
+
+      console.error("Non-Axios error:", error);
+      setFormError(stockError);
+    };
 
     try {
-      const success = await loginAndIdentifyUser({
+      const hasSignedIn = await loginAndIdentifyUser({
         email: finalData.email!,
         password: finalData.password!,
         tenantSlug: finalData.organizationURL!,
@@ -86,24 +105,14 @@ function LoginForm() {
 
       trackLoginStepCompleted(2);
 
-      if (success) {
+      if (hasSignedIn) {
         trackSignedIn(finalData.organizationURL!);
-        setLoading(false);
         return navigate(`/${finalData.organizationURL}/agents`);
       }
 
-      setFormError(stockError);
+      throw new Error(stockError);
     } catch (err) {
-      if (isAxiosError(err)) {
-        const responseError = err.response?.data?.errors?.body;
-
-        if (responseError === "invalid username/password") {
-          setLoading(false);
-          return setFormError("Invalid login credentials");
-        }
-      }
-
-      setFormError(stockError);
+      handleLoginErrors(err);
     } finally {
       setLoading(false);
     }
@@ -111,6 +120,7 @@ function LoginForm() {
 
   const handleBack = () => {
     setStep(1);
+    setFormError(null);
     trackLoginStepMovedBack();
   };
 
