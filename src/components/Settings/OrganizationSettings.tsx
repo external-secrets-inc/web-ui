@@ -106,7 +106,7 @@ const OrganizationSettings: React.FC = () => {
 
   async function handleDeleteAccount() {
     try {
-      await deleteAccount(accountData.tenant_id);
+      await deleteAccount();
       toast('Organization deleted');
       setIsDeleteDialogOpen(false);
       signOut();

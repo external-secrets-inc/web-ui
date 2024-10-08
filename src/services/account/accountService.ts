@@ -31,11 +31,11 @@ export async function updateAccountData(accountData: { contact_email: string; co
   }, { defaultError: 'Failed to update account details', ...options });
 }
 
-export async function deleteAccount(tenantId: string, options: Partial<ApiWrapperOptions> = {}) {
+export async function deleteAccount(options: Partial<ApiWrapperOptions> = {}) {
   const headers = await getAuthHeaders();
 
   return apiWrapper(async () => {
-    const response = await axiosInstance.delete(`/api/account/${tenantId}`, { headers });
+    const response = await axiosInstance.delete(`/api/account`, { headers });
     return response.data;
   }, { defaultError: 'Failed to delete account', ...options });
 }
