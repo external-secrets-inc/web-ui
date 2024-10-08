@@ -92,7 +92,7 @@ function SignupForm() {
 
       trackSignupStepCompleted(2, finalData.organizationName);
 
-      const tryLogin = async (attempt: number): Promise<boolean> => {
+      const tryLogin = async (): Promise<boolean> => {
         const success = await loginAndIdentifyUser({
           email: finalData.email!,
           password: finalData.password!,
@@ -108,7 +108,7 @@ function SignupForm() {
 
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
-          const success = await tryLogin(attempt);
+          const success = await tryLogin();
           if (success) {
             trackSignedIn(finalData.organizationURL!);
             setLoading(false);
