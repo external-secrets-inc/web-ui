@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
+import { useFormContext } from "react-hook-form";
 import { FormControl, FormField, FormItem, FormLabel } from "../../ui/form";
 import { Input } from "../../ui/input";
 import { CheckSquareIcon, SquareIcon } from "lucide-react";
-import { UseFormReturn } from "react-hook-form";
 
 interface NewPasswordFieldProps {
-  form: UseFormReturn;
-  submittedWithErrors: boolean
+  submittedWithErrors: boolean;
 }
 
-function NewPasswordField({ form, submittedWithErrors }: NewPasswordFieldProps) {
-  const [password, setPassword] = useState(form.getValues("password"));
+function NewPasswordField({ submittedWithErrors }: NewPasswordFieldProps) {
+  const { getValues, setValue, control } = useFormContext();
+  const [password, setPassword] = useState(getValues("password"));
   const [passwordValidations, setPasswordValidations] = useState({
     length: password.length >= 12,
     uppercase: /[A-Z]/.test(password),
@@ -30,12 +30,12 @@ function NewPasswordField({ form, submittedWithErrors }: NewPasswordFieldProps) 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setPassword(value);
-    form.setValue("password", value);
+    setValue("password", value);
   };
 
   return (
     <FormField
-      control={form.control}
+      control={control}
       name="password"
       render={({ field }) => (
         <FormItem>
@@ -109,4 +109,4 @@ function NewPasswordField({ form, submittedWithErrors }: NewPasswordFieldProps) 
   );
 }
 
-export default NewPasswordField
+export default NewPasswordField;

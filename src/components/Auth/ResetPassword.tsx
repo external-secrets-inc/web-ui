@@ -12,7 +12,7 @@ import { resetPassword } from "@/services/forgotPassword/forgotPasswordService";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LucideLoader } from "lucide-react";
 import { useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, FormProvider } from "react-hook-form";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -30,9 +30,14 @@ const ResetPasswordSchema = z.object({
 type ResetPasswordData = z.infer<typeof ResetPasswordSchema>;
 
 function ResetPasswordForm() {
-  let [searchParams, _] = useSearchParams()
-  const [forgotPasswordData] = useState<ResetPasswordData>({ tenant: "", email: "", token: searchParams.get("token"), password: "" });
-  const form = useForm<ResetPasswordData>({
+  let [searchParams, _] = useSearchParams();
+  const [forgotPasswordData] = useState<ResetPasswordData>({
+    tenant: "",
+    email: "",
+    token: searchParams.get("token") || "",
+    password: "",
+  });
+  const formMethods = useForm<ResetPasswordData>({
     resolver: zodResolver(ResetPasswordSchema),
     defaultValues: { ...forgotPasswordData },
   });
@@ -56,7 +61,7 @@ function ResetPasswordForm() {
     setLoading(true)
     try {
       await resetPassword(values.email, values.tenant, values.password, values.token)
-      toast.success('Password updated successfuly', { description: 'Please log in' });
+      toast.success('Password updated successfully', { description: 'Please log in' });
       navigate('/login')
     } finally {
       setLoading(false)
@@ -75,13 +80,13 @@ function ResetPasswordForm() {
           </h1>
           <p className="text-[15px] text-muted-foreground">
             Once it's set, you can use it to log in again
-           </p>
+          </p>
         </header>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit, handleError)} className="grid gap-4">
+        <FormProvider {...formMethods}>
+          <form onSubmit={formMethods.handleSubmit(handleSubmit, handleError)} className="grid gap-4">
             <FormField
-              control={form.control}
+              control={formMethods.control}
               name="tenant"
               render={({ field }) => {
                 const { ref, ...restField } = field;
@@ -112,7 +117,7 @@ function ResetPasswordForm() {
               }}
             />
             <FormField
-              control={form.control}
+              control={formMethods.control}
               name="email"
               render={({ field }) => (
                 <FormItem>
@@ -130,7 +135,7 @@ function ResetPasswordForm() {
               )}
             />
 
-            <NewPasswordField form={form} submittedWithErrors={submittedWithErrors}/>
+            <NewPasswordField submittedWithErrors={submittedWithErrors} />
 
             <div className="flex justify-between">
               <Button
@@ -143,12 +148,11 @@ function ResetPasswordForm() {
               </Button>
             </div>
           </form>
-        </Form>
+        </FormProvider>
         {formError && <div className="text-red-500">{formError}</div>}
       </div>
     </div>
   );
 }
-
 
 export default ResetPasswordForm;
