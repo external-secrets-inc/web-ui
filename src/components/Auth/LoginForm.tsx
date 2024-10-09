@@ -16,8 +16,8 @@ const LoginOrganizationURLSchema = z.object({
 });
 
 const LoginCredentialsSchema = z.object({
-  email: z.string().email("Invalid email address."),
-  password: z.string().min(1, "Cannot be empty."),
+  email: zValidations.email,
+  password: zValidations.existingPassword,
 });
 
 type LoginOrganizationURLData = z.infer<typeof LoginOrganizationURLSchema>;

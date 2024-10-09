@@ -16,7 +16,7 @@ interface LoginOrganizationURLStepProps {
 
 export function LoginOrganizationURLStep({ onSubmit }: LoginOrganizationURLStepProps) {
   const { control, handleSubmit } = useFormContext();
-  const inputRef = useRef<HTMLInputElement>(null);
+  const orgURLref = useRef<HTMLInputElement>(null);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
@@ -30,14 +30,14 @@ export function LoginOrganizationURLStep({ onSubmit }: LoginOrganizationURLStepP
               <FormLabel>Enter your Organization URL</FormLabel>
               <FormControl>
                 <div
-                  onClick={() => inputRef.current?.focus()}
+                  onClick={() => orgURLref.current?.focus()}
                   className="border-input border rounded-md flex items-baseline focus-within:ring-ring focus-within:ring-1"
                 >
                   <span className="pl-3 text-sm text-muted-foreground/50">
                     app.externalsecrets.com/
                   </span>
                   <Input
-                    ref={inputRef}
+                    ref={orgURLref}
                     autoFocus
                     className="border-none pl-0 focus-visible:ring-0"
                     autoCapitalize="none"

@@ -98,7 +98,7 @@ const SignupOrganizationInfoStep = ({ onSubmit }: { onSubmit: () => void }) => {
                   <Input
                     ref={(e) => {
                       ref(e); // Assign to react-hook-form ref
-                      if (e) orgURLRef.current = e; // Assign to local ref
+                      orgURLRef.current = e; // Assign to local ref
                     }}
                     className="border-none pl-0 focus-visible:ring-0"
                     id="organizationURL"
