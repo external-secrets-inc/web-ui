@@ -11,6 +11,7 @@ import SignupOrganizationInfoStep from "./SignupOrganizationInfoStep";
 import SignupCredentialsStep from "./SignupCredentialsStep";
 import zValidations from "./fields/zValidations";
 import { isAxiosError } from "axios";
+import { toast } from "sonner";
 
 const OrganizationInfoSchema = z.object({
   organizationName: zValidations.organizationName,
@@ -109,7 +110,10 @@ function SignupForm() {
         }
       }
 
-      setFormError("Signup succeeded, but automatic login failed. Please try to log in manually.");
+      toast.success('Organization created successfully',
+        { description: 'You can now log in with your credentials' }
+      );
+      navigate('/login');
     } catch (error) {
       handleSignupErrors(error);
     } finally {
