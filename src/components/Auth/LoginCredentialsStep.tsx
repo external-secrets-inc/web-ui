@@ -72,7 +72,7 @@ export function LoginCredentialsStep({ onSubmit, onBack, loading }: LoginCredent
       <div className="flex justify-between">
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           tabIndex={4}
           onClick={onBack}
         >

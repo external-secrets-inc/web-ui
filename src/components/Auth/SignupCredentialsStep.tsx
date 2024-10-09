@@ -54,7 +54,7 @@ const SignupCredentialsStep = ({ onSubmit, onBack, loading }: { onSubmit: (data:
       <div className="flex justify-between">
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           onClick={onBack}
         >
           Back

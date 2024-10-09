@@ -4,6 +4,8 @@ import logoESIFullWhite from "@/assets/logo-esi-full-white.svg";
 import { Link } from "react-router-dom";
 import LoginForm from "./LoginForm";
 import SignupForm from "./SignupForm";
+import { Button } from "@/components/ui/button";
+import { LucideArrowLeft } from "lucide-react";
 
 interface AuthProps {
   variant: 'login' | 'signup';
@@ -14,11 +16,16 @@ function Auth({ variant }: AuthProps) {
     <div className="p-2 lg:p-14 xl:p-20 min-h-dvh flex flex-col">
       <div className="z-10 w-full flex-1 flex flex-col max-w-[1600px] mx-auto lg:grid lg:grid-cols-[minmax(30%,60%)_minmax(auto,auto)] rounded-[32px] overflow-hidden backdrop-brightness-[2.75] dark:backdrop-brightness-75 dark:backdrop-contrast-200 bg-background/50 dark:bg-background/90">
         <div className="relative contain-content p-8 lg:p-20 flex flex-col flex-0 gap-10 items-start justify-between rounded-[inherit]">
-          <img
-            className="max-h-10 lg:max-h-12"
-            src={logoESIFullWhite}
-            alt="External Secrets"
-          />
+          <a
+            href="https://externalsecrets.com"
+            tabIndex={-1}
+          >
+            <img
+              className="h-10 lg:h-12 w-auto"
+              src={logoESIFullWhite}
+              alt="External Secrets"
+            />
+          </a>
           <h1 className="text-base sm:text-2xl font-bold text-white lg:text-3xl xl:text-5xl lg:max-w-[310px] xl:max-w-[480px]">
             Your seamless secrets management journey starts here
           </h1>
@@ -27,12 +34,24 @@ function Auth({ variant }: AuthProps) {
             style={{ backgroundImage: `url('${BGAuthHero}')` }}
           />
         </div>
-        <div className="flex items-center justify-center p-8 pb-12 lg:p-14 flex-1">
-          <div className="mx-auto grid w-[352px] gap-6">
+        <div className="flex flex-col gap-6 items-center justify-between p-8 pb-12 lg:p-14 flex-1">
+          <div className="w-[352px]">
+
+          </div>
+          <div className="m-auto grid w-[352px] gap-6">
             <div className="grid gap-2">
               <h1 className="text-3xl font-bold">{variant === 'login' ? 'Log in to an Organization' : 'Create an Organization'}</h1>
               <p className="text-pretty text-muted-foreground">
-                {variant === 'login' ? 'Welcome back! Enter with your Organization credentials' : "Welcome! Let's get started into your managed ESO experience."}
+              {variant === 'login' ? (
+                <>
+                  Welcome back!<br />
+                  Enter with your Organization credentials
+                </>
+              ) : (
+                <>
+                Let's get started into your managed ESO experience
+                </>
+              )}
               </p>
             </div>
             {variant === 'login' ? (
@@ -57,6 +76,17 @@ function Auth({ variant }: AuthProps) {
                 </>
               )}
             </div>
+            <Button
+              variant="link"
+              size="inline"
+              className="text-foreground justify-self-start"
+              asChild
+            >
+              <a href="https://externalsecrets.com">
+                <LucideArrowLeft className="mr-2" /> Home
+              </a>
+
+            </Button>
           </div>
         </div>
       </div>
