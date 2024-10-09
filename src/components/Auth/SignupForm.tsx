@@ -64,7 +64,12 @@ function SignupForm() {
 
         if (responseError?.includes("could not create tenant: duplicate key value violates unique constraint")) {
           setStep("organizationInfo");
-          return formMethods.setError("organizationURL", { type: "manual", message: "This Organization URL is taken. Create a unique one or log in." });
+          formMethods.setError("organizationURL", { type: "manual", message: "This Organization URL is taken. Create a unique one or log in." });
+          // setTimeout is used to ensure the focus is set after the step set is rendered. Not sure what is the Reacty way to do this.
+          return setTimeout(() => {
+            formMethods.setFocus("organizationURL");
+          }, 0);
+
         }
       }
 
@@ -110,9 +115,9 @@ function SignupForm() {
         }
       }
 
-      toast.success('Organization created successfully',
-        { description: 'You can now log in with your credentials' }
-      );
+      toast.success('Organization created successfully', {
+        description: 'You can now log in with your credentials',
+      });
       navigate('/login');
     } catch (error) {
       handleSignupErrors(error);
