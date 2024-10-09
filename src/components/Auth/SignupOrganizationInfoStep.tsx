@@ -13,8 +13,7 @@ import { Button } from "@/components/ui/button";
 
 const SignupOrganizationInfoStep = ({ onSubmit }: { onSubmit: () => void }) => {
   const { handleSubmit, setValue, control } = useFormContext();
-  const orgURLRef = useRef<HTMLInputElement>(null);
-  const [organizationURL, setOrganizationURL] = useState("");
+  const orgURLRef = useRef<HTMLInputElement | null>(null);
   const [isURLManuallyEdited, setIsURLManuallyEdited] = useState(false);
 
   const handleOrganizationNameChange = (
@@ -25,7 +24,6 @@ const SignupOrganizationInfoStep = ({ onSubmit }: { onSubmit: () => void }) => {
     if (!isURLManuallyEdited) {
       let slugifiedValue = slugify(value, { lower: true, strict: true });
       slugifiedValue = slugifiedValue.replace(/[_\s]/g, "-");
-      setOrganizationURL(slugifiedValue);
       setValue("organizationURL", slugifiedValue);
     }
   };
@@ -34,7 +32,6 @@ const SignupOrganizationInfoStep = ({ onSubmit }: { onSubmit: () => void }) => {
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     setIsURLManuallyEdited(true);
-    setOrganizationURL(e.target.value);
     setValue("organizationURL", e.target.value);
   };
 
@@ -64,7 +61,10 @@ const SignupOrganizationInfoStep = ({ onSubmit }: { onSubmit: () => void }) => {
                 id="organizationName"
                 placeholder="Acme Inc."
                 {...field}
-                onChange={handleOrganizationNameChange}
+                onChange={(e) => {
+                  handleOrganizationNameChange(e);
+                  field.onChange(e);
+                }}
               />
             </FormControl>
             <FormMessage />
@@ -75,7 +75,7 @@ const SignupOrganizationInfoStep = ({ onSubmit }: { onSubmit: () => void }) => {
         control={control}
         name="organizationURL"
         render={({ field }) => {
-          const { onChange, ...restField } = field;
+          const { ref, onChange, ...restField } = field;
           return (
             <FormItem>
               <FormLabel>Create an Organization URL</FormLabel>
@@ -88,11 +88,13 @@ const SignupOrganizationInfoStep = ({ onSubmit }: { onSubmit: () => void }) => {
                     app.externalsecrets.com/
                   </span>
                   <Input
-                    ref={orgURLRef}
+                    ref={(e) => {
+                      ref(e); // Assign to react-hook-form ref
+                      if (e) orgURLRef.current = e; // Assign to local ref
+                    }}
                     className="border-none pl-0 focus-visible:ring-0"
                     id="organizationURL"
                     placeholder="acme-inc"
-                    value={organizationURL}
                     onChange={(e) => {
                       handleOrganizationURLChange(e);
                       onChange(e);
