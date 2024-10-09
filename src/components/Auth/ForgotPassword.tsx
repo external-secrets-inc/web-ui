@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import zValidations from "./fields/zValidations";
 import AppLogo from "@/components/AppLogo";
+import Cookies from 'js-cookie';
 
 const ForgotPasswordSchema = z.object({
   tenant: zValidations.organizationURL,
@@ -69,6 +70,11 @@ function ForgotPassword() {
     setFormError("")
     try {
       await forgotPassword(values.email, values.tenant);
+      // TODO: Remove these cookies when we are sending the necessary data from the token within the reset password email link
+      const tenMinutesFromNow = new Date(new Date().getTime() + 10 * 60 * 1000);
+      Cookies.set("forgotPasswordHelperOrganizationURL", values.tenant, { expires: tenMinutesFromNow });
+      Cookies.set("forgotPasswordHelperEmail", values.email, { expires: tenMinutesFromNow });
+
       toastIdRef.current = toast.success('Check your email', {
         description: 'We sent instructions to reset your password',
         duration: Infinity,
