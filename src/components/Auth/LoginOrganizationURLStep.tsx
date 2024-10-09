@@ -40,6 +40,7 @@ export function LoginOrganizationURLStep({ onSubmit }: LoginOrganizationURLStepP
                     ref={inputRef}
                     autoFocus
                     className="border-none pl-0 focus-visible:ring-0"
+                    autoCapitalize="none"
                     id="organizationURL"
                     placeholder="your-organization"
                     {...restField}

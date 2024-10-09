@@ -210,6 +210,7 @@ const OrganizationSettings: React.FC = () => {
                               ref={inputRef}
                               autoFocus
                               placeholder={accountData.tenant_id}
+                              autoCapitalize="none"
                               {...restField}
                             />
                           </FormControl>

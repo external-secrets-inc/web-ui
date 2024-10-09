@@ -32,6 +32,7 @@ export function LoginCredentialsStep({ onSubmit, onBack, loading }: LoginCredent
               <Input
                 autoFocus
                 id="email"
+                type="email"
                 placeholder="you@yourcompany.com"
                 tabIndex={1}
                 {...field}

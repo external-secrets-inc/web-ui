@@ -44,7 +44,14 @@ const SignupOrganizationInfoStep = ({ onSubmit }: { onSubmit: () => void }) => {
           <FormItem>
             <FormLabel>Your Full Name</FormLabel>
             <FormControl>
-              <Input autoFocus id="name" placeholder="Jane Doe" {...field} />
+              <Input
+                autoFocus
+                id="name"
+                placeholder="Jane Doe"
+                autoComplete="name"
+                autoCapitalize="words"
+                {...field}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -60,6 +67,7 @@ const SignupOrganizationInfoStep = ({ onSubmit }: { onSubmit: () => void }) => {
               <Input
                 id="organizationName"
                 placeholder="Acme Inc."
+                autoComplete="off"
                 {...field}
                 onChange={(e) => {
                   handleOrganizationNameChange(e);
@@ -95,6 +103,8 @@ const SignupOrganizationInfoStep = ({ onSubmit }: { onSubmit: () => void }) => {
                     className="border-none pl-0 focus-visible:ring-0"
                     id="organizationURL"
                     placeholder="acme-inc"
+                    autoCapitalize="none"
+                    autoComplete="off"
                     onChange={(e) => {
                       handleOrganizationURLChange(e);
                       onChange(e);

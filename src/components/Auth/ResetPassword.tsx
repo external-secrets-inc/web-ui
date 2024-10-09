@@ -105,6 +105,7 @@ function ResetPasswordForm() {
                           ref={inputRef}
                           autoFocus
                           className="border-none pl-0 focus-visible:ring-0"
+                          autoCapitalize="none"
                           id="tenant"
                           placeholder="your-organization"
                           {...restField}
@@ -126,6 +127,7 @@ function ResetPasswordForm() {
                     <Input
                       autoFocus
                       id="email"
+                      type="email"
                       placeholder="you@yourcompany.com"
                       {...field}
                     />
