@@ -127,7 +127,6 @@ function ResetPasswordForm() {
                     <Input
                       autoFocus
                       id="email"
-                      type="email"
                       placeholder="you@yourcompany.com"
                       {...field}
                     />

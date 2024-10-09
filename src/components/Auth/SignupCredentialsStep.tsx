@@ -40,7 +40,6 @@ const SignupCredentialsStep = ({ onSubmit, onBack, loading }: { onSubmit: (data:
               <Input
                 autoFocus
                 id="email"
-                type="email"
                 placeholder="you@yourcompany.com"
                 {...field}
               />

@@ -18,7 +18,7 @@ interface LoginCredentialsStepProps {
 }
 
 export function LoginCredentialsStep({ onSubmit, onBack, loading }: LoginCredentialsStepProps) {
-  const { control, handleSubmit } = useFormContext();
+  const { control, handleSubmit, getValues } = useFormContext();
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
@@ -32,7 +32,6 @@ export function LoginCredentialsStep({ onSubmit, onBack, loading }: LoginCredent
               <Input
                 autoFocus
                 id="email"
-                type="email"
                 placeholder="you@yourcompany.com"
                 tabIndex={1}
                 {...field}
@@ -51,6 +50,7 @@ export function LoginCredentialsStep({ onSubmit, onBack, loading }: LoginCredent
               <FormLabel>Password</FormLabel>
               <Link
                 to="/forgot-password"
+                state={{ organizationURL: getValues("organizationURL"), email: getValues("email") }}
                 className="text-sm underline leading-none"
                 tabIndex={5}
               >
