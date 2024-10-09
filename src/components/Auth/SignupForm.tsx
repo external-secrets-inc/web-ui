@@ -62,7 +62,8 @@ function SignupForm() {
         const responseError = error.response?.data?.errors?.body;
 
         if (responseError?.includes("could not create tenant: duplicate key value violates unique constraint")) {
-          return setFormError("This Organization URL is taken. Create a unique one or log in.");
+          setStep("organizationInfo");
+          return formMethods.setError("organizationURL", { type: "manual", message: "This Organization URL is taken. Create a unique one or log in." });
         }
       }
 
@@ -76,6 +77,7 @@ function SignupForm() {
         formData.name,
         formData.password,
         formData.organizationURL,
+        { suppressToast: true },
       );
 
       trackSignupStepCompleted(2, formData.organizationName);
