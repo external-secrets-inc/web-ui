@@ -48,7 +48,7 @@ function LoginForm() {
 
   const handleCredentialsStepSubmit = async (data: LoginCredentialsData) => {
     setLoading(true);
-    const stockError = "Something went wrong. Please try again.";
+    const stockError = "Login failed. Please try again.";
 
     const handleLoginErrors = (error: any) => {
       if (isAxiosError(error)) {

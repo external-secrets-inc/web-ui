@@ -10,6 +10,7 @@ import { signup } from "@/services/auth/authService";
 import SignupOrganizationInfoStep from "./SignupOrganizationInfoStep";
 import SignupCredentialsStep from "./SignupCredentialsStep";
 import zValidations from "./fields/zValidations";
+import { isAxiosError } from "axios";
 
 const OrganizationInfoSchema = z.object({
   organizationName: zValidations.organizationName,
@@ -52,8 +53,22 @@ function SignupForm() {
   const handleCredentialsSubmit = async () => {
     setLoading(true);
     const formData = formMethods.getValues();
+    const stockError = "Signup failed. Please try again.";
     const maxLoginRetries = 5;
     const loginRetryDelay = 3000;
+
+    const handleSignupErrors = (error: any) => {
+      if (isAxiosError(error)) {
+        const responseError = error.response?.data?.errors?.body;
+
+        if (responseError?.includes("could not create tenant: duplicate key value violates unique constraint")) {
+          return setFormError("This Organization URL is taken. Create a unique one or log in.");
+        }
+      }
+
+      console.error("Non-Axios error:", error);
+      setFormError(stockError);
+    };
 
     try {
       await signup(
@@ -66,20 +81,20 @@ function SignupForm() {
       trackSignupStepCompleted(2, formData.organizationName);
 
       const tryLogin = async (): Promise<boolean> => {
-        const success = await loginAndIdentifyUser({
+        const hasSignedIn = await loginAndIdentifyUser({
           email: formData.email,
           password: formData.password,
           tenantSlug: formData.organizationURL,
           name: formData.name,
           authKitSignIn,
         });
-        return success;
+        return hasSignedIn;
       };
 
       for (let attempt = 1; attempt <= maxLoginRetries; attempt++) {
         try {
-          const success = await tryLogin();
-          if (success) {
+          const hasSignedIn = await tryLogin();
+          if (hasSignedIn) {
             trackSignedIn(formData.organizationURL);
             setLoading(false);
             return navigate(`/${formData.organizationURL}/agents`);
@@ -94,8 +109,7 @@ function SignupForm() {
 
       setFormError("Signup succeeded, but automatic login failed. Please try to log in manually.");
     } catch (error) {
-      console.error("Signup error:", error);
-      setFormError("Signup failed. Please try again.");
+      handleSignupErrors(error);
     } finally {
       setLoading(false);
     }
