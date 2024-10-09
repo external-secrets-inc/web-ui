@@ -54,7 +54,7 @@ function SignupForm() {
     setLoading(true);
     const formData = formMethods.getValues();
     const stockError = "Signup failed. Please try again.";
-    const maxLoginRetries = 5;
+    const maxLoginRetries = 6;
     const loginRetryDelay = 3000;
 
     const handleSignupErrors = (error: any) => {
