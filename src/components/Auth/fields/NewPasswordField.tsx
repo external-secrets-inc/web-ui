@@ -2,8 +2,9 @@ import { useEffect, useState, forwardRef } from "react";
 import { useFormContext } from "react-hook-form";
 import { FormControl, FormField, FormItem, FormLabel } from "../../ui/form";
 import { Input } from "@/components/ui/input";
-import { CheckSquareIcon, SquareIcon } from "lucide-react";
+import { LucideCheckSquare, LucideSquare, LucideEye, LucideEyeOff } from "lucide-react";
 import { regexPasswordPattern, passwordMinLengthValue, regexIsUppercase, regexIsNumber, regexIsSpecialCharacter } from "./zValidations";
+import { Button } from "@/components/ui/button";
 
 interface NewPasswordFieldProps {
   submittedWithErrors: boolean;
@@ -13,6 +14,7 @@ const NewPasswordField = forwardRef<HTMLInputElement, NewPasswordFieldProps>(
   ({ submittedWithErrors }, ref) => {
     const { getValues, setValue, control } = useFormContext();
     const [password, setPassword] = useState(getValues("password"));
+    const [passwordVisible, setPasswordVisible] = useState(false);
     const [passwordValidations, setPasswordValidations] = useState({
       length: password.length >= passwordMinLengthValue,
       uppercase: regexIsUppercase.test(password),
@@ -35,6 +37,10 @@ const NewPasswordField = forwardRef<HTMLInputElement, NewPasswordFieldProps>(
       setValue("password", value);
     };
 
+    const togglePasswordVisibility = () => {
+      setPasswordVisible(!passwordVisible);
+    };
+
     return (
       <FormField
         control={control}
@@ -43,17 +49,30 @@ const NewPasswordField = forwardRef<HTMLInputElement, NewPasswordFieldProps>(
           <FormItem>
             <FormLabel>Password</FormLabel>
             <FormControl>
-              <Input
-                id="password"
-                type="password"
-                {...field}
-                value={password}
-                onChange={handlePasswordChange}
-                autoComplete="new-password"
-                pattern={regexPasswordPattern.source}
-                minLength={passwordMinLengthValue}
-                ref={ref}
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={passwordVisible ? "text" : "password"}
+                  {...field}
+                  value={password}
+                  onChange={handlePasswordChange}
+                  autoComplete="new-password"
+                  pattern={regexPasswordPattern.source}
+                  minLength={passwordMinLengthValue}
+                  className="pr-9"
+                  ref={ref}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  title={passwordVisible ? "Hide password" : "Show password"}
+                  onClick={togglePasswordVisibility}
+                  className="absolute inset-y-0 right-0"
+                >
+                  {passwordVisible ? <LucideEyeOff /> : <LucideEye />}
+                </Button>
+              </div>
             </FormControl>
             <ul className="mt-2 text-sm text-muted-foreground">
               <li
@@ -63,9 +82,9 @@ const NewPasswordField = forwardRef<HTMLInputElement, NewPasswordFieldProps>(
                   }`}
               >
                 {passwordValidations.uppercase ? (
-                  <CheckSquareIcon className="mr-2 text-green-500" />
+                  <LucideCheckSquare className="mr-2 text-green-500" />
                 ) : (
-                  <SquareIcon className="mr-2" />
+                  <LucideSquare className="mr-2" />
                 )}
                 At least one uppercase letter
               </li>
@@ -76,9 +95,9 @@ const NewPasswordField = forwardRef<HTMLInputElement, NewPasswordFieldProps>(
                   }`}
               >
                 {passwordValidations.number ? (
-                  <CheckSquareIcon className="mr-2 text-green-500" />
+                  <LucideCheckSquare className="mr-2 text-green-500" />
                 ) : (
-                  <SquareIcon className="mr-2" />
+                  <LucideSquare className="mr-2" />
                 )}
                 At least one number
               </li>
@@ -89,9 +108,9 @@ const NewPasswordField = forwardRef<HTMLInputElement, NewPasswordFieldProps>(
                   }`}
               >
                 {passwordValidations.specialChar ? (
-                  <CheckSquareIcon className="mr-2 text-green-500" />
+                  <LucideCheckSquare className="mr-2 text-green-500" />
                 ) : (
-                  <SquareIcon className="mr-2" />
+                  <LucideSquare className="mr-2" />
                 )}
                 At least one special character
               </li>
@@ -102,9 +121,9 @@ const NewPasswordField = forwardRef<HTMLInputElement, NewPasswordFieldProps>(
                   }`}
               >
                 {passwordValidations.length ? (
-                  <CheckSquareIcon className="mr-2 text-green-500" />
+                  <LucideCheckSquare className="mr-2 text-green-500" />
                 ) : (
-                  <SquareIcon className="mr-2" />
+                  <LucideSquare className="mr-2" />
                 )}
                 At least {passwordMinLengthValue} characters
               </li>

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   FormControl,
@@ -9,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useFormContext } from "react-hook-form";
 import { Link } from "react-router-dom";
-import { LucideLoader } from "lucide-react";
+import { LucideEye, LucideEyeOff, LucideLoader } from "lucide-react";
 
 interface LoginCredentialsStepProps {
   onSubmit: () => void;
@@ -19,6 +20,11 @@ interface LoginCredentialsStepProps {
 
 export function LoginCredentialsStep({ onSubmit, onBack, loading }: LoginCredentialsStepProps) {
   const { control, handleSubmit, getValues } = useFormContext();
+  const [passwordVisible, setPasswordVisible] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(!passwordVisible);
+  };
 
   return (
     <form
@@ -63,13 +69,25 @@ export function LoginCredentialsStep({ onSubmit, onBack, loading }: LoginCredent
               </Link>
             </div>
             <FormControl>
+            <div className="relative">
               <Input
                 id="password"
-                type="password"
+                type={passwordVisible ? "text" : "password"}
                 autoComplete="current-password"
                 tabIndex={2}
                 {...field}
               />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                title={passwordVisible ? "Hide password" : "Show password"}
+                onClick={togglePasswordVisibility}
+                className="absolute inset-y-0 right-0"
+              >
+                {passwordVisible ? <LucideEyeOff /> : <LucideEye />}
+              </Button>
+            </div>
             </FormControl>
             <FormMessage />
           </FormItem>
