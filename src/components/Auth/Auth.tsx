@@ -6,6 +6,7 @@ import LoginForm from "./LoginForm";
 import SignupForm from "./SignupForm";
 import { Button } from "@/components/ui/button";
 import { LucideArrowLeft } from "lucide-react";
+import { APP_DOMAIN_STRIPPED, WEBSITE_DOMAIN } from '@/constants';
 
 interface AuthProps {
   variant: 'login' | 'signup';
@@ -33,7 +34,7 @@ function Auth({ variant }: AuthProps) {
       <div className="z-10 w-full flex-1 flex flex-col max-w-[1600px] mx-auto lg:grid lg:grid-cols-[minmax(30%,60%)_minmax(auto,auto)] rounded-[32px] overflow-hidden backdrop-brightness-[2.75] dark:backdrop-brightness-75 dark:backdrop-contrast-200 bg-background/50 dark:bg-background/90">
         <div className="relative contain-content p-8 py-6 sm:py-8 lg:p-20 flex flex-col flex-0 gap-6 items-start justify-between rounded-[inherit]">
           <a
-            href="https://externalsecrets.com"
+            href={WEBSITE_DOMAIN}
             className="self-center sm:self-start"
             tabIndex={-1}
           >
@@ -68,7 +69,7 @@ function Auth({ variant }: AuthProps) {
                   </h1>
                   {currentStep === "credentials" && tenantId ? (
                     <h2 className="text-pretty text-sm text-muted-foreground">
-                      app.externalsecrets.com/<strong className='text-foreground'>{tenantId}</strong>
+                      {APP_DOMAIN_STRIPPED}/<strong className='text-foreground'>{tenantId}</strong>
                     </h2>
                   ) : (
                     <h2 className="text-sm sm:text-base text-pretty text-muted-foreground">
@@ -103,7 +104,7 @@ function Auth({ variant }: AuthProps) {
               className="text-foreground justify-self-start"
               asChild
             >
-              <a href="https://externalsecrets.com">
+              <a href={WEBSITE_DOMAIN}>
                 <LucideArrowLeft className="mr-2" /> Home
               </a>
             </Button>

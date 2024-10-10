@@ -19,6 +19,7 @@ import { z } from "zod";
 import zValidations from "./fields/zValidations";
 import AppLogo from "@/components/AppLogo";
 import Cookies from 'js-cookie';
+import { APP_DOMAIN_STRIPPED } from "@/constants";
 
 const ForgotPasswordSchema = z.object({
   tenant: zValidations.organizationURL,
@@ -119,7 +120,7 @@ function ForgotPassword() {
                         className="border-input border rounded-md flex items-baseline focus-within:ring-ring focus-within:ring-1"
                       >
                         <span className="pl-3 text-sm text-muted-foreground/50">
-                          app.externalsecrets.com/
+                          {APP_DOMAIN_STRIPPED}/
                         </span>
                         <Input
                           ref={tenantInputRef}

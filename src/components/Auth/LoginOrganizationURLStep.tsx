@@ -9,6 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useFormContext } from "react-hook-form";
 import { useRef } from "react";
+import { APP_DOMAIN_STRIPPED } from "@/constants";
 
 interface LoginOrganizationURLStepProps {
   onSubmit: () => void;
@@ -38,7 +39,7 @@ export function LoginOrganizationURLStep({ onSubmit }: LoginOrganizationURLStepP
                   className="border-input border rounded-md flex items-baseline focus-within:ring-ring focus-within:ring-1"
                 >
                   <span className="pl-3 text-sm text-muted-foreground/50">
-                    app.externalsecrets.com/
+                    {APP_DOMAIN_STRIPPED}/
                   </span>
                   <Input
                     ref={orgURLref}

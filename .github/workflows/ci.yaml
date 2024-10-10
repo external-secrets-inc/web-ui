@@ -8,6 +8,8 @@ on:
 env:
   NAME: web-ui
   TENANT_MANAGER_URL: https://api.dev.externalsecrets.com
+  WEB_UI_URL: https://app.dev.externalsecrets.com
+  WEBSITE_URL: "#"
   DOCS_URL: https://app.dev.externalsecrets.com
   NODE_ENV: development
 jobs:
@@ -60,6 +62,7 @@ jobs:
             --tag ${{ vars.INTERNAL_REGISTRY}}/$NAME:$GITHUB_SHA \
             --tag ${{ vars.INTERNAL_REGISTRY}}/$NAME:latest \
             --build-arg TENANT_MANAGER_URL=${{ env.TENANT_MANAGER_URL}} \
+            --build-arg WEB_UI_URL=${{ env.WEB_UI_URL}} \
             --build-arg DOCS_URL=${{ env.DOCS_URL}} \
             --build-arg NODE_ENV=${{ env.NODE_ENV }} \
             --push .

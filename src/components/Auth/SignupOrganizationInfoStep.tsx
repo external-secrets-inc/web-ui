@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { APP_DOMAIN_STRIPPED } from "@/constants";
 
 const SignupOrganizationInfoStep = ({ onSubmit }: { onSubmit: () => void }) => {
   const { handleSubmit, setValue, control } = useFormContext();
@@ -97,7 +98,7 @@ const SignupOrganizationInfoStep = ({ onSubmit }: { onSubmit: () => void }) => {
                   className="border-input border rounded-md flex items-baseline focus-within:ring-ring focus-within:ring-1"
                 >
                   <span className="pl-3 text-sm text-muted-foreground/50">
-                    app.externalsecrets.com/
+                    {APP_DOMAIN_STRIPPED}/
                   </span>
                   <Input
                     ref={(e) => {

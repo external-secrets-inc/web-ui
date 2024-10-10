@@ -19,6 +19,7 @@ import NewPasswordField from "./fields/NewPasswordField";
 import zValidations from "./fields/zValidations";
 import AppLogo from "@/components/AppLogo";
 import Cookies from 'js-cookie';
+import { APP_DOMAIN_STRIPPED } from "@/constants";
 
 const ResetPasswordSchema = z.object({
   tenant: zValidations.organizationURL,
@@ -113,7 +114,7 @@ function ResetPasswordForm() {
                       className="border-input border rounded-md flex items-baseline focus-within:ring-ring focus-within:ring-1"
                     >
                       <span className="pl-3 text-sm text-muted-foreground/50">
-                        app.externalsecrets.com/
+                        {APP_DOMAIN_STRIPPED}/
                       </span>
                       <Input
                         className="border-none pl-0 focus-visible:ring-0"
