@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import BGAuthHero from "@/assets/bg-auth-hero.jpg";
 import BGNoise from "@/assets/bg-noise.png";
 import logoESIFullWhite from "@/assets/logo-esi-full-white.svg";
-import LoginForm from "./LoginForm";
-import SignupForm from "./SignupForm";
 import { Button } from "@/components/ui/button";
 import { LucideArrowLeft } from "lucide-react";
-import { APP_DOMAIN_STRIPPED, WEBSITE_DOMAIN } from '@/constants';
+import { WEBSITE_DOMAIN } from '@/constants';
+import AuthSignupSection from '@/components/Auth/AuthSignupSection';
+import AuthLoginSection from '@/components/Auth/AuthLoginSection';
 
 interface AuthProps {
   variant: 'login' | 'signup';
@@ -54,49 +54,16 @@ function Auth({ variant }: AuthProps) {
         </div>
         <div className="flex flex-col gap-6 items-center justify-between p-8 pb-12 lg:p-14 flex-1">
           <div className="m-auto grid max-w-full w-[352px] gap-8">
-            {variant === 'login' && (
-              <section
-                className="grid gap-6"
-                aria-label="Log in to an Organization"
-              >
-                <header className="grid gap-1">
-                  <h1 className="text-lg sm:text-3xl font-bold">
-                    {currentStep === "credentials" && tenantId ? (
-                      <>You're logging in on</>
-                    ) : (
-                      <>Log in to an Organization</>
-                    )}
-                  </h1>
-                  {currentStep === "credentials" && tenantId ? (
-                    <h2 className="text-pretty text-sm text-muted-foreground">
-                      {APP_DOMAIN_STRIPPED}/<strong className='text-foreground'>{tenantId}</strong>
-                    </h2>
-                  ) : (
-                    <h2 className="text-sm sm:text-base text-pretty text-muted-foreground">
-                      Welcome back!
-                    </h2>
-                  )}
-                </header>
-
-                <LoginForm onStepChange={handleStepChange} onOrganizationURLChange={handleOrganizationURLChange} />
-              </section>
-            )}
-
-            {variant === 'signup' && (
-              <section
-                className="grid gap-6"
-                aria-label="Create an Organization"
-              >
-                <header className="grid gap-1">
-                  <h1 className="text-lg sm:text-3xl font-bold">Create an Organization</h1>
-                  <h2 className="text-sm sm:text-base text-pretty text-muted-foreground">
-                    Let's get started into your managed ESO experience
-                  </h2>
-                </header>
-
-                <SignupForm />
-              </section>
-            )}
+            {variant === 'login' ?
+              <AuthLoginSection
+                currentStep={currentStep}
+                organizationUrl={tenantId}
+                handleStepChange={handleStepChange}
+                handleOrganizationURLChange={handleOrganizationURLChange}
+              />
+              :
+              <AuthSignupSection />
+            }
 
             <Button
               variant="link"
