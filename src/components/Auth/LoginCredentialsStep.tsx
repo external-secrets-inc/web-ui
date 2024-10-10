@@ -21,7 +21,11 @@ export function LoginCredentialsStep({ onSubmit, onBack, loading }: LoginCredent
   const { control, handleSubmit, getValues } = useFormContext();
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
+    <form
+      id="login-credentials-form"
+      onSubmit={handleSubmit(onSubmit)}
+      className="grid gap-4"
+    >
       <FormField
         control={control}
         name="email"
@@ -33,6 +37,7 @@ export function LoginCredentialsStep({ onSubmit, onBack, loading }: LoginCredent
                 autoFocus
                 id="email"
                 placeholder="you@yourcompany.com"
+                autoComplete="username email"
                 tabIndex={1}
                 {...field}
               />
@@ -61,6 +66,7 @@ export function LoginCredentialsStep({ onSubmit, onBack, loading }: LoginCredent
               <Input
                 id="password"
                 type="password"
+                autoComplete="current-password"
                 tabIndex={2}
                 {...field}
               />

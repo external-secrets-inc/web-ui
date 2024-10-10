@@ -36,7 +36,11 @@ const SignupOrganizationInfoStep = ({ onSubmit }: { onSubmit: () => void }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
+    <form
+      id="signup-organization-info-form"
+      onSubmit={handleSubmit(onSubmit)}
+      className="grid gap-4"
+    >
       <FormField
         control={control}
         name="name"

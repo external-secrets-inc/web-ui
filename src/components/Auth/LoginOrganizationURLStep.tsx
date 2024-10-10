@@ -19,7 +19,11 @@ export function LoginOrganizationURLStep({ onSubmit }: LoginOrganizationURLStepP
   const orgURLref = useRef<HTMLInputElement>(null);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
+    <form
+      id="login-organization-url-form"
+      onSubmit={handleSubmit(onSubmit)}
+      className="grid gap-4"
+    >
       <FormField
         control={control}
         name="organizationURL"

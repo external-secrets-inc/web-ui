@@ -27,6 +27,7 @@ const SignupCredentialsStep = ({ onSubmit, onBack, loading }: { onSubmit: (data:
 
   return (
     <form
+      id="signup-credentials-form"
       onSubmit={handleSubmit(handleFormSubmit, handleError)}
       className="grid gap-4"
     >
@@ -41,6 +42,7 @@ const SignupCredentialsStep = ({ onSubmit, onBack, loading }: { onSubmit: (data:
                 autoFocus
                 id="email"
                 placeholder="you@yourcompany.com"
+                autoComplete="username email"
                 {...field}
               />
             </FormControl>

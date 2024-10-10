@@ -3,6 +3,7 @@ import { useFormContext } from "react-hook-form";
 import { FormControl, FormField, FormItem, FormLabel } from "../../ui/form";
 import { Input } from "@/components/ui/input";
 import { CheckSquareIcon, SquareIcon } from "lucide-react";
+import { regexPasswordPattern, passwordMinLengthValue, regexIsUppercase, regexIsNumber, regexIsSpecialCharacter } from "./zValidations";
 
 interface NewPasswordFieldProps {
   submittedWithErrors: boolean;
@@ -13,18 +14,18 @@ const NewPasswordField = forwardRef<HTMLInputElement, NewPasswordFieldProps>(
     const { getValues, setValue, control } = useFormContext();
     const [password, setPassword] = useState(getValues("password"));
     const [passwordValidations, setPasswordValidations] = useState({
-      length: password.length >= 12,
-      uppercase: /[A-Z]/.test(password),
-      number: /[0-9]/.test(password),
-      specialChar: /[^a-zA-Z0-9]/.test(password),
+      length: password.length >= passwordMinLengthValue,
+      uppercase: regexIsUppercase.test(password),
+      number: regexIsNumber.test(password),
+      specialChar: regexIsSpecialCharacter.test(password),
     });
 
     useEffect(() => {
       setPasswordValidations({
-        length: password.length >= 12,
-        uppercase: /[A-Z]/.test(password),
-        number: /[0-9]/.test(password),
-        specialChar: /[^a-zA-Z0-9]/.test(password),
+        length: password.length >= passwordMinLengthValue,
+        uppercase: regexIsUppercase.test(password),
+        number: regexIsNumber.test(password),
+        specialChar: regexIsSpecialCharacter.test(password),
       });
     }, [password]);
 
@@ -48,6 +49,9 @@ const NewPasswordField = forwardRef<HTMLInputElement, NewPasswordFieldProps>(
                 {...field}
                 value={password}
                 onChange={handlePasswordChange}
+                autoComplete="new-password"
+                pattern={regexPasswordPattern.source}
+                minLength={passwordMinLengthValue}
                 ref={ref}
               />
             </FormControl>
@@ -102,7 +106,7 @@ const NewPasswordField = forwardRef<HTMLInputElement, NewPasswordFieldProps>(
                 ) : (
                   <SquareIcon className="mr-2" />
                 )}
-                At least 12 characters
+                At least {passwordMinLengthValue} characters
               </li>
             </ul>
           </FormItem>
