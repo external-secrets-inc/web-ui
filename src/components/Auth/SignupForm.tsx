@@ -53,6 +53,8 @@ function SignupForm() {
 
   const handleCredentialsSubmit = async () => {
     setLoading(true);
+    formMethods.clearErrors();
+    setFormError(null);
     const formData = formMethods.getValues();
     const stockError = "Signup failed. Please try again.";
     const maxLoginRetries = 6;
@@ -150,7 +152,13 @@ function SignupForm() {
 
     <div className="text-sm text-muted-foreground">
       Already a member of an Organization?{" "}
-      <Link to="/login" className="underline text-foreground">
+      <Link
+        to="/login"
+        className={`
+          underline text-foreground
+          ${loading ? 'pointer-events-none text-muted-foreground/50 no-underline' : ''}
+        `}
+      >
         Log in
       </Link>
     </div>

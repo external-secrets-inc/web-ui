@@ -75,6 +75,7 @@ export function LoginCredentialsStep({ onSubmit, onBack, loading }: LoginCredent
           variant="secondary"
           tabIndex={4}
           onClick={onBack}
+          disabled={loading}
         >
           Back
         </Button>

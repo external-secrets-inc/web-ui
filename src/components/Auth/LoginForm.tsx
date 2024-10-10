@@ -56,6 +56,8 @@ function LoginForm({ onStepChange, onOrganizationURLChange }: LoginFormProps) {
 
   const handleCredentialsStepSubmit = async (data: LoginCredentialsData) => {
     setLoading(true);
+    formMethods.clearErrors();
+    setFormError(null);
     const stockError = "Login failed. Please try again.";
 
     const handleLoginErrors = (error: any) => {
@@ -126,7 +128,13 @@ function LoginForm({ onStepChange, onOrganizationURLChange }: LoginFormProps) {
 
       <div className="text-sm text-muted-foreground">
         Don't have an Organization yet?{" "}
-        <Link to="/signup" className="underline text-foreground">
+        <Link
+          to="/signup"
+          className={`
+            underline text-foreground
+            ${loading ? 'pointer-events-none text-muted-foreground/50 no-underline' : ''}
+          `}
+        >
           Sign up for one
         </Link>
       </div>

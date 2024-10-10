@@ -56,6 +56,7 @@ const SignupCredentialsStep = ({ onSubmit, onBack, loading }: { onSubmit: (data:
           type="button"
           variant="secondary"
           onClick={onBack}
+          disabled={loading}
         >
           Back
         </Button>
