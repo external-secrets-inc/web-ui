@@ -1,7 +1,7 @@
+import { useEffect, useState } from 'react';
 import BGAuthHero from "@/assets/bg-auth-hero.jpg";
 import BGNoise from "@/assets/bg-noise.png";
 import logoESIFullWhite from "@/assets/logo-esi-full-white.svg";
-import { Link } from "react-router-dom";
 import LoginForm from "./LoginForm";
 import SignupForm from "./SignupForm";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,22 @@ interface AuthProps {
 }
 
 function Auth({ variant }: AuthProps) {
+  const [tenantId, setTenantId] = useState('');
+  const [currentStep, setCurrentStep] = useState<"organizationURL" | "credentials">("organizationURL");
+
+  useEffect(() => {
+    setCurrentStep("organizationURL");
+    setTenantId('');
+  }, [variant]);
+
+  const handleStepChange = (step: "organizationURL" | "credentials") => {
+    setCurrentStep(step);
+  };
+
+  const handleOrganizationURLChange = (tenantId: string) => {
+    setTenantId(tenantId);
+  };
+
   return (
     <div className="p-2 lg:p-14 xl:p-20 min-h-dvh flex flex-col">
       <div className="z-10 w-full flex-1 flex flex-col max-w-[1600px] mx-auto lg:grid lg:grid-cols-[minmax(30%,60%)_minmax(auto,auto)] rounded-[32px] overflow-hidden backdrop-brightness-[2.75] dark:backdrop-brightness-75 dark:backdrop-contrast-200 bg-background/50 dark:bg-background/90">
@@ -35,47 +51,51 @@ function Auth({ variant }: AuthProps) {
           />
         </div>
         <div className="flex flex-col gap-6 items-center justify-between p-8 pb-12 lg:p-14 flex-1">
-          <div className="w-[352px]">
+          <div className="m-auto grid max-w-full w-[352px] gap-8">
+            {variant === 'login' && (
+              <section
+                className="grid gap-6"
+                aria-label="Log in to an Organization"
+              >
+                <header className="grid gap-1">
+                  <h1 className="text-3xl font-bold">
+                    {currentStep === "credentials" && tenantId ? (
+                      <>You're logging in on</>
+                    ) : (
+                      <>Log in to an Organization</>
+                    )}
+                  </h1>
+                  {currentStep === "credentials" && tenantId ? (
+                    <h2 className="text-pretty text-sm text-muted-foreground">
+                      app.externalsecrets.com/<strong className='text-foreground'>{tenantId}</strong>
+                    </h2>
+                  ) : (
+                    <h2 className="text-pretty text-muted-foreground">
+                      Welcome back!
+                    </h2>
+                  )}
+                </header>
 
-          </div>
-          <div className="m-auto grid w-[352px] gap-6">
-            <div className="grid gap-2">
-              <h1 className="text-3xl font-bold">{variant === 'login' ? 'Log in to an Organization' : 'Create an Organization'}</h1>
-              <p className="text-pretty text-muted-foreground">
-              {variant === 'login' ? (
-                <>
-                  Welcome back!<br />
-                  Enter with your Organization credentials
-                </>
-              ) : (
-                <>
-                Let's get started into your managed ESO experience
-                </>
-              )}
-              </p>
-            </div>
-            {variant === 'login' ? (
-              <LoginForm />
-            ) : (
-              <SignupForm />
+                <LoginForm onStepChange={handleStepChange} onOrganizationURLChange={handleOrganizationURLChange} />
+              </section>
             )}
-            <div className="mt-4 text-sm">
-              {variant === 'login' ? (
-                <>
-                  Don't have an Organization yet?{" "}
-                  <Link to="/signup" className="underline">
-                    Sign up for one
-                  </Link>
-                </>
-              ) : (
-                <>
-                  Already a member of an Organization?{" "}
-                  <Link to="/login" className="underline">
-                    Log in
-                  </Link>
-                </>
-              )}
-            </div>
+
+            {variant === 'signup' && (
+              <section
+                className="grid gap-6"
+                aria-label="Create an Organization"
+              >
+                <header className="grid gap-1">
+                  <h1 className="text-3xl font-bold">Create an Organization</h1>
+                  <h2 className="text-pretty text-muted-foreground">
+                    Let's get started into your managed ESO experience
+                  </h2>
+                </header>
+
+                <SignupForm />
+              </section>
+            )}
+            
             <Button
               variant="link"
               size="inline"
@@ -85,7 +105,6 @@ function Auth({ variant }: AuthProps) {
               <a href="https://externalsecrets.com">
                 <LucideArrowLeft className="mr-2" /> Home
               </a>
-
             </Button>
           </div>
         </div>

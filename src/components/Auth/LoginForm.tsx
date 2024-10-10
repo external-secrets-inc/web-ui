@@ -2,7 +2,7 @@ import { trackLoginStepCompleted, trackLoginStepMovedBack, trackSignedIn } from 
 import { FormProvider, useForm } from "react-hook-form";
 import { useState } from "react";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { isAxiosError } from "axios";
@@ -25,7 +25,12 @@ type LoginCredentialsData = z.infer<typeof LoginCredentialsSchema>;
 type LoginData = LoginOrganizationURLData & LoginCredentialsData;
 type Step = "organizationURL" | "credentials";
 
-function LoginForm() {
+interface LoginFormProps {
+  onStepChange: (step: Step) => void;
+  onOrganizationURLChange: (tenantId: string) => void;
+}
+
+function LoginForm({ onStepChange, onOrganizationURLChange }: LoginFormProps) {
   const [step, setStep] = useState<Step>("organizationURL");
   const [loading, setLoading] = useState<boolean>(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -42,8 +47,11 @@ function LoginForm() {
   });
 
   const handleOrganizationURLStepSubmit = () => {
+    const formData = formMethods.getValues();
+    onOrganizationURLChange(formData.organizationURL);
     trackLoginStepCompleted(1);
     setStep("credentials");
+    onStepChange("credentials");
   };
 
   const handleCredentialsStepSubmit = async (data: LoginCredentialsData) => {
@@ -60,6 +68,7 @@ function LoginForm() {
 
         if (responseError?.includes("invalid tenant")) {
           setStep("organizationURL");
+          onStepChange("organizationURL");
           return formMethods.setError("organizationURL", { type: "manual", message: "Invalid Organization URL" });
         }
       }
@@ -94,24 +103,34 @@ function LoginForm() {
 
   const handleBack = () => {
     setStep("organizationURL");
+    onStepChange("organizationURL");
     trackLoginStepMovedBack();
   };
 
   return (
-    <FormProvider {...formMethods}>
-      {step === "organizationURL" ? (
-        <LoginOrganizationURLStep
-          onSubmit={formMethods.handleSubmit(handleOrganizationURLStepSubmit)}
-        />
-      ) : (
-        <LoginCredentialsStep
-          onSubmit={formMethods.handleSubmit(handleCredentialsStepSubmit)}
-          onBack={handleBack}
-          loading={loading}
-        />
-      )}
-      {formError ? <div className="text-red-500">{formError}</div> : null}
-    </FormProvider>
+    <>
+      <FormProvider {...formMethods}>
+        {step === "organizationURL" ? (
+          <LoginOrganizationURLStep
+            onSubmit={formMethods.handleSubmit(handleOrganizationURLStepSubmit)}
+          />
+        ) : (
+          <LoginCredentialsStep
+            onSubmit={formMethods.handleSubmit(handleCredentialsStepSubmit)}
+            onBack={handleBack}
+            loading={loading}
+          />
+        )}
+        {formError ? <div className="text-red-500">{formError}</div> : null}
+      </FormProvider>
+
+      <div className="text-sm text-muted-foreground">
+        Don't have an Organization yet?{" "}
+        <Link to="/signup" className="underline text-foreground">
+          Sign up for one
+        </Link>
+      </div>
+    </>
   );
 }
 

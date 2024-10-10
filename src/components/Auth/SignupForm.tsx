@@ -2,7 +2,7 @@ import { trackSignedIn, trackSignupStepCompleted, trackSignupStepMovedBack } fro
 import { useState } from "react";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
 import { useForm, FormProvider } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { loginAndIdentifyUser } from "@/services/auth/authHelpers";
@@ -132,6 +132,7 @@ function SignupForm() {
   };
 
   return (
+    <>
     <FormProvider {...formMethods}>
       {step === "organizationInfo" ? (
         <SignupOrganizationInfoStep
@@ -146,6 +147,14 @@ function SignupForm() {
       )}
       {formError && <div className="text-red-500">{formError}</div>}
     </FormProvider>
+
+    <div className="text-sm text-muted-foreground">
+      Already a member of an Organization?{" "}
+      <Link to="/login" className="underline text-foreground">
+        Log in
+      </Link>
+    </div>
+    </>
   );
 }
 
