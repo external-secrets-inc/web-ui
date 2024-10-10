@@ -155,7 +155,7 @@ function SignupForm() {
       <Link
         to="/login"
         className={`
-          underline text-foreground
+          underline text-foreground text-nowrap
           ${loading ? 'pointer-events-none text-muted-foreground/50 no-underline' : ''}
         `}
       >
