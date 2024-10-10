@@ -8,7 +8,7 @@ export default {
   organizationURL: z
     .string()
     .min(1, "Cannot be empty.")
-    .regex(/^[a-zA-Z0-9-]+$/, "Organization URL may only contain letters, numbers, and dashes."),
+    .regex(/^[a-z0-9-]+$/, "Organization URL may only contain lowercase letters, numbers, and dashes."),
   email: z.string().email("Invalid email address."),
   newPassword: z
     .string()
