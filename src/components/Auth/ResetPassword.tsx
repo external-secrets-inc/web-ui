@@ -163,7 +163,7 @@ function ResetPasswordForm() {
             </div>
           </form>
         </FormProvider>
-        {formError && <div className="text-red-500">{formError}</div>}
+        {formError && <div className="text-destructive">{formError}</div>}
       </div>
     </div>
   );

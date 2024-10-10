@@ -54,7 +54,7 @@ const NewPasswordField = forwardRef<HTMLInputElement, NewPasswordFieldProps>(
             <ul className="mt-2 text-sm text-muted-foreground">
               <li
                 className={`flex items-center ${submittedWithErrors && !passwordValidations.uppercase
-                  ? "text-red-500"
+                  ? "text-destructive"
                   : ""
                   }`}
               >
@@ -67,7 +67,7 @@ const NewPasswordField = forwardRef<HTMLInputElement, NewPasswordFieldProps>(
               </li>
               <li
                 className={`flex items-center ${submittedWithErrors && !passwordValidations.number
-                  ? "text-red-500"
+                  ? "text-destructive"
                   : ""
                   }`}
               >
@@ -80,7 +80,7 @@ const NewPasswordField = forwardRef<HTMLInputElement, NewPasswordFieldProps>(
               </li>
               <li
                 className={`flex items-center ${submittedWithErrors && !passwordValidations.specialChar
-                  ? "text-red-500"
+                  ? "text-destructive"
                   : ""
                   }`}
               >
@@ -93,7 +93,7 @@ const NewPasswordField = forwardRef<HTMLInputElement, NewPasswordFieldProps>(
               </li>
               <li
                 className={`flex items-center ${submittedWithErrors && !passwordValidations.length
-                  ? "text-red-500"
+                  ? "text-destructive"
                   : ""
                   }`}
               >

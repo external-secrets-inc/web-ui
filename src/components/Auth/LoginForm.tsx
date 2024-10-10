@@ -123,7 +123,7 @@ function LoginForm({ onStepChange, onOrganizationURLChange }: LoginFormProps) {
             loading={loading}
           />
         )}
-        {formError ? <div className="text-red-500">{formError}</div> : null}
+        {formError ? <div className="text-destructive">{formError}</div> : null}
       </FormProvider>
 
       <div className="text-sm text-muted-foreground">

@@ -147,7 +147,7 @@ function SignupForm() {
           loading={loading}
         />
       )}
-      {formError && <div className="text-red-500">{formError}</div>}
+      {formError && <div className="text-destructive">{formError}</div>}
     </FormProvider>
 
     <div className="text-sm text-muted-foreground">

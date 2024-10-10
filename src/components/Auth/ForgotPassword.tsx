@@ -177,7 +177,7 @@ function ForgotPassword() {
             </div>
           </form>
         </Form>
-        {formError && <div className="mt-4 text-red-500">{formError}</div>}
+        {formError && <div className="mt-4 text-destructive">{formError}</div>}
       </div>
     </div>
   );
