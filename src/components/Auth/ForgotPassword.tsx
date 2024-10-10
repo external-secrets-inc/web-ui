@@ -19,7 +19,7 @@ import { z } from "zod";
 import zValidations from "./fields/zValidations";
 import AppLogo from "@/components/AppLogo";
 import Cookies from 'js-cookie';
-import { APP_DOMAIN_STRIPPED } from "@/constants";
+import { APP_DOMAIN_STRIPPED, ONE_MINUTE_IN_SECONDS, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 
 const ForgotPasswordSchema = z.object({
   tenant: zValidations.organizationURL,
@@ -72,7 +72,7 @@ function ForgotPassword() {
     try {
       await forgotPassword(values.email, values.tenant);
       // TODO: Remove these cookies when we are sending the necessary data from the token within the reset password email link
-      const tenMinutesFromNow = new Date(new Date().getTime() + 10 * 60 * 1000);
+      const tenMinutesFromNow = new Date(new Date().getTime() + 10 * ONE_MINUTE_IN_SECONDS * ONE_SECOND_IN_MILLISECONDS);
       Cookies.set("forgotPasswordHelperOrganizationURL", values.tenant, { expires: tenMinutesFromNow });
       Cookies.set("forgotPasswordHelperEmail", values.email, { expires: tenMinutesFromNow });
 

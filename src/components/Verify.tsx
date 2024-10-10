@@ -13,10 +13,7 @@ import { LucideLoader } from "lucide-react";
 import useSignOut from "react-auth-kit/hooks/useSignOut";
 import { trackSignedOut } from "@/analytics";
 import { Button } from "@/components/ui/button";
-
-
-const ONE_SECOND_IN_MILLISECONDS = 1000
-const ONE_MINUTE_IN_SECONDS = 60;
+import { ONE_MINUTE_IN_SECONDS, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 
 export function Verify() {
   const authUser = useAuthUser<IUserData>();
