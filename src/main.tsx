@@ -24,7 +24,7 @@ const router = createBrowserRouter([
   {
     path: '/',
     element: (
-      <RequireActiveUser loginFallbackPath="/login" inactiveFallbackPath="/verify">
+      <RequireActiveUser loginFallbackPath="/signup" inactiveFallbackPath="/verify">
         <NavigateWithOrg to="/agents" replace />
       </RequireActiveUser>
     ),
