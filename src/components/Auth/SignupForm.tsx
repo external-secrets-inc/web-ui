@@ -73,6 +73,12 @@ function SignupForm() {
           }, 0);
 
         }
+
+        // TODO: would be nice to validate this live on the client while the user is typing. Couldn't get it to work.
+        if (responseError?.includes("Field validation for 'Password' failed on the 'password_regex' tag")) {
+          formMethods.setError("password", { type: "manual", message: "Invalid special character. Use only: _ ! @ # $ % ^ & * ( ) -" });
+          return formMethods.setFocus("password"); // TODO: This is not working, need to investigate. Maybe because of being inside it's own component?
+        }
       }
 
       console.error("Non-Axios error:", error);

@@ -1,6 +1,6 @@
 import { useEffect, useState, forwardRef } from "react";
 import { useFormContext } from "react-hook-form";
-import { FormControl, FormField, FormItem, FormLabel } from "../../ui/form";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { LucideCheckSquare, LucideSquare, LucideEye, LucideEyeOff } from "lucide-react";
 import { regexPasswordPattern, passwordMinLengthValue, regexIsUppercase, regexIsNumber, regexIsSpecialCharacter } from "./zValidations";
@@ -128,6 +128,7 @@ const NewPasswordField = forwardRef<HTMLInputElement, NewPasswordFieldProps>(
                 At least {passwordMinLengthValue} characters
               </li>
             </ul>
+            <FormMessage />
           </FormItem>
         )}
       />
