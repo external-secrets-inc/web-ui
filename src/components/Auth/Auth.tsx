@@ -32,7 +32,7 @@ function Auth({ variant }: AuthProps) {
   return (
     <div className="p-2 lg:p-14 xl:p-20 min-h-dvh flex flex-col">
       <div className="z-10 lg:w-full lg:flex-1 flex flex-col max-w-full lg:max-w-[1600px] m-auto lg:grid lg:grid-cols-[minmax(30%,60%)_minmax(auto,auto)] rounded-[32px] overflow-hidden backdrop-brightness-[2.75] dark:backdrop-brightness-75 dark:backdrop-contrast-200 bg-background/50 dark:bg-background/90">
-        <div className="relative contain-content p-8 py-6 sm:py-8 lg:p-20 flex flex-col flex-0 gap-6 items-start justify-between rounded-[inherit]">
+        <div className="relative contain-content p-8 py-6 sm:py-8 lg:p-16 xl:p-20 flex flex-col flex-0 gap-6 items-start justify-between rounded-[inherit]">
           <a
             href={WEBSITE_DOMAIN}
             className="self-center sm:self-start"
