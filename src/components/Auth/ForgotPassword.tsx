@@ -18,6 +18,8 @@ import { toast } from "sonner";
 import { z } from "zod";
 import zValidations from "./fields/zValidations";
 import AppLogo from "@/components/AppLogo";
+import Cookies from 'js-cookie';
+import { APP_DOMAIN_STRIPPED, ONE_MINUTE_IN_SECONDS, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 
 const ForgotPasswordSchema = z.object({
   tenant: zValidations.organizationURL,
@@ -27,33 +29,53 @@ const ForgotPasswordSchema = z.object({
 type ForgotPasswordData = z.infer<typeof ForgotPasswordSchema>;
 
 function ForgotPassword() {
-  const [forgotPasswordData] = useState<ForgotPasswordData>({ tenant: "", email: "" });
   const [loading, setLoading] = useState(false)
   const [formError, setFormError] = useState("")
   const location = useLocation()
   const toastIdRef = useRef<string | number | null>(null);
 
+  const state = location.state as { organizationURL?: string; email?: string };
+  const defaultTenant = state?.organizationURL || "";
+  const defaultEmail = state?.email || "";
+
   const form = useForm<ForgotPasswordData>({
     resolver: zodResolver(ForgotPasswordSchema),
     defaultValues: {
-      email: forgotPasswordData.email || "",
-      tenant: forgotPasswordData.tenant || "",
+      email: defaultEmail,
+      tenant: defaultTenant,
     },
   });
 
+  const emailInputRef = useRef<HTMLInputElement | null>(null);
+  const tenantInputRef = useRef<HTMLInputElement | null>(null);
+  const submitButtonRef = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
-    return () => {
-      if (toastIdRef.current) {
-        toast.dismiss(toastIdRef.current);
+    if (toastIdRef.current) {
+      toast.dismiss(toastIdRef.current);
+    }
+
+    if (defaultTenant) {
+      if (!defaultEmail || !zValidations.email.safeParse(defaultEmail).success) {
+        emailInputRef.current?.focus();
+      } else {
+        submitButtonRef.current?.focus();
       }
-    };
-  }, [location])
+    } else {
+      tenantInputRef.current?.focus();
+    }
+  }, [location, defaultTenant, defaultEmail])
 
   async function onSubmit(values: ForgotPasswordData) {
     setLoading(true)
     setFormError("")
     try {
       await forgotPassword(values.email, values.tenant);
+      // TODO: Remove these cookies when we are sending the necessary data from the token within the reset password email link
+      const tenMinutesFromNow = new Date(new Date().getTime() + 10 * ONE_MINUTE_IN_SECONDS * ONE_SECOND_IN_MILLISECONDS);
+      Cookies.set("forgotPasswordHelperOrganizationURL", values.tenant, { expires: tenMinutesFromNow });
+      Cookies.set("forgotPasswordHelperEmail", values.email, { expires: tenMinutesFromNow });
+
       toastIdRef.current = toast.success('Check your email', {
         description: 'We sent instructions to reset your password',
         duration: Infinity,
@@ -68,8 +90,6 @@ function ForgotPassword() {
       setLoading(false)
     }
   }
-
-  const inputRef = useRef<HTMLInputElement>(null)
 
   return (
     <div className="flex flex-col items-center h-screen">
@@ -96,16 +116,16 @@ function ForgotPassword() {
                     <FormLabel>Enter your Organization URL</FormLabel>
                     <FormControl>
                       <div
-                        onClick={() => inputRef.current?.focus()}
+                        onClick={() => tenantInputRef.current?.focus()}
                         className="border-input border rounded-md flex items-baseline focus-within:ring-ring focus-within:ring-1"
                       >
                         <span className="pl-3 text-sm text-muted-foreground/50">
-                          app.externalsecrets.com/
+                          {APP_DOMAIN_STRIPPED}/
                         </span>
                         <Input
-                          ref={inputRef}
-                          autoFocus
+                          ref={tenantInputRef}
                           className="border-none pl-0 focus-visible:ring-0"
+                          autoCapitalize="none"
                           id="tenant"
                           placeholder="your-organization"
                           {...restField}
@@ -120,20 +140,26 @@ function ForgotPassword() {
             <FormField
               control={form.control}
               name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      autoFocus
-                      id="email"
-                      placeholder="you@yourcompany.com"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              render={({ field }) => {
+                const { ref, ...restField } = field;
+                return (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        ref={(e) => {
+                          ref(e); // Assign to react-hook-form ref
+                          emailInputRef.current = e; // Assign to local ref
+                        }}
+                        id="email"
+                        placeholder="you@yourcompany.com"
+                        {...restField}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
 
             <div className="flex justify-between">
@@ -141,6 +167,7 @@ function ForgotPassword() {
                 <Link to="/login">Back to login</Link>
               </Button>
               <Button
+                ref={submitButtonRef}
                 type="submit"
                 disabled={loading}
                 className="grid [&>*]:row-start-1 [&>*]:column-start-1 place-items-center"
@@ -151,7 +178,7 @@ function ForgotPassword() {
             </div>
           </form>
         </Form>
-        {formError && <div className="mt-4 text-red-500">{formError}</div>}
+        {formError && <div className="mt-4 text-destructive">{formError}</div>}
       </div>
     </div>
   );

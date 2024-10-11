@@ -1,112 +1,141 @@
-import { useEffect, useState } from "react";
-import { FormControl, FormField, FormItem, FormLabel } from "../../ui/form";
-import { Input } from "../../ui/input";
-import { CheckSquareIcon, SquareIcon } from "lucide-react";
-import { UseFormReturn } from "react-hook-form";
+import { useEffect, useState, forwardRef } from "react";
+import { useFormContext } from "react-hook-form";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { LucideCheckSquare, LucideSquare, LucideEye, LucideEyeOff } from "lucide-react";
+import { regexPasswordPattern, passwordMinLengthValue, regexIsUppercase, regexIsNumber, regexIsSpecialCharacter } from "./zValidations";
+import { Button } from "@/components/ui/button";
 
 interface NewPasswordFieldProps {
-  form: UseFormReturn;
-  submittedWithErrors: boolean
+  submittedWithErrors: boolean;
 }
 
-function NewPasswordField({ form, submittedWithErrors }: NewPasswordFieldProps) {
-  const [password, setPassword] = useState(form.getValues("password"));
-  const [passwordValidations, setPasswordValidations] = useState({
-    length: password.length >= 12,
-    uppercase: /[A-Z]/.test(password),
-    number: /[0-9]/.test(password),
-    specialChar: /[^a-zA-Z0-9]/.test(password),
-  });
-
-  useEffect(() => {
-    setPasswordValidations({
-      length: password.length >= 12,
-      uppercase: /[A-Z]/.test(password),
-      number: /[0-9]/.test(password),
-      specialChar: /[^a-zA-Z0-9]/.test(password),
+const NewPasswordField = forwardRef<HTMLInputElement, NewPasswordFieldProps>(
+  ({ submittedWithErrors }, ref) => {
+    const { getValues, setValue, control } = useFormContext();
+    const [password, setPassword] = useState(getValues("password"));
+    const [passwordVisible, setPasswordVisible] = useState(false);
+    const [passwordValidations, setPasswordValidations] = useState({
+      length: password.length >= passwordMinLengthValue,
+      uppercase: regexIsUppercase.test(password),
+      number: regexIsNumber.test(password),
+      specialChar: regexIsSpecialCharacter.test(password),
     });
-  }, [password]);
 
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setPassword(value);
-    form.setValue("password", value);
-  };
+    useEffect(() => {
+      setPasswordValidations({
+        length: password.length >= passwordMinLengthValue,
+        uppercase: regexIsUppercase.test(password),
+        number: regexIsNumber.test(password),
+        specialChar: regexIsSpecialCharacter.test(password),
+      });
+    }, [password]);
 
-  return (
-    <FormField
-      control={form.control}
-      name="password"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Password</FormLabel>
-          <FormControl>
-            <Input
-              id="password"
-              type="password"
-              {...field}
-              value={password}
-              onChange={handlePasswordChange}
-            />
-          </FormControl>
-          <ul className="mt-2 text-sm text-muted-foreground">
-            <li
-              className={`flex items-center ${submittedWithErrors && !passwordValidations.uppercase
-                ? "text-red-500"
-                : ""
-                }`}
-            >
-              {passwordValidations.uppercase ? (
-                <CheckSquareIcon className="mr-2 text-green-500" />
-              ) : (
-                <SquareIcon className="mr-2" />
-              )}
-              At least one uppercase letter
-            </li>
-            <li
-              className={`flex items-center ${submittedWithErrors && !passwordValidations.number
-                ? "text-red-500"
-                : ""
-                }`}
-            >
-              {passwordValidations.number ? (
-                <CheckSquareIcon className="mr-2 text-green-500" />
-              ) : (
-                <SquareIcon className="mr-2" />
-              )}
-              At least one number
-            </li>
-            <li
-              className={`flex items-center ${submittedWithErrors && !passwordValidations.specialChar
-                ? "text-red-500"
-                : ""
-                }`}
-            >
-              {passwordValidations.specialChar ? (
-                <CheckSquareIcon className="mr-2 text-green-500" />
-              ) : (
-                <SquareIcon className="mr-2" />
-              )}
-              At least one special character
-            </li>
-            <li
-              className={`flex items-center ${submittedWithErrors && !passwordValidations.length
-                ? "text-red-500"
-                : ""
-                }`}
-            >
-              {passwordValidations.length ? (
-                <CheckSquareIcon className="mr-2 text-green-500" />
-              ) : (
-                <SquareIcon className="mr-2" />
-              )}
-              At least 12 characters
-            </li>
-          </ul>
-        </FormItem>
-      )}
-    />
-  );
-}
+    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setPassword(value);
+      setValue("password", value);
+    };
 
-export default NewPasswordField
+    const togglePasswordVisibility = () => {
+      setPasswordVisible(!passwordVisible);
+    };
+
+    return (
+      <FormField
+        control={control}
+        name="password"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Password</FormLabel>
+            <FormControl>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={passwordVisible ? "text" : "password"}
+                  {...field}
+                  value={password}
+                  onChange={handlePasswordChange}
+                  autoComplete="new-password"
+                  pattern={regexPasswordPattern.source}
+                  minLength={passwordMinLengthValue}
+                  className="pr-9"
+                  ref={ref}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  title={passwordVisible ? "Hide password" : "Show password"}
+                  onClick={togglePasswordVisibility}
+                  className="absolute inset-y-0 right-0"
+                >
+                  {passwordVisible ? <LucideEyeOff /> : <LucideEye />}
+                </Button>
+              </div>
+            </FormControl>
+            <ul className="mt-2 text-sm text-muted-foreground">
+              <li
+                className={`flex items-center ${submittedWithErrors && !passwordValidations.uppercase
+                  ? "text-destructive"
+                  : ""
+                  }`}
+              >
+                {passwordValidations.uppercase ? (
+                  <LucideCheckSquare className="mr-2 text-green-500" />
+                ) : (
+                  <LucideSquare className="mr-2" />
+                )}
+                At least one uppercase letter
+              </li>
+              <li
+                className={`flex items-center ${submittedWithErrors && !passwordValidations.number
+                  ? "text-destructive"
+                  : ""
+                  }`}
+              >
+                {passwordValidations.number ? (
+                  <LucideCheckSquare className="mr-2 text-green-500" />
+                ) : (
+                  <LucideSquare className="mr-2" />
+                )}
+                At least one number
+              </li>
+              <li
+                className={`flex items-center ${submittedWithErrors && !passwordValidations.specialChar
+                  ? "text-destructive"
+                  : ""
+                  }`}
+              >
+                {passwordValidations.specialChar ? (
+                  <LucideCheckSquare className="mr-2 text-green-500" />
+                ) : (
+                  <LucideSquare className="mr-2" />
+                )}
+                At least one special character
+              </li>
+              <li
+                className={`flex items-center ${submittedWithErrors && !passwordValidations.length
+                  ? "text-destructive"
+                  : ""
+                  }`}
+              >
+                {passwordValidations.length ? (
+                  <LucideCheckSquare className="mr-2 text-green-500" />
+                ) : (
+                  <LucideSquare className="mr-2" />
+                )}
+                At least {passwordMinLengthValue} characters
+              </li>
+            </ul>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    );
+  }
+);
+
+NewPasswordField.displayName = 'NewPasswordField';
+
+export default NewPasswordField;

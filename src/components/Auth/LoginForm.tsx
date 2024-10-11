@@ -1,239 +1,144 @@
 import { trackLoginStepCompleted, trackLoginStepMovedBack, trackSignedIn } from "@/analytics";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { loginAndIdentifyUser } from "@/services/auth/authHelpers";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { isAxiosError } from "axios";
-import { LucideLoader } from "lucide-react";
-import { useRef, useState } from "react";
+import { FormProvider, useForm } from "react-hook-form";
+import { useState } from "react";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
-import { useForm, UseFormReturn } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { isAxiosError } from "axios";
+import { LoginOrganizationURLStep } from "./LoginOrganizationURLStep";
+import { LoginCredentialsStep } from "./LoginCredentialsStep";
 import zValidations from "./fields/zValidations";
+import { loginAndIdentifyUser } from "@/services/auth/authHelpers";
 
-const LoginStep1Schema = z.object({
+const LoginOrganizationURLSchema = z.object({
   organizationURL: zValidations.organizationURL
 });
 
-const LoginStep2Schema = z.object({
-  email: z.string().email("Invalid email address."),
-  password: z.string().min(1, "Cannot be empty."),
+const LoginCredentialsSchema = z.object({
+  email: zValidations.email,
+  password: zValidations.existingPassword,
 });
 
-type LoginStep1Data = z.infer<typeof LoginStep1Schema>;
-type LoginStep2Data = z.infer<typeof LoginStep2Schema>;
-type LoginData = Partial<LoginStep1Data & LoginStep2Data>;
+type LoginOrganizationURLData = z.infer<typeof LoginOrganizationURLSchema>;
+type LoginCredentialsData = z.infer<typeof LoginCredentialsSchema>;
+type LoginData = LoginOrganizationURLData & LoginCredentialsData;
+type Step = "organizationURL" | "credentials";
 
-interface LoginStep1FormProps {
-  form: UseFormReturn<LoginStep1Data>;
-  onSubmit: (data: LoginStep1Data) => void;
+interface LoginFormProps {
+  onStepChange: (step: Step) => void;
+  onOrganizationURLChange: (tenantId: string) => void;
 }
 
-interface LoginStep2FormProps {
-  form: UseFormReturn<LoginStep2Data>;
-  onSubmit: (data: LoginStep2Data) => void;
-  onBack: () => void;
-  loading: boolean;
-}
-
-function LoginForm() {
-  const [step, setStep] = useState(1);
-  const [loginData, setLoginData] = useState<LoginData>({});
-  const [formError, setFormError] = useState<string | null>(null);
+function LoginForm({ onStepChange, onOrganizationURLChange }: LoginFormProps) {
+  const [step, setStep] = useState<Step>("organizationURL");
   const [loading, setLoading] = useState<boolean>(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const authKitSignIn = useSignIn();
   const navigate = useNavigate();
-  const loginStep1Form = useForm<LoginStep1Data>({
-    resolver: zodResolver(LoginStep1Schema),
-    defaultValues: { organizationURL: "" },
-  });
 
-  const loginStep2Form = useForm<LoginStep2Data>({
-    resolver: zodResolver(LoginStep2Schema),
+  const formMethods = useForm<LoginData>({
+    resolver: zodResolver(step === "organizationURL" ? LoginOrganizationURLSchema : LoginCredentialsSchema),
     defaultValues: {
-      email: loginData.email || "",
-      password: loginData.password || "",
+      organizationURL: "",
+      email: "",
+      password: "",
     },
   });
 
-  const handleLoginStep1Submit = (data: LoginStep1Data) => {
-    setLoginData((prev) => ({ ...prev, ...data }));
+  const handleOrganizationURLStepSubmit = () => {
+    const formData = formMethods.getValues();
+    onOrganizationURLChange(formData.organizationURL);
     trackLoginStepCompleted(1);
-    setStep(2);
+    setStep("credentials");
+    onStepChange("credentials");
   };
 
-  const handleLoginStep2Submit = async (data: LoginStep2Data) => {
-    const finalData = { ...loginData, ...data };
-    const stockError = "Something went wrong. Please try again.";
+  const handleCredentialsStepSubmit = async (data: LoginCredentialsData) => {
     setLoading(true);
+    formMethods.clearErrors();
+    setFormError(null);
+    const stockError = "Login failed. Please try again.";
+
+    const handleLoginErrors = (error: any) => {
+      if (isAxiosError(error)) {
+        const responseError = error.response?.data?.errors?.body;
+
+        if (responseError?.includes("invalid username/password")) {
+          return setFormError("Invalid login credentials");
+        }
+
+        if (responseError?.includes("invalid tenant")) {
+          setStep("organizationURL");
+          onStepChange("organizationURL");
+          return formMethods.setError("organizationURL", { type: "manual", message: "Invalid Organization URL" });
+        }
+      }
+
+      console.error("Non-Axios error:", error);
+      setFormError(stockError);
+    };
 
     try {
-      const success = await loginAndIdentifyUser({
-        email: finalData.email!,
-        password: finalData.password!,
-        tenantSlug: finalData.organizationURL!,
+      const formData = formMethods.getValues();
+      const hasSignedIn = await loginAndIdentifyUser({
+        email: data.email!,
+        password: data.password!,
+        tenantSlug: formData.organizationURL!,
         authKitSignIn,
       });
 
       trackLoginStepCompleted(2);
 
-      if (success) {
-        trackSignedIn(finalData.organizationURL!);
-        setLoading(false);
-        return navigate(`/${finalData.organizationURL}/agents`);
+      if (hasSignedIn) {
+        trackSignedIn(formData.organizationURL!);
+        return navigate(`/${formData.organizationURL}/agents`);
       }
 
-      setFormError(stockError);
+      handleLoginErrors(new Error(stockError));
     } catch (err) {
-      if (isAxiosError(err)) {
-        const responseError = err.response?.data?.errors?.body;
-
-        if (responseError === "invalid username/password") {
-          setLoading(false);
-          return setFormError("Invalid login credentials");
-        }
-      }
-
-      setFormError(stockError);
+      handleLoginErrors(err);
     } finally {
       setLoading(false);
     }
   };
 
   const handleBack = () => {
-    setStep(1);
+    setStep("organizationURL");
+    onStepChange("organizationURL");
     trackLoginStepMovedBack();
   };
 
   return (
     <>
-      {step === 1 ? (
-        <LoginStep1Form
-          form={loginStep1Form}
-          onSubmit={handleLoginStep1Submit}
-        />
-      ) : (
-        <LoginStep2Form
-          form={loginStep2Form}
-          onSubmit={handleLoginStep2Submit}
-          onBack={handleBack}
-          loading={loading}
-        />
-      )}
-      {formError && <div className="text-red-500">{formError}</div>}
+      <FormProvider {...formMethods}>
+        {step === "organizationURL" ? (
+          <LoginOrganizationURLStep
+            onSubmit={formMethods.handleSubmit(handleOrganizationURLStepSubmit)}
+          />
+        ) : (
+          <LoginCredentialsStep
+            onSubmit={formMethods.handleSubmit(handleCredentialsStepSubmit)}
+            onBack={handleBack}
+            loading={loading}
+          />
+        )}
+        {formError ? <div className="text-destructive">{formError}</div> : null}
+      </FormProvider>
+
+      <div className="text-sm text-muted-foreground">
+        Don't have an Organization yet?{" "}
+        <Link
+          to="/signup"
+          className={`
+            underline text-foreground text-nowrap
+            ${loading ? 'pointer-events-none text-muted-foreground/50 no-underline' : ''}
+          `}
+        >
+          Sign up for one
+        </Link>
+      </div>
     </>
-  );
-}
-
-function LoginStep1Form({ form, onSubmit }: LoginStep1FormProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
-        <FormField
-          control={form.control}
-          name="organizationURL"
-          render={({ field }) => {
-            const { ref, ...restField } = field;
-            return (
-              <FormItem>
-                <FormLabel>Enter your Organization URL</FormLabel>
-                <FormControl>
-                  <div
-                    onClick={() => inputRef.current?.focus()}
-                    className="border-input border rounded-md flex items-baseline focus-within:ring-ring focus-within:ring-1"
-                  >
-                    <span className="pl-3 text-sm text-muted-foreground/50">
-                      app.externalsecrets.com/
-                    </span>
-                    <Input
-                      ref={inputRef}
-                      autoFocus
-                      className="border-none pl-0 focus-visible:ring-0"
-                      id="organizationURL"
-                      placeholder="your-organization"
-                      {...restField}
-                    />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            );
-          }}
-        />
-        <Button type="submit" className="w-full">
-          Next
-        </Button>
-      </form>
-    </Form>
-  );
-}
-
-function LoginStep2Form({ form, onSubmit, onBack, loading }: LoginStep2FormProps) {
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input
-                  autoFocus
-                  id="email"
-                  placeholder="you@yourcompany.com"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <div className="inline-flex w-full justify-between items-baseline">
-                <FormLabel>Password</FormLabel>
-                <Link to="/forgot-password" className="text-sm underline leading-none">
-                  Forgot your password?
-                </Link>
-              </div>
-              <FormControl>
-                <Input id="password" type="password" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <div className="flex justify-between">
-          <Button type="button" variant="outline" onClick={onBack}>
-            Back
-          </Button>
-          <Button
-            type="submit"
-            disabled={loading}
-            className="grid [&>*]:row-start-1 [&>*]:column-start-1 place-items-center"
-          >
-            <span className={ loading ? "invisible [grid-area:1/1]" : "" }>Login</span>
-            {loading && <LucideLoader className="animate-spin [grid-area:1/1]" />}
-          </Button>
-        </div>
-      </form>
-    </Form>
   );
 }
 

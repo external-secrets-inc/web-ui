@@ -8,6 +8,8 @@ env:
   NAME: web-ui
   TAG_NAME: ${{ github.event.release.tag_name }}
   TENANT_MANAGER_URL: https://api.prod.externalsecrets.com
+  WEB_UI_URL: https://app.externalsecrets.com
+  WEBSITE_URL: https://externalsecrets.com
   DOCS_URL: https://app.externalsecrets.com
   NODE_ENV: production
 jobs:
@@ -62,6 +64,8 @@ jobs:
             --tag ${{ vars.INTERNAL_REGISTRY }}/$NAME:${{ env.TAG_NAME }} \
             --tag ${{ vars.INTERNAL_REGISTRY}}/$NAME:latest \
             --build-arg TENANT_MANAGER_URL=${{ env.TENANT_MANAGER_URL}} \
+            --build-arg WEB_UI_URL=${{ env.WEB_UI_URL}} \
+            --build-arg WEBSITE_URL=${{ env.WEBSITE_URL}} \
             --build-arg DOCS_URL=${{ env.DOCS_URL}} \
             --build-arg NODE_ENV=${{ env.NODE_ENV }} \
             --push .

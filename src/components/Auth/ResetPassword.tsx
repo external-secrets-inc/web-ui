@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import {
-  Form,
   FormControl,
   FormField,
   FormItem,
@@ -11,14 +10,16 @@ import { Input } from "@/components/ui/input";
 import { resetPassword } from "@/services/forgotPassword/forgotPasswordService";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LucideLoader } from "lucide-react";
-import { useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useRef, useState, useEffect } from "react";
+import { useForm, FormProvider } from "react-hook-form";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { z } from "zod";
 import NewPasswordField from "./fields/NewPasswordField";
 import zValidations from "./fields/zValidations";
 import AppLogo from "@/components/AppLogo";
+import Cookies from 'js-cookie';
+import { APP_DOMAIN_STRIPPED } from "@/constants";
 
 const ResetPasswordSchema = z.object({
   tenant: zValidations.organizationURL,
@@ -30,17 +31,38 @@ const ResetPasswordSchema = z.object({
 type ResetPasswordData = z.infer<typeof ResetPasswordSchema>;
 
 function ResetPasswordForm() {
-  let [searchParams, _] = useSearchParams()
-  const [forgotPasswordData] = useState<ResetPasswordData>({ tenant: "", email: "", token: searchParams.get("token"), password: "" });
-  const form = useForm<ResetPasswordData>({
+  let [searchParams, _] = useSearchParams();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [submittedWithErrors, setSubmittedWithErrors] = useState(false);
+
+  const newPasswordRef = useRef<HTMLInputElement>(null);
+
+  const formMethods = useForm<ResetPasswordData>({
     resolver: zodResolver(ResetPasswordSchema),
-    defaultValues: { ...forgotPasswordData },
+    defaultValues: {
+      // TODO: Remove these cookies when we are sending the necessary data from the token within the reset password email link
+      tenant: Cookies.get("forgotPasswordHelperOrganizationURL") || "",
+      email: Cookies.get("forgotPasswordHelperEmail") || "",
+      token: searchParams.get("token") || "",
+      password: "",
+    },
   });
 
-  const [loading, setLoading] = useState(false)
-  const [formError, setFormError] = useState("")
-  const navigate = useNavigate()
-  const [submittedWithErrors, setSubmittedWithErrors] = useState(false);
+  const { setFocus } = formMethods;
+
+  useEffect(() => {
+    // TODO: Remove these cookies when we are sending the necessary data from the token within the reset password email link
+    const tenant = Cookies.get("forgotPasswordHelperOrganizationURL");
+    const email = Cookies.get("forgotPasswordHelperEmail");
+
+    if (tenant && email) {
+      newPasswordRef.current?.focus();
+    } else {
+      setFocus("tenant");
+    }
+  }, [setFocus]);
 
   const handleSubmit = (data: ResetPasswordData) => {
     setSubmittedWithErrors(false);
@@ -56,14 +78,14 @@ function ResetPasswordForm() {
     setLoading(true)
     try {
       await resetPassword(values.email, values.tenant, values.password, values.token)
-      toast.success('Password updated successfuly', { description: 'Please log in' });
+      toast.success('Password updated successfully', { description: 'Please log in' });
+      Cookies.remove("forgotPasswordHelperOrganizationURL");
+      Cookies.remove("forgotPasswordHelperEmail");
       navigate('/login')
     } finally {
       setLoading(false)
     }
   }
-
-  const inputRef = useRef<HTMLInputElement>(null);
 
   return (
     <div className="flex flex-col items-center h-screen">
@@ -75,51 +97,46 @@ function ResetPasswordForm() {
           </h1>
           <p className="text-[15px] text-muted-foreground">
             Once it's set, you can use it to log in again
-           </p>
+          </p>
         </header>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit, handleError)} className="grid gap-4">
+        <FormProvider {...formMethods}>
+          <form onSubmit={formMethods.handleSubmit(handleSubmit, handleError)} className="grid gap-4">
             <FormField
-              control={form.control}
+              control={formMethods.control}
               name="tenant"
-              render={({ field }) => {
-                const { ref, ...restField } = field;
-                return (
-                  <FormItem>
-                    <FormLabel>Enter your Organization URL</FormLabel>
-                    <FormControl>
-                      <div
-                        onClick={() => inputRef.current?.focus()}
-                        className="border-input border rounded-md flex items-baseline focus-within:ring-ring focus-within:ring-1"
-                      >
-                        <span className="pl-3 text-sm text-muted-foreground/50">
-                          app.externalsecrets.com/
-                        </span>
-                        <Input
-                          ref={inputRef}
-                          autoFocus
-                          className="border-none pl-0 focus-visible:ring-0"
-                          id="tenant"
-                          placeholder="your-organization"
-                          {...restField}
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                );
-              }}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Enter your Organization URL</FormLabel>
+                  <FormControl>
+                    <div
+                      onClick={() => setFocus("tenant")}
+                      className="border-input border rounded-md flex items-baseline focus-within:ring-ring focus-within:ring-1"
+                    >
+                      <span className="pl-3 text-sm text-muted-foreground/50">
+                        {APP_DOMAIN_STRIPPED}/
+                      </span>
+                      <Input
+                        className="border-none pl-0 focus-visible:ring-0"
+                        autoCapitalize="none"
+                        id="tenant"
+                        placeholder="your-organization"
+                        {...field}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
             <FormField
-              control={form.control}
+              control={formMethods.control}
               name="email"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input
-                      autoFocus
                       id="email"
                       placeholder="you@yourcompany.com"
                       {...field}
@@ -130,7 +147,10 @@ function ResetPasswordForm() {
               )}
             />
 
-            <NewPasswordField form={form} submittedWithErrors={submittedWithErrors}/>
+            <NewPasswordField
+              submittedWithErrors={submittedWithErrors}
+              ref={newPasswordRef}
+            />
 
             <div className="flex justify-between">
               <Button
@@ -143,12 +163,11 @@ function ResetPasswordForm() {
               </Button>
             </div>
           </form>
-        </Form>
-        {formError && <div className="text-red-500">{formError}</div>}
+        </FormProvider>
+        {formError && <div className="text-destructive">{formError}</div>}
       </div>
     </div>
   );
 }
-
 
 export default ResetPasswordForm;
