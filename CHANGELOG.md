@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.3.0](https://github.com/external-secrets-inc/web-ui/compare/v0.2.4...v0.3.0) (2024-10-11)
+
+
+### Features
+
+* allow deletion of tenant through the UI ([#73](https://github.com/external-secrets-inc/web-ui/issues/73)) ([400ab86](https://github.com/external-secrets-inc/web-ui/commit/400ab869055a622755b8e8331a1d893ebafecd33))
+* auth qol improvements ([#83](https://github.com/external-secrets-inc/web-ui/issues/83)) ([644238e](https://github.com/external-secrets-inc/web-ui/commit/644238ed6ea2e4517ab6761db736adf5b06a2482))
+
+
+### Bug Fixes
+
+* :bug: quickfix signup track event spreading string data ([654d29f](https://github.com/external-secrets-inc/web-ui/commit/654d29f579d6ceb4d8de443ead2b1c2980e257ac))
+* no cache on index.html ([#85](https://github.com/external-secrets-inc/web-ui/issues/85)) ([f3fb51a](https://github.com/external-secrets-inc/web-ui/commit/f3fb51a221aecc0405df5eb12e0178df134845e3))
+* position of meta ([d51e8ef](https://github.com/external-secrets-inc/web-ui/commit/d51e8efed24dabeb7afb457d693ae2f25c05cdb5))
+
 ## [0.2.4](https://github.com/external-secrets-inc/web-ui/compare/v0.2.3...v0.2.4) (2024-10-07)
 
 
