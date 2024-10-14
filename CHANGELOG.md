@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.1](https://github.com/external-secrets-inc/web-ui/compare/v0.4.0...v0.4.1) (2024-10-14)
+
+
+### Bug Fixes
+
+* :bug: fix undefined website url on auth pages ([3a8341c](https://github.com/external-secrets-inc/web-ui/commit/3a8341c8b95e2ed1a10ce15b9e930d7f4af3cb2b))
+* :hammer: update cookieyes script for new account ([45a365f](https://github.com/external-secrets-inc/web-ui/commit/45a365fc9fbdffc9f416c7581ae9af8f883aa6d3))
+
 ## [0.4.0](https://github.com/external-secrets-inc/web-ui/compare/v0.3.0...v0.4.0) (2024-10-14)
 
 
