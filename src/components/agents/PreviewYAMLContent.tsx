@@ -11,7 +11,7 @@ import { ClipboardCopyIcon, DownloadIcon } from "lucide-react"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { DeleteAgentDialog } from "./DeleteAgentDialog";
-import { getManifestContent } from "@/services/agents/agentsService";
+import { getManifestContent, createManifestToken } from "@/services/agents/agentsService";
 import { trackCopyRawYAML, trackCopyYAMLWithApplyCommand, trackDownloadYAML } from "@/analytics";
 
 interface PreviewYAMLContentProps {
@@ -51,11 +51,12 @@ export function PreviewYAMLContent({ id, onDeleted, version = 'latest' }: Previe
     trackCopyRawYAML(id);
   }
 
-  const handleCopyWithApply = () => {
-    const applyCommand = `cat <<EOF | kubectl apply -f -\n${content}\nEOF`;
-    copyToClipboard(applyCommand, "YAML within 'kubectl apply'");
+  const handleCopyWithApply = async () => {
+    const token = await createManifestToken(id);
+    const applyCommand = `curl ${import.meta.env.VITE_API_DOMAIN}/public/agents/${id}/manifest/${version}?token=${token} | kubectl apply -f -`;
+    copyToClipboard(applyCommand, "curl with 'kubectl apply'");
     trackCopyYAMLWithApplyCommand(id);
-  }
+  };
 
   const handleDownload = (): void => {
     const file = new File([content], 'manifest.yaml', { type: 'text/yaml' });
