@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.0](https://github.com/external-secrets-inc/web-ui/compare/v0.3.0...v0.4.0) (2024-10-14)
+
+
+### Features
+
+* :sparkles: add cookieyes banner script ([ea19662](https://github.com/external-secrets-inc/web-ui/commit/ea196629dc6a5bb5966b4bf8d3f435101d8b31fc))
+
+
+### Bug Fixes
+
+* clipboardable apply command ([#88](https://github.com/external-secrets-inc/web-ui/issues/88)) ([9ae4b8b](https://github.com/external-secrets-inc/web-ui/commit/9ae4b8b6dd297e817b81acd9296b0e4aa85c6c3e))
+
 ## [0.3.0](https://github.com/external-secrets-inc/web-ui/compare/v0.2.4...v0.3.0) (2024-10-11)
 
 
