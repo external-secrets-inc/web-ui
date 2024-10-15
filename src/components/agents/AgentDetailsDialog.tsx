@@ -101,7 +101,12 @@ export function AgentDetailsDialog({ id, agentName, currentStatus, onDeleted }: 
             </div>
           </Card>
         </DialogTrigger>
-        <PreviewYAMLContent id={id} onDeleted={onDeleted} />
+        <PreviewYAMLContent
+          id={id}
+          onDeleted={onDeleted}
+          agentName={agentName}
+          currentStatus={currentStatus}
+        />
       </Dialog>
 
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

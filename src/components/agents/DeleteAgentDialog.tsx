@@ -22,9 +22,9 @@ export function DeleteAgentDialog({id, onDeleted}: DeleteAgentDialogProps) {
   return (
     <Dialog onOpenChange={handleDeleteDialogOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="destructive" className="md:mr-auto">
+        <Button variant="destructive">
           <Trash2Icon className="mr-2" />
-          Delete
+          Delete Agent
         </Button>
       </DialogTrigger>
       <DeleteAgentModalContent id={id} onDeleted={onDeleted} />
