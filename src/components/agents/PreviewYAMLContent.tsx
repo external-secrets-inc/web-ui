@@ -15,6 +15,8 @@ import { getManifestContent, createManifestToken } from "@/services/agents/agent
 import { trackCopyRawYAML, trackCopyYAMLWithApplyCommand, trackDownloadYAML } from "@/analytics";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { API_DOMAIN } from '@/constants';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+
 
 interface PreviewYAMLContentProps {
   id: string;
@@ -103,18 +105,24 @@ export function PreviewYAMLContent({ id, onDeleted, version = 'latest', agentNam
             <p>{currentStatus}</p> {/* TODO: Improve this */}
           </TabsContent>
           <TabsContent className="data-[state=active]:grid min-h-0" value="manifest" >
-            <pre>
-              <code className="flex flex-col">
-                <span>{content}</span>
-              </code>
-            </pre>
+            <ScrollArea className='rounded-lg border'>
+              <pre>
+                <code className="flex flex-col">
+                  <span>{content}</span>
+                </code>
+              </pre>
+              <ScrollBar orientation='horizontal'/>
+            </ScrollArea>
           </TabsContent>
           <TabsContent className="data-[state=active]:grid min-h-0" value="apply" >
-            <pre>
-              <code className="flex flex-col">
-                <span>{applyCommand}</span>
-              </code>
-            </pre>
+            <ScrollArea className='rounded-lg border'>
+              <pre>
+                <code className="flex flex-col">
+                  <span>{applyCommand}</span>
+                </code>
+              </pre>
+              <ScrollBar orientation='horizontal'/>
+            </ScrollArea>
           </TabsContent>
         </Tabs>
         <DialogFooter>

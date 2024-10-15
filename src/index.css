@@ -85,7 +85,7 @@
    * <TypographyProvider>?
    */
   pre {
-    @apply max-h-[650px] overflow-x-auto rounded-lg border bg-muted p-4
+    @apply bg-muted/50 p-4
   }
 
   code {
