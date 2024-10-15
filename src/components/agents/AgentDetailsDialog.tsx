@@ -63,6 +63,15 @@ export function AgentDetailsDialog({ id, agentName, currentStatus, onDeleted }: 
   const [isYamlDialogOpen, setIsYamlDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
+  const statusMap: { [key: string]: string } = {
+    "PROVISIONING": "Provisioning",
+    "PENDING_REGISTRATION": "Pending Registration",
+    "ACTIVE": "Active",
+    "OFFLINE": "Offline",
+    "PENDING_DELETION": "Pending Deletion",
+    "DELETED": "Deleted"
+  };
+
   useEffect(() => {
     if (isYamlDialogOpen) {
       trackYamlDialogOpened(id, agentName);
@@ -94,7 +103,7 @@ export function AgentDetailsDialog({ id, agentName, currentStatus, onDeleted }: 
               <CardFooter className='mt-auto gap-1 flex-wrap-reverse'>
                   <span className='flex gap-2 items-center'>
                     {isPending && <AlertCircleIcon className="text-orange-500" />}
-                    { currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1).toLowerCase() }
+                    {statusMap[currentStatus] || currentStatus}
                   </span>
                   {isPending && <span className='text-sm text-muted-foreground'> (You need to apply it)</span>}
               </CardFooter>
