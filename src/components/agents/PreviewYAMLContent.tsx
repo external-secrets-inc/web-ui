@@ -131,12 +131,18 @@ export function PreviewYAMLContent({ id, onDeleted, version = 'latest', agentNam
           }
           {activeTab === 'manifest' &&
             <>
-              <Button onClick={handleCopyRaw} variant={"secondary"} ><ClipboardCopyIcon className="mr-2" />Copy</Button>
-              <Button onClick={handleDownload}><DownloadIcon className="mr-2"/>Download</Button>
+              <Button onClick={handleCopyRaw} variant="secondary">
+                <ClipboardCopyIcon className="mr-2" />Copy
+              </Button>
+              <Button onClick={handleDownload}><DownloadIcon className="mr-2"/>
+                Download
+              </Button>
             </>
           }
           {activeTab === 'apply' &&
-            <Button onClick={handleCopyWithApply} variant={"secondary"}><ClipboardCopyIcon className="mr-2"/>Copy</Button>
+            <Button onClick={handleCopyWithApply}>
+              <ClipboardCopyIcon className="mr-2"/>Copy
+            </Button>
           }
         </DialogFooter>
     </DialogContent>
