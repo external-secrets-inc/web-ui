@@ -16,6 +16,7 @@ import { trackCopyRawYAML, trackCopyYAMLWithApplyCommand, trackDownloadYAML } fr
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { API_DOMAIN } from '@/constants';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 
 interface PreviewYAMLContentProps {
@@ -23,34 +24,32 @@ interface PreviewYAMLContentProps {
   onDeleted: () => void;
   version?: string;
   agentName: string;
-  currentStatus: string;
+  status: {
+    text: string;
+    icon: React.ReactNode;
+  };
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
 }
 
-export function PreviewYAMLContent({ id, onDeleted, version = 'latest', agentName, currentStatus }: PreviewYAMLContentProps) {
+
+export function PreviewYAMLContent({
+  id,
+  onDeleted,
+  version = 'latest',
+  agentName,
+  status,
+  activeTab,
+  setActiveTab,
+}: PreviewYAMLContentProps) {
+  const defaultTab = 'details';
+  const isPending = status.text === 'Provisioning' || status.text === 'Pending Registration';
   const [content, setContent] = useState('')
-  const [activeTab, setActiveTab] = useState('details');
   const [applyCommand, setApplyCommand] = useState('');
 
-  useEffect(() => {
-    const fetchManifestContent = async () => {
-      const manifestContent = await getManifestContent(id, version);
-      setContent(manifestContent);
-    };
-
-    const generateApplyCommand = async () => {
-      const token = await createManifestToken(id);
-      const command = [
-        "curl \\",
-        `${API_DOMAIN}/public/agents/${id}/manifest/${version}\\`,
-        `?token=${token} \\`,
-        "| kubectl apply -f -",
-      ].join('\n');
-      setApplyCommand(command);
-    };
-
-    fetchManifestContent();
-    generateApplyCommand();
-  }, [id, version]);
+  const onTabChange = (value: string) => {
+    setActiveTab(value);
+  }
 
   const copyToClipboard = async (text: string, kind: string) => {
     try {
@@ -82,6 +81,33 @@ export function PreviewYAMLContent({ id, onDeleted, version = 'latest', agentNam
     trackDownloadYAML(id);
   };
 
+  useEffect(() => {
+    const fetchManifestContent = async () => {
+      const manifestContent = await getManifestContent(id, version);
+      setContent(manifestContent);
+    };
+
+    const generateApplyCommand = async () => {
+      const token = await createManifestToken(id);
+      const command = [
+        "curl \\",
+        `${API_DOMAIN}/public/agents/${id}/manifest/${version}\\`,
+        `?token=${token} \\`,
+        "| kubectl apply -f -",
+      ].join('\n');
+      setApplyCommand(command);
+    };
+
+    fetchManifestContent();
+    generateApplyCommand();
+  }, [id, version]);
+
+  useEffect(() => {
+    return () => {
+      setActiveTab(defaultTab);
+    };
+  }, []);
+
   return (
     <DialogContent
       className="w-[max(50%,640px)] max-w-[calc(100%-theme(spacing.12))] max-h-[calc(100%-theme(spacing.12))] overflow-auto grid-rows-[auto_minmax(100px,1fr)_auto] grid-cols-[minmax(100%,1fr)]"
@@ -93,7 +119,12 @@ export function PreviewYAMLContent({ id, onDeleted, version = 'latest', agentNam
           Apply this manifest to your cluster to activate your agents
         </DialogDescription>
       </DialogHeader>
-        <Tabs defaultValue="details" onValueChange={setActiveTab} className="grid grid-rows-[auto_1fr]">
+        <Tabs
+          defaultValue={defaultTab}
+          onValueChange={onTabChange}
+          value={activeTab}
+          className="grid grid-rows-[auto_1fr]"
+        >
           <div className="flex justify-between items-center">
             <TabsList>
               <TabsTrigger value="details">Details</TabsTrigger>
@@ -101,8 +132,39 @@ export function PreviewYAMLContent({ id, onDeleted, version = 'latest', agentNam
               <TabsTrigger value="apply">Applying</TabsTrigger>
             </TabsList>
           </div>
-          <TabsContent className="not:[hidden]:grid min-h-0" value="details" >
-            <p>{currentStatus}</p> {/* TODO: Improve this */}
+          <TabsContent className="data-[state=active]:grid min-h-0 gap-4 mt-10" value="details" >
+            <div className="grid md:grid-cols-3">
+              <span className="text-muted-foreground">
+                ID
+              </span>
+              <span className="col-span-2">
+                {id}
+              </span>
+            </div>
+
+            <div className="grid md:grid-cols-3">
+              <span className="text-muted-foreground">
+                Current Status
+              </span>
+              <span className="flex col-span-2 gap-2 items-center">
+                {status.icon}
+                {status.text}
+              </span>
+            </div>
+
+            {isPending &&
+              <Alert
+                variant="warning"
+                className="mt-4"
+              >
+                <AlertTitle>
+                  Agent is not active
+                </AlertTitle>
+                <AlertDescription>
+                  You need to apply the agent manifest file to your cluster in order to activate it. Follow the instructions on the <Button className="underline" variant="ghost" size="inline" onClick={() => setActiveTab('apply')}>Applying tab</Button>.
+                </AlertDescription>
+              </Alert>
+            }
           </TabsContent>
           <TabsContent className="data-[state=active]:grid min-h-0" value="manifest" >
             <ScrollArea className='rounded-lg border'>

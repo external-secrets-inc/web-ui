@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { Dialog, DialogContent, DialogPortal, DialogTrigger } from "@radix-ui/react-dialog";
-import { Card, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { trackAgentDeleteDialogOpened, trackYamlDialogOpened } from "@/analytics";
 import { Button } from "@/components/ui/button";
-import { Trash2Icon, FileTerminalIcon, Menu, AlertCircleIcon } from "lucide-react";
-import { PreviewYAMLContent } from "./PreviewYAMLContent";
+import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogPortal, DialogTrigger } from "@radix-ui/react-dialog";
+import { FileTerminalIcon, LucideAlertCircle, LucideCheckCircle, LucideTrash2, LucideXCircle, Menu, Trash2Icon } from "lucide-react";
+import React, { useEffect, useState } from 'react';
 import { DeleteAgentModalContent } from "./DeleteAgentModalContent";
-import { trackYamlDialogOpened, trackAgentDeleteDialogOpened } from "@/analytics";
+import { PreviewYAMLContent } from "./PreviewYAMLContent";
 
 interface AgentDropdownProps {
   onPreviewYaml: () => void;
@@ -62,15 +62,35 @@ export function AgentDetailsDialog({ id, agentName, currentStatus, onDeleted }: 
   const isPending = ['PENDING_REGISTRATION', 'PROVISIONING'].includes(currentStatus.toUpperCase());
   const [isYamlDialogOpen, setIsYamlDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [activeContentTab, setActiveContentTab] = useState('details');
 
-  const statusMap: { [key: string]: string } = {
-    "PROVISIONING": "Provisioning",
-    "PENDING_REGISTRATION": "Pending Registration",
-    "ACTIVE": "Active",
-    "OFFLINE": "Offline",
-    "PENDING_DELETION": "Pending Deletion",
-    "DELETED": "Deleted"
+  const statusMap: { [key: string]: { text: string, icon: React.ReactNode } } = {
+    "PROVISIONING": {
+      text: "Provisioning",
+      icon: <LucideAlertCircle className="text-orange-500"/>
+    },
+    "PENDING_REGISTRATION": {
+      text: "Pending Registration",
+      icon: <LucideAlertCircle className="text-orange-500"/>
+    },
+    "ACTIVE": {
+      text: "Active",
+      icon: <LucideCheckCircle className="text-green-700" />
+    },
+    "OFFLINE": {
+      text: "Offline",
+      icon: <LucideXCircle className="text-muted-foreground" />
+    },
+    "PENDING_DELETION": {
+      text: "Pending Deletion",
+      icon: <LucideTrash2 className="text-destructive"/>
+    },
+    "DELETED": {
+      text: "Deleted",
+      icon: <LucideAlertCircle className="text-destructive"/>
+    }
   };
+  const status = statusMap[currentStatus] || { text: currentStatus, icon: null };
 
   useEffect(() => {
     if (isYamlDialogOpen) {
@@ -84,9 +104,16 @@ export function AgentDetailsDialog({ id, agentName, currentStatus, onDeleted }: 
     }
   }, [isDeleteDialogOpen]);
 
+  const handleYamlDialogOpenChange = (isOpen: boolean) => {
+    setIsYamlDialogOpen(isOpen);
+    if (!isOpen) {
+      setActiveContentTab('details');
+    }
+  };
+
   return (
     <>
-      <Dialog open={isYamlDialogOpen} onOpenChange={setIsYamlDialogOpen}>
+      <Dialog open={isYamlDialogOpen} onOpenChange={handleYamlDialogOpenChange}>
         <DialogTrigger asChild>
           <Card className="group flex flex-col relative hover:border-muted-foreground/50 hover:bg-muted/15 transition-all" asChild>
             <div>
@@ -102,8 +129,8 @@ export function AgentDetailsDialog({ id, agentName, currentStatus, onDeleted }: 
               </CardHeader>
               <CardFooter className='mt-auto gap-1 flex-wrap-reverse'>
                   <span className='flex gap-2 items-center'>
-                    {isPending && <AlertCircleIcon className="text-orange-500" />}
-                    {statusMap[currentStatus] || currentStatus}
+                    {status.icon}
+                    {status.text}
                   </span>
                   {isPending && <span className='text-sm text-muted-foreground'> (You need to apply it)</span>}
               </CardFooter>
@@ -114,7 +141,9 @@ export function AgentDetailsDialog({ id, agentName, currentStatus, onDeleted }: 
           id={id}
           onDeleted={onDeleted}
           agentName={agentName}
-          currentStatus={currentStatus}
+          status={status}
+          activeTab={activeContentTab}
+          setActiveTab={setActiveContentTab}
         />
       </Dialog>
 
