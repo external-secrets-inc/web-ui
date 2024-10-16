@@ -25,7 +25,7 @@ export function DeleteAgentDialog({id, agentName, onDeleted}: DeleteAgentDialogP
       <DialogTrigger asChild>
         <Button variant="destructive">
           <Trash2Icon className="mr-2" />
-          Delete Agent
+          Delete agent
         </Button>
       </DialogTrigger>
       <DeleteAgentModalContent

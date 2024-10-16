@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
-import { LucideAlertCircle, LucideCheckCircle, LucideFileTerminal, LucideMoreVertical, LucideTrash2, LucideXCircle } from "lucide-react";
+import { LucideAlertCircle, LucideCheckCircle, LucideMoreVertical, LucideSquareArrowOutUpRight, LucideTrash2, LucideXCircle } from "lucide-react";
 import React, { useEffect, useState } from 'react';
 import { DeleteAgentModalContent } from "./DeleteAgentModalContent";
 import { PreviewYAMLContent } from "./PreviewYAMLContent";
@@ -32,12 +32,12 @@ const AgentDropdown: React.FC<AgentDropdownProps> = ({ onPreviewYaml, onDelete }
         onCloseAutoFocus={(event) => event.preventDefault()}
       >
         <DropdownMenuItem onSelect={onPreviewYaml}>
-          <LucideFileTerminal className="mr-2" />
-          Preview YAML
+          <LucideSquareArrowOutUpRight className="mr-2" />
+          Open details
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={onDelete}>
           <LucideTrash2 className="mr-2" />
-          Delete
+          Delete agent
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

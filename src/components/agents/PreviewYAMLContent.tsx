@@ -18,7 +18,6 @@ import { API_DOMAIN } from '@/constants';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-
 interface PreviewYAMLContentProps {
   id: string;
   onDeleted: () => void;
@@ -115,9 +114,7 @@ export function PreviewYAMLContent({
     >
       <DialogHeader>
         <DialogTitle>{agentName}</DialogTitle>
-        <DialogDescription>
-          Use this Agent to manage an ESO deployment in your Kubernetes cluster
-        </DialogDescription>
+        <DialogDescription />
       </DialogHeader>
         <Tabs
           defaultValue={defaultTab}
@@ -125,31 +122,33 @@ export function PreviewYAMLContent({
           value={activeTab}
           className="grid grid-rows-[auto_1fr]"
         >
-          <div className="flex justify-between items-center">
-            <TabsList className="mb-3 mt-2">
-              <TabsTrigger value="details">Details</TabsTrigger>
-              <TabsTrigger value="manifest">Manifest</TabsTrigger>
-              <TabsTrigger value="apply">Applying</TabsTrigger>
-            </TabsList>
-          </div>
-          <TabsContent className="data-[state=active]:grid min-h-0 gap-4" value="details" >
-            <div className="grid md:grid-cols-3">
-              <span className="text-muted-foreground">
-                ID
-              </span>
-              <span className="col-span-2">
-                {id}
-              </span>
-            </div>
-
-            <div className="grid md:grid-cols-3">
-              <span className="text-muted-foreground">
-                Current Status
-              </span>
-              <span className="flex col-span-2 gap-2 items-center">
-                {status.icon}
-                {status.text}
-              </span>
+          <TabsList className="mb-2 w-fit">
+            <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="manifest">Manifest</TabsTrigger>
+            <TabsTrigger value="apply">Applying</TabsTrigger>
+          </TabsList>
+          <TabsContent className="data-[state=active]:grid min-h-0" value="details" >
+            <p className="text-muted-foreground text-sm mb-2">
+              Agent used for managing an ESO deployment in your Kubernetes cluster
+            </p>
+            <div className="grid gap-4 border-y py-5">
+              <div className="grid md:grid-cols-3">
+                <span className="text-muted-foreground">
+                  ID
+                </span>
+                <span className="col-span-2">
+                  {id}
+                </span>
+              </div>
+              <div className="grid md:grid-cols-3">
+                <span className="text-muted-foreground">
+                  Current Status
+                </span>
+                <span className="flex col-span-2 gap-2 items-center">
+                  {status.icon}
+                  {status.text}
+                </span>
+              </div>
             </div>
 
             {isPending &&
@@ -167,8 +166,8 @@ export function PreviewYAMLContent({
             }
           </TabsContent>
           <TabsContent className="data-[state=active]:grid min-h-0" value="manifest">
-              <p className="text-muted-foreground text-sm mb-4">
-                Below is a preview of the manifest file you apply to your Kubernetes cluster in order to deploy the agent
+              <p className="text-muted-foreground text-sm mb-2">
+                Below is a preview of the manifest file you apply to your Kubernetes cluster in order to deploy this agent
               </p>
             <ScrollArea className='rounded-lg border'>
               <pre>
@@ -180,7 +179,7 @@ export function PreviewYAMLContent({
             </ScrollArea>
           </TabsContent>
           <TabsContent className="data-[state=active]:grid min-h-0" value="apply">
-              <p className="text-muted-foreground text-sm mb-4">
+              <p className="text-muted-foreground text-sm mb-2">
                 Run the command below to deploy this agent to your Kubernetes cluster
               </p>
             <ScrollArea className='rounded-lg border'>
@@ -195,10 +194,9 @@ export function PreviewYAMLContent({
               <AlertDescription className="flex gap-2 items-center">
                 <LucideInfo className="flex-none" />
                 <p>
-                  The provided URL in the <code>curl</code> command is a link to the agent manifest file. It is piped to a <code>kubectl apply</code> command that will apply the manifest file to your cluster.
+                  The provided URL in the <code>curl</code> command is a link to the agent manifest file. It is piped to a <code>kubectl apply</code> command that will apply it to your cluster.
                 </p>
               </AlertDescription>
-
             </Alert>
           </TabsContent>
         </Tabs>

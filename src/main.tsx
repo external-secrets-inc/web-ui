@@ -67,7 +67,7 @@ const router = createBrowserRouter([
           <>
             <AppPageHeader
               title="Your Agents"
-              description="Monitor existing agents and/or generate new ones"
+              description="Monitor and create agents for ESO deployments"
             />
             <ListAgents />
           </>
