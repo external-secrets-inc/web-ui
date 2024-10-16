@@ -204,7 +204,11 @@ export function PreviewYAMLContent({
         </Tabs>
         <DialogFooter>
           {activeTab === 'details' &&
-            <DeleteAgentDialog id={id} onDeleted={onDeleted} />
+            <DeleteAgentDialog
+              id={id}
+              agentName={agentName}
+              onDeleted={onDeleted}
+            />
           }
           {activeTab === 'manifest' &&
             <>

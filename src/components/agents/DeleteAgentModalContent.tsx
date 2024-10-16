@@ -12,10 +12,11 @@ import { trackAgentDeleted } from "@/analytics";
 
 interface DeleteAgentModalContentProps {
   id: string;
+  agentName: string;
   onDeleted: () => void;
 }
 
-export function DeleteAgentModalContent({ id, onDeleted }: DeleteAgentModalContentProps) {
+export function DeleteAgentModalContent({ id, agentName, onDeleted }: DeleteAgentModalContentProps) {
   const handleDeleteAgent = async () => {
     await deleteAgent(id)
     trackAgentDeleted(id);
@@ -25,7 +26,7 @@ export function DeleteAgentModalContent({ id, onDeleted }: DeleteAgentModalConte
   return (
     <DialogContent className="max-w-fit overflow-auto">
       <DialogHeader>
-        <DialogTitle>Delete agent</DialogTitle>
+        <DialogTitle>Delete agent: <span className="text-muted-foreground">{agentName}</span></DialogTitle>
         <DialogDescription>
           This action can't be undone and will deactivate this agent on your cluster
         </DialogDescription>

@@ -9,10 +9,11 @@ import { trackDeleteDialogOpened } from "@/analytics";
 
 interface DeleteAgentDialogProps {
   id: string;
+  agentName: string;
   onDeleted: () => void;
 }
 
-export function DeleteAgentDialog({id, onDeleted}: DeleteAgentDialogProps) {
+export function DeleteAgentDialog({id, agentName, onDeleted}: DeleteAgentDialogProps) {
   const handleDeleteDialogOpenChange = (open: boolean) => {
     if (open) {
       trackDeleteDialogOpened(id);
@@ -27,7 +28,11 @@ export function DeleteAgentDialog({id, onDeleted}: DeleteAgentDialogProps) {
           Delete Agent
         </Button>
       </DialogTrigger>
-      <DeleteAgentModalContent id={id} onDeleted={onDeleted} />
+      <DeleteAgentModalContent
+        id={id}
+        agentName={agentName}
+        onDeleted={onDeleted}
+      />
     </Dialog>
   )
 }

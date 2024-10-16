@@ -148,11 +148,11 @@ export function AgentDetailsDialog({ id, agentName, currentStatus, onDeleted }: 
       </Dialog>
 
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogPortal>
-          <DialogContent>
-            <DeleteAgentModalContent id={id} onDeleted={onDeleted} />
-          </DialogContent>
-        </DialogPortal>
+        <DeleteAgentModalContent
+          id={id}
+          agentName={agentName}
+          onDeleted={onDeleted}
+        />
       </Dialog>
     </>
   );
