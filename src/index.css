@@ -91,6 +91,10 @@
   code {
     @apply relative rounded font-mono text-sm
   }
+
+  :is(p, h1, h2, h3, h4, h5, h6) a {
+    @apply text-sky-700 hover:text-sky-600 dark:text-sky-600 dark:hover:text-sky-500 underline underline-offset-[0.12em] decoration-1 transition-colors
+  }
 }
 
 /* Custom .container behavior */
