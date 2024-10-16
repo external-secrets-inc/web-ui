@@ -89,7 +89,7 @@
   }
 
   code {
-    @apply relative rounded px-[0.3rem] py-[0.2rem] font-mono text-sm
+    @apply relative rounded font-mono text-sm
   }
 }
 

@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { ClipboardCopyIcon, DownloadIcon } from "lucide-react"
+import { ClipboardCopyIcon, DownloadIcon, LucideInfo } from "lucide-react"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { DeleteAgentDialog } from "./DeleteAgentDialog";
@@ -66,12 +66,12 @@ export function PreviewYAMLContent({
   }
 
   const handleCopyRaw = () => {
-    copyToClipboard(content, 'raw YAML');
+    copyToClipboard(content, 'raw YAML manifest');
     trackCopyRawYAML(id);
   }
 
   const handleCopyWithApply = () => {
-    copyToClipboard(applyCommand, "curl with 'kubectl apply'");
+    copyToClipboard(applyCommand, "'apply' command");
     trackCopyYAMLWithApplyCommand(id);
   };
 
@@ -116,7 +116,7 @@ export function PreviewYAMLContent({
       <DialogHeader>
         <DialogTitle>{agentName}</DialogTitle>
         <DialogDescription>
-          Apply this manifest to your cluster to activate your agents
+          Use this Agent to manage an ESO deployment in your Kubernetes cluster
         </DialogDescription>
       </DialogHeader>
         <Tabs
@@ -126,13 +126,13 @@ export function PreviewYAMLContent({
           className="grid grid-rows-[auto_1fr]"
         >
           <div className="flex justify-between items-center">
-            <TabsList>
+            <TabsList className="mb-3 mt-2">
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="manifest">Manifest</TabsTrigger>
               <TabsTrigger value="apply">Applying</TabsTrigger>
             </TabsList>
           </div>
-          <TabsContent className="data-[state=active]:grid min-h-0 gap-4 mt-10" value="details" >
+          <TabsContent className="data-[state=active]:grid min-h-0 gap-4" value="details" >
             <div className="grid md:grid-cols-3">
               <span className="text-muted-foreground">
                 ID
@@ -157,16 +157,19 @@ export function PreviewYAMLContent({
                 variant="warning"
                 className="mt-4"
               >
-                <AlertTitle>
-                  Agent is not active
+                <AlertTitle className="flex gap-2 items-center">
+                {status.icon} Agent is not active
                 </AlertTitle>
                 <AlertDescription>
-                  You need to apply the agent manifest file to your cluster in order to activate it. Follow the instructions on the <Button className="underline" variant="ghost" size="inline" onClick={() => setActiveTab('apply')}>Applying tab</Button>.
+                  You need to apply the agent manifest file to your cluster in order to activate it. Follow the instructions on the <Button className="underline" variant="ghost" size="inline" onClick={() => setActiveTab('apply')}>Applying tab</Button>
                 </AlertDescription>
               </Alert>
             }
           </TabsContent>
-          <TabsContent className="data-[state=active]:grid min-h-0" value="manifest" >
+          <TabsContent className="data-[state=active]:grid min-h-0" value="manifest">
+              <p className="text-muted-foreground text-sm mb-4">
+                Below is a preview of the manifest file you apply to your Kubernetes cluster in order to deploy the agent
+              </p>
             <ScrollArea className='rounded-lg border'>
               <pre>
                 <code className="flex flex-col">
@@ -176,7 +179,10 @@ export function PreviewYAMLContent({
               <ScrollBar orientation='horizontal'/>
             </ScrollArea>
           </TabsContent>
-          <TabsContent className="data-[state=active]:grid min-h-0" value="apply" >
+          <TabsContent className="data-[state=active]:grid min-h-0" value="apply">
+              <p className="text-muted-foreground text-sm mb-4">
+                Run the command below to deploy this agent to your Kubernetes cluster
+              </p>
             <ScrollArea className='rounded-lg border'>
               <pre>
                 <code className="flex flex-col">
@@ -185,6 +191,15 @@ export function PreviewYAMLContent({
               </pre>
               <ScrollBar orientation='horizontal'/>
             </ScrollArea>
+            <Alert className="mt-4">
+              <AlertDescription className="flex gap-2 items-center">
+                <LucideInfo className="flex-none" />
+                <p>
+                  The provided URL in the <code>curl</code> command is a link to the agent manifest file. It is piped to a <code>kubectl apply</code> command that will apply the manifest file to your cluster.
+                </p>
+              </AlertDescription>
+
+            </Alert>
           </TabsContent>
         </Tabs>
         <DialogFooter>
