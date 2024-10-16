@@ -2,8 +2,8 @@ import { trackAgentDeleteDialogOpened, trackYamlDialogOpened } from "@/analytics
 import { Button } from "@/components/ui/button";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogPortal, DialogTrigger } from "@radix-ui/react-dialog";
-import { FileTerminalIcon, LucideAlertCircle, LucideCheckCircle, LucideTrash2, LucideXCircle, Menu, Trash2Icon } from "lucide-react";
+import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
+import { LucideAlertCircle, LucideCheckCircle, LucideFileTerminal, LucideMoreVertical, LucideTrash2, LucideXCircle } from "lucide-react";
 import React, { useEffect, useState } from 'react';
 import { DeleteAgentModalContent } from "./DeleteAgentModalContent";
 import { PreviewYAMLContent } from "./PreviewYAMLContent";
@@ -14,24 +14,17 @@ interface AgentDropdownProps {
 }
 
 const AgentDropdown: React.FC<AgentDropdownProps> = ({ onPreviewYaml, onDelete }) => {
-  const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <DropdownMenu onOpenChange={setIsOpen}>
+    <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          className={`
-            absolute top-4 right-4 transition-opacity
-            ${isOpen
-              ? 'opacity-100'
-              : 'opacity-0 group-focus-within:opacity-100 group-hover:opacity-100'
-            }
-          `}
+          className="absolute top-4 right-4"
           variant="ghost"
           size="icon"
           onClick={(event) => event.stopPropagation()}
         >
-          <Menu />
+          <LucideMoreVertical />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -39,11 +32,11 @@ const AgentDropdown: React.FC<AgentDropdownProps> = ({ onPreviewYaml, onDelete }
         onCloseAutoFocus={(event) => event.preventDefault()}
       >
         <DropdownMenuItem onSelect={onPreviewYaml}>
-          <FileTerminalIcon className="mr-2" />
+          <LucideFileTerminal className="mr-2" />
           Preview YAML
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={onDelete}>
-          <Trash2Icon className="mr-2" />
+          <LucideTrash2 className="mr-2" />
           Delete
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -111,6 +104,12 @@ export function AgentDetailsDialog({ id, agentName, currentStatus, onDeleted }: 
     }
   };
 
+  const handleApplyButtonClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setActiveContentTab('apply');
+    setIsYamlDialogOpen(true);
+  };
+
   return (
     <>
       <Dialog open={isYamlDialogOpen} onOpenChange={handleYamlDialogOpenChange}>
@@ -120,19 +119,27 @@ export function AgentDetailsDialog({ id, agentName, currentStatus, onDeleted }: 
               <CardHeader className="text-left">
                 <CardTitle className="flex">
                   <div className="grow">{agentName}</div>
-                    <AgentDropdown
-                      onPreviewYaml={() => setIsYamlDialogOpen(true)}
-                      onDelete={() => setIsDeleteDialogOpen(true)}
-                    />
+                  <AgentDropdown
+                    onPreviewYaml={() => setIsYamlDialogOpen(true)}
+                    onDelete={() => setIsDeleteDialogOpen(true)}
+                  />
                 </CardTitle>
                 <div className="text-sm text-slate-500"> {id} </div>
               </CardHeader>
-              <CardFooter className='mt-auto gap-1 flex-wrap-reverse'>
+              <CardFooter className='mt-auto gap-2'>
                   <span className='flex gap-2 items-center'>
                     {status.icon}
                     {status.text}
                   </span>
-                  {isPending && <span className='text-sm text-muted-foreground'> (You need to apply it)</span>}
+                  {isPending &&
+                    <Button
+                      size="default"
+                      className="ml-auto"
+                      onClick={handleApplyButtonClick}
+                    >
+                      Apply
+                    </Button>
+                  }
               </CardFooter>
             </div>
           </Card>
