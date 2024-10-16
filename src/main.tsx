@@ -70,7 +70,7 @@ const router = createBrowserRouter([
               title="Your Agents"
               description={
                 <>
-                  Agents deploy and update ESO Deployments for you<br/>
+                  Agents deploy, maintain, and configure External Secrets Operator installations for you<br/>
                   See our <a href={`${DOCS_DOMAIN}/docs/esi-agent/quickstart`}>Quickstart guide</a> and <a href={`${DOCS_DOMAIN}/docs/esi-for-eso/quickstart`}>Exclusive Features</a> for more details
                 </>
               }

@@ -129,7 +129,7 @@ export function PreviewYAMLContent({
           </TabsList>
           <TabsContent className="data-[state=active]:grid min-h-0" value="details" >
             <p className="text-muted-foreground text-sm mb-2">
-              Agent used for managing an ESO deployment in your Kubernetes cluster
+              Agent used for an External Secrets Operator installation in your Kubernetes cluster
             </p>
             <div className="grid gap-4 border-y py-5">
               <div className="grid md:grid-cols-3">
