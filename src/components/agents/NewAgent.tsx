@@ -38,7 +38,7 @@ export function NewAgent({ refetchAgents }: NewAgentProps) {
       ) : (
         <div className="flex h-full items-center justify-center">
           <PlusIcon className="inline-block mr-2" />
-          Add New Agent
+          New Agent
         </div>
       )}
     </Card>

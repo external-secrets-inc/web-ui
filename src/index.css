@@ -85,11 +85,15 @@
    * <TypographyProvider>?
    */
   pre {
-    @apply max-h-[650px] overflow-x-auto rounded-lg border bg-muted p-4
+    @apply bg-muted/50 p-4
   }
 
   code {
-    @apply relative rounded px-[0.3rem] py-[0.2rem] font-mono text-sm
+    @apply relative rounded font-mono text-sm
+  }
+
+  :is(p, h1, h2, h3, h4, h5, h6) a {
+    @apply text-sky-700 hover:text-sky-600 dark:text-sky-600 dark:hover:text-sky-500 underline underline-offset-[0.12em] decoration-1 transition-colors
   }
 }
 

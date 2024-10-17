@@ -6,7 +6,7 @@ const AuthSignupSection: React.FC = () => (
     <header className="grid gap-1">
       <h1 className="text-lg sm:text-3xl font-bold">Create an Organization</h1>
       <h2 className="text-sm sm:text-base text-pretty text-muted-foreground">
-        Let's get started into your managed ESO experience
+        Unlock the full potential of External Secrets in your Kubernetes cluster
       </h2>
     </header>
 

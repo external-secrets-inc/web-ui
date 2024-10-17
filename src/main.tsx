@@ -19,6 +19,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { load, page } from './analytics';
 import App from './App';
 import './index.css';
+import { DOCS_DOMAIN } from "@/constants";
 
 const router = createBrowserRouter([
   {
@@ -67,7 +68,12 @@ const router = createBrowserRouter([
           <>
             <AppPageHeader
               title="Your Agents"
-              description="Monitor existing agents and/or generate new ones"
+              description={
+                <>
+                  Agents deploy, maintain, and configure External Secrets Operator installations for you<br/>
+                  See our <a href={`${DOCS_DOMAIN}/docs/esi-agent/quickstart`}>Quickstart guide</a> and <a href={`${DOCS_DOMAIN}/docs/esi-for-eso/quickstart`}>Exclusive Features</a> for more details
+                </>
+              }
             />
             <ListAgents />
           </>
