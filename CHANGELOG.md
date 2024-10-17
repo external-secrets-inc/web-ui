@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.0](https://github.com/external-secrets-inc/web-ui/compare/v0.4.1...v0.5.0) (2024-10-17)
+
+
+### Features
+
+* improve agent card and modal ux ([#94](https://github.com/external-secrets-inc/web-ui/issues/94)) ([880ab96](https://github.com/external-secrets-inc/web-ui/commit/880ab96c32f086a392960e2c9f4fddc30f5cba30))
+
+
+### Bug Fixes
+
+* :bug: always load segment to avoid `undefined` when running its methods ([94fb470](https://github.com/external-secrets-inc/web-ui/commit/94fb470131ece87010e88874b6ca1d787a2bc991))
+
 ## [0.4.1](https://github.com/external-secrets-inc/web-ui/compare/v0.4.0...v0.4.1) (2024-10-14)
 
 
