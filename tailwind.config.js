@@ -107,8 +107,13 @@ module.exports = {
           '80%': { transform: 'translate(10%, -30%) rotate(180deg)' },
           '100%': { transform: 'translate(20%, -40%) rotate(340deg)' },
         },
+        fadeOut: {
+          '0%': { opacity: 1},
+          '100%': { opacity: 0},
+        },
       },
       animation: {
+        'fade-out': 'fadeOut 1s ease-in-out forwards',
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'bg-auth-hero-scroll': 'bg-auth-hero-scroll 600s linear infinite',
