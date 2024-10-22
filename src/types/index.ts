@@ -6,9 +6,26 @@ export interface Agent {
   current_status: string;
 }
 
+export interface Rotator {
+  id: string;
+  name: string;
+  current_status: string;
+  enabled: boolean;
+  tags: string[];
+}
+
+export interface Manifest {
+  manifest: string
+}
+
 export interface ApiWrapperOptions {
   defaultError: string;
   suppressToast?: boolean;
+}
+
+
+export interface ApiHttpError {
+  errors: {body: string}
 }
 
 export interface IUserData {
