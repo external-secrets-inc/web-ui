@@ -20,6 +20,10 @@ import { load, page } from './analytics';
 import App from './App';
 import './index.css';
 import { DOCS_DOMAIN } from "@/constants";
+import ListRotators from "@/components/rotators/ListRotators";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient()
 
 const router = createBrowserRouter([
   {
@@ -80,6 +84,24 @@ const router = createBrowserRouter([
         )
       },
       {
+        path: 'rotators',
+        element: (
+          <>
+            <AppPageHeader
+              title="Your Async Rotators"
+              // TODO - Set the right documentation link
+              description={
+                <>
+                  Async Rotators listens secret rotation notifications and triggers the reconciliation of ExternalSecrets resources for you<br/>
+                  See our <a href={`${DOCS_DOMAIN}/docs/esi-agent/quickstart`}>Quickstart guide</a> and <a href={`${DOCS_DOMAIN}/docs/esi-for-eso/quickstart`}>Exclusive Features</a> for more details
+                </>
+              }
+            />
+            <ListRotators />
+          </>
+        )
+      },
+      {
         path: 'settings',
         element: (
           <>
@@ -126,8 +148,10 @@ if (rootElement) {
     <React.StrictMode>
       <AuthProvider store={authStore}>
         <ThemeProvider storageKey="ui-theme">
-          <Main />
-          <Toaster />
+          <QueryClientProvider client={queryClient}>
+            <Main />
+            <Toaster />
+          </QueryClientProvider>
         </ThemeProvider>
       </AuthProvider>
     </React.StrictMode>
