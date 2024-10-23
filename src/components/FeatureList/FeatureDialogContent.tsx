@@ -118,7 +118,7 @@ function FeatureDialogContent({id, featureName, featureType, featureDescription,
               className="mt-4"
             >
               <AlertTitle className="flex gap-2 items-center">
-              {status.icon} <span className="capitalize">{featureType}</span> is not active
+              {status.icon}<p><span className="capitalize">{featureType}</span> is not active</p>
               </AlertTitle>
               <AlertDescription>
                 You need to apply the <span className="lowercase">{featureType}</span> manifest file to your cluster in order to activate it. Follow the instructions on the <Button className="underline" variant="ghost" size="inline" onClick={() => setActiveTab('apply')}>Applying tab</Button>
