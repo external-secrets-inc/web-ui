@@ -89,11 +89,9 @@ const router = createBrowserRouter([
           <>
             <AppPageHeader
               title="Your Async Rotators"
-              // TODO - Set the right documentation link
               description={
                 <>
-                  Async Rotators listens secret rotation notifications and triggers the reconciliation of ExternalSecrets resources for you<br/>
-                  See our <a href={`${DOCS_DOMAIN}/docs/esi-agent/quickstart`}>Quickstart guide</a> and <a href={`${DOCS_DOMAIN}/docs/esi-for-eso/quickstart`}>Exclusive Features</a> for more details
+                  Async rotators listen for events from audit logs to trigger a rotation in the External Secrets Operator<br/>
                 </>
               }
             />
