@@ -14,40 +14,36 @@ export const track = (name: string, properties: any) => {
 };
 
 // Track events
-export const trackCopyRawYAML = (agentId: string) => {
-  track("Copy Agent Raw YAML", { agentId });
+export const trackFeatureCopyRawYAML = (featureType: string, featureID: string) => {
+  track("Copy Feature Raw YAML", { featureType, featureID });
 };
 
-export const trackCopyYAMLWithApplyCommand = (agentId: string) => {
-  track("Copy Agent YAML with Apply Command", { agentId });
+export const trackFeatureCopyYAMLWithApplyCommand = (featureType: string, featureID: string) => {
+  track("Copy Feature YAML with Apply Command", { featureType, featureID });
 };
 
-export const trackDownloadYAML = (agentId: string) => {
-  track("Download Agent YAML", { agentId });
+export const trackFeatureDownloadYAML = (featureType: string, featureID: string) => {
+  track("Download Feature YAML", { featureType,featureID });
 };
 
-export const trackDeleteDialogOpened = (agentId: string) => {
-  track("Agent Delete Dialog Opened", { agentId });
+export const trackFeatureDeleteDialogOpened = (featureType: string, featureID: string, triggeredFrom: "details-dialog" | "dropdown") => {
+  track("Feature Delete Dialog Opened", { featureType, featureID, triggeredFrom });
 };
 
-export const trackYamlDialogOpened = (agentId: string, agentName: string) => {
-  track("Agent YAML Dialog Opened", { agentId, agentName });
+export const trackFeatureYamlDialogOpened = (featureType: string, featureID: string, featureName: string) => {
+  track("Feature YAML Dialog Opened", { featureType, featureID, featureName });
 };
 
-export const trackAgentDeleteDialogOpened = (agentId: string, agentName: string) => {
-  track("Agent Delete Dialog Opened", { agentId, agentName });
+export const trackFeatureDeleted = (featureType: string, featureID: string) => {
+  track("Feature Deleted", { featureType, featureID });
 };
 
-export const trackAgentDeleted = (agentId: string) => {
-  track("Agent Deleted", { agentId });
+export const trackAddNewFeatureClicked = (featureType: string) => {
+  track("Add New Feature Clicked", { featureType });
 };
 
-export const trackAddNewAgentClicked = () => {
-  track("Add New Agent Clicked", {});
-};
-
-export const trackAgentCreated = (name: string) => {
-  track("Agent Created", { name });
+export const trackFeatureCreated = (featureType: string) => {
+  track("Feature Created", { featureType });
 };
 export const trackLoginStepCompleted = (step: number) => {
   track("Login Step Completed", { step });

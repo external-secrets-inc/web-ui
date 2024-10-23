@@ -1,15 +1,18 @@
+import { trackFeatureDeleted } from "@/analytics";
 import { Button } from "@/components/ui/button";
 import { DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface DeleteFeatureDialogContent {
   featureName: string;
   featureType: string;
+  featureID: string;
   onDelete: () => void;
 }
 
-function DeleteFeatureDialogContent({featureName, featureType, onDelete} : DeleteFeatureDialogContent) {
+function DeleteFeatureDialogContent({featureName, featureType, featureID, onDelete} : DeleteFeatureDialogContent) {
   const handleDeleteFeature = () => {
     onDelete();
+    trackFeatureDeleted(featureType, featureID)
   }
 
   return (

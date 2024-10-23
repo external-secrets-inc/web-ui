@@ -1,4 +1,4 @@
-import { trackAgentDeleteDialogOpened, trackYamlDialogOpened } from "@/analytics";
+import { trackFeatureDeleteDialogOpened, trackFeatureYamlDialogOpened } from "@/analytics";
 import { Button } from "@/components/ui/button";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -87,13 +87,13 @@ export function AgentDetailsDialog({ id, agentName, currentStatus, onDeleted }: 
 
   useEffect(() => {
     if (isYamlDialogOpen) {
-      trackYamlDialogOpened(id, agentName);
+      trackFeatureYamlDialogOpened("Agent", id, agentName);
     }
   }, [isYamlDialogOpen]);
 
   useEffect(() => {
     if (isDeleteDialogOpen) {
-      trackAgentDeleteDialogOpened(id, agentName);
+      trackFeatureDeleteDialogOpened("Agent", id, "dropdown");
     }
   }, [isDeleteDialogOpen]);
 

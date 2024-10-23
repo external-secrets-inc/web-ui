@@ -1,3 +1,4 @@
+import { trackFeatureDeleteDialogOpened } from "@/analytics";
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -7,13 +8,14 @@ import { Trash2Icon } from "lucide-react"
 
 interface DeleteFeatureDialogProps {
   featureType: string;
+  featureId: string;
   children: React.ReactNode;
 }
 
-export function DeleteFeatureDialog({featureType, children}: DeleteFeatureDialogProps) {
+export function DeleteFeatureDialog({featureType, featureId, children}: DeleteFeatureDialogProps) {
   const handleDeleteDialogOpenChange = (open: boolean) => {
     if (open) {
-      // TODO - Add segment event
+      trackFeatureDeleteDialogOpened(featureType, featureId, "details-dialog")
     }
   };
 

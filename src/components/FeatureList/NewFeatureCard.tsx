@@ -1,3 +1,4 @@
+import { trackAddNewFeatureClicked, trackFeatureCreated } from "@/analytics";
 import { NewFeatureCardProps, NewFeatureFormProps } from "@/components/FeatureList/FeatureList.interfaces";
 import { Card } from "@/components/ui/card";
 import { PlusIcon } from "lucide-react";
@@ -11,12 +12,14 @@ const NewFeatureCard = <T extends NewFeatureFormProps>({ featureName, performCre
     onCancel: () => setShowForm(false),
     onSuccess: () => {
       setShowForm(false)
+      trackFeatureCreated(featureName)
     },
     performCreate: performCreate
   };
 
 
   const handleAddNewFeatureClick = () => {
+    trackAddNewFeatureClicked(featureName);
     setShowForm(true)
   }
   return (
