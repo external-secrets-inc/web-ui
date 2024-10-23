@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card"
 import { NewAgentForm } from "./NewAgentForm"
 import { useState } from "react"
 import { PlusIcon } from "lucide-react"
-import { trackAddNewAgentClicked } from "@/analytics";
+import { trackAddNewFeatureClicked } from "@/analytics";
 
 interface NewAgentProps {
   refetchAgents: () => void
@@ -18,7 +18,7 @@ export function NewAgent({ refetchAgents }: NewAgentProps) {
 
   const handleAddNewAgentClick = () => {
     setShowForm(true)
-    trackAddNewAgentClicked();
+    trackAddNewFeatureClicked("Agent");
   }
 
   return (
