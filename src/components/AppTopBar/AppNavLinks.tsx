@@ -27,6 +27,14 @@ const NavLinks: React.FC<NavLinksProps> = ({ closeSheetOnClick }) => {
         </NavLink>
       </LinkWrapper>
       <LinkWrapper>
+        <NavLink
+          to={getOrgLink('/rotators')}
+          className="transition-colors text-muted-foreground hover:text-foreground [&:is(.active)]:text-foreground"
+        >
+          Async Rotators
+        </NavLink>
+      </LinkWrapper>
+      <LinkWrapper>
         <a
           href={docsUrl}
           target="_blank"

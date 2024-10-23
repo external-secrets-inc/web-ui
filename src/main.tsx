@@ -20,6 +20,10 @@ import { load, page } from './analytics';
 import App from './App';
 import './index.css';
 import { DOCS_DOMAIN } from "@/constants";
+import ListRotators from "@/components/rotators/ListRotators";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient()
 
 const router = createBrowserRouter([
   {
@@ -80,6 +84,22 @@ const router = createBrowserRouter([
         )
       },
       {
+        path: 'rotators',
+        element: (
+          <>
+            <AppPageHeader
+              title="Your Async Rotators"
+              description={
+                <>
+                  Async rotators listen for events from audit logs to trigger a rotation in the External Secrets Operator<br/>
+                </>
+              }
+            />
+            <ListRotators />
+          </>
+        )
+      },
+      {
         path: 'settings',
         element: (
           <>
@@ -126,8 +146,10 @@ if (rootElement) {
     <React.StrictMode>
       <AuthProvider store={authStore}>
         <ThemeProvider storageKey="ui-theme">
-          <Main />
-          <Toaster />
+          <QueryClientProvider client={queryClient}>
+            <Main />
+            <Toaster />
+          </QueryClientProvider>
         </ThemeProvider>
       </AuthProvider>
     </React.StrictMode>

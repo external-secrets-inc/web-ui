@@ -1,6 +1,6 @@
 import { toast } from 'sonner';
-import { isAxiosError } from 'axios';
-import { ApiWrapperOptions } from '@/types';
+import { AxiosError, isAxiosError } from 'axios';
+import { ApiHttpError, ApiWrapperOptions } from '@/types';
 
 function parseErrorResponse(data: string): string {
   try {
@@ -34,5 +34,13 @@ export async function apiWrapper<T>(
     }
 
     throw error; // Re-throw the error to allow further handling in the component
+  }
+}
+
+export function handleDefaultApiHttpError(error: AxiosError<ApiHttpError>, defaultMessage: string = "An error occurred") {
+  if (error.response) {
+    toast.error(error.response.data.errors.body)
+  } else {
+    toast.error(defaultMessage)
   }
 }
