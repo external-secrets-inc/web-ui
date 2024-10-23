@@ -1,3 +1,4 @@
+import { trackFeatureCopyRawYAML, trackFeatureCopyYAMLWithApplyCommand, trackFeatureDownloadYAML } from "@/analytics"
 import { DeleteFeatureDialog } from "@/components/FeatureList/DeleteFeatureDialog"
 import DeleteFeatureDialogContent from "@/components/FeatureList/DeleteFeatureDialogContent"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -51,15 +52,18 @@ function FeatureDialogContent({id, featureName, featureType, featureDescription,
 
   const handleCopyRaw = () => {
     copyToClipboard(content, 'raw YAML manifest');
+    trackFeatureCopyRawYAML(featureType, id)
   }
 
   const handleCopyWithApply = () => {
     copyToClipboard(applyCommand, "'apply' command");
+    trackFeatureCopyYAMLWithApplyCommand(featureType, id)
   };
 
   const handleDownload = (): void => {
     const file = new File([content], 'manifest.yaml', { type: 'text/yaml' });
     saveAs(file);
+    trackFeatureDownloadYAML(featureType, id)
   };
 
   useEffect(() => {
@@ -163,8 +167,8 @@ function FeatureDialogContent({id, featureName, featureType, featureDescription,
       </Tabs>
       <DialogFooter>
         {activeTab === 'details' &&
-          <DeleteFeatureDialog featureType={featureType}>
-            <DeleteFeatureDialogContent featureName={featureName} featureType={featureType} onDelete={onDeleted}/>
+          <DeleteFeatureDialog featureType={featureType} featureId={id}>
+            <DeleteFeatureDialogContent featureName={featureName} featureID={id} featureType={featureType} onDelete={onDeleted}/>
           </DeleteFeatureDialog>
         }
         {activeTab === 'manifest' &&

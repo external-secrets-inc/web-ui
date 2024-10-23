@@ -1,3 +1,4 @@
+import { trackFeatureDeleteDialogOpened, trackFeatureYamlDialogOpened } from "@/analytics";
 import DeleteFeatureDialogContent from "@/components/FeatureList/DeleteFeatureDialogContent";
 import FeatureDialogContent from "@/components/FeatureList/FeatureDialogContent";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,7 @@ import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
 import { LucideAlertCircle, LucideCheckCircle, LucideMoreVertical, LucideSquareArrowOutUpRight, LucideTrash2, LucideXCircle } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface FeatureDropdownProps {
   onPreviewYaml: () => void;
@@ -109,6 +110,18 @@ function FeatureDetailsCardDialog({ featureID, featureName, featureStatus, featu
     setActiveContentTab('apply');
     setIsFeatureContentDialogOpen(true);
   };
+  
+  useEffect(() => {
+    if (isFeatureContentDialogOpen) {
+      trackFeatureYamlDialogOpened(featureType, featureID, featureName);
+    }
+  }, [isFeatureContentDialogOpen, featureType, featureID, featureName]);
+
+  useEffect(() => {
+    if (isDeleteDialogOpen) {
+      trackFeatureDeleteDialogOpened(featureType, featureName, "dropdown");
+    }
+  }, [isDeleteDialogOpen, featureType, featureName]);
 
   return (
     <>
@@ -159,7 +172,7 @@ function FeatureDetailsCardDialog({ featureID, featureName, featureStatus, featu
       </Dialog>
 
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DeleteFeatureDialogContent featureName={featureName} featureType={featureType} onDelete={handleDeleteFeature} />
+        <DeleteFeatureDialogContent featureName={featureName} featureType={featureType} featureID={featureID} onDelete={handleDeleteFeature} />
       </Dialog>
     </>
   )
