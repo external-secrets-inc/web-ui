@@ -13,8 +13,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import { createAgent } from "@/services/agents/agentsService"
-import { trackFeatureCreated } from "@/analytics";
+import { NewFeatureFormProps } from "@/components/FeatureList/FeatureList.interfaces"
 
 const formSchema = z.object({
   name: z.string().min(1, {
@@ -24,12 +23,8 @@ const formSchema = z.object({
 
 type FormSchemaType = z.infer<typeof formSchema>
 
-interface NewAgentFormProps {
-  onSuccess: () => void
-  onCancel: () => void
-}
 
-export function NewAgentForm({ onSuccess, onCancel }: NewAgentFormProps) {
+export function NewAgentForm({ performCreate, onSuccess, onCancel }: NewFeatureFormProps) {
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -62,8 +57,7 @@ export function NewAgentForm({ onSuccess, onCancel }: NewAgentFormProps) {
 
   async function handleCreateAgent(values: FormSchemaType) {
     try {
-      await createAgent(values.name);
-      trackFeatureCreated("Agent");
+      performCreate({featureName: values.name})
       onSuccess();
     } catch (error) {
       console.error("Failed to create agent:", error);

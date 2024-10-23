@@ -1,4 +1,4 @@
-import { ListAgents } from "@/components/agents/ListAgents";
+import ListAgents from "@/components/agents/ListAgents";
 import AppPageHeader from "@/components/AppPageHeader";
 import ForgotPassword from "@/components/Auth/ForgotPassword";
 import ResetPassword from "@/components/Auth/ResetPassword";

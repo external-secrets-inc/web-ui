@@ -1,59 +1,111 @@
-import { getAgents } from "@/services/agents/agentsService";
+import FeatureList from "@/components/FeatureList";
+import FeatureDetailsCardDialog from "@/components/FeatureList/FeatureDetailsCardDialog";
+import NewFeatureCard from "@/components/FeatureList/NewFeatureCard";
+import { NewAgentForm } from "@/components/agents/NewAgentForm";
+import { API_DOMAIN } from "@/constants";
+import useCreateAgent from "@/services/agents/mutations/useCreateAgent";
+import useCreateAgentManifestToken from "@/services/agents/mutations/useCreateAgentManifestToken";
+import useDeleteAgent from "@/services/agents/mutations/useDeleteAgent";
+import useGetAgentManifest from "@/services/agents/queries/useGetAgentManifest";
+import useGetAgents from "@/services/agents/queries/useGetAgents";
+import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
+import { ApiHttpError, Agent } from "@/types";
+import { AxiosError } from "axios";
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { NewAgent } from "./NewAgent";
-import { AgentDetailsDialog } from "./AgentDetailsDialog";
-import { Agent, IUserData } from "@/types";
-import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
 import { toast } from "sonner";
 
-export function ListAgents() {
-  const [agents, setAgents] = useState<Agent[]>([]);
-  const { org } = useParams<{ org: string }>();
-  const authUser = useAuthUser<IUserData>();
-  const navigate = useNavigate();
+
+
+export default function ListAgents() {
+  const featureName: string = "Agent"
+
+  const [featureId, setFeatureId] = useState("")
+  const [applyCommand, setApplyCommand] = useState("")
+
+  const { data: agentsData, refetch: agentsRefetch, isError: agentsIsError, error: agentError, isRefetchError: agentIsRefetchError} = useGetAgents();
+  const { data: manifestData, error: manifestError, isError: manifestIsError } = useGetAgentManifest(featureId, "latest", {
+    enabled: featureId !== "",
+  });
+
+  const { mutate: createToken, data: token } = useCreateAgentManifestToken({
+    onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to generate manifest token")
+  });
+  const { mutate: createAgent } = useCreateAgent({
+    onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to create agent"),
+    onSuccess: () => {
+      agentsRefetch();
+      toast.success("Agent created successfully") 
+    }
+  });
+  const { mutate: deleteAgent } = useDeleteAgent({
+    onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to delete agent"),
+    onSuccess: () => {
+      agentsRefetch();
+      toast.success("Agent deleted successfully")
+    },
+  })
+
+  const performCreate = ({featureName} : {featureName: string}) => {
+    createAgent({name: featureName})
+  }
+
+  const performDelete = (agentId: string) => {
+    deleteAgent({id: agentId});
+  }
 
   useEffect(() => {
-    const fetchAgents = async () => {
-      const tenant = authUser?.tenant;
+    if (featureId === "") return
 
-      if (tenant !== org) {
-        console.warn(`Org in URL (${org}) does not match tenant from userState (${tenant})`);
-        setTimeout(() => {
-          navigate(`/${tenant}/agents`, { replace: true });
-          toast.error('', {description: `You have been redirected to your current organization (${tenant}).`} );
-        }, 0);
-      }
+    createToken({id: featureId})
+  }, [featureId, createToken])
+  
+  useEffect(() => {
+    if (featureId === "") return
+    if (!token) return
 
-      if (tenant) {
-        const agentsData = await getAgents();
-        setAgents(agentsData);
+    const command = [
+      "curl \\",
+      `${API_DOMAIN}/public/agents/${featureId}/manifest/latest\\`,
+      `?token=${token} \\`,
+      "| kubectl apply -f -",
+    ].join('\n');
+    setApplyCommand(command);
+  }, [token, featureId])
 
-      }
-    };
+  useEffect(() => {
+    if (!(agentError || agentIsRefetchError)) return;
 
-    fetchAgents();
-  }, [org, navigate, authUser]);
+    handleDefaultApiHttpError(agentError, "Error while fetching agents")
+  }, [agentError, agentsIsError, agentIsRefetchError])
 
-  const removeDeletedAgent = (id: string) => {
-    setAgents(agents.filter(agent => agent.id !== id));
-  };
+  useEffect(() => {
+    if (!manifestIsError) return;
+
+    handleDefaultApiHttpError(manifestError, "Error while fetching agents manifest")
+  }, [manifestError, manifestIsError])
 
   return (
-    <div className="grid grid-cols-[repeat(auto-fill,minmax(min(350px,100%),1fr))] auto-rows-[minmax(216px,auto)] gap-4">
-      <NewAgent refetchAgents={async () => {
-        const agentsData = await getAgents();
-        setAgents(agentsData);
-      }} />
-      {agents.slice().reverse().map((agent) => (
-        <AgentDetailsDialog
+    <FeatureList>
+      <NewFeatureCard
+        featureName={featureName} 
+        performCreate={performCreate}
+        Form={NewAgentForm} 
+      />
+      {agentsData && agentsData.map((agent: Agent) => (
+        <FeatureDetailsCardDialog 
           key={agent.id}
-          id={agent.id}
-          agentName={agent.name}
-          currentStatus={agent.current_status}
-          onDeleted={() => removeDeletedAgent(agent.id)}
+          featureID={agent.id}
+          featureName={agent.name}
+          featureStatus={agent.current_status} 
+          featureType={featureName}
+          featureDescription="Agent used for an External Secrets Operator installation in your Kubernetes cluster"
+          setFeatureId={setFeatureId}
+          applyCommand={applyCommand}
+          manifest={manifestData ? manifestData.manifest : ""}
+          onDeleteFeature={performDelete}
         />
-      ))}
-    </div>
-  );
+      )
+      )}
+    </FeatureList>
+  )
 }
