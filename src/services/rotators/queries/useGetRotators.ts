@@ -1,7 +1,7 @@
 import { UseQueryOptions, useQuery } from "@tanstack/react-query";
 import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
-import { Rotator } from "@/types";
+import { ApiHttpError, Rotator } from "@/types";
 import { AxiosError } from "axios";
 
 const getAgents = async (signal:  AbortSignal) => {
@@ -11,7 +11,7 @@ const getAgents = async (signal:  AbortSignal) => {
 }
 
 const useGetRotators = <T = Rotator[]>(
-  options?: Omit<UseQueryOptions<Rotator, AxiosError, T>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<Rotator, AxiosError<ApiHttpError>, T>, 'queryKey' | 'queryFn'>
 ) => {
   return useQuery({
     queryKey: ["useGetRotators"],

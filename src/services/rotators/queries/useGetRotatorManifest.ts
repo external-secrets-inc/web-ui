@@ -1,7 +1,7 @@
 import { UseQueryOptions, useQuery } from "@tanstack/react-query";
 import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
-import { Manifest } from "@/types";
+import { ApiHttpError, Manifest } from "@/types";
 import { AxiosError } from "axios";
 
 const getManifest = async (signal:  AbortSignal, rotatorId: string, version: string = "latest") => {
@@ -13,7 +13,7 @@ const getManifest = async (signal:  AbortSignal, rotatorId: string, version: str
 const useGetRotatorManifest = <T = Manifest>(
   id: string,
   version: string = "latest",
-  options?: Omit<UseQueryOptions<Manifest, AxiosError, T>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<Manifest, AxiosError<ApiHttpError>, T>, 'queryKey' | 'queryFn'>
 ) => {
   return useQuery({
     queryKey: ["useGetRotatorManifest", id],

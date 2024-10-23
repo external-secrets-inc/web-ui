@@ -22,8 +22,8 @@ export default function ListRotators() {
   const [featureId, setFeatureId] = useState("")
   const [applyCommand, setApplyCommand] = useState("")
 
-  const { data: rotatorsData, refetch: rotatorsRefetch } = useGetRotators();
-  const { data: manifestData } = useGetRotatorManifest(featureId, "latest", {
+  const { data: rotatorsData, refetch: rotatorsRefetch, isError: rotatorsIsError, error: rotatorError, isRefetchError: rotatorIsRefetchError} = useGetRotators();
+  const { data: manifestData, error: manifestError, isError: manifestIsError } = useGetRotatorManifest(featureId, "latest", {
     enabled: featureId !== "",
   });
 
@@ -71,6 +71,18 @@ export default function ListRotators() {
     ].join('\n');
     setApplyCommand(command);
   }, [token, featureId])
+
+  useEffect(() => {
+    if (!(rotatorError || rotatorIsRefetchError)) return;
+
+    handleDefaultApiHttpError(rotatorError, "Error while fetching async rotators")
+  }, [rotatorError, rotatorsIsError, rotatorIsRefetchError])
+
+  useEffect(() => {
+    if (!manifestIsError) return;
+
+    handleDefaultApiHttpError(manifestError, "Error while fetching async rotators manifest")
+  }, [manifestError, manifestIsError])
 
   return (
     <FeatureList>
