@@ -11,7 +11,6 @@ env:
   WEB_UI_URL: https://app.externalsecrets.com
   WEBSITE_URL: https://externalsecrets.com
   DOCS_URL: https://app.externalsecrets.com
-  NODE_ENV: production
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -67,7 +66,6 @@ jobs:
             --build-arg WEB_UI_URL=${{ env.WEB_UI_URL}} \
             --build-arg WEBSITE_URL=${{ env.WEBSITE_URL}} \
             --build-arg DOCS_URL=${{ env.DOCS_URL}} \
-            --build-arg NODE_ENV=${{ env.NODE_ENV }} \
             --push .
       env:
         GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
