@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { getSubscriptions } from '@/services/subscriptions/subscriptionsService';
 import { Subscription } from '@/types';
 import { toast } from 'sonner';
+import { LucideCircleAlert } from 'lucide-react';
+
 
 const SubscriptionSettings: React.FC = () => {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
@@ -26,7 +28,7 @@ const SubscriptionSettings: React.FC = () => {
         Manage your subscription information
       </h3>
 
-      <div className="space-y-4">
+      <div className="space-y-4"> 
         {subscriptions.length > 0 ? (
           subscriptions.map((subscription) => (
             <div
@@ -35,7 +37,15 @@ const SubscriptionSettings: React.FC = () => {
             >
               <h4 className="text-md font-bold">{subscription.name}</h4>
               <p>Max Limit: {subscription.maxLimit}</p>
-              <p>Expiry Date: {new Date(subscription.expiryDate).toLocaleDateString()}</p>
+                <p className="flex items-center">
+                  Expiry Date: {new Date(subscription.expiryDate).toLocaleDateString()}
+                  {new Date(subscription.expiryDate) <= new Date() && (
+                    <span className="text-red-500 ml-2 flex items-center">
+                      <LucideCircleAlert className="mr-1" />
+                      <span>Expired</span>
+                    </span>
+                  )}
+                </p>
               <p>Features:</p>
               <ul>
                 {subscription.features.length > 0 ? (
