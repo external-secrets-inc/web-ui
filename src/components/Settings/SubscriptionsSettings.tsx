@@ -4,10 +4,9 @@ import { Subscription } from '@/types';
 import { toast } from 'sonner';
 import { LucideCircleAlert } from 'lucide-react';
 
-
 const SubscriptionSettings: React.FC = () => {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-
+  
   useEffect(() => {
     const fetchSubscriptions = async () => {
       try {
@@ -30,36 +29,42 @@ const SubscriptionSettings: React.FC = () => {
 
       <div className="space-y-4"> 
         {subscriptions.length > 0 ? (
-          subscriptions.map((subscription) => (
-            <div
-              key={subscription.id}
-              className="p-4 border border-muted rounded-md"
-            >
-              <h4 className="text-md font-bold">{subscription.name}</h4>
-              <p>Max Limit: {subscription.maxLimit}</p>
+          subscriptions.map((subscription) => {
+
+            const formattedExpiryDate = new Date(subscription.expiryDate).toLocaleDateString();
+            const hasExpiredSubscription = new Date(subscription.expiryDate) <= new Date();
+
+            return (
+              <div
+                key={subscription.id}
+                className="p-4 border border-muted rounded-md"
+              >
+                <h4 className="text-md font-bold">{subscription.name}</h4>
+                <p>Max Limit: {subscription.maxLimit}</p>
                 <p className="flex items-center">
-                  Expiry Date: {new Date(subscription.expiryDate).toLocaleDateString()}
-                  {new Date(subscription.expiryDate) <= new Date() && (
+                  Expiry Date: {formattedExpiryDate}
+                  {hasExpiredSubscription && (
                     <span className="text-red-500 ml-2 flex items-center">
                       <LucideCircleAlert className="mr-1" />
                       <span>Expired</span>
                     </span>
                   )}
                 </p>
-              <p>Features:</p>
-              <ul>
-                {subscription.features.length > 0 ? (
-                  subscription.features.map((feature, idx) => (
-                    <li key={idx}>
-                      <strong>{feature.name}</strong>: {feature.description}
-                    </li>
-                  ))
-                ) : (
-                  <li>No features available</li>
-                )}
-              </ul>
-            </div>
-          ))
+                <p>Features:</p>
+                <ul>
+                  {subscription.features.length > 0 ? (
+                    subscription.features.map((feature, idx) => (
+                      <li key={idx}>
+                        <strong>{feature.name}</strong>: {feature.description}
+                      </li>
+                    ))
+                  ) : (
+                    <li>No features available</li>
+                  )}
+                </ul>
+              </div>
+            );
+          })
         ) : (
           <p>No subscriptions available.</p>
         )}
