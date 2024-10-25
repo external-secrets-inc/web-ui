@@ -1,0 +1,8 @@
+.github
+build
+deploy
+dist
+docs
+node_modules
+public
+src/components/ui

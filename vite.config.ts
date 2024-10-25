@@ -14,6 +14,6 @@ export default defineConfig({
     port: 1234,
   },
   build: {
-    target: 'ES2022',
+    target: 'ES2020',
   },
 });
