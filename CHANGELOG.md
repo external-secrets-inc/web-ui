@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.6.0](https://github.com/external-secrets-inc/web-ui/compare/v0.5.0...v0.6.0) (2024-10-25)
+
+
+### Features
+
+* async rotator page ([#98](https://github.com/external-secrets-inc/web-ui/issues/98)) ([3f71d85](https://github.com/external-secrets-inc/web-ui/commit/3f71d8535736e207bf398ebc3abf71649f8b3048))
+* creating icon warning for expired subscriptions ([#106](https://github.com/external-secrets-inc/web-ui/issues/106)) ([88f4ffe](https://github.com/external-secrets-inc/web-ui/commit/88f4ffe1a79ddfae2609a73400d6074f413ab634))
+* update agent segment events to be more generic ([#100](https://github.com/external-secrets-inc/web-ui/issues/100)) ([f069a06](https://github.com/external-secrets-inc/web-ui/commit/f069a0636dfb02aa4fc93aca550454edfdb4c4d7))
+* zendesk support ([#97](https://github.com/external-secrets-inc/web-ui/issues/97)) ([09f4855](https://github.com/external-secrets-inc/web-ui/commit/09f4855483f92d75aa12fa9d3a7e025dfa8af9c0))
+
+
+### Bug Fixes
+
+* 📦 fix [#104](https://github.com/external-secrets-inc/web-ui/issues/104) package-lock issues and website_url ([#105](https://github.com/external-secrets-inc/web-ui/issues/105)) ([7e51c8a](https://github.com/external-secrets-inc/web-ui/commit/7e51c8a2c58d0f939ff1a4e129a7e0ec7c311310))
+* move unnecessary prod dependencies back to devDependencies ([#104](https://github.com/external-secrets-inc/web-ui/issues/104)) ([1228455](https://github.com/external-secrets-inc/web-ui/commit/1228455c81d4863a1842a9f0b92be4fcd0729491))
+
 ## [0.5.0](https://github.com/external-secrets-inc/web-ui/compare/v0.4.1...v0.5.0) (2024-10-17)
 
 
