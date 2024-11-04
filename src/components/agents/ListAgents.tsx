@@ -22,7 +22,10 @@ export default function ListAgents() {
   const [featureId, setFeatureId] = useState("")
   const [applyCommand, setApplyCommand] = useState("")
 
-  const { data: agentsData, refetch: agentsRefetch, isError: agentsIsError, error: agentError, isRefetchError: agentIsRefetchError} = useGetAgents();
+  const { data: agentsData, refetch: agentsRefetch, isError: agentsIsError, error: agentError, isRefetchError: agentIsRefetchError } = useGetAgents({
+    refetchInterval: 20000, // Poll every 20 seconds
+    refetchIntervalInBackground: true, // Keep polling in the background
+  });
   const { data: manifestData, error: manifestError, isError: manifestIsError } = useGetAgentManifest(featureId, "latest", {
     enabled: featureId !== "",
   });
@@ -34,7 +37,7 @@ export default function ListAgents() {
     onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to create agent"),
     onSuccess: () => {
       agentsRefetch();
-      toast.success("Agent created successfully") 
+      toast.success("Agent created successfully")
     }
   });
   const { mutate: deleteAgent } = useDeleteAgent({
@@ -45,20 +48,20 @@ export default function ListAgents() {
     },
   })
 
-  const performCreate = ({featureName} : {featureName: string}) => {
-    createAgent({name: featureName})
+  const performCreate = ({ featureName }: { featureName: string }) => {
+    createAgent({ name: featureName })
   }
 
   const performDelete = (agentId: string) => {
-    deleteAgent({id: agentId});
+    deleteAgent({ id: agentId });
   }
 
   useEffect(() => {
     if (featureId === "") return
 
-    createToken({id: featureId})
+    createToken({ id: featureId })
   }, [featureId, createToken])
-  
+
   useEffect(() => {
     if (featureId === "") return
     if (!token) return
@@ -87,16 +90,16 @@ export default function ListAgents() {
   return (
     <FeatureList>
       <NewFeatureCard
-        featureName={featureName} 
+        featureName={featureName}
         performCreate={performCreate}
-        Form={NewAgentForm} 
+        Form={NewAgentForm}
       />
       {agentsData && agentsData.map((agent: Agent) => (
-        <FeatureDetailsCardDialog 
+        <FeatureDetailsCardDialog
           key={agent.id}
           featureID={agent.id}
           featureName={agent.name}
-          featureStatus={agent.current_status} 
+          featureStatus={agent.current_status}
           featureType={featureName}
           featureDescription="Agent used for an External Secrets Operator installation in your Kubernetes cluster"
           setFeatureId={setFeatureId}

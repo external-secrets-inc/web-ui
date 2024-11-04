@@ -4,7 +4,7 @@ import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError, Rotator } from "@/types";
 import { AxiosError } from "axios";
 
-const getAgents = async (signal:  AbortSignal) => {
+const getRotators = async (signal:  AbortSignal) => {
   const headers = await getAuthHeaders();
   const response = await axiosInstance.get('/api/rotators', { headers, signal });
   return response.data.rotators;
@@ -16,7 +16,7 @@ const useGetRotators = <T = Rotator[]>(
   return useQuery({
     queryKey: ["useGetRotators"],
     queryFn: ({signal}) => {
-      return getAgents(signal)
+      return getRotators(signal)
     },
     ...options,
   });

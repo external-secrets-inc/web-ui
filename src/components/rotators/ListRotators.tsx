@@ -22,7 +22,10 @@ export default function ListRotators() {
   const [featureId, setFeatureId] = useState("")
   const [applyCommand, setApplyCommand] = useState("")
 
-  const { data: rotatorsData, refetch: rotatorsRefetch, isError: rotatorsIsError, error: rotatorError, isRefetchError: rotatorIsRefetchError} = useGetRotators();
+  const { data: rotatorsData, refetch: rotatorsRefetch, isError: rotatorsIsError, error: rotatorError, isRefetchError: rotatorIsRefetchError } = useGetRotators({
+    refetchInterval: 20000, // Poll every 20 seconds
+    refetchIntervalInBackground: true, // Keep polling in the background
+  });
   const { data: manifestData, error: manifestError, isError: manifestIsError } = useGetRotatorManifest(featureId, "latest", {
     enabled: featureId !== "",
   });
@@ -34,7 +37,7 @@ export default function ListRotators() {
     onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to create async rotator"),
     onSuccess: () => {
       rotatorsRefetch();
-      toast.success("Async rotator created successfully") 
+      toast.success("Async rotator created successfully")
     }
   });
   const { mutate: deleteRotator } = useDeleteRotator({
@@ -45,20 +48,20 @@ export default function ListRotators() {
     },
   })
 
-  const performCreate = ({featureName} : {featureName: string}) => {
-    createRotator({name: featureName})
+  const performCreate = ({ featureName }: { featureName: string }) => {
+    createRotator({ name: featureName })
   }
 
   const performDelete = (rotatorId: string) => {
-    deleteRotator({id: rotatorId});
+    deleteRotator({ id: rotatorId });
   }
 
   useEffect(() => {
     if (featureId === "") return
 
-    createToken({id: featureId})
+    createToken({ id: featureId })
   }, [featureId, createToken])
-  
+
   useEffect(() => {
     if (featureId === "") return
     if (!token) return
@@ -87,16 +90,16 @@ export default function ListRotators() {
   return (
     <FeatureList>
       <NewFeatureCard
-        featureName={featureName} 
+        featureName={featureName}
         performCreate={performCreate}
-        Form={NewRotatorForm} 
+        Form={NewRotatorForm}
       />
       {rotatorsData && rotatorsData.map((rotator: Rotator) => (
-        <FeatureDetailsCardDialog 
+        <FeatureDetailsCardDialog
           key={rotator.id}
           featureID={rotator.id}
           featureName={rotator.name}
-          featureStatus={rotator.current_status} 
+          featureStatus={rotator.current_status}
           featureType={featureName}
           featureDescription="Async Rotator listens to secret rotation notifications and triggers the External Secrets Operator reconciliation"
           setFeatureId={setFeatureId}
