@@ -1,6 +1,6 @@
 import { trackFeatureCopyRawYAML, trackFeatureCopyYAMLWithApplyCommand, trackFeatureDownloadYAML } from "@/analytics"
-import { DeleteFeatureDialog } from "@/components/FeatureList/DeleteFeatureDialog"
-import DeleteFeatureDialogContent from "@/components/FeatureList/DeleteFeatureDialogContent"
+import { FeatureItemDeleteButton } from "@/components/FeatureCollection/FeatureItemDeleteButton"
+import FeatureItemDeleteDialogContent from "@/components/FeatureCollection/FeatureItemDeleteDialogContent"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -12,7 +12,7 @@ import { useEffect } from "react"
 import { toast } from "sonner"
 
 
-interface FeatureDialogContentProps {
+interface FeatureItemDialogContentProps {
   id: string;
   featureName: string;
   featureType: string;
@@ -28,7 +28,7 @@ interface FeatureDialogContentProps {
   onDeleted: () => void;
 }
 
-function FeatureDialogContent({id, featureName, featureType, featureDescription, status, activeTab, content, applyCommand, setActiveTab, onDeleted} : FeatureDialogContentProps) {
+function FeatureItemDialogContent({id, featureName, featureType, featureDescription, status, activeTab, content, applyCommand, setActiveTab, onDeleted} : FeatureItemDialogContentProps) {
   const defaultTab = 'details';
   const isPending = status.text === 'Provisioning' || status.text === 'Pending Registration';
 
@@ -167,9 +167,9 @@ function FeatureDialogContent({id, featureName, featureType, featureDescription,
       </Tabs>
       <DialogFooter>
         {activeTab === 'details' &&
-          <DeleteFeatureDialog featureType={featureType} featureId={id}>
-            <DeleteFeatureDialogContent featureName={featureName} featureID={id} featureType={featureType} onDelete={onDeleted}/>
-          </DeleteFeatureDialog>
+          <FeatureItemDeleteButton featureType={featureType} featureId={id}>
+            <FeatureItemDeleteDialogContent featureName={featureName} featureID={id} featureType={featureType} onDelete={onDeleted}/>
+          </FeatureItemDeleteButton>
         }
         {activeTab === 'manifest' &&
           <>
@@ -191,4 +191,4 @@ function FeatureDialogContent({id, featureName, featureType, featureDescription,
   )
 }
 
-export default FeatureDialogContent
+export default FeatureItemDialogContent

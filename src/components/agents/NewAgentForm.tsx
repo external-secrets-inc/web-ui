@@ -13,7 +13,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import { NewFeatureFormProps } from "@/components/FeatureList/FeatureList.interfaces"
+import { NewFeatureFormProps } from "@/components/FeatureCollection/FeatureCollection.interfaces"
 
 const formSchema = z.object({
   name: z.string().min(1, {

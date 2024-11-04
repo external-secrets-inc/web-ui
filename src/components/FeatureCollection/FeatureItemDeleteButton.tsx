@@ -6,13 +6,13 @@ import {
 } from "@/components/ui/dialog"
 import { Trash2Icon } from "lucide-react"
 
-interface DeleteFeatureDialogProps {
+interface FeatureItemDeleteButtonProps {
   featureType: string;
   featureId: string;
   children: React.ReactNode;
 }
 
-export function DeleteFeatureDialog({featureType, featureId, children}: DeleteFeatureDialogProps) {
+export function FeatureItemDeleteButton({featureType, featureId, children}: FeatureItemDeleteButtonProps) {
   const handleDeleteDialogOpenChange = (open: boolean) => {
     if (open) {
       trackFeatureDeleteDialogOpened(featureType, featureId, "details-dialog")

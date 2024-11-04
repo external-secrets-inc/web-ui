@@ -1,6 +1,6 @@
-import FeatureList from "@/components/FeatureList";
-import FeatureDetailsCardDialog from "@/components/FeatureList/FeatureDetailsCardDialog";
-import NewFeatureCard from "@/components/FeatureList/NewFeatureCard";
+import FeatureCollection from "@/components/FeatureCollection";
+import FeatureItem from "@/components/FeatureCollection/FeatureItem";
+import FeatureItemNewCard from "@/components/FeatureCollection/FeatureItemNewCard";
 import { NewRotatorForm } from "@/components/rotators/NewRotatorForm";
 import { API_DOMAIN, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import useCreateRotator from "@/services/rotators/mutations/useCreateRotator";
@@ -88,14 +88,14 @@ export default function ListRotators() {
   }, [manifestError, manifestIsError])
 
   return (
-    <FeatureList>
-      <NewFeatureCard
+    <FeatureCollection>
+      <FeatureItemNewCard
         featureName={featureName}
         performCreate={performCreate}
         Form={NewRotatorForm}
       />
       {rotatorsData && rotatorsData.map((rotator: Rotator) => (
-        <FeatureDetailsCardDialog
+        <FeatureItem
           key={rotator.id}
           featureID={rotator.id}
           featureName={rotator.name}
@@ -109,6 +109,6 @@ export default function ListRotators() {
         />
       )
       )}
-    </FeatureList>
+    </FeatureCollection>
   )
 }

@@ -6,7 +6,7 @@ export interface NewFeatureFormProps {
   performCreate: ({featureName} : {featureName: string}) => void;
 }
 
-export interface NewFeatureCardProps<T extends NewFeatureFormProps> {
+export interface FeatureItemNewCardProps<T extends NewFeatureFormProps> {
   featureName: string;
   performCreate: ({featureName} : {featureName: string}) => void;
   Form: React.ComponentType<T>;
