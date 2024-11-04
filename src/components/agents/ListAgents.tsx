@@ -2,7 +2,7 @@ import FeatureList from "@/components/FeatureList";
 import FeatureDetailsCardDialog from "@/components/FeatureList/FeatureDetailsCardDialog";
 import NewFeatureCard from "@/components/FeatureList/NewFeatureCard";
 import { NewAgentForm } from "@/components/agents/NewAgentForm";
-import { API_DOMAIN } from "@/constants";
+import { API_DOMAIN, TWENTY_SECONDS_IN_MILLISECONDS } from "@/constants";
 import useCreateAgent from "@/services/agents/mutations/useCreateAgent";
 import useCreateAgentManifestToken from "@/services/agents/mutations/useCreateAgentManifestToken";
 import useDeleteAgent from "@/services/agents/mutations/useDeleteAgent";
@@ -23,8 +23,8 @@ export default function ListAgents() {
   const [applyCommand, setApplyCommand] = useState("")
 
   const { data: agentsData, refetch: agentsRefetch, isError: agentsIsError, error: agentError, isRefetchError: agentIsRefetchError } = useGetAgents({
-    refetchInterval: 20000, // Poll every 20 seconds
-    refetchIntervalInBackground: true, // Keep polling in the background
+    refetchInterval: TWENTY_SECONDS_IN_MILLISECONDS,
+    refetchIntervalInBackground: true,
   });
   const { data: manifestData, error: manifestError, isError: manifestIsError } = useGetAgentManifest(featureId, "latest", {
     enabled: featureId !== "",

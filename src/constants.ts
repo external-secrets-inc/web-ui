@@ -14,3 +14,4 @@ export const WEBSITE_DOMAIN_STRIPPED = stripURLProtocol(WEBSITE_DOMAIN);
 // Date and time
 export const ONE_SECOND_IN_MILLISECONDS = 1000
 export const ONE_MINUTE_IN_SECONDS = 60;
+export const TWENTY_SECONDS_IN_MILLISECONDS = 20000
