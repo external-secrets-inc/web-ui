@@ -1,4 +1,4 @@
-import { trackFeatureYamlDialogOpened } from "@/analytics";
+import { trackFeatureItemDialogOpened } from "@/analytics";
 import FeatureItemCard from "@/components/FeatureCollection/FeatureItemCard";
 import FeatureItemDialogContent from "@/components/FeatureCollection/FeatureItemDialogContent";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
@@ -20,7 +20,7 @@ function FeatureItem({ featureID, featureName, featureStatus, featureType, featu
   const [isFeatureContentDialogOpen, setIsFeatureContentDialogOpen] = useState(false);
   const [activeContentTab, setActiveContentTab] = useState('details');
 
-  const handleYamlDialogOpenChange = (isOpen: boolean) => {
+  const handleFeatureItemDialogOpenChange = (isOpen: boolean) => {
     setIsFeatureContentDialogOpen(isOpen);
     setFeatureId(featureID);
     if (!isOpen) {
@@ -42,12 +42,12 @@ function FeatureItem({ featureID, featureName, featureStatus, featureType, featu
 
   useEffect(() => {
     if (isFeatureContentDialogOpen) {
-      trackFeatureYamlDialogOpened(featureType, featureID, featureName);
+      trackFeatureItemDialogOpened(featureType, featureID, featureName);
     }
   }, [isFeatureContentDialogOpen, featureType, featureID, featureName]);
 
   return (
-    <Dialog open={isFeatureContentDialogOpen} onOpenChange={handleYamlDialogOpenChange}>
+    <Dialog open={isFeatureContentDialogOpen} onOpenChange={handleFeatureItemDialogOpenChange}>
       <DialogTrigger asChild>
         <FeatureItemCard
           featureType={featureType}

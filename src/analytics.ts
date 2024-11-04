@@ -30,8 +30,8 @@ export const trackFeatureDeleteDialogOpened = (featureType: string, featureID: s
   track("Feature Delete Dialog Opened", { featureType, featureID, triggeredFrom });
 };
 
-export const trackFeatureYamlDialogOpened = (featureType: string, featureID: string, featureName: string) => {
-  track("Feature YAML Dialog Opened", { featureType, featureID, featureName });
+export const trackFeatureItemDialogOpened = (featureType: string, featureID: string, featureName: string) => {
+  track("Feature Item Dialog Opened", { featureType, featureID, featureName });
 };
 
 export const trackFeatureDeleted = (featureType: string, featureID: string) => {
