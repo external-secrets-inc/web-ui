@@ -2,7 +2,7 @@ import FeatureList from "@/components/FeatureList";
 import FeatureDetailsCardDialog from "@/components/FeatureList/FeatureDetailsCardDialog";
 import NewFeatureCard from "@/components/FeatureList/NewFeatureCard";
 import { NewRotatorForm } from "@/components/rotators/NewRotatorForm";
-import { API_DOMAIN, TWENTY_SECONDS_IN_MILLISECONDS } from "@/constants";
+import { API_DOMAIN, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import useCreateRotator from "@/services/rotators/mutations/useCreateRotator";
 import useCreateRotatorManifestToken from "@/services/rotators/mutations/useCreateRotatorManifestToken";
 import useDeleteRotator from "@/services/rotators/mutations/useDeleteRotator";
@@ -23,7 +23,7 @@ export default function ListRotators() {
   const [applyCommand, setApplyCommand] = useState("")
 
   const { data: rotatorsData, refetch: rotatorsRefetch, isError: rotatorsIsError, error: rotatorError, isRefetchError: rotatorIsRefetchError } = useGetRotators({
-    refetchInterval: TWENTY_SECONDS_IN_MILLISECONDS,
+    refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
   });
   const { data: manifestData, error: manifestError, isError: manifestIsError } = useGetRotatorManifest(featureId, "latest", {
