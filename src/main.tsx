@@ -92,6 +92,7 @@ const router = createBrowserRouter([
               description={
                 <>
                   Async rotators listen for events from audit logs to trigger a rotation in the External Secrets Operator<br/>
+                  See our <a href={`${DOCS_DOMAIN}/docs/esi-async-rotator/quickstart`}>Quickstart guide</a> for more details
                 </>
               }
             />
