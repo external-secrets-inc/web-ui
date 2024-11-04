@@ -9,17 +9,15 @@ import saveAs from "file-saver"
 import { ClipboardCopyIcon, DownloadIcon, LucideInfo, Trash2Icon } from "lucide-react"
 import { useEffect } from "react"
 import { toast } from "sonner"
-
+import { STATUS_MAP } from "@/components/FeatureCollection/FeatureCollection.constants";
 
 interface FeatureItemDialogContentProps {
   id: string;
   featureName: string;
   featureType: string;
   featureDescription: string;
-  status: {
-    text: string;
-    icon: React.ReactNode;
-  };
+  featureStatus: string;
+  isPending: boolean;
   activeTab: string;
   content: string;
   applyCommand: string;
@@ -27,9 +25,8 @@ interface FeatureItemDialogContentProps {
   onDeleted: () => void;
 }
 
-function FeatureItemDialogContent({id, featureName, featureType, featureDescription, status, activeTab, content, applyCommand, setActiveTab, onDeleted} : FeatureItemDialogContentProps) {
+function FeatureItemDialogContent({id, featureName, featureType, featureDescription, featureStatus, isPending, activeTab, content, applyCommand, setActiveTab, onDeleted} : FeatureItemDialogContentProps) {
   const defaultTab = 'details';
-  const isPending = status.text === 'Provisioning' || status.text === 'Pending Registration';
 
   const onTabChange = (value: string) => {
     setActiveTab(value);
@@ -109,8 +106,8 @@ function FeatureItemDialogContent({id, featureName, featureType, featureDescript
                 Current Status
               </span>
               <span className="flex col-span-2 gap-2 items-center">
-                {status.icon}
-                {status.text}
+                {STATUS_MAP[featureStatus].icon}
+                {STATUS_MAP[featureStatus].text}
               </span>
             </div>
           </div>
@@ -121,7 +118,7 @@ function FeatureItemDialogContent({id, featureName, featureType, featureDescript
               className="mt-4"
             >
               <AlertTitle className="flex gap-2 items-center">
-              {status.icon}<p><span className="capitalize">{featureType}</span> is not active</p>
+              {STATUS_MAP[featureStatus].icon}<p><span className="capitalize">{featureType}</span> is not active</p>
               </AlertTitle>
               <AlertDescription>
                 You need to apply the <span className="lowercase">{featureType}</span> manifest file to your cluster in order to activate it. Follow the instructions on the <Button className="underline" variant="ghost" size="inline" onClick={() => setActiveTab('apply')}>Applying tab</Button>

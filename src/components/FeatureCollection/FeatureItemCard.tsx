@@ -2,15 +2,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import FeatureItemDropdownMenu from "./FeatureItemDropdownMenu";
 import { forwardRef } from "react";
+import { STATUS_MAP } from "@/components/FeatureCollection/FeatureCollection.constants";
 
 interface FeatureItemCardProps {
   featureType: string;
   featureName: string;
   featureID: string;
-  status: {
-    text: string;
-    icon: React.ReactNode;
-  };
+  featureStatus: string;
   isPending: boolean;
   onPreviewYaml: () => void;
   onDelete: () => void;
@@ -21,7 +19,7 @@ const FeatureItemCard = forwardRef<HTMLDivElement, FeatureItemCardProps>(({
   featureType,
   featureName,
   featureID,
-  status,
+  featureStatus,
   isPending,
   onPreviewYaml,
   onDelete,
@@ -51,8 +49,8 @@ const FeatureItemCard = forwardRef<HTMLDivElement, FeatureItemCardProps>(({
         </CardHeader>
         <CardFooter className='mt-auto gap-2'>
           <span className='flex gap-2 items-center'>
-            {status.icon}
-            {status.text}
+            {STATUS_MAP[featureStatus].icon}
+            {STATUS_MAP[featureStatus].text}
           </span>
           {isPending &&
             <Button
