@@ -1,6 +1,6 @@
 import FeatureCollection from "@/components/FeatureCollection";
 import FeatureItem from "@/components/FeatureCollection/FeatureItem";
-import FeatureItemNewCard from "@/components/FeatureCollection/FeatureItemNewCard";
+import FeatureNewItem from "@/components/FeatureCollection/FeatureNewItem";
 import { NewRotatorForm } from "@/components/rotators/NewRotatorForm";
 import { API_DOMAIN, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import useCreateRotator from "@/services/rotators/mutations/useCreateRotator";
@@ -89,7 +89,7 @@ export default function ListRotators() {
 
   return (
     <FeatureCollection>
-      <FeatureItemNewCard
+      <FeatureNewItem
         featureName={featureName}
         performCreate={performCreate}
         Form={NewRotatorForm}

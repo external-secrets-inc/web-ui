@@ -1,10 +1,10 @@
 import { trackAddNewFeatureClicked, trackFeatureCreated } from "@/analytics";
-import { FeatureItemNewCardProps, NewFeatureFormProps } from "@/components/FeatureCollection/FeatureCollection.interfaces";
+import { FeatureNewItemProps, NewFeatureFormProps } from "@/components/FeatureCollection/FeatureCollection.interfaces";
 import { Card } from "@/components/ui/card";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
 
-const FeatureItemNewCard = <T extends NewFeatureFormProps>({ featureName, performCreate, Form, formProps }: FeatureItemNewCardProps<T>) => {
+const FeatureNewItem = <T extends NewFeatureFormProps>({ featureName, performCreate, Form, formProps }: FeatureNewItemProps<T>) => {
   const [showForm, setShowForm] = useState(false)
 
   const defaultFormProps = {
@@ -43,4 +43,4 @@ const FeatureItemNewCard = <T extends NewFeatureFormProps>({ featureName, perfor
   );
 }
 
-export default FeatureItemNewCard;
+export default FeatureNewItem;

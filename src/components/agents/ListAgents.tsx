@@ -1,6 +1,6 @@
 import FeatureCollection from "@/components/FeatureCollection";
 import FeatureItem from "@/components/FeatureCollection/FeatureItem";
-import FeatureItemNewCard from "@/components/FeatureCollection/FeatureItemNewCard";
+import FeatureNewItem from "@/components/FeatureCollection/FeatureNewItem";
 import { NewAgentForm } from "@/components/agents/NewAgentForm";
 import { API_DOMAIN, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import useCreateAgent from "@/services/agents/mutations/useCreateAgent";
@@ -89,7 +89,7 @@ export default function ListAgents() {
 
   return (
     <FeatureCollection>
-      <FeatureItemNewCard
+      <FeatureNewItem
         featureName={featureName}
         performCreate={performCreate}
         Form={NewAgentForm}
