@@ -1,6 +1,5 @@
 import { trackFeatureCopyRawYAML, trackFeatureCopyYAMLWithApplyCommand, trackFeatureDownloadYAML } from "@/analytics"
 import { FeatureItemDeleteButton } from "@/components/FeatureCollection/FeatureItemDeleteButton"
-import FeatureItemDeleteDialogContent from "@/components/FeatureCollection/FeatureItemDeleteDialogContent"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -167,9 +166,12 @@ function FeatureItemDialogContent({id, featureName, featureType, featureDescript
       </Tabs>
       <DialogFooter>
         {activeTab === 'details' &&
-          <FeatureItemDeleteButton featureType={featureType} featureId={id}>
-            <FeatureItemDeleteDialogContent featureName={featureName} featureID={id} featureType={featureType} onDelete={onDeleted}/>
-          </FeatureItemDeleteButton>
+          <FeatureItemDeleteButton
+            featureType={featureType}
+            featureId={id}
+            featureName={featureName}
+            onDelete={onDeleted}
+          />
         }
         {activeTab === 'manifest' &&
           <>
