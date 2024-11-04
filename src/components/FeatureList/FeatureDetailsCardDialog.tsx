@@ -9,11 +9,12 @@ import { LucideAlertCircle, LucideCheckCircle, LucideMoreVertical, LucideSquareA
 import { useEffect, useState } from "react";
 
 interface FeatureDropdownProps {
+  featureType: string;
   onPreviewYaml: () => void;
   onDelete: () => void;
 }
 
-const FeatureDropdown: React.FC<FeatureDropdownProps> = ({ onPreviewYaml, onDelete }) => {
+const FeatureDropdown: React.FC<FeatureDropdownProps> = ({featureType, onPreviewYaml, onDelete }) => {
 
   return (
     <DropdownMenu>
@@ -37,7 +38,7 @@ const FeatureDropdown: React.FC<FeatureDropdownProps> = ({ onPreviewYaml, onDele
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={onDelete}>
           <LucideTrash2 className="mr-2" />
-          Delete agent
+          Delete {featureType.toLowerCase()}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -133,6 +134,7 @@ function FeatureDetailsCardDialog({ featureID, featureName, featureStatus, featu
                 <CardTitle className="flex">
                   <div className="grow">{featureName}</div>
                   <FeatureDropdown
+                    featureType={featureType}
                     onPreviewYaml={() => setIsFeatureContentDialogOpen(true)}
                     onDelete={() => setIsDeleteDialogOpen(true)}
                   />
