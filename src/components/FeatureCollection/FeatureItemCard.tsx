@@ -4,6 +4,7 @@ import FeatureItemDropdownMenu from "./FeatureItemDropdownMenu";
 import { forwardRef } from "react";
 
 interface FeatureItemCardProps {
+  featureType: string;
   featureName: string;
   featureID: string;
   status: {
@@ -17,6 +18,7 @@ interface FeatureItemCardProps {
 }
 
 const FeatureItemCard = forwardRef<HTMLDivElement, FeatureItemCardProps>(({
+  featureType,
   featureName,
   featureID,
   status,
@@ -38,6 +40,9 @@ const FeatureItemCard = forwardRef<HTMLDivElement, FeatureItemCardProps>(({
           <CardTitle className="flex">
             <div className="grow">{featureName}</div>
             <FeatureItemDropdownMenu
+              featureType={featureType}
+              featureName={featureName}
+              featureID={featureID}
               onPreviewYaml={onPreviewYaml}
               onDelete={onDelete}
             />

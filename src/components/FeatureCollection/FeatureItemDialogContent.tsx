@@ -1,12 +1,12 @@
 import { trackFeatureCopyRawYAML, trackFeatureCopyYAMLWithApplyCommand, trackFeatureDownloadYAML } from "@/analytics"
-import { FeatureItemDeleteButton } from "@/components/FeatureCollection/FeatureItemDeleteButton"
+import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import saveAs from "file-saver"
-import { ClipboardCopyIcon, DownloadIcon, LucideInfo } from "lucide-react"
+import { ClipboardCopyIcon, DownloadIcon, LucideInfo, Trash2Icon } from "lucide-react"
 import { useEffect } from "react"
 import { toast } from "sonner"
 
@@ -166,12 +166,17 @@ function FeatureItemDialogContent({id, featureName, featureType, featureDescript
       </Tabs>
       <DialogFooter>
         {activeTab === 'details' &&
-          <FeatureItemDeleteButton
+          <FeatureItemDeleteAction
             featureType={featureType}
-            featureId={id}
+            featureID={id}
             featureName={featureName}
             onDelete={onDeleted}
-          />
+          >
+            <Button variant="destructive">
+              <Trash2Icon className="mr-2" />
+              Delete {featureType}
+            </Button>
+          </FeatureItemDeleteAction>
         }
         {activeTab === 'manifest' &&
           <>

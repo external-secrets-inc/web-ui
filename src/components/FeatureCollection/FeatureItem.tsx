@@ -1,6 +1,5 @@
-import { trackFeatureDeleteDialogOpened, trackFeatureYamlDialogOpened } from "@/analytics";
+import { trackFeatureYamlDialogOpened } from "@/analytics";
 import FeatureItemCard from "@/components/FeatureCollection/FeatureItemCard";
-import FeatureItemDeleteDialogContent from "@/components/FeatureCollection/FeatureItemDeleteDialogContent";
 import FeatureItemDialogContent from "@/components/FeatureCollection/FeatureItemDialogContent";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
 import { LucideAlertCircle, LucideCheckCircle, LucideTrash2, LucideXCircle } from "lucide-react";
@@ -48,7 +47,6 @@ const STATUS_MAP: { [key: string]: { text: string, icon: React.ReactNode } } = {
 function FeatureItem({ featureID, featureName, featureStatus, featureType, featureDescription, setFeatureId, applyCommand, manifest, onDeleteFeature }: FeatureItemProps) {
   const isPending = ['PENDING_REGISTRATION', 'PROVISIONING'].includes(featureStatus.toUpperCase());
   const [isFeatureContentDialogOpen, setIsFeatureContentDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [activeContentTab, setActiveContentTab] = useState('details');
 
   const status = STATUS_MAP[featureStatus] || { text: featureStatus, icon: null };
@@ -79,49 +77,33 @@ function FeatureItem({ featureID, featureName, featureStatus, featureType, featu
     }
   }, [isFeatureContentDialogOpen, featureType, featureID, featureName]);
 
-  useEffect(() => {
-    if (isDeleteDialogOpen) {
-      trackFeatureDeleteDialogOpened(featureType, featureName, "dropdown");
-    }
-  }, [isDeleteDialogOpen, featureType, featureName]);
-
   return (
-    <>
-      <Dialog open={isFeatureContentDialogOpen} onOpenChange={handleYamlDialogOpenChange}>
-        <DialogTrigger asChild>
-          <FeatureItemCard
-            featureName={featureName}
-            featureID={featureID}
-            status={status}
-            isPending={isPending}
-            onPreviewYaml={() => setIsFeatureContentDialogOpen(true)}
-            onDelete={() => setIsDeleteDialogOpen(true)}
-            onApply={handleApplyButtonClick}
-          />
-        </DialogTrigger>
-        <FeatureItemDialogContent
-          activeTab={activeContentTab}
-          setActiveTab={setActiveContentTab}
-          id={featureID}
-          featureName={featureName}
-          status={status}
-          onDeleted={handleDeleteFeature}
-          content={manifest}
-          applyCommand={applyCommand}
+    <Dialog open={isFeatureContentDialogOpen} onOpenChange={handleYamlDialogOpenChange}>
+      <DialogTrigger asChild>
+        <FeatureItemCard
           featureType={featureType}
-          featureDescription={featureDescription}
-        />
-      </Dialog>
-
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <FeatureItemDeleteDialogContent
           featureName={featureName}
-          featureType={featureType}
           featureID={featureID}
+          status={status}
+          isPending={isPending}
+          onPreviewYaml={() => setIsFeatureContentDialogOpen(true)}
           onDelete={handleDeleteFeature}
+          onApply={handleApplyButtonClick}
         />
-      </Dialog>
-    </>
+      </DialogTrigger>
+      <FeatureItemDialogContent
+        activeTab={activeContentTab}
+        setActiveTab={setActiveContentTab}
+        id={featureID}
+        featureName={featureName}
+        status={status}
+        onDeleted={handleDeleteFeature}
+        content={manifest}
+        applyCommand={applyCommand}
+        featureType={featureType}
+        featureDescription={featureDescription}
+      />
+    </Dialog>
   )
 }
 

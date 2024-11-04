@@ -1,42 +1,39 @@
 import { trackFeatureDeleteDialogOpened } from "@/analytics";
 import FeatureItemDeleteDialogContent from "@/components/FeatureCollection/FeatureItemDeleteDialogContent";
-import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Trash2Icon } from "lucide-react"
 
-interface FeatureItemDeleteButtonProps {
+interface FeatureItemDeleteActionProps {
   featureType: string;
-  featureId: string;
+  featureID: string;
   featureName: string;
   onDelete: () => void;
+  children: React.ReactNode;
 }
 
-export function FeatureItemDeleteButton({
+export function FeatureItemDeleteAction({
   featureType,
-  featureId,
+  featureID,
   featureName,
   onDelete,
-}: FeatureItemDeleteButtonProps) {
+  children,
+}: FeatureItemDeleteActionProps) {
   const handleDeleteDialogOpenChange = (open: boolean) => {
     if (open) {
-      trackFeatureDeleteDialogOpened(featureType, featureId, "details-dialog")
+      trackFeatureDeleteDialogOpened(featureType, featureID, "details-dialog")
     }
   };
 
   return (
     <Dialog onOpenChange={handleDeleteDialogOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="destructive">
-          <Trash2Icon className="mr-2" />
-          Delete {featureType}
-        </Button>
+        {children}
       </DialogTrigger>
       <FeatureItemDeleteDialogContent
         featureType={featureType}
-        featureID={featureId}
+        featureID={featureID}
         featureName={featureName}
         onDelete={onDelete}
       />

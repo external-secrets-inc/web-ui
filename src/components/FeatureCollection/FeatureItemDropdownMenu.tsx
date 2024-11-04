@@ -1,13 +1,23 @@
+import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { LucideMoreVertical, LucideSquareArrowOutUpRight, LucideTrash2 } from "lucide-react";
 
 interface FeatureItemDropdownMenuProps {
+  featureType: string;
+  featureName: string;
+  featureID: string;
   onPreviewYaml: () => void;
   onDelete: () => void;
 }
 
-function FeatureItemDropdownMenu({ onPreviewYaml, onDelete }: FeatureItemDropdownMenuProps) {
+function FeatureItemDropdownMenu({
+  featureType,
+  featureName,
+  featureID,
+  onPreviewYaml,
+  onDelete
+}: FeatureItemDropdownMenuProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -28,10 +38,17 @@ function FeatureItemDropdownMenu({ onPreviewYaml, onDelete }: FeatureItemDropdow
           <LucideSquareArrowOutUpRight className="mr-2" />
           Open details
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={onDelete}>
-          <LucideTrash2 className="mr-2" />
-          Delete agent
-        </DropdownMenuItem>
+        <FeatureItemDeleteAction
+          featureType={featureType}
+          featureID={featureID}
+          featureName={featureName}
+          onDelete={onDelete}
+        >
+          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+            <LucideTrash2 className="mr-2" />
+            Delete {featureType}
+          </DropdownMenuItem>
+        </FeatureItemDeleteAction>
       </DropdownMenuContent>
     </DropdownMenu>
   );

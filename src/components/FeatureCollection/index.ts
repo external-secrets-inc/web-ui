@@ -1,4 +1,4 @@
-export * from './FeatureItemDeleteButton';
+export * from './FeatureItemDeleteAction';
 export * from './FeatureItemDeleteDialogContent';
 export * from './FeatureItem';
 export * from './FeatureItemDialogContent';
