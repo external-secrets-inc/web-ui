@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/external-secrets-inc/web-ui/compare/v0.6.0...v0.6.1) (2024-11-04)
+
+
+### Bug Fixes
+
+* Add a 20 seconds refetch interval for agents and rotator query ([#109](https://github.com/external-secrets-inc/web-ui/issues/109)) ([3698469](https://github.com/external-secrets-inc/web-ui/commit/36984698bf4422353034b754ba0df6ace26268e4))
+
 ## [0.6.0](https://github.com/external-secrets-inc/web-ui/compare/v0.5.0...v0.6.0) (2024-10-25)
 
 
