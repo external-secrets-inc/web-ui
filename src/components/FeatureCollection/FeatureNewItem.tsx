@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
 
-const FeatureNewItem = <T extends NewFeatureFormProps>({ featureName, performCreate, Form, formProps }: FeatureNewItemProps<T>) => {
+const FeatureNewItem = <T extends NewFeatureFormProps>({ featureType, performCreate, Form, formProps }: FeatureNewItemProps<T>) => {
   const [showForm, setShowForm] = useState(false)
 
   const defaultFormProps = {
@@ -12,14 +12,14 @@ const FeatureNewItem = <T extends NewFeatureFormProps>({ featureName, performCre
     onCancel: () => setShowForm(false),
     onSuccess: () => {
       setShowForm(false)
-      trackFeatureCreated(featureName)
+      trackFeatureCreated(featureType)
     },
     performCreate: performCreate
   };
 
 
   const handleAddNewFeatureClick = () => {
-    trackAddNewFeatureClicked(featureName);
+    trackAddNewFeatureClicked(featureType);
     setShowForm(true)
   }
   return (
@@ -36,7 +36,7 @@ const FeatureNewItem = <T extends NewFeatureFormProps>({ featureName, performCre
       ) : (
         <div className="flex h-full items-center justify-center">
           <PlusIcon className="inline-block mr-2" />
-          New {featureName}
+          New {featureType}
         </div>
       )}
     </Card>

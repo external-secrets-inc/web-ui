@@ -12,20 +12,20 @@ interface FeatureItemProps {
   featureDescription: string;
   manifest: string;
   applyCommand: string;
-  setFeatureId: (value: string) => void;
-  onDeleteFeature: (featureId: string) => void;
+  setFeatureID: (value: string) => void;
+  onDeleteFeature: (featureID: string) => void;
 }
-function FeatureItem({ featureID, featureName, featureStatus, featureType, featureDescription, setFeatureId, applyCommand, manifest, onDeleteFeature }: FeatureItemProps) {
+function FeatureItem({ featureID, featureName, featureStatus, featureType, featureDescription, setFeatureID, applyCommand, manifest, onDeleteFeature }: FeatureItemProps) {
   const isPending = ['PENDING_REGISTRATION', 'PROVISIONING'].includes(featureStatus.toUpperCase());
   const [isFeatureContentDialogOpen, setIsFeatureContentDialogOpen] = useState(false);
   const [activeContentTab, setActiveContentTab] = useState('details');
 
   const handleFeatureItemDialogOpenChange = (isOpen: boolean) => {
     setIsFeatureContentDialogOpen(isOpen);
-    setFeatureId(featureID);
+    setFeatureID(featureID);
     if (!isOpen) {
       setActiveContentTab('details');
-      setFeatureId("")
+      setFeatureID("")
     }
   };
 
@@ -35,7 +35,7 @@ function FeatureItem({ featureID, featureName, featureStatus, featureType, featu
 
   const handleApplyButtonClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    setFeatureId(featureID);
+    setFeatureID(featureID);
     setActiveContentTab('apply');
     setIsFeatureContentDialogOpen(true);
   };
