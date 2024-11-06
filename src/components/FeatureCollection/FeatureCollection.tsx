@@ -78,7 +78,7 @@ function FeatureCollection<T extends NewFeatureFormProps>({
       onSortingChange={setSorting}
       globalFilter={globalFilter}
       onGlobalFilterChange={setGlobalFilter}
-      newItem={
+      PrependItems={
         <FeatureNewItem
           featureType={featureType}
           performCreate={performCreate}

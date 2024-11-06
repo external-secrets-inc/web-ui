@@ -12,7 +12,7 @@ interface DataGridProps<TData, TValue> {
   onSortingChange: OnChangeFn<SortingState>;
   onGlobalFilterChange: (value: string) => void;
   renderItem: (item: TData, key: string) => React.ReactNode;
-  newItem?: React.ReactNode;
+  PrependItems?: React.ReactNode;
 }
 
 function DataGrid<TData, TValue>({
@@ -23,7 +23,7 @@ function DataGrid<TData, TValue>({
   onSortingChange,
   onGlobalFilterChange,
   renderItem,
-  newItem
+  PrependItems
 }: DataGridProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -112,7 +112,7 @@ function DataGrid<TData, TValue>({
       </div>
 
       <div className="grid grid-cols-[repeat(auto-fill,minmax(min(350px,100%),1fr))] auto-rows-[minmax(216px,auto)] gap-4">
-        {newItem}
+        {PrependItems}
         {table.getRowModel().rows.map((row) =>
           renderItem(row.original, row.id)
         )}
