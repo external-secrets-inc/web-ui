@@ -1,27 +1,44 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import useFeatureTable from "@/hooks/useFeatureTable";
-import type { ColumnDef } from "@tanstack/react-table";
+import { type ColumnDef, useReactTable, getCoreRowModel, getSortedRowModel, getFilteredRowModel, type SortingState, type OnChangeFn } from "@tanstack/react-table";
 import { LucideArrowDownNarrowWide, LucideArrowUpNarrowWide, LucideSearch } from "lucide-react";
 
 interface DataGridProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  sorting: SortingState;
+  globalFilter: string;
+  onSortingChange: OnChangeFn<SortingState>;
+  onGlobalFilterChange: (value: string) => void;
   renderItem: (item: TData, key: string) => React.ReactNode;
   newItem?: React.ReactNode;
 }
 
-function DataGrid<TData, TValue>({ columns, data, renderItem, newItem }: DataGridProps<TData, TValue>) {
-  const {
-    table,
-    sorting,
-    setSorting,
-    globalFilter,
-    setGlobalFilter,
-  } = useFeatureTable({
+function DataGrid<TData, TValue>({
+  columns,
+  data,
+  sorting,
+  globalFilter,
+  onSortingChange,
+  onGlobalFilterChange,
+  renderItem,
+  newItem
+}: DataGridProps<TData, TValue>) {
+  const table = useReactTable({
     data,
-    columns
+    columns,
+    state: {
+      sorting,
+      globalFilter,
+    },
+    onSortingChange: onSortingChange,
+    onGlobalFilterChange: onGlobalFilterChange,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    enableSortingRemoval: false,
+    sortDescFirst: false,
   });
 
   const sortableColumns = table.getAllColumns()
@@ -34,11 +51,11 @@ function DataGrid<TData, TValue>({ columns, data, renderItem, newItem }: DataGri
   const currentSort = sorting[0] || { id: 'index', desc: true };
 
   const handleSortByChange = (columnId: string) => {
-    setSorting([{ id: columnId, desc: currentSort.desc }]);
+    onSortingChange(old => [{ id: columnId, desc: old[0]?.desc ?? false }]);
   };
 
   const handleSortDirectionChange = () => {
-    setSorting([{ ...currentSort, desc: !currentSort.desc }]);
+    onSortingChange(old => [{ ...old[0], desc: !old[0]?.desc }]);
   };
 
   return (
@@ -49,7 +66,7 @@ function DataGrid<TData, TValue>({ columns, data, renderItem, newItem }: DataGri
           <Input
             placeholder="Search..."
             value={globalFilter}
-            onChange={(e) => setGlobalFilter(e.target.value)}
+            onChange={(e) => onGlobalFilterChange(e.target.value)}
             className="max-w-48 pr-7"
           />
           <LucideSearch className="absolute inset-y-0 right-3 self-center text-muted-foreground" />

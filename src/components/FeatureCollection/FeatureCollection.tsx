@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import DataGrid from "@/components/ui/DataGrid";
-import { type ColumnDef } from "@tanstack/react-table";
+import { type ColumnDef, SortingState } from "@tanstack/react-table";
 import FeatureItem from "@/components/FeatureCollection/FeatureItem";
 import FeatureNewItem from "@/components/FeatureCollection/FeatureNewItem";
 import { TransformedFeatureData, FeatureData } from "./FeatureCollection.interfaces";
@@ -56,6 +57,12 @@ function FeatureCollection<T extends NewFeatureFormProps>({
   Form,
   formProps,
 }: FeatureCollectionProps<T>) {
+  const [sorting, setSorting] = useState<SortingState>([{
+    id: 'index',
+    desc: false
+  }]);
+  const [globalFilter, setGlobalFilter] = useState('');
+
   const transformedFeatureData: TransformedFeatureData[] = data.map((item, index) => ({
     id: item.id,
     name: item.name,
@@ -67,6 +74,10 @@ function FeatureCollection<T extends NewFeatureFormProps>({
     <DataGrid
       columns={columns}
       data={transformedFeatureData}
+      sorting={sorting}
+      onSortingChange={setSorting}
+      globalFilter={globalFilter}
+      onGlobalFilterChange={setGlobalFilter}
       newItem={
         <FeatureNewItem
           featureType={featureType}
