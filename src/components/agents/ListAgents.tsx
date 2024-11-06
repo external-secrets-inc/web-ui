@@ -1,6 +1,6 @@
-import FeatureList from "@/components/FeatureList";
-import FeatureDetailsCardDialog from "@/components/FeatureList/FeatureDetailsCardDialog";
-import NewFeatureCard from "@/components/FeatureList/NewFeatureCard";
+import FeatureCollection from "@/components/FeatureCollection";
+import FeatureItem from "@/components/FeatureCollection/FeatureItem";
+import FeatureNewItem from "@/components/FeatureCollection/FeatureNewItem";
 import { NewAgentForm } from "@/components/agents/NewAgentForm";
 import { API_DOMAIN, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import useCreateAgent from "@/services/agents/mutations/useCreateAgent";
@@ -88,14 +88,14 @@ export default function ListAgents() {
   }, [manifestError, manifestIsError])
 
   return (
-    <FeatureList>
-      <NewFeatureCard
+    <FeatureCollection>
+      <FeatureNewItem
         featureName={featureName}
         performCreate={performCreate}
         Form={NewAgentForm}
       />
       {agentsData && agentsData.map((agent: Agent) => (
-        <FeatureDetailsCardDialog
+        <FeatureItem
           key={agent.id}
           featureID={agent.id}
           featureName={agent.name}
@@ -109,6 +109,6 @@ export default function ListAgents() {
         />
       )
       )}
-    </FeatureList>
+    </FeatureCollection>
   )
 }
