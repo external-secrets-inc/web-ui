@@ -13,7 +13,7 @@ type FeatureCellValue = string | number;
 const columns: ColumnDef<TransformedFeatureData, FeatureCellValue>[] = [
   {
     id: 'index',
-    header: 'Created date',
+    header: 'Index',
     accessorFn: row => row.index,
     enableSorting: true,
   },
@@ -59,14 +59,13 @@ function FeatureCollection<T extends NewFeatureFormProps>({
   Form,
   formProps,
 }: FeatureCollectionProps<T>) {
-  const [sorting] = useState([{ id: 'index', desc: false }]);
   const [view, setView] = useState<"grid" | "table">("grid");
 
   const transformedFeatureData: TransformedFeatureData[] = data.map((item, index) => ({
     id: item.id,
     name: item.name,
     status: item.current_status,
-    index: index
+    index: index + 1
   }));
 
   return (
