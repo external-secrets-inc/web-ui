@@ -169,8 +169,8 @@ const DataTable = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivE
                       {header.column.getCanSort() && (
                         <div className="w-4 h-4">
                           {{
-                            asc: <LucideArrowUp className="h-4 w-4" />,
-                            desc: <LucideArrowDown className="h-4 w-4" />,
+                            asc: <LucideArrowDown className="h-4 w-4" />,
+                            desc: <LucideArrowUp className="h-4 w-4" />,
                           }[header.column.getIsSorted() as string] ?? (
                             <LucideChevronsUpDown className="h-4 w-4 text-muted-foreground/30" />
                           )}
