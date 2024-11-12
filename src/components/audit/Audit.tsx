@@ -33,7 +33,7 @@ export default function Audit() {
     onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to generate manifest token")
   });
 
-  const { data: processFileData, error: processFileError, isError: processFileIsError } = useGetAuditProcessFile(true, token?? '', "latest", {
+  const { data: processFileData, error: processFileError, isError: processFileIsError } = useGetAuditProcessFile(true, token ?? '', "latest", {
     enabled: token !== "",
   });
 
@@ -84,7 +84,7 @@ export default function Audit() {
         <Button>Install</Button>
       </DialogTrigger>
       <ListenerInstallDialogContent
-        processFile={processFileData? processFileData.process : ''}
+        processFile={processFileData ? processFileData.process : ''}
         processCommand={processCommand}
         applyCommand={applyCommand}
       />

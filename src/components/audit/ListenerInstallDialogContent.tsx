@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ClipboardCopyIcon } from "lucide-react"
-import { useState } from "react"
+import { act, useState } from "react"
 import { toast } from "sonner"
 import ListenerInstallScrollAreaTabContent from "./ListenerInstallScrollAreaTabContent"
 import AuditAlert from "./AuditAlert"
@@ -15,9 +15,9 @@ interface ListenerInstallDialogContentProps {
   openTab?: string;
 }
 
-function ListenerInstallDialogContent({ processFile, processCommand, applyCommand, openTab = '' }: ListenerInstallDialogContentProps) {
+function ListenerInstallDialogContent({ processFile, processCommand, applyCommand, openTab }: ListenerInstallDialogContentProps) {
   const defaultTab = 'process';
-  const [activeTab, setActiveTab] = useState(openTab?? defaultTab);
+  const [activeTab, setActiveTab] = useState(openTab ?? defaultTab);
 
   const onTabChange = (value: string) => {
     setActiveTab(value);

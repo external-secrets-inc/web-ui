@@ -28,12 +28,12 @@ const NavLinks: React.FC<NavLinksProps> = ({ closeSheetOnClick }) => {
           title='Async Rotators'
         />
       </LinkWrapper>
-      <LinkWrapper>
+      {import.meta.env.VITE_MOCK && <LinkWrapper>
         <OrgNavLink
           path='/audit'
           title='Audit'
         />
-      </LinkWrapper>
+      </LinkWrapper>}
       <LinkWrapper>
         <a
           href={docsUrl}
