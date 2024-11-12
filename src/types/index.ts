@@ -18,6 +18,10 @@ export interface Manifest {
   manifest: string
 }
 
+export interface Process {
+  process: string
+}
+
 export interface ApiWrapperOptions {
   defaultError: string;
   suppressToast?: boolean;

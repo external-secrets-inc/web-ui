@@ -22,6 +22,7 @@ import './index.css';
 import { DOCS_DOMAIN } from "@/constants";
 import ListRotators from "@/components/rotators/ListRotators";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import Audit from "./components/audit/Audit";
 
 const queryClient = new QueryClient()
 
@@ -97,6 +98,23 @@ const router = createBrowserRouter([
               }
             />
             <ListRotators />
+          </>
+        )
+      },
+      {
+        path: 'audit',
+        element: (
+          <>
+            <AppPageHeader
+              title="Audit"
+              description={
+                <>
+                  Audit is cool!<br/>
+                  See our <a href={`${DOCS_DOMAIN}/docs/`}>Quickstart guide</a> for more details
+                </>
+              }
+            />
+            <Audit />
           </>
         )
       },

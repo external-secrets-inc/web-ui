@@ -1,24 +1,24 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { LucideInfo } from "lucide-react"
+import { LucideInfo, LucideAlertCircle } from "lucide-react"
 import { ReactNode } from 'react'
 
-interface ListenerInstallAlertPropsBase {
+interface AuditAlertPropsBase {
   description: ReactNode;
 }
 
-interface ListenerInstallAlertWithWarning extends ListenerInstallAlertPropsBase {
+interface AuditAlertWithWarning extends AuditAlertPropsBase {
   warning: true;
   title: ReactNode; // required when warning is true
 }
 
-interface ListenerInstallAlertWithoutWarning extends ListenerInstallAlertPropsBase {
+interface AuditAlertWithoutWarning extends AuditAlertPropsBase {
   warning?: false;
   title?: ReactNode; // optional when warning is false or undefined
 }
 
-type ListenerInstallAlertProps = ListenerInstallAlertWithWarning | ListenerInstallAlertWithoutWarning;
+type AuditAlertProps = AuditAlertWithWarning | AuditAlertWithoutWarning;
 
-function ListenerInstallAlert({ warning = false, title = '', description }: ListenerInstallAlertProps) {
+function AuditAlert({ warning = false, title = '', description }: AuditAlertProps) {
   if (warning) {
     const defaultTitle = 'Warning'
     return (
@@ -27,6 +27,7 @@ function ListenerInstallAlert({ warning = false, title = '', description }: List
         className="mt-4"
       >
         <AlertTitle className="flex gap-2 items-center">
+          <LucideAlertCircle className="text-orange-500" />
           {title || defaultTitle}
         </AlertTitle>
         <AlertDescription>
@@ -46,4 +47,4 @@ function ListenerInstallAlert({ warning = false, title = '', description }: List
   )
 }
 
-export default ListenerInstallAlert;
+export default AuditAlert;

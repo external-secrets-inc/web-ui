@@ -76,3 +76,11 @@ export const trackSettingsTabChanged = (tab: string) => {
 export const trackSettingsSectionModified = (section: string, values?: any) => {
   track("Settings Section Modified", { section, ...values });
 };
+
+export const trackListenerInstallCopyProcess = () => {
+  track("Copy Listener Install Process", null);
+};
+
+export const trackListenerInstallCopyKubernetes = () => {
+  track("Copy Listener Install Kubernetes", null);
+};

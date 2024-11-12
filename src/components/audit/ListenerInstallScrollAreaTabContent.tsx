@@ -2,14 +2,14 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { TabsContent } from "@/components/ui/tabs"
 import { ReactNode } from "react";
 
-interface ListenerInstallTabContentProps {
+interface ListenerInstallScrollAreaTabContentProps {
   children?: ReactNode;
   value: string;
   description: ReactNode;
   scrollContent: string;
 }
 
-function ListenerInstallTabContent({ children, value, description, scrollContent }: ListenerInstallTabContentProps) {
+function ListenerInstallScrollAreaTabContent({ children, value, description, scrollContent }: ListenerInstallScrollAreaTabContentProps) {
   return (
     <TabsContent className="data-[state=active]:grid min-h-0" value={value}>
       <p className="text-muted-foreground text-sm mb-2">
@@ -28,4 +28,4 @@ function ListenerInstallTabContent({ children, value, description, scrollContent
   )
 }
 
-export default ListenerInstallTabContent;
+export default ListenerInstallScrollAreaTabContent;
