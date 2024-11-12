@@ -22,7 +22,7 @@ import './index.css';
 import { DOCS_DOMAIN } from "@/constants";
 import ListRotators from "@/components/rotators/ListRotators";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Audit from "./components/audit/Audit";
+import Audit from "@/components/audit/Audit"
 
 const queryClient = new QueryClient()
 
