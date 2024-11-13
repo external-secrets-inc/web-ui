@@ -1,29 +1,18 @@
 import { trackAddNewFeatureClicked, trackFeatureCreated } from "@/analytics";
-import { FeatureNewItemProps, NewFeatureFormProps } from "@/components/FeatureCollection/FeatureCollection.interfaces";
+import { FeatureNewItemProps } from "@/components/FeatureCollection/FeatureCollection.interfaces";
 import { Card } from "@/components/ui/card";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
+import { NewFeatureForm } from "./NewFeatureForm";
 
-const FeatureNewItem = <T extends NewFeatureFormProps>({
+const FeatureNewItem = ({
   colSpan,
   featureType,
   performCreate,
-  Form,
-  formProps,
   variant = 'card'
-}: FeatureNewItemProps<T>) => {
+}: FeatureNewItemProps) => {
   const [showForm, setShowForm] = useState(false)
-
-  const defaultFormProps = {
-    ...formProps,
-    onCancel: () => setShowForm(false),
-    onSuccess: () => {
-      setShowForm(false)
-      trackFeatureCreated(featureType)
-    },
-    performCreate: performCreate
-  };
 
   const handleAddNewFeatureClick = () => {
     trackAddNewFeatureClicked(featureType);
@@ -34,7 +23,15 @@ const FeatureNewItem = <T extends NewFeatureFormProps>({
     return showForm ? (
       <TableRow>
         <TableCell colSpan={colSpan}>
-          <Form {...(defaultFormProps as T)}/>
+          <NewFeatureForm
+            featureType={featureType}
+            performCreate={performCreate}
+            onCancel={() => setShowForm(false)}
+            onSuccess={() => {
+              setShowForm(false)
+              trackFeatureCreated(featureType)
+            }}
+          />
         </TableCell>
       </TableRow>
     ) : (
@@ -62,7 +59,15 @@ const FeatureNewItem = <T extends NewFeatureFormProps>({
       onClick={!showForm ? handleAddNewFeatureClick : undefined}
     >
       {showForm ? (
-        <Form {...(defaultFormProps as T)}/>
+        <NewFeatureForm
+          featureType={featureType}
+          performCreate={performCreate}
+          onCancel={() => setShowForm(false)}
+          onSuccess={() => {
+            setShowForm(false)
+            trackFeatureCreated(featureType)
+          }}
+        />
       ) : (
         <div className="flex h-full items-center justify-center">
           <PlusIcon className="inline-block mr-2" />

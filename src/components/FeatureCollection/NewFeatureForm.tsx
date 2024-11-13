@@ -13,7 +13,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import { NewFeatureFormProps } from "@/components/FeatureCollection/FeatureCollection.interfaces"
+import { NewFeatureFormProps } from "./FeatureCollection.interfaces"
 
 const formSchema = z.object({
   name: z.string().min(1, {
@@ -23,8 +23,12 @@ const formSchema = z.object({
 
 type FormSchemaType = z.infer<typeof formSchema>
 
-
-export function NewAgentForm({ performCreate, onSuccess, onCancel }: NewFeatureFormProps) {
+export function NewFeatureForm({
+  performCreate,
+  onSuccess,
+  onCancel,
+  featureType
+}: NewFeatureFormProps) {
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -55,36 +59,33 @@ export function NewAgentForm({ performCreate, onSuccess, onCancel }: NewFeatureF
     }
   }, [onCancel])
 
-  async function handleCreateAgent(values: FormSchemaType) {
+  async function handleCreate(values: FormSchemaType) {
     try {
       performCreate({featureName: values.name})
       onSuccess();
     } catch (error) {
-      console.error("Failed to create agent:", error);
+      console.error("Failed to create:", error);
     }
   }
 
   return (
-    <div
-      className="flex flex-col h-full"
-      ref={formRef}
-    >
+    <div className="flex flex-col h-full" ref={formRef}>
       <Form {...form}>
         <CardHeader>
           <form
-            id="new-agent-form"
+            id="new-feature-form"
             autoComplete="off"
-            onSubmit={form.handleSubmit(handleCreateAgent)}
+            onSubmit={form.handleSubmit(handleCreate)}
           >
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name your agent</FormLabel>
+                  <FormLabel>Name your {featureType.toLowerCase()}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="New Agent"
+                      placeholder={`New ${featureType}`}
                       autoFocus
                       {...field}
                     />
@@ -100,15 +101,12 @@ export function NewAgentForm({ performCreate, onSuccess, onCancel }: NewFeatureF
           <Button
             type="button"
             aria-keyshortcuts="Escape"
-            variant={"secondary"}
+            variant="secondary"
             onClick={onCancel}
           >
             Cancel
           </Button>
-          <Button
-            type="submit"
-            form="new-agent-form"
-          >
+          <Button type="submit" form="new-feature-form">
             Create
           </Button>
         </CardFooter>

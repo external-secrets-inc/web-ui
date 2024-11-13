@@ -3,10 +3,9 @@ import { DataGrid, DataTable } from "@/components/ui/DataProvider";
 import FeatureItemCard from "@/components/FeatureCollection/FeatureItemCard";
 import FeatureNewItem from "@/components/FeatureCollection/FeatureNewItem";
 import { TransformedFeatureData } from "./FeatureCollection.interfaces";
-import type { NewFeatureFormProps } from "./FeatureCollection.interfaces";
 import { useFeatureItemDialog } from "./FeatureItemDialogProvider";
 
-type FeatureCollectionViewProps<T extends NewFeatureFormProps> = {
+type FeatureCollectionViewProps = {
   view: "grid" | "table";
   colSpan?: number;
   featureType: string;
@@ -15,11 +14,9 @@ type FeatureCollectionViewProps<T extends NewFeatureFormProps> = {
   applyCommand: string;
   onDeleteFeature: (featureID: string) => void;
   performCreate: ({featureName} : {featureName: string}) => void;
-  Form: React.ComponentType<T>;
-  formProps?: Partial<T>;
 }
 
-function FeatureCollectionView<T extends NewFeatureFormProps>({
+function FeatureCollectionView({
   view,
   colSpan,
   featureType,
@@ -28,9 +25,7 @@ function FeatureCollectionView<T extends NewFeatureFormProps>({
   applyCommand,
   onDeleteFeature,
   performCreate,
-  Form,
-  formProps,
-}: FeatureCollectionViewProps<T>) {
+}: FeatureCollectionViewProps) {
   const { openFeatureItemDialog } = useFeatureItemDialog();
 
   const handleRowClick = useCallback((row: TransformedFeatureData) => {
@@ -65,8 +60,6 @@ function FeatureCollectionView<T extends NewFeatureFormProps>({
       <FeatureNewItem
         featureType={featureType}
         performCreate={performCreate}
-        Form={Form}
-        formProps={formProps}
       />
     </DataGrid>
   ) : (
@@ -77,8 +70,6 @@ function FeatureCollectionView<T extends NewFeatureFormProps>({
           colSpan={colSpan}
           featureType={featureType}
           performCreate={performCreate}
-          Form={Form}
-          formProps={formProps}
           variant="row"
         />
       }

@@ -3,7 +3,6 @@ import { AxiosError } from "axios";
 import { toast } from "sonner";
 
 import FeatureCollection from "@/components/FeatureCollection";
-import { NewAgentForm } from "@/components/agents/NewAgentForm";
 import { API_DOMAIN, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import useCreateAgent from "@/services/agents/mutations/useCreateAgent";
 import useCreateAgentManifestToken from "@/services/agents/mutations/useCreateAgentManifestToken";
@@ -98,7 +97,6 @@ export default function ListAgents() {
       applyCommand={isManifestReady ? applyCommand : ''}
       manifestData={isManifestReady ? manifestData?.manifest : ''}
       performCreate={performCreate}
-      Form={NewAgentForm}
     />
   );
 }

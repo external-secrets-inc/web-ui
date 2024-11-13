@@ -4,26 +4,12 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { LayoutGrid, Table } from "lucide-react";
 import { createColumnHelper } from "@tanstack/react-table";
 import FeatureItemDropdownMenu from "./FeatureItemDropdownMenu";
-import { TransformedFeatureData, FeatureData } from "./FeatureCollection.interfaces";
-import type { NewFeatureFormProps } from "./FeatureCollection.interfaces";
+import { TransformedFeatureData, FeatureData, FeatureCollectionProps } from "./FeatureCollection.interfaces";
 import { STATUS_MAP } from "./FeatureCollection.constants";
 import { FeatureItemDialogProvider } from "./FeatureItemDialogProvider";
 import FeatureCollectionView from "./FeatureCollectionView";
 
-interface FeatureCollectionProps<T extends NewFeatureFormProps> {
-  data: FeatureData[];
-  featureType: string;
-  featureDescription: string;
-  onDeleteFeature: (featureID: string) => void;
-  setFeatureID: (value: string) => void;
-  applyCommand?: string;
-  manifestData?: string;
-  performCreate: ({featureName} : {featureName: string}) => void;
-  Form: React.ComponentType<T>;
-  formProps?: Partial<T>;
-}
-
-function FeatureCollection<T extends NewFeatureFormProps>({
+function FeatureCollection({
   data,
   featureType,
   featureDescription,
@@ -32,9 +18,7 @@ function FeatureCollection<T extends NewFeatureFormProps>({
   applyCommand = '',
   manifestData = '',
   performCreate,
-  Form,
-  formProps,
-}: FeatureCollectionProps<T>) {
+}: FeatureCollectionProps) {
   const [view, setView] = useState<"grid" | "table">("grid");
   const columnHelper = useMemo(() => createColumnHelper<TransformedFeatureData>(), []);
 
@@ -81,7 +65,7 @@ function FeatureCollection<T extends NewFeatureFormProps>({
     })
   ], [columnHelper, featureType, featureDescription, manifestData, applyCommand, onDeleteFeature]);
 
-  const transformedFeatureData = useMemo(() => data.map((item, index) => ({
+  const transformedFeatureData = useMemo(() => data.map((item: FeatureData, index: number) => ({
     id: item.id,
     name: item.name,
     status: item.current_status,
@@ -117,7 +101,7 @@ function FeatureCollection<T extends NewFeatureFormProps>({
             </div>
           </div>
 
-          <FeatureCollectionView<T>
+          <FeatureCollectionView
             view={view}
             colSpan={columns.length}
             featureType={featureType}
@@ -126,8 +110,6 @@ function FeatureCollection<T extends NewFeatureFormProps>({
             applyCommand={applyCommand}
             onDeleteFeature={onDeleteFeature}
             performCreate={performCreate}
-            Form={Form}
-            formProps={formProps}
           />
         </div>
       </DataProvider>

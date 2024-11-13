@@ -4,13 +4,23 @@ export interface NewFeatureFormProps {
   onCancel: () => void;
   onSuccess: () => void;
   performCreate: ({featureName} : {featureName: string}) => void;
+  featureType: string;
 }
 
-export interface FeatureNewItemProps<T extends NewFeatureFormProps> {
+export interface FeatureCollectionProps {
+  data: FeatureData[];
+  featureType: string;
+  featureDescription: string;
+  onDeleteFeature: (featureID: string) => void;
+  setFeatureID: (value: string) => void;
+  applyCommand?: string;
+  manifestData?: string;
+  performCreate: ({featureName} : {featureName: string}) => void;
+}
+
+export interface FeatureNewItemProps {
   featureType: string;
   performCreate: ({featureName} : {featureName: string}) => void;
-  Form: React.ComponentType<T>;
-  formProps?: Partial<T>;
   variant?: 'card' | 'row';
   colSpan?: number;
 }

@@ -3,7 +3,6 @@ import { AxiosError } from "axios";
 import { toast } from "sonner";
 
 import FeatureCollection from "@/components/FeatureCollection";
-import { NewRotatorForm } from "@/components/rotators/NewRotatorForm";
 import { API_DOMAIN, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import useCreateRotator from "@/services/rotators/mutations/useCreateRotator";
 import useCreateRotatorManifestToken from "@/services/rotators/mutations/useCreateRotatorManifestToken";
@@ -98,7 +97,6 @@ export default function ListRotators() {
       applyCommand={isManifestReady ? applyCommand : ''}
       manifestData={isManifestReady ? manifestData?.manifest : ''}
       performCreate={performCreate}
-      Form={NewRotatorForm}
     />
   );
 }
