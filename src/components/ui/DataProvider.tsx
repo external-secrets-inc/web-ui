@@ -146,10 +146,11 @@ DataGrid.displayName = "DataGrid"
 
 interface DataTableProps extends React.HTMLAttributes<HTMLDivElement> {
   onRowClick?: (row: any) => void;
+  rowsAppend?: React.ReactNode;
 }
 
 const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
-  ({ className, onRowClick, ...props }, ref) => {
+  ({ className, onRowClick, rowsAppend, ...props }, ref) => {
     const { table } = React.useContext(DataProviderContext)
 
     return (
@@ -195,6 +196,7 @@ const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
                 ))}
               </TableRow>
             ))}
+            {rowsAppend}
           </TableBody>
         </Table>
       </div>

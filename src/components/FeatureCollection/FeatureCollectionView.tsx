@@ -1,4 +1,3 @@
-
 import { useCallback } from 'react';
 import { DataGrid, DataTable } from "@/components/ui/DataProvider";
 import FeatureItemCard from "@/components/FeatureCollection/FeatureItemCard";
@@ -9,6 +8,7 @@ import { useFeatureItemDialog } from "./FeatureItemDialogProvider";
 
 type FeatureCollectionViewProps<T extends NewFeatureFormProps> = {
   view: "grid" | "table";
+  colSpan?: number;
   featureType: string;
   featureDescription: string;
   manifestData: string;
@@ -21,6 +21,7 @@ type FeatureCollectionViewProps<T extends NewFeatureFormProps> = {
 
 function FeatureCollectionView<T extends NewFeatureFormProps>({
   view,
+  colSpan,
   featureType,
   featureDescription,
   manifestData,
@@ -69,7 +70,19 @@ function FeatureCollectionView<T extends NewFeatureFormProps>({
       />
     </DataGrid>
   ) : (
-    <DataTable onRowClick={handleRowClick} />
+    <DataTable
+      onRowClick={handleRowClick}
+      rowsAppend={
+        <FeatureNewItem
+          colSpan={colSpan}
+          featureType={featureType}
+          performCreate={performCreate}
+          Form={Form}
+          formProps={formProps}
+          variant="row"
+        />
+      }
+    />
   );
 }
 

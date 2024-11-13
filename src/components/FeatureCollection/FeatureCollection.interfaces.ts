@@ -11,6 +11,8 @@ export interface FeatureNewItemProps<T extends NewFeatureFormProps> {
   performCreate: ({featureName} : {featureName: string}) => void;
   Form: React.ComponentType<T>;
   formProps?: Partial<T>;
+  variant?: 'card' | 'row';
+  colSpan?: number;
 }
 
 export interface TransformedFeatureData {

@@ -119,6 +119,7 @@ function FeatureCollection<T extends NewFeatureFormProps>({
 
           <FeatureCollectionView<T>
             view={view}
+            colSpan={columns.length}
             featureType={featureType}
             featureDescription={featureDescription}
             manifestData={manifestData}

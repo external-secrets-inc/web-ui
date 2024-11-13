@@ -3,8 +3,16 @@ import { FeatureNewItemProps, NewFeatureFormProps } from "@/components/FeatureCo
 import { Card } from "@/components/ui/card";
 import { PlusIcon } from "lucide-react";
 import { useState } from "react";
+import { TableCell, TableRow } from "@/components/ui/table";
 
-const FeatureNewItem = <T extends NewFeatureFormProps>({ featureType, performCreate, Form, formProps }: FeatureNewItemProps<T>) => {
+const FeatureNewItem = <T extends NewFeatureFormProps>({
+  colSpan,
+  featureType,
+  performCreate,
+  Form,
+  formProps,
+  variant = 'card'
+}: FeatureNewItemProps<T>) => {
   const [showForm, setShowForm] = useState(false)
 
   const defaultFormProps = {
@@ -17,11 +25,33 @@ const FeatureNewItem = <T extends NewFeatureFormProps>({ featureType, performCre
     performCreate: performCreate
   };
 
-
   const handleAddNewFeatureClick = () => {
     trackAddNewFeatureClicked(featureType);
     setShowForm(true)
   }
+
+  if (variant === 'row') {
+    return showForm ? (
+      <TableRow>
+        <TableCell colSpan={colSpan}>
+          <Form {...(defaultFormProps as T)}/>
+        </TableCell>
+      </TableRow>
+    ) : (
+      <TableRow
+        onClick={handleAddNewFeatureClick}
+        className="cursor-pointer text-muted-foreground hover:text-foreground"
+      >
+        <TableCell colSpan={colSpan}>
+          <div className="flex items-center">
+            <PlusIcon className="inline-block mr-2" />
+            New {featureType}
+          </div>
+        </TableCell>
+      </TableRow>
+    );
+  }
+
   return (
     <Card
       className={
