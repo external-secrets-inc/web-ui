@@ -1,38 +1,15 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { DataProvider, DataGrid, DataTable, DataSearch, DataSort } from "@/components/ui/DataProvider";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { LayoutGrid, Table } from "lucide-react";
-import { type ColumnDef } from "@tanstack/react-table";
-import FeatureItem from "@/components/FeatureCollection/FeatureItem";
+import { createColumnHelper } from "@tanstack/react-table";
+import FeatureItemCard from "@/components/FeatureCollection/FeatureItemCard";
 import FeatureNewItem from "@/components/FeatureCollection/FeatureNewItem";
+import FeatureItemDropdownMenu from "./FeatureItemDropdownMenu";
 import { TransformedFeatureData, FeatureData } from "./FeatureCollection.interfaces";
 import type { NewFeatureFormProps } from "./FeatureCollection.interfaces";
+import { STATUS_MAP } from "./FeatureCollection.constants";
 
-type FeatureCellValue = string | number;
-
-const columns: ColumnDef<TransformedFeatureData, FeatureCellValue>[] = [
-  {
-    id: 'index',
-    header: 'Index',
-    accessorFn: row => row.index,
-    enableSorting: true,
-  },
-  {
-    id: 'name',
-    header: 'Name',
-    accessorFn: row => row.name,
-  },
-  {
-    id: 'status',
-    header: 'Status',
-    accessorFn: row => row.status,
-  },
-  {
-    id: 'id',
-    header: 'ID',
-    accessorFn: row => row.id,
-  }
-];
 
 interface FeatureCollectionProps<T extends NewFeatureFormProps> {
   data: FeatureData[];
@@ -60,13 +37,58 @@ function FeatureCollection<T extends NewFeatureFormProps>({
   formProps,
 }: FeatureCollectionProps<T>) {
   const [view, setView] = useState<"grid" | "table">("grid");
+  const columnHelper = useMemo(() => createColumnHelper<TransformedFeatureData>(), []);
 
-  const transformedFeatureData: TransformedFeatureData[] = data.map((item, index) => ({
+  const columns = useMemo(() => [
+    columnHelper.accessor('index', {
+      header: 'Index',
+      enableSorting: true,
+    }),
+    columnHelper.accessor('name', {
+      header: 'Name',
+    }),
+    columnHelper.accessor('status', {
+      header: 'Status',
+      cell: props => {
+        const status = props.getValue();
+        const statusInfo = STATUS_MAP[status];
+        return (
+          <span className="flex items-center gap-2">
+            {statusInfo.icon}
+            {statusInfo.text}
+          </span>
+        );
+      }
+    }),
+    columnHelper.accessor('id', {
+      header: 'ID',
+    }),
+    columnHelper.display({
+      id: 'actions',
+      cell: props => (
+        <div className='flex justify-end'>
+          <FeatureItemDropdownMenu
+            featureType={featureType}
+            featureName={props.row.original.name}
+            featureID={props.row.original.id}
+            featureStatus={props.row.original.status}
+            featureDescription={featureDescription}
+            manifest={manifestData}
+            applyCommand={applyCommand}
+            setFeatureID={setFeatureID}
+            onDeleteFeature={() => onDeleteFeature(props.row.original.id)}
+          />
+        </div>
+      )
+    })
+  ], [columnHelper, featureType, featureDescription, manifestData, applyCommand, setFeatureID, onDeleteFeature]);
+
+  const transformedFeatureData = useMemo(() => data.map((item, index) => ({
     id: item.id,
     name: item.name,
     status: item.current_status,
     index: index + 1
-  }));
+  })), [data]);
 
   return (
     <DataProvider
@@ -94,7 +116,7 @@ function FeatureCollection<T extends NewFeatureFormProps>({
         {view === "grid" ? (
           <DataGrid
             renderItem={(item: TransformedFeatureData) => (
-              <FeatureItem
+              <FeatureItemCard
                 key={item.id}
                 featureID={item.id}
                 featureName={item.name}
