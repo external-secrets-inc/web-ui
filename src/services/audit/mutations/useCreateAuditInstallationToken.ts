@@ -4,8 +4,9 @@ import axiosInstance from "@/services/axiosConfig";
 import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
 
+// TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/118
 const createInstallationToken = async (mock: boolean) => {
-  if(mock) return 'mokedTokenValue'
+  if(mock) return 'mockedTokenValue'
 
   const headers = await getAuthHeaders();
   const response = await axiosInstance.post(`/api/audit/installation-token`, {}, { headers });

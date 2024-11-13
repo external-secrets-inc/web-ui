@@ -101,7 +101,8 @@ const router = createBrowserRouter([
           </>
         )
       },
-      import.meta.env.VITE_MOCK ? {
+      // TODO: Remove mock variable when audit is ready https://github.com/external-secrets-inc/web-ui/issues/124
+      import.meta.env.VITE_MOCK_AUDIT_ROUTE ? {
         path: 'audit',
         element: (
           <>

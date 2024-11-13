@@ -4,6 +4,7 @@ import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError, Process } from "@/types";
 import { AxiosError } from "axios";
 
+// TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/118
 const getProcessFile = async (mock: boolean, signal:  AbortSignal, version: string = "latest") => {
   if(mock) return {process: 'File with bash script to install listener!'}
 

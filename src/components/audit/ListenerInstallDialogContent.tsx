@@ -1,12 +1,13 @@
-import { trackListenerInstallCopyProcess, trackListenerInstallCopyKubernetes } from "@/analytics"
+// import { trackListenerInstallCopyProcess, trackListenerInstallCopyKubernetes } from "@/analytics"
 import { Button } from "@/components/ui/button"
 import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { LucideInfo } from "lucide-react"
 import { ClipboardCopyIcon } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
-import ListenerInstallScrollAreaTabContent from "./ListenerInstallScrollAreaTabContent"
-import AuditAlert from "./AuditAlert"
+import DescribedScrollArea from "./DescribedScrollArea"
 
 interface ListenerInstallDialogContentProps {
   processFile: string;
@@ -39,12 +40,12 @@ function ListenerInstallDialogContent({ processFile, processCommand, applyComman
 
   const handleCopyProcess = () => {
     copyToClipboard(processCommand, "'bash' command");
-    trackListenerInstallCopyProcess()
+    // trackListenerInstallCopyProcess()
   }
 
   const handleCopyKubernetes = () => {
     copyToClipboard(applyCommand, "'apply' command");
-    trackListenerInstallCopyKubernetes()
+    // trackListenerInstallCopyKubernetes()
   };
 
   return (
@@ -66,45 +67,38 @@ function ListenerInstallDialogContent({ processFile, processCommand, applyComman
           <TabsTrigger value="process">Process</TabsTrigger>
           <TabsTrigger value="kubernetes">Kubernetes</TabsTrigger>
         </TabsList>
-        <ListenerInstallScrollAreaTabContent
-          value='process'
-          description={
-            <>
-              Preview of the bash script to deploy this listener
-            </>
-          }
-          scrollContent={processFile}
-        />
-        <ListenerInstallScrollAreaTabContent
-          value='process'
-          description={
-            <>
-              Run the command below to deploy this listener to your server
-            </>
-          }
-          scrollContent={processCommand}
-        >
-          <AuditAlert description={
-            <p>
-              The provided URL in the <code>curl</code> command is a link to the listener installation file. It is piped to a <code>sh</code> command that will deploy it to server.
-            </p>
-          } />
-        </ListenerInstallScrollAreaTabContent>
-        <ListenerInstallScrollAreaTabContent
-          value='kubernetes'
-          description={
-            <>
-              Run the command below to deploy this listener to your Kubernetes cluster
-            </>
-          }
-          scrollContent={applyCommand}
-        >
-          <AuditAlert description={
-            <p>
-              The provided URL in the <code>curl</code> command is a link to the listener manifest file. It is piped to a <code>kubectl apply</code> command that will apply it to your cluster.
-            </p>
-          } />
-        </ListenerInstallScrollAreaTabContent>
+        <TabsContent className="data-[state=active]:grid min-h-0" value="process">
+          <DescribedScrollArea
+            description='Preview of the bash script to deploy this listener'
+            content={processFile}
+          />
+          <DescribedScrollArea
+            description='Run the command below to deploy this listener to your server'
+            content={processCommand}
+          />
+          <Alert className="mt-4">
+            <AlertDescription className="flex gap-2 items-center">
+              <LucideInfo className="flex-none" />
+              <p>
+                The provided URL in the <code>curl</code> command is a link to the listener installation file. It is piped to a <code>sh</code> command that will deploy it to server.
+              </p>
+            </AlertDescription>
+          </Alert>
+        </TabsContent>
+        <TabsContent className="data-[state=active]:grid min-h-0" value="kubernetes">
+          <DescribedScrollArea
+            description='Run the command below to deploy this listener to your Kubernetes cluster'
+            content={applyCommand}
+          />
+          <Alert className="mt-4">
+            <AlertDescription className="flex gap-2 items-center">
+              <LucideInfo className="flex-none" />
+              <p>
+                The provided URL in the <code>curl</code> command is a link to the listener manifest file. It is piped to a <code>kubectl apply</code> command that will apply it to your cluster.
+              </p>
+            </AlertDescription>
+          </Alert>
+        </TabsContent>
       </Tabs>
       <DialogFooter>
         {activeTab === 'process' &&

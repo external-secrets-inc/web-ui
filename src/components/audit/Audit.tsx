@@ -9,6 +9,7 @@ import { ApiHttpError } from "@/types";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
 import { Button } from "../ui/button";
 import ListenerInstallDialogContent from "./ListenerInstallDialogContent";
+// TODO use listener data to get status https://github.com/external-secrets-inc/web-ui/issues/115
 // import useGetListener from "@/services/listener/queries/useGetListener";
 
 
@@ -17,7 +18,7 @@ export default function Audit() {
   const [applyCommand, setApplyCommand] = useState("")
   const [isListenerInstallDialogOpen, setIsListenerInstallDialogOpen] = useState(false);
 
-  // TODO use listener data to get status
+  // TODO use listener data to get status https://github.com/external-secrets-inc/web-ui/issues/115
   // const { data: listenerData, isError: listenerIsError, error: listenerError } = useGetListener({
   //   refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
   //   refetchIntervalInBackground: true,
@@ -47,7 +48,7 @@ export default function Audit() {
     createToken({ mock: true })
   }, [createToken])
 
-  // TODO update commands to real endpoints
+  // TODO update commands to real endpoints https://github.com/external-secrets-inc/web-ui/issues/118
   useEffect(() => {
     if (!token) return
 
