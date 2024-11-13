@@ -1,16 +1,14 @@
 import { useState, useMemo } from 'react';
-import { DataProvider, DataGrid, DataTable, DataSearch, DataSort } from "@/components/ui/DataProvider";
+import { DataProvider, DataSearch, DataSort } from "@/components/ui/DataProvider";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { LayoutGrid, Table } from "lucide-react";
 import { createColumnHelper } from "@tanstack/react-table";
-import FeatureItemCard from "@/components/FeatureCollection/FeatureItemCard";
-import FeatureNewItem from "@/components/FeatureCollection/FeatureNewItem";
 import FeatureItemDropdownMenu from "./FeatureItemDropdownMenu";
 import { TransformedFeatureData, FeatureData } from "./FeatureCollection.interfaces";
 import type { NewFeatureFormProps } from "./FeatureCollection.interfaces";
 import { STATUS_MAP } from "./FeatureCollection.constants";
 import { FeatureItemDialogProvider } from "./FeatureItemDialogProvider";
-
+import FeatureCollectionView from "./FeatureCollectionView";
 
 interface FeatureCollectionProps<T extends NewFeatureFormProps> {
   data: FeatureData[];
@@ -119,32 +117,17 @@ function FeatureCollection<T extends NewFeatureFormProps>({
             </div>
           </div>
 
-          {view === "grid" ? (
-            <DataGrid
-              renderItem={(item: TransformedFeatureData) => (
-                <FeatureItemCard
-                  key={item.id}
-                  featureID={item.id}
-                  featureName={item.name}
-                  featureStatus={item.status}
-                  featureType={featureType}
-                  featureDescription={featureDescription}
-                  manifest={manifestData}
-                  applyCommand={applyCommand}
-                  onDeleteFeature={onDeleteFeature}
-                />
-              )}
-            >
-              <FeatureNewItem
-                featureType={featureType}
-                performCreate={performCreate}
-                Form={Form}
-                formProps={formProps}
-              />
-            </DataGrid>
-          ) : (
-            <DataTable />
-          )}
+          <FeatureCollectionView<T>
+            view={view}
+            featureType={featureType}
+            featureDescription={featureDescription}
+            manifestData={manifestData}
+            applyCommand={applyCommand}
+            onDeleteFeature={onDeleteFeature}
+            performCreate={performCreate}
+            Form={Form}
+            formProps={formProps}
+          />
         </div>
       </DataProvider>
     </FeatureItemDialogProvider>

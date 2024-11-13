@@ -1,4 +1,3 @@
-
 import { cn } from "@/lib/utils"
 import { type ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, type SortingState, useReactTable } from "@tanstack/react-table"
 import { LucideArrowDown, LucideArrowDownNarrowWide, LucideArrowUp, LucideArrowUpNarrowWide, LucideChevronsUpDown, LucideSearch } from "lucide-react"
@@ -145,8 +144,12 @@ const DataGrid = React.forwardRef<HTMLDivElement, DataGridProps>(
 })
 DataGrid.displayName = "DataGrid"
 
-const DataTable = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => {
+interface DataTableProps extends React.HTMLAttributes<HTMLDivElement> {
+  onRowClick?: (row: any) => void;
+}
+
+const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
+  ({ className, onRowClick, ...props }, ref) => {
     const { table } = React.useContext(DataProviderContext)
 
     return (
@@ -184,7 +187,7 @@ const DataTable = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivE
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id}>
+              <TableRow key={row.id} onClick={() => onRowClick?.(row.original)} className="cursor-pointer">
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
