@@ -9,6 +9,7 @@ import FeatureItemDropdownMenu from "./FeatureItemDropdownMenu";
 import { TransformedFeatureData, FeatureData } from "./FeatureCollection.interfaces";
 import type { NewFeatureFormProps } from "./FeatureCollection.interfaces";
 import { STATUS_MAP } from "./FeatureCollection.constants";
+import { FeatureItemDialogProvider } from "./FeatureItemDialogProvider";
 
 
 interface FeatureCollectionProps<T extends NewFeatureFormProps> {
@@ -75,13 +76,12 @@ function FeatureCollection<T extends NewFeatureFormProps>({
             featureDescription={featureDescription}
             manifest={manifestData}
             applyCommand={applyCommand}
-            setFeatureID={setFeatureID}
             onDeleteFeature={() => onDeleteFeature(props.row.original.id)}
           />
         </div>
       )
     })
-  ], [columnHelper, featureType, featureDescription, manifestData, applyCommand, setFeatureID, onDeleteFeature]);
+  ], [columnHelper, featureType, featureDescription, manifestData, applyCommand, onDeleteFeature]);
 
   const transformedFeatureData = useMemo(() => data.map((item, index) => ({
     id: item.id,
@@ -91,57 +91,63 @@ function FeatureCollection<T extends NewFeatureFormProps>({
   })), [data]);
 
   return (
-    <DataProvider
-      data={transformedFeatureData}
-      columns={columns}
-      initialSort={{ id: 'index', desc: false }}
+    <FeatureItemDialogProvider
+      onDeleteFeature={onDeleteFeature}
+      setFeatureID={setFeatureID}
+      manifest={manifestData}
+      applyCommand={applyCommand}
     >
-      <div className="space-y-4">
-        <div className="flex items-center justify-between gap-x-4 gap-y-2 flex-wrap">
-          <ToggleGroup type="single" value={view} onValueChange={(value) => value && setView(value as "grid" | "table")}>
-            <ToggleGroupItem value="grid" aria-label="Grid view">
-              <LayoutGrid className="h-4 w-4" />
-            </ToggleGroupItem>
-            <ToggleGroupItem value="table" aria-label="Table view">
-              <Table className="h-4 w-4" />
-            </ToggleGroupItem>
-          </ToggleGroup>
+      <DataProvider
+        data={transformedFeatureData}
+        columns={columns}
+        initialSort={{ id: 'index', desc: false }}
+      >
+        <div className="space-y-4">
+          <div className="flex items-center justify-between gap-x-4 gap-y-2 flex-wrap">
+            <ToggleGroup type="single" value={view} onValueChange={(value) => value && setView(value as "grid" | "table")}>
+              <ToggleGroupItem value="grid" aria-label="Grid view">
+                <LayoutGrid className="h-4 w-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="table" aria-label="Table view">
+                <Table className="h-4 w-4" />
+              </ToggleGroupItem>
+            </ToggleGroup>
 
-          <div className="flex items-center gap-x-4">
-            <DataSearch />
-            <DataSort />
+            <div className="flex items-center gap-x-4">
+              <DataSearch />
+              <DataSort />
+            </div>
           </div>
-        </div>
 
-        {view === "grid" ? (
-          <DataGrid
-            renderItem={(item: TransformedFeatureData) => (
-              <FeatureItemCard
-                key={item.id}
-                featureID={item.id}
-                featureName={item.name}
-                featureStatus={item.status}
+          {view === "grid" ? (
+            <DataGrid
+              renderItem={(item: TransformedFeatureData) => (
+                <FeatureItemCard
+                  key={item.id}
+                  featureID={item.id}
+                  featureName={item.name}
+                  featureStatus={item.status}
+                  featureType={featureType}
+                  featureDescription={featureDescription}
+                  manifest={manifestData}
+                  applyCommand={applyCommand}
+                  onDeleteFeature={onDeleteFeature}
+                />
+              )}
+            >
+              <FeatureNewItem
                 featureType={featureType}
-                featureDescription={featureDescription}
-                manifest={manifestData}
-                applyCommand={applyCommand}
-                setFeatureID={setFeatureID}
-                onDeleteFeature={onDeleteFeature}
+                performCreate={performCreate}
+                Form={Form}
+                formProps={formProps}
               />
-            )}
-          >
-            <FeatureNewItem
-              featureType={featureType}
-              performCreate={performCreate}
-              Form={Form}
-              formProps={formProps}
-            />
-          </DataGrid>
-        ) : (
-          <DataTable />
-        )}
-      </div>
-    </DataProvider>
+            </DataGrid>
+          ) : (
+            <DataTable />
+          )}
+        </div>
+      </DataProvider>
+    </FeatureItemDialogProvider>
   );
 }
 

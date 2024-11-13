@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { LucideMoreVertical, LucideSquareArrowOutUpRight, LucideTrash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
-import FeatureItemOpenAction from "@/components/FeatureCollection/FeatureItemOpenAction";
+import { useState } from "react";
+import { useFeatureItemDialog } from "./FeatureItemDialogProvider";
 
 interface FeatureItemDropdownMenuProps {
   featureType: string;
@@ -16,7 +16,6 @@ interface FeatureItemDropdownMenuProps {
   featureDescription: string;
   manifest: string;
   applyCommand: string;
-  setFeatureID: (value: string) => void;
 }
 
 function FeatureItemDropdownMenu({
@@ -29,29 +28,27 @@ function FeatureItemDropdownMenu({
   featureDescription,
   manifest,
   applyCommand,
-  setFeatureID,
-}: FeatureItemDropdownMenuProps) {
-  const [hasFeatureDialogOpen, setHasFeatureDialogOpen] = useState(false);
+}: Omit<FeatureItemDropdownMenuProps, 'setFeatureID'>) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('details');
+  const { openFeatureItemDialog } = useFeatureItemDialog();
 
   const handleOpenDetails = (event: Event) => {
     event.preventDefault();
-    setHasFeatureDialogOpen(true);
+    setDropdownOpen(false);
+    openFeatureItemDialog({
+      featureID,
+      featureName,
+      featureStatus,
+      featureType,
+      featureDescription,
+      manifest,
+      applyCommand,
+      activeTab: 'details'
+    });
   };
 
-  useEffect(() => {
-    if (!hasFeatureDialogOpen) {
-      setDropdownOpen(false);
-    }
-  }, [hasFeatureDialogOpen]);
-
   return (
-    <DropdownMenu
-      open={dropdownOpen}
-      onOpenChange={setDropdownOpen}
-      modal={false}
-    >
+    <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen} modal={false}>
       <DropdownMenuTrigger className={cn(className)} asChild>
         <Button
           variant="ghost"
@@ -61,31 +58,11 @@ function FeatureItemDropdownMenu({
           <LucideMoreVertical />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent
-        onClick={(event) => event.stopPropagation()}
-        onCloseAutoFocus={() => setDropdownOpen(false)}
-      >
-        <FeatureItemOpenAction
-          featureID={featureID}
-          featureName={featureName}
-          featureStatus={featureStatus}
-          featureType={featureType}
-          featureDescription={featureDescription}
-          manifest={manifest}
-          applyCommand={applyCommand}
-          setFeatureID={setFeatureID}
-          onDeleteFeature={onDeleteFeature}
-          isOpen={hasFeatureDialogOpen}
-          onOpenChange={setHasFeatureDialogOpen}
-          activeTab={activeTab}
-          onActiveTabChange={setActiveTab}
-        >
-          <DropdownMenuItem onSelect={(event) => handleOpenDetails(event)}>
-            <LucideSquareArrowOutUpRight className="mr-2" />
-            Open details
-          </DropdownMenuItem>
-        </FeatureItemOpenAction>
-
+      <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
+        <DropdownMenuItem onSelect={handleOpenDetails}>
+          <LucideSquareArrowOutUpRight className="mr-2" />
+          Open details
+        </DropdownMenuItem>
         <FeatureItemDeleteAction
           featureType={featureType}
           featureID={featureID}

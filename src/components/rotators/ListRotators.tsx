@@ -1,3 +1,7 @@
+import { useEffect, useState } from "react";
+import { AxiosError } from "axios";
+import { toast } from "sonner";
+
 import FeatureCollection from "@/components/FeatureCollection";
 import { NewRotatorForm } from "@/components/rotators/NewRotatorForm";
 import { API_DOMAIN, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
@@ -8,14 +12,13 @@ import useGetRotatorManifest from "@/services/rotators/queries/useGetRotatorMani
 import useGetRotators from "@/services/rotators/queries/useGetRotators";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { ApiHttpError } from "@/types";
-import { AxiosError } from "axios";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
 
 export default function ListRotators() {
-  const featureType = "Async Rotator"
+  const featureType: string = "Async Rotator"
+
   const [featureID, setFeatureID] = useState("")
   const [applyCommand, setApplyCommand] = useState("")
+  const [isManifestReady, setIsManifestReady] = useState(false);
 
   const { data: rotatorsData, refetch: rotatorsRefetch, isError: rotatorsIsError, error: rotatorError, isRefetchError: rotatorIsRefetchError } = useGetRotators({
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
@@ -52,14 +55,16 @@ export default function ListRotators() {
   }
 
   useEffect(() => {
-    if (featureID === "") return
+    if (featureID === "") {
+      setIsManifestReady(false);
+      return;
+    }
 
-    createToken({ id: featureID })
-  }, [featureID, createToken])
+    createToken({ id: featureID });
+  }, [featureID, createToken]);
 
   useEffect(() => {
-    if (featureID === "") return
-    if (!token) return
+    if (!token || !manifestData) return;
 
     const command = [
       "curl \\",
@@ -68,7 +73,8 @@ export default function ListRotators() {
       "| kubectl apply -f -",
     ].join('\n');
     setApplyCommand(command);
-  }, [token, featureID])
+    setIsManifestReady(true);
+  }, [token, manifestData, featureID]);
 
   useEffect(() => {
     if (!(rotatorError || rotatorIsRefetchError)) return;
@@ -89,8 +95,8 @@ export default function ListRotators() {
       featureDescription="Async Rotator listens to secret rotation notifications and triggers the External Secrets Operator reconciliation"
       onDeleteFeature={performDelete}
       setFeatureID={setFeatureID}
-      applyCommand={applyCommand}
-      manifestData={manifestData?.manifest}
+      applyCommand={isManifestReady ? applyCommand : ''}
+      manifestData={isManifestReady ? manifestData?.manifest : ''}
       performCreate={performCreate}
       Form={NewRotatorForm}
     />
