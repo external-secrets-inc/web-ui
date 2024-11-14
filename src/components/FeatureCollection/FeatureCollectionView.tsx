@@ -4,6 +4,7 @@ import FeatureItemCard from "@/components/FeatureCollection/FeatureItemCard";
 import FeatureNewItem from "@/components/FeatureCollection/FeatureNewItem";
 import { TransformedFeatureData } from "./FeatureCollection.interfaces";
 import { useFeatureItemDialog } from "./FeatureItemDialogProvider";
+import { cn } from "@/lib/utils"
 
 type FeatureCollectionViewProps = {
   view: "grid" | "table";
@@ -25,7 +26,8 @@ function FeatureCollectionView({
   applyCommand,
   onDeleteFeature,
   performCreate,
-}: FeatureCollectionViewProps) {
+  className
+}: FeatureCollectionViewProps & { className?: string }) {
   const { openFeatureItemDialog } = useFeatureItemDialog();
 
   const handleRowClick = useCallback((row: TransformedFeatureData) => {
@@ -43,6 +45,7 @@ function FeatureCollectionView({
 
   return view === "grid" ? (
     <DataGrid
+      className={cn(className)}
       renderItem={(item: TransformedFeatureData) => (
         <FeatureItemCard
           key={item.id}
@@ -60,10 +63,12 @@ function FeatureCollectionView({
       <FeatureNewItem
         featureType={featureType}
         performCreate={performCreate}
+        variant="card"
       />
     </DataGrid>
   ) : (
     <DataTable
+      className={cn(className)}
       onRowClick={handleRowClick}
       rowsAppend={
         <FeatureNewItem

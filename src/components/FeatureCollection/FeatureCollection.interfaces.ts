@@ -1,12 +1,5 @@
 import { SortingState } from "@tanstack/react-table"
 
-export interface NewFeatureFormProps {
-  onCancel: () => void;
-  onSuccess: () => void;
-  performCreate: ({featureName} : {featureName: string}) => void;
-  featureType: string;
-}
-
 export interface FeatureCollectionProps {
   data: FeatureData[];
   featureType: string;
