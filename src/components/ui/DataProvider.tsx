@@ -19,14 +19,22 @@ interface DataProviderContextValue<TData> {
 
 const DataProviderContext = React.createContext<DataProviderContextValue<any>>({} as any)
 
-interface DataProviderProps<TData> {
-  data: TData[]
-  columns: ColumnDef<TData, any>[]
-  children: React.ReactNode
-  initialSort?: { id: string; desc: boolean }
+interface DataWithId {
+  id: string | number;
 }
 
-function DataProvider<TData>({
+/**
+ * DataProvider requires data with unique IDs for proper functioning.
+ * Each item in the data array must have a unique 'id' property.
+ */
+interface DataProviderProps<TData extends DataWithId> {
+  data: TData[];
+  columns: ColumnDef<TData, any>[];
+  children: React.ReactNode;
+  initialSort?: { id: string; desc: boolean };
+}
+
+function DataProvider<TData extends DataWithId>({
   data,
   columns,
   children,
