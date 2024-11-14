@@ -1,3 +1,4 @@
+
 import { useCallback } from 'react';
 import { DataGrid, DataTable } from "@/components/ui/DataProvider";
 import FeatureItemCard from "@/components/FeatureCollection/FeatureItemCard";
@@ -9,6 +10,9 @@ import { cn } from "@/lib/utils"
 type FeatureCollectionViewProps = {
   view: "grid" | "table";
   colSpan?: number;
+  featureTableMeta?: {
+    renderRowActions?: (row: TransformedFeatureData) => React.ReactNode;
+  };
   featureType: string;
   featureDescription: string;
   manifestData: string;
@@ -20,6 +24,7 @@ type FeatureCollectionViewProps = {
 function FeatureCollectionView({
   view,
   colSpan,
+  featureTableMeta,
   featureType,
   featureDescription,
   manifestData,
@@ -70,6 +75,7 @@ function FeatureCollectionView({
     <DataTable
       className={cn(className)}
       onRowClick={handleRowClick}
+      meta={featureTableMeta}
       rowsAppend={
         <FeatureNewItem
           colSpan={colSpan}

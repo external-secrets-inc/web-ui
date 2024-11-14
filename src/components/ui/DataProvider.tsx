@@ -144,14 +144,22 @@ const DataGrid = React.forwardRef<HTMLDivElement, DataGridProps>(
 })
 DataGrid.displayName = "DataGrid"
 
-interface DataTableProps extends React.HTMLAttributes<HTMLDivElement> {
+interface DataTableProps<TMeta = any> extends React.HTMLAttributes<HTMLDivElement> {
   onRowClick?: (row: any) => void;
   rowsAppend?: React.ReactNode;
+  meta?: TMeta;
 }
 
 const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
-  ({ className, onRowClick, rowsAppend, ...props }, ref) => {
+  ({ className, onRowClick, rowsAppend, meta, ...props }, ref) => {
     const { table } = React.useContext(DataProviderContext)
+
+    const tableOptions = React.useMemo(() => ({
+      ...table.options,
+      meta: meta ?? {}
+    }), [meta, table.options]);
+
+    table.setOptions(tableOptions);
 
     return (
       <div ref={ref} className={cn("rounded-md border", className)} {...props}>

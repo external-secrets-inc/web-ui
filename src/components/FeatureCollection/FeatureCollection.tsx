@@ -3,11 +3,15 @@ import { DataProvider, DataSearch, DataSort } from "@/components/ui/DataProvider
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { LayoutGrid, Table } from "lucide-react";
 import { createColumnHelper } from "@tanstack/react-table";
-import FeatureItemDropdownMenu from "./FeatureItemDropdownMenu";
 import { TransformedFeatureData, FeatureData, FeatureCollectionProps } from "./FeatureCollection.interfaces";
 import { STATUS_MAP } from "./FeatureCollection.constants";
 import { FeatureItemDialogProvider } from "./FeatureItemDialogProvider";
+import { FeatureActionButtons } from "./FeatureActionButtons";
 import FeatureCollectionView from "./FeatureCollectionView";
+
+interface FeatureTableMeta {
+  renderRowActions?: (row: TransformedFeatureData) => React.ReactNode;
+}
 
 function FeatureCollection({
   data,
@@ -50,20 +54,11 @@ function FeatureCollection({
       id: 'actions',
       cell: props => (
         <div className='flex justify-end'>
-          <FeatureItemDropdownMenu
-            featureType={featureType}
-            featureName={props.row.original.name}
-            featureID={props.row.original.id}
-            featureStatus={props.row.original.status}
-            featureDescription={featureDescription}
-            manifest={manifestData}
-            applyCommand={applyCommand}
-            onDeleteFeature={() => onDeleteFeature(props.row.original.id)}
-          />
+          {(props.table.options.meta as FeatureTableMeta)?.renderRowActions?.(props.row.original)}
         </div>
       )
     })
-  ], [columnHelper, featureType, featureDescription, manifestData, applyCommand, onDeleteFeature]);
+  ], [columnHelper]);
 
   const transformedFeatureData = useMemo(() => data.map((item: FeatureData, index: number) => ({
     id: item.id,
@@ -71,6 +66,21 @@ function FeatureCollection({
     status: item.current_status,
     index: index + 1
   })), [data]);
+
+  const featureTableMeta: FeatureTableMeta = {
+    renderRowActions: (row) => (
+      <FeatureActionButtons
+        featureID={row.id}
+        featureName={row.name}
+        featureStatus={row.status}
+        featureType={featureType}
+        featureDescription={featureDescription}
+        manifest={manifestData}
+        applyCommand={applyCommand}
+        onDeleteFeature={onDeleteFeature}
+      />
+    )
+  };
 
   return (
     <FeatureItemDialogProvider
@@ -110,6 +120,7 @@ function FeatureCollection({
             applyCommand={applyCommand}
             onDeleteFeature={onDeleteFeature}
             performCreate={performCreate}
+            featureTableMeta={featureTableMeta}
           />
         </div>
       </DataProvider>
