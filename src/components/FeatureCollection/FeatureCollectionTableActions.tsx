@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useFeatureItemDialog } from "./FeatureItemDialogProvider";
 import FeatureItemDropdownMenu from "./FeatureItemDropdownMenu";
 
-interface FeatureActionButtonsProps {
+interface FeatureCollectionTableActionsProps {
   featureID: string;
   featureName: string;
   featureStatus: string;
@@ -13,7 +13,7 @@ interface FeatureActionButtonsProps {
   onDeleteFeature: (featureID: string) => void;
 }
 
-export function FeatureActionButtons(props: FeatureActionButtonsProps) {
+export function FeatureCollectionTableActions(props: FeatureCollectionTableActionsProps) {
   const { openFeatureItemDialog } = useFeatureItemDialog();
   const isPending = ['PENDING_REGISTRATION', 'PROVISIONING'].includes(props.featureStatus.toUpperCase());
 

@@ -6,7 +6,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { TransformedFeatureData, FeatureData, FeatureCollectionProps } from "./FeatureCollection.interfaces";
 import { STATUS_MAP } from "./FeatureCollection.constants";
 import { FeatureItemDialogProvider } from "./FeatureItemDialogProvider";
-import { FeatureActionButtons } from "./FeatureActionButtons";
+import { FeatureCollectionTableActions } from "./FeatureCollectionTableActions";
 import FeatureCollectionView from "./FeatureCollectionView";
 
 interface FeatureTableMeta {
@@ -69,7 +69,7 @@ function FeatureCollection({
 
   const featureTableMeta: FeatureTableMeta = {
     renderRowActions: (row) => (
-      <FeatureActionButtons
+      <FeatureCollectionTableActions
         featureID={row.id}
         featureName={row.name}
         featureStatus={row.status}
