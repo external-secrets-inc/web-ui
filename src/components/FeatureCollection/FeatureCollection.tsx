@@ -34,6 +34,9 @@ function FeatureCollection({
     columnHelper.accessor('name', {
       header: 'Name',
     }),
+    columnHelper.accessor('id', {
+      header: 'ID',
+    }),
     columnHelper.accessor('status', {
       header: 'Status',
       cell: props => {
@@ -46,9 +49,6 @@ function FeatureCollection({
           </span>
         );
       }
-    }),
-    columnHelper.accessor('id', {
-      header: 'ID',
     }),
     columnHelper.display({
       id: 'actions',
