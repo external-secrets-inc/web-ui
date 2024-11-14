@@ -22,6 +22,7 @@ import './index.css';
 import { DOCS_DOMAIN } from "@/constants";
 import ListRotators from "@/components/rotators/ListRotators";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import Audit from "@/components/audit/Audit"
 
 const queryClient = new QueryClient()
 
@@ -74,7 +75,7 @@ const router = createBrowserRouter([
               title="Your Agents"
               description={
                 <>
-                  Agents deploy, maintain, and configure External Secrets Operator installations for you<br/>
+                  Agents deploy, maintain, and configure External Secrets Operator installations for you<br />
                   See our <a href={`${DOCS_DOMAIN}/docs/esi-agent/quickstart`}>Quickstart guide</a> and <a href={`${DOCS_DOMAIN}/docs/esi-for-eso/quickstart`}>Exclusive Features</a> for more details
                 </>
               }
@@ -91,7 +92,7 @@ const router = createBrowserRouter([
               title="Your Async Rotators"
               description={
                 <>
-                  Async rotators listen for events from audit logs to trigger a rotation in the External Secrets Operator<br/>
+                  Async rotators listen for events from audit logs to trigger a rotation in the External Secrets Operator<br />
                   See our <a href={`${DOCS_DOMAIN}/docs/esi-async-rotator/quickstart`}>Quickstart guide</a> for more details
                 </>
               }
@@ -100,6 +101,24 @@ const router = createBrowserRouter([
           </>
         )
       },
+      // TODO: Remove mock variable when audit is ready https://github.com/external-secrets-inc/web-ui/issues/124
+      import.meta.env.VITE_MOCK_AUDIT_ROUTE ? {
+        path: 'audit',
+        element: (
+          <>
+            <AppPageHeader
+              title="Audit"
+              description={
+                <>
+                  Audit is cool!<br />
+                  See our <a href={`${DOCS_DOMAIN}/docs/`}>Quickstart guide</a> for more details
+                </>
+              }
+            />
+            <Audit />
+          </>
+        )
+      } : {},
       {
         path: 'settings',
         element: (
