@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { DataProvider, DataSearch, DataSort } from "@/components/ui/DataProvider";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { LayoutGrid, Table } from "lucide-react";
+import { LucideLayoutGrid, LucideTableProperties } from "lucide-react";
 import { createColumnHelper } from "@tanstack/react-table";
 import { TransformedFeatureData, FeatureData, FeatureCollectionProps } from "./FeatureCollection.interfaces";
 import { STATUS_MAP } from "./FeatureCollection.constants";
@@ -96,12 +96,17 @@ function FeatureCollection({
       >
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-x-4 gap-y-2 flex-wrap">
-            <ToggleGroup type="single" value={view} onValueChange={(value) => value && setView(value as "grid" | "table")}>
+            <ToggleGroup
+              variant='outline'
+              type="single"
+              value={view}
+              onValueChange={(value) => value && setView(value as "grid" | "table")}
+            >
               <ToggleGroupItem value="grid" aria-label="Grid view">
-                <LayoutGrid className="h-4 w-4" />
+                <LucideLayoutGrid className="h-4 w-4" />
               </ToggleGroupItem>
               <ToggleGroupItem value="table" aria-label="Table view">
-                <Table className="h-4 w-4" />
+                <LucideTableProperties className="h-4 w-4" />
               </ToggleGroupItem>
             </ToggleGroup>
 
