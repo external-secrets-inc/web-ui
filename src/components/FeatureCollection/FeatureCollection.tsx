@@ -92,7 +92,7 @@ function FeatureCollection({
       <DataProvider
         data={transformedFeatureData}
         columns={columns}
-        initialSort={{ id: 'index', desc: false }}
+        initialSort={{ id: 'index', desc: true }}
       >
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-x-4 gap-y-2 flex-wrap">
