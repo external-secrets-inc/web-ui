@@ -172,7 +172,7 @@ export default function Audit() {
           <Dialog open={isFiltersDialogOpen} onOpenChange={handleFiltersDialogOpenChange}>
             <DialogTrigger asChild>
               <Button className="self-center sm:self-end">
-                Button to open filters
+                Filters
               </Button>
             </DialogTrigger>
             <FilterComponent onFiltersChange={handleFilterChange} />

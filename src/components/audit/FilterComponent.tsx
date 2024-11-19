@@ -52,8 +52,8 @@ const FilterComponent = ({ onFiltersChange }: { onFiltersChange: (filters: Filte
   };
 
   // Get date range for the LastRotation filter (last 90 days)
-  const maxDate = new Date().toISOString().split("T")[0];
-  const minDate = new Date(new Date().setDate(new Date().getDate() - 90)).toISOString().split("T")[0];
+  const currentDate = new Date().toISOString().split("T")[0];
+  const lastRotationMinDate = new Date(new Date().setDate(new Date().getDate() - 90)).toISOString().split("T")[0];
 
   return (
     <DialogContent
@@ -197,6 +197,7 @@ const FilterComponent = ({ onFiltersChange }: { onFiltersChange: (filters: Filte
           {filters.lastAccess === "date" && (
             <input
               type="date"
+              max={currentDate}
               className="border rounded px-2 py-1 mt-2 w-full"
               onChange={(e) => handleFilterChange("lastAccess", e.target.value)}
             />
@@ -219,8 +220,8 @@ const FilterComponent = ({ onFiltersChange }: { onFiltersChange: (filters: Filte
           {filters.lastRotation === "date" && (
             <input
               type="date"
-              min={minDate}
-              max={maxDate}
+              min={lastRotationMinDate}
+              max={currentDate}
               className="border rounded px-2 py-1 mt-2 w-full"
               onChange={(e) => handleFilterChange("lastRotation", e.target.value)}
             />
