@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { AxiosError } from "axios";
+import qs from "qs";
 
-import { API_DOMAIN, DOCS_DOMAIN, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
+import { API_DOMAIN, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import useCreateAuditInstallationToken from "@/services/audit/mutations/useCreateAuditInstallationToken";
 import useGetAuditProcessFile from "@/services/audit/queries/useGetAuditProcessFile";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
@@ -12,14 +13,18 @@ import { Button } from "../ui/button";
 import ListenerInstallDialogContent from "./ListenerInstallDialogContent";
 import useGetListener from "@/services/audit/queries/useGetListener";
 import { trackListenerInstallDialogOpened } from "@/analytics";
+import FilterComponent from "./FilterComponent";
+import { FilterState } from "./Audit.interfaces";
 
 export default function Audit() {
   const [processCommand, setProcessCommand] = useState("")
   const [applyCommand, setApplyCommand] = useState("")
+  const [filters, setFilters] = useState({})
   const [isListenerInstallDialogOpen, setIsListenerInstallDialogOpen] = useState(false);
+  const [isFiltersDialogOpen, setIsFiltersDialogOpen] = useState(false);
 
   // TODO remove mock https://github.com/external-secrets-inc/web-ui/issues/115
-  const { data: listenerData, isError: listenerIsError, error: listenerError } = useGetListener(true, {
+  const { data: listenerData, refetch: listenerRefetch, isError: listenerIsError, isRefetchError: listenerIsRefetchError, error: listenerError } = useGetListener(true, filters, {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
   });
@@ -31,7 +36,7 @@ export default function Audit() {
   }
 
   useEffect(() => {
-    if (!(listenerError)) return;
+    if (!(listenerError || listenerIsRefetchError)) return;
 
     handleDefaultApiHttpError(listenerError, "Error while fetching listener")
   }, [listenerError, listenerIsError])
@@ -75,9 +80,26 @@ export default function Audit() {
     setProcessCommand(command);
   }, [token])
 
-  const handleFeatureItemDialogOpenChange = (isOpen: boolean) => {
+  const handleListenerInstallDialogOpenChange = (isOpen: boolean) => {
     setIsListenerInstallDialogOpen(isOpen);
   };
+
+  const handleFiltersDialogOpenChange = (isOpen: boolean) => {
+    setIsFiltersDialogOpen(isOpen);
+  };
+
+  const handleFilterChange = (selectedFilters: FilterState) => {
+    setFilters(Object.fromEntries(
+      Object.entries(selectedFilters).filter(
+        ([, value]) =>
+          value !== null &&
+          value !== undefined &&
+          value !== "" &&
+          (!Array.isArray(value) || value.length > 0)
+      )
+    ))
+    listenerRefetch();
+  }
 
   useEffect(() => {
     if (isListenerInstallDialogOpen) {
@@ -92,12 +114,12 @@ export default function Audit() {
           <span className='flex flex-col m530:flex-row gap-2 items-center text-center m530:text-left'>
             Listener Status:
             <div className='flex flex-row gap-2 items-center'>
-              {STATUS_MAP["PENDING_REGISTRATION"].icon}
-              {STATUS_MAP["PENDING_REGISTRATION"].text}
+              {STATUS_MAP[listener.status].icon}
+              {STATUS_MAP[listener.status].text}
             </div>
           </span>
         </div>
-        <Dialog open={isListenerInstallDialogOpen} onOpenChange={handleFeatureItemDialogOpenChange}>
+        <Dialog open={isListenerInstallDialogOpen} onOpenChange={handleListenerInstallDialogOpenChange}>
           <DialogTrigger asChild>
             <Button
               size="default"
@@ -147,12 +169,27 @@ export default function Audit() {
       <div className="p-6 border rounded-lg shadow-sm space-y-4">
         <div className="flex items-center justify-between sm:flex-row flex-col sm:space-y-0 space-y-4">
           <h3 className="text-lg font-semibold">Table title</h3>
-          <Button className="self-center sm:self-end">
-            Button to open filters
-          </Button>
+          <Dialog open={isFiltersDialogOpen} onOpenChange={handleFiltersDialogOpenChange}>
+            <DialogTrigger asChild>
+              <Button className="self-center sm:self-end">
+                Button to open filters
+              </Button>
+            </DialogTrigger>
+            <FilterComponent onFiltersChange={handleFilterChange} />
+          </Dialog>
         </div>
-        <div className="p-4 bg-gray-100 rounded">
-          Big table with things on it but I don’t need to worry about right now
+        <div className="p-4 bg-gray-500 rounded">
+          <p className="mb-2">Big table with things on it.</p>
+          <div>
+            <p className="font-bold mb-1">Current Filters:</p>
+            <p>
+              <span className="font-semibold">Stringified (Query):</span> {qs.stringify(filters, { arrayFormat: 'repeat' })}
+            </p>
+            <p>
+              <span className="font-semibold">Dictionary:</span>{" "}
+              <pre className="bg-gray-700 p-2 rounded inline-block">{JSON.stringify(filters, null, 2)}</pre>
+            </p>
+          </div>
         </div>
       </div>
     </div>
