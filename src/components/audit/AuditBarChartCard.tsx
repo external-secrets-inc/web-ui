@@ -54,14 +54,14 @@ export function AuditBarChartCard({
   const { data, config } = useMemo(() => {
     if (!rawData) return { data: undefined, config: baseConfig }
 
-    const sortedData = sortData
+    const processedData = sortData
       ? [...rawData].sort((a, b) => b.amount - a.amount)
       : rawData
 
     const chartConfig = {
       ...baseConfig,
       ...Object.fromEntries(
-        sortedData.map((item, index) => [
+        processedData.map((item, index) => [
           item.kind,
           {
             label: item.label,
@@ -72,7 +72,8 @@ export function AuditBarChartCard({
       )
     } satisfies ChartConfig
 
-    const chartData = sortedData.map((item, index) => ({
+    // Cycle fill colors for the bars of each individual item
+    const chartData = processedData.map((item, index) => ({
       ...item,
       fill: CHART_COLORS[index % CHART_COLORS.length],
     }))
@@ -80,6 +81,7 @@ export function AuditBarChartCard({
     return { data: chartData, config: chartConfig }
   }, [rawData, baseConfig, sortData])
 
+  // When not a single tooltipLabel is provided, hide them instead of repeating the chart label
   const shouldHideTooltipLabels = !Object.values(config).some(c => c.tooltipLabel)
 
   return (
