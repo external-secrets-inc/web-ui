@@ -9,6 +9,8 @@ import { ApiHttpError } from "@/types";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
 import { Button } from "../ui/button";
 import ListenerInstallDialogContent from "./ListenerInstallDialogContent";
+import AuditChartProblems from "./AuditChartProblems";
+import AuditChartProviders from "./AuditChartProviders";
 // TODO use listener data to get status https://github.com/external-secrets-inc/web-ui/issues/115
 // import useGetListener from "@/services/listener/queries/useGetListener";
 
@@ -80,15 +82,21 @@ export default function Audit() {
   // }, [isFeatureContentDialogOpen, featureType, tenantID, featureName]);
 
   return (
-    <Dialog open={isListenerInstallDialogOpen} onOpenChange={handleFeatureItemDialogOpenChange}>
-      <DialogTrigger asChild>
-        <Button>Install</Button>
-      </DialogTrigger>
-      <ListenerInstallDialogContent
-        processFile={processFileData ? processFileData.process : ''}
-        processCommand={processCommand}
-        applyCommand={applyCommand}
-      />
-    </Dialog>
+    <>
+      <Dialog open={isListenerInstallDialogOpen} onOpenChange={handleFeatureItemDialogOpenChange}>
+        <DialogTrigger asChild>
+          <Button>Install</Button>
+        </DialogTrigger>
+        <ListenerInstallDialogContent
+          processFile={processFileData ? processFileData.process : ''}
+          processCommand={processCommand}
+          applyCommand={applyCommand}
+        />
+      </Dialog>
+      <div className="grid grid-cols-2 gap-4 mt-6">
+        <AuditChartProviders />
+        <AuditChartProblems />
+      </div>
+    </>
   );
 }
