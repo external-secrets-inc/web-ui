@@ -13,26 +13,73 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
+import { useMemo } from "react"
+
+const CHART_COLORS = [
+  "hsl(var(--chart-1))",
+  "hsl(var(--chart-2))",
+  "hsl(var(--chart-3))",
+  "hsl(var(--chart-4))",
+  "hsl(var(--chart-5))",
+]
+
+type ChartData = {
+  kind: string
+  amount: number
+  label: string
+  tooltipLabel?: string
+}
 
 type BarChartCardProps = {
   title: string
   description?: string | React.ReactNode
-  data?: Array<{ kind: string; amount: number; fill: string }>
-  config: ChartConfig
+  data?: ChartData[]
+  baseConfig: ChartConfig
   error?: boolean
   errorMessage?: string
   isLoading?: boolean
+  sortData?: boolean
 }
 
 export function AuditBarChartCard({
   title,
   description,
-  data,
-  config,
+  data: rawData,
+  baseConfig,
   error,
   errorMessage = "Failed to load statistics",
   isLoading,
+  sortData = false,
 }: BarChartCardProps) {
+  const { data, config } = useMemo(() => {
+    if (!rawData) return { data: undefined, config: baseConfig }
+
+    const sortedData = sortData
+      ? [...rawData].sort((a, b) => b.amount - a.amount)
+      : rawData
+
+    const chartConfig = {
+      ...baseConfig,
+      ...Object.fromEntries(
+        sortedData.map((item, index) => [
+          item.kind,
+          {
+            label: item.label,
+            tooltipLabel: item.tooltipLabel,
+            color: CHART_COLORS[index % CHART_COLORS.length],
+          }
+        ])
+      )
+    } satisfies ChartConfig
+
+    const chartData = sortedData.map((item, index) => ({
+      ...item,
+      fill: CHART_COLORS[index % CHART_COLORS.length],
+    }))
+
+    return { data: chartData, config: chartConfig }
+  }, [rawData, baseConfig, sortData])
+
   const shouldHideTooltipLabels = !Object.values(config).some(c => c.tooltipLabel)
 
   return (

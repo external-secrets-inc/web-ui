@@ -31,7 +31,7 @@ export const mockProviderStats = [
     tooltipLabel: "Kubernetes Secrets"
   },
   {
-    kind: "one_password",
+    kind: "onePassword",
     amount: 65,
     label: "1Pass",
     tooltipLabel: "1Password Connect"
@@ -51,9 +51,24 @@ export const mockProviderStats = [
 ] as const
 
 export const mockProblemStats = [
-  { kind: "duplicated", amount: 4 },
-  { kind: "non_compliant", amount: 18 },
-  { kind: "never_accessed", amount: 5 },
+  {
+    kind: "duplicated",
+    amount: 4,
+    label: "Duplicated",
+    tooltipLabel: "Secrets with duplicate values"
+  },
+  {
+    kind: "nonCompliant",
+    amount: 18,
+    label: "Non-compliant",
+    tooltipLabel: "Secrets not following compliance rules"
+  },
+  {
+    kind: "neverAccessed",
+    amount: 5,
+    label: "Never Accessed",
+    tooltipLabel: "Secrets that were never accessed"
+  },
 ] as const
 
 export const mockNetworkResponseDelay = () => new Promise(resolve => setTimeout(resolve, 2500))
