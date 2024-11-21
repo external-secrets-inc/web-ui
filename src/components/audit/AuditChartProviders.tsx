@@ -1,5 +1,3 @@
-"use client"
-
 import { AuditBarChartCard } from "@/components/audit/AuditBarChartCard"
 import { ChartConfig } from "@/components/ui/chart"
 import useGetAuditProviderStats from "@/services/audit/queries/useGetAuditProviderStats"
