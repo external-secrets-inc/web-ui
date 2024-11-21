@@ -115,9 +115,6 @@ module.exports = {
         'bg-auth-blob-animation-1': 'bg-auth-blob-animation-1 20s infinite cubic-bezier(0.1, 0, 0.9, 1)',
         'bg-auth-blob-animation-2': 'bg-auth-blob-animation-2 20s infinite cubic-bezier(0.1, 0, 0.9, 1)',
       },
-      screens: {
-        'm530':'530px'
-      }
     }
   },
   plugins: [require("tailwindcss-animate")],

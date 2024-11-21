@@ -6,19 +6,14 @@ import { AxiosError } from "axios";
 import qs from "qs";
 
 // TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/115
-const statuses = [
-  "PROVISIONING",
-  "PENDING_REGISTRATION",
-  "ACTIVE",
-  "OFFLINE",
-  "PENDING_DELETION",
-  "DELETED"
-];
-
-const getListener = async (mock: boolean, signal: AbortSignal, params?: Record<string, any>) => {
+const getListener = async (
+  mock: boolean,
+  signal: AbortSignal,
+  params?: Record<string, string | number | boolean | (string | number | boolean)[]>
+) => {
   if (mock) return {
-    id: Math.floor(Math.random() * 100).toString(),
-    current_status: statuses[Math.floor(Math.random() * statuses.length)]
+    id: '1234-5678-9870',
+    current_status: "PENDING_REGISTRATION"
   } as Listener;
 
   const headers = await getAuthHeaders();
@@ -31,7 +26,7 @@ const getListener = async (mock: boolean, signal: AbortSignal, params?: Record<s
 
 const useGetListener = <T = Listener>(
   mock: boolean,
-  params: Record<string, any>,
+  params: Record<string, string | number | boolean | (string | number | boolean)[]>,
   options?: Omit<UseQueryOptions<Listener, AxiosError<ApiHttpError>, T>, 'queryKey' | 'queryFn'>
 ) => {
   return useQuery({

@@ -16,6 +16,26 @@ import { trackListenerInstallDialogOpened } from "@/analytics";
 import FilterComponent from "./FilterComponent";
 import { FilterState } from "./Audit.interfaces";
 
+// const data: TableData[] = [
+//   {
+//     secret: 'API_KEY',
+//     lastRotation: '2024-11-17',
+//     policies: 'Read-only',
+//     duplicates: 2,
+//     lastAccess: '2024-11-16',
+//     accessors: 'Service A, Service B',
+//   },
+//   {
+//     secret: 'DATABASE_PASSWORD',
+//     lastRotation: '2024-10-01',
+//     policies: 'Read-write',
+//     duplicates: 0,
+//     lastAccess: '2024-11-10',
+//     accessors: 'Service C',
+//   },
+//   // Add more rows as needed
+// ];
+
 export default function Audit() {
   const [processCommand, setProcessCommand] = useState("")
   const [applyCommand, setApplyCommand] = useState("")
@@ -32,7 +52,6 @@ export default function Audit() {
   const listener = {
     id: listenerData ? listenerData.id : "",
     status: listenerData ? listenerData.current_status : "PENDING_REGISTRATION"
-    // status: "PENDING_REGISTRATION"
   }
 
   useEffect(() => {
@@ -109,11 +128,11 @@ export default function Audit() {
 
   return (
     <div className="space-y-8">
-      <div className='flex items-center justify-between p-4 border rounded-lg m530:flex-row flex-col m530:w-auto w-full m530:space-y-0 space-y-4'>
-        <div className='text-lg'>
-          <span className='flex flex-col m530:flex-row gap-2 items-center text-center m530:text-left'>
+      <div className="flex items-center justify-between p-4 border rounded-lg flex-col w-full space-y-4 min-[530px]:flex-row min-[530px]:w-auto min-[530px]:space-y-0">
+        <div className="text-lg">
+          <span className="flex flex-col items-center text-center gap-2 min-[530px]:flex-row min-[530px]:text-left">
             Listener Status:
-            <div className='flex flex-row gap-2 items-center'>
+            <div className="flex flex-row gap-2 items-center">
               {STATUS_MAP[listener.status].icon}
               {STATUS_MAP[listener.status].text}
             </div>
@@ -123,8 +142,10 @@ export default function Audit() {
           <DialogTrigger asChild>
             <Button
               size="default"
-              className="self-center m530:self-end"
-            >Install listener</Button>
+              className="self-center min-[530px]:self-end"
+            >
+              Install listener
+            </Button>
           </DialogTrigger>
           <ListenerInstallDialogContent
             id={listener.id}
@@ -135,12 +156,11 @@ export default function Audit() {
         </Dialog>
       </div>
 
-      {/* Graphs Section */}
-      <div className="flex justify-around gap-x-4 flex-col sm:flex-row sm:space-y-0 space-y-4">
-        <div className="p-6 border rounded-lg shadow-sm w-1/2 flex flex-col space-y-4">
+      <div className="flex justify-around gap-x-4 flex-col space-y-4 min-[640px]:flex-row min-[640px]:space-y-0">
+        <div className="p-6 border rounded-lg shadow-sm w-full flex flex-col space-y-4 min-[640px]:w-1/2">
           <div className="text-lg font-semibold mb-2">Pizza graph</div>
           <div className="flex items-center">
-            <div className="h-24 w-24 border  rounded-full flex items-center justify-center">
+            <div className="h-24 w-24 border rounded-full flex items-center justify-center">
               [Pie Chart]
             </div>
             <div className="ml-6 flex-grow space-y-2">
@@ -150,7 +170,7 @@ export default function Audit() {
             </div>
           </div>
         </div>
-        <div className="p-6 border rounded-lg shadow-sm w-1/2 flex flex-col space-y-4">
+        <div className="p-6 border rounded-lg shadow-sm w-full flex flex-col space-y-4 min-[640px]:w-1/2">
           <div className="text-lg font-semibold mb-2">Pizza graph</div>
           <div className="flex items-center">
             <div className="h-24 w-24 border rounded-full flex items-center justify-center">
@@ -165,13 +185,12 @@ export default function Audit() {
         </div>
       </div>
 
-      {/* Table Section */}
       <div className="p-6 border rounded-lg shadow-sm space-y-4">
-        <div className="flex items-center justify-between sm:flex-row flex-col sm:space-y-0 space-y-4">
+        <div className="flex items-center justify-between flex-col space-y-4 min-[260px]:flex-row min-[260px]:space-y-0">
           <h3 className="text-lg font-semibold">Table title</h3>
           <Dialog open={isFiltersDialogOpen} onOpenChange={handleFiltersDialogOpenChange}>
             <DialogTrigger asChild>
-              <Button className="self-center sm:self-end">
+              <Button className="self-center min-[260px]:self-end">
                 Filters
               </Button>
             </DialogTrigger>
