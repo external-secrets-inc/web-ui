@@ -20,7 +20,7 @@ const getAuditProviderStats = async (mock: boolean, signal: AbortSignal) => {
   }
 
   const headers = await getAuthHeaders();
-  const response = await axiosInstance.get('/api/audit/stats/providers', { headers, signal });
+  const response = await axiosInstance.get('/api/audit/stats/providers', { headers, signal }); // TODO: endpoint design not final
   return response.data;
 }
 

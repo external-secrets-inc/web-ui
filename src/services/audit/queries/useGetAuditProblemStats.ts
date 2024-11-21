@@ -8,6 +8,8 @@ import { mockNetworkResponseDelay, mockProblemStats } from "../mocks/mockData";
 export interface ProblemStats {
   kind: string;
   amount: number;
+  label: string;
+  tooltipLabel?: string;
 }
 
 const getAuditProblemStats = async (mock: boolean, signal: AbortSignal) => {
@@ -18,7 +20,7 @@ const getAuditProblemStats = async (mock: boolean, signal: AbortSignal) => {
   }
 
   const headers = await getAuthHeaders();
-  const response = await axiosInstance.get('/api/audit/stats/problems', { headers, signal });
+  const response = await axiosInstance.get('/api/audit/stats/problems', { headers, signal }); // TODO: endpoint design not final
   return response.data;
 }
 
