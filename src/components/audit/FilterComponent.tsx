@@ -111,8 +111,22 @@ const DateFilter = ({ title, filters, handleFilterChange, filterKey, minDate, ma
   </div>
 );
 
-const FilterComponent = ({ onFiltersChange }: { onFiltersChange: (filters: FilterState) => void }) => {
-  const [filters, setFilters] = useState<FilterState>(initialFilters);
+const FilterComponent = ({ searchParams, onFiltersChange }: { searchParams: URLSearchParams, onFiltersChange: (filters: FilterState) => void }) => {
+  const [filters, setFilters] = useState<FilterState>(() => {
+    if (searchParams.toString() === "") return initialFilters;
+
+    const currentFilters = {
+      provider: searchParams.getAll("provider"),
+      policy: searchParams.getAll("policy"),
+      secretName: searchParams.getAll("secretName"),
+      policyStatus: searchParams.get("policyStatus") === "true" ? true : searchParams.get("policyStatus") === "false" ? false : null,
+      duplicates: searchParams.get("duplicates") === "true" ? true : searchParams.get("duplicates") === "false" ? false : null,
+      lastAccess: searchParams.get("lastAccess") || null,
+      lastRotation: searchParams.get("lastRotation") || null,
+      accessors: searchParams.get("accessors") === "true" ? true : searchParams.get("accessors") === "false" ? false : null,
+    }
+    return currentFilters;
+  });
   const autocompleteOptions = {
     policies: ['policy 1', 'another policy', 'starting with other name policy'],
     secretNames: ['secret 1', 'same secret?', 'awkward name']
@@ -134,14 +148,12 @@ const FilterComponent = ({ onFiltersChange }: { onFiltersChange: (filters: Filte
         : [...currentArray, value];
 
       const updatedFilters = { ...prev, [key]: updatedArray };
-      onFiltersChange(updatedFilters);
       return updatedFilters;
     });
   };
 
   const clearFilters = () => {
     setFilters(initialFilters);
-    onFiltersChange(initialFilters);
   };
 
   const currentDate = new Date().toISOString().split("T")[0];
@@ -223,7 +235,12 @@ const FilterComponent = ({ onFiltersChange }: { onFiltersChange: (filters: Filte
         />
       </div>
       <DialogFooter>
-        <Button onClick={clearFilters}>Clear</Button>
+        <Button onClick={clearFilters} variant="secondary">
+          Clear
+        </Button>
+        <Button onClick={() => { onFiltersChange(filters) }}>
+          Apply
+        </Button>
       </DialogFooter>
     </DialogContent>
   );

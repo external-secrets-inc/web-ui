@@ -1,7 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AxiosError } from "axios";
-import qs from "qs";
-
 import { API_DOMAIN, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import useCreateAuditInstallationToken from "@/services/audit/mutations/useCreateAuditInstallationToken";
 import useGetAuditProcessFile from "@/services/audit/queries/useGetAuditProcessFile";
@@ -14,51 +12,66 @@ import ListenerInstallDialogContent from "./ListenerInstallDialogContent";
 import useGetListener from "@/services/audit/queries/useGetListener";
 import { trackListenerInstallDialogOpened } from "@/analytics";
 import FilterComponent from "./FilterComponent";
-import { FilterState } from "./Audit.interfaces";
-
-// const data: TableData[] = [
-//   {
-//     secret: 'API_KEY',
-//     lastRotation: '2024-11-17',
-//     policies: 'Read-only',
-//     duplicates: 2,
-//     lastAccess: '2024-11-16',
-//     accessors: 'Service A, Service B',
-//   },
-//   {
-//     secret: 'DATABASE_PASSWORD',
-//     lastRotation: '2024-10-01',
-//     policies: 'Read-write',
-//     duplicates: 0,
-//     lastAccess: '2024-11-10',
-//     accessors: 'Service C',
-//   },
-//   // Add more rows as needed
-// ];
+import { AuditTableData, FilterState, columns } from "./Audit.interfaces";
+import useGetListenerAuditData from "@/services/audit/queries/useGetListenerAuditData";
+import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import { useSearchParams } from "react-router-dom";
 
 export default function Audit() {
   const [processCommand, setProcessCommand] = useState("")
   const [applyCommand, setApplyCommand] = useState("")
-  const [filters, setFilters] = useState({})
   const [isListenerInstallDialogOpen, setIsListenerInstallDialogOpen] = useState(false);
   const [isFiltersDialogOpen, setIsFiltersDialogOpen] = useState(false);
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
   // TODO remove mock https://github.com/external-secrets-inc/web-ui/issues/115
-  const { data: listenerData, refetch: listenerRefetch, isError: listenerIsError, isRefetchError: listenerIsRefetchError, error: listenerError } = useGetListener(true, filters, {
+  const { data: listenerData, isError: listenerIsError, error: listenerError } = useGetListener(true, {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
   });
 
-  const listener = {
-    id: listenerData ? listenerData.id : "",
-    status: listenerData ? listenerData.current_status : "PENDING_REGISTRATION"
-  }
+  const listener = useMemo(() => {
+    if (!listenerData) return {
+      id: "",
+      status: "PENDING_REGISTRATION"
+    }
+
+    return {
+      id: listenerData.id,
+      status: listenerData.current_status
+    }
+  }, [listenerData]);
 
   useEffect(() => {
-    if (!(listenerError || listenerIsRefetchError)) return;
+    if (!(listenerError)) return;
 
     handleDefaultApiHttpError(listenerError, "Error while fetching listener")
   }, [listenerError, listenerIsError])
+
+  const { data: listenerAuditData, refetch: listenerAuditRefetch, isError: listenerAuditIsError, isRefetchError: listenerAuditIsRefetchError, error: listenerAuditError } = useGetListenerAuditData(true, {
+    refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
+    refetchIntervalInBackground: true,
+  });
+
+  const listenerAudit = useMemo(() => {
+    if (!listenerAuditData) return [{
+      secret: "",
+      lastRotation: "",
+      policies: "",
+      duplicates: 0,
+      lastAccess: "",
+      accessors: 0,
+    }] as AuditTableData[]
+
+    return listenerAuditData
+  }, [listenerAuditData]);
+
+  useEffect(() => {
+    if (!(listenerAuditError || listenerAuditIsRefetchError)) return;
+
+    handleDefaultApiHttpError(listenerAuditError, "Error while fetching listener Audit data")
+  }, [listenerAuditError, listenerAuditIsError])
 
   const { mutate: createToken, data: token } = useCreateAuditInstallationToken({
     onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to generate manifest token")
@@ -108,7 +121,7 @@ export default function Audit() {
   };
 
   const handleFilterChange = (selectedFilters: FilterState) => {
-    setFilters(Object.fromEntries(
+    const filteredFilters = Object.fromEntries(
       Object.entries(selectedFilters).filter(
         ([, value]) =>
           value !== null &&
@@ -116,8 +129,22 @@ export default function Audit() {
           value !== "" &&
           (!Array.isArray(value) || value.length > 0)
       )
-    ))
-    listenerRefetch();
+    )
+    setSearchParams(() => {
+      const newSearchParams: Record<string, string | string[]> = {};
+      Object.entries(filteredFilters).forEach(([key, value]) => {
+        if (Array.isArray(value) && value.length > 0) {
+          newSearchParams[key] = value;
+        } else if (value !== null && value !== undefined && value !== "") {
+          newSearchParams[key] = String(value);
+        }
+      });
+
+      return newSearchParams
+    })
+    handleFiltersDialogOpenChange(false);
+
+    listenerAuditRefetch();
   }
 
   useEffect(() => {
@@ -125,6 +152,12 @@ export default function Audit() {
       trackListenerInstallDialogOpened(listener.id);
     }
   }, [isListenerInstallDialogOpen, listener.id]);
+
+  const table = useReactTable({
+    data: listenerAudit,
+    columns,
+    getCoreRowModel: getCoreRowModel(), // Implement core row model as per your requirements
+  });
 
   return (
     <div className="space-y-8">
@@ -194,21 +227,35 @@ export default function Audit() {
                 Filters
               </Button>
             </DialogTrigger>
-            <FilterComponent onFiltersChange={handleFilterChange} />
+            <FilterComponent searchParams={searchParams} onFiltersChange={handleFilterChange} />
           </Dialog>
         </div>
-        <div className="p-4 bg-gray-500 rounded">
-          <p className="mb-2">Big table with things on it.</p>
-          <div>
-            <p className="font-bold mb-1">Current Filters:</p>
-            <p>
-              <span className="font-semibold">Stringified (Query):</span> {qs.stringify(filters, { arrayFormat: 'repeat' })}
-            </p>
-            <p>
-              <span className="font-semibold">Dictionary:</span>{" "}
-              <pre className="bg-gray-700 p-2 rounded inline-block">{JSON.stringify(filters, null, 2)}</pre>
-            </p>
-          </div>
+
+        <div className="flex w-full">
+          <table className="w-full border-collapse table-auto text-left">
+            <thead>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <th key={header.id}>{
+                      header.isPlaceholder ?
+                        null :
+                        flexRender(header.column.columnDef.header, header.getContext())
+                    }</th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody>
+              {table.getRowModel().rows.map((row) => (
+                <tr key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
