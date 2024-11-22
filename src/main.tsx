@@ -111,6 +111,7 @@ const router = createBrowserRouter([
               description={
                 <>
                   Audit is cool!<br />
+                  {/* TODO:  add link to quickstart guide*/}
                   See our <a href={`${DOCS_DOMAIN}/docs/`}>Quickstart guide</a> for more details
                 </>
               }

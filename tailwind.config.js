@@ -114,7 +114,7 @@ module.exports = {
         'bg-auth-hero-scroll': 'bg-auth-hero-scroll 600s linear infinite',
         'bg-auth-blob-animation-1': 'bg-auth-blob-animation-1 20s infinite cubic-bezier(0.1, 0, 0.9, 1)',
         'bg-auth-blob-animation-2': 'bg-auth-blob-animation-2 20s infinite cubic-bezier(0.1, 0, 0.9, 1)',
-      }
+      },
     }
   },
   plugins: [require("tailwindcss-animate")],

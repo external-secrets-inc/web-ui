@@ -23,7 +23,7 @@ export const trackFeatureCopyYAMLWithApplyCommand = (featureType: string, featur
 };
 
 export const trackFeatureDownloadYAML = (featureType: string, featureID: string) => {
-  track("Download Feature YAML", { featureType,featureID });
+  track("Download Feature YAML", { featureType, featureID });
 };
 
 export const trackFeatureDeleteDialogOpened = (featureType: string, featureID: string, triggeredFrom: "details-dialog" | "dropdown") => {
@@ -77,10 +77,14 @@ export const trackSettingsSectionModified = (section: string, values?: any) => {
   track("Settings Section Modified", { section, ...values });
 };
 
-export const trackListenerInstallCopyProcess = () => {
-  track("Copy Listener Install Process", null);
+export const trackListenerInstallDialogOpened = (id: string) => {
+  track("Listener Install Dialog Opened", { id });
+}
+
+export const trackListenerInstallCopyProcess = (id: string) => {
+  track("Copy Listener Install Process", { id });
 };
 
-export const trackListenerInstallCopyKubernetes = () => {
-  track("Copy Listener Install Kubernetes", null);
+export const trackListenerInstallCopyKubernetes = (id: string) => {
+  track("Copy Listener Install Kubernetes", { id });
 };
