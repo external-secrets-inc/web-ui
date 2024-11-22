@@ -11,11 +11,11 @@ import { Button } from "../ui/button";
 import ListenerInstallDialogContent from "./ListenerInstallDialogContent";
 import useGetListener from "@/services/audit/queries/useGetListener";
 import { trackListenerInstallDialogOpened } from "@/analytics";
-import FilterComponent from "./FilterComponent";
 import { AuditTableData, FilterState, columns } from "./Audit.interfaces";
 import useGetListenerAuditData from "@/services/audit/queries/useGetListenerAuditData";
 import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { useSearchParams } from "react-router-dom";
+import FilterDialogForm from "./FilterDialogForm";
 
 export default function Audit() {
   const [processCommand, setProcessCommand] = useState("")
@@ -227,7 +227,25 @@ export default function Audit() {
                 Filters
               </Button>
             </DialogTrigger>
-            <FilterComponent searchParams={searchParams} onFiltersChange={handleFilterChange} />
+            {/* <FilterComponent searchParams={searchParams} onFiltersChange={handleFilterChange} /> */}
+            <FilterDialogForm
+              initialValues={{
+                provider: searchParams.getAll("provider"),
+                policy: searchParams.get("policy") || undefined,
+                secretName: searchParams.get("secretName") || undefined,
+                policyStatus: searchParams.get("policyStatus") === "true" ? "true" : searchParams.get("policyStatus") === "false" ? "false" : undefined,
+                duplicates: searchParams.get("duplicates") === "true" ? "true" : searchParams.get("duplicates") === "false" ? "false" : undefined,
+                lastAccess: searchParams.get("lastAccess") || undefined,
+                lastRotation: searchParams.get("lastRotation") || undefined,
+                accessors: searchParams.get("accessors") === "true" ? "true" : searchParams.get("accessors") === "false" ? "false" : undefined,
+              }}
+              onSubmit={(data) => {
+                handleFilterChange(data);
+                handleFiltersDialogOpenChange(false);
+              }}
+              secretsNames={["secret-1", "secret-2"]}
+              policiesNames={["policy-1", "policy-2"]}
+            />
           </Dialog>
         </div>
 

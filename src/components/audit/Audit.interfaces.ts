@@ -2,13 +2,13 @@ import { createColumnHelper } from '@tanstack/react-table';
 
 export interface FilterState {
   provider: string[]; // GCP, Amazon, Azure
-  policy: string[];
-  secretName: string[];
-  policyStatus: boolean | null; // compliant or non-compliant
-  duplicates: boolean | null; // contains or not
-  lastAccess: string | null; // ascending, descending, or date
-  lastRotation: string | null; // ascending, descending, or date
-  accessors: boolean | null; // contains or not
+  policy?: string | undefined;
+  secretName?: string | undefined;
+  policyStatus?: string | undefined; // compliant or non-compliant
+  duplicates?: string | undefined; // contains or not
+  lastAccess?: string | undefined; // ascending, descending, or date
+  lastRotation?: string | undefined; // ascending, descending, or date
+  accessors?: string | undefined; // contains or not
 }
 
 export interface AuditTableData {

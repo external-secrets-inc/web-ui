@@ -5,16 +5,18 @@ import { Button } from "../ui/button";
 
 const initialFilters: FilterState = {
   provider: [],
-  policy: [],
-  secretName: [],
-  policyStatus: null,
-  duplicates: null,
-  lastAccess: null,
-  lastRotation: null,
-  accessors: null,
+  policy: undefined,
+  secretName: undefined,
+  policyStatus: undefined,
+  duplicates: undefined,
+  lastAccess: undefined,
+  lastRotation: undefined,
+  accessors: undefined,
 };
 
-const ProviderFilter = ({ filters, toggleArrayFilter }: any) => (
+const ProviderFilter = (
+  { filters, toggleArrayFilter }: any
+) => (
   <div>
     <label className="block font-medium mb-1">Providers</label>
     <div className="flex flex-wrap gap-2">
@@ -117,13 +119,13 @@ const FilterComponent = ({ searchParams, onFiltersChange }: { searchParams: URLS
 
     const currentFilters = {
       provider: searchParams.getAll("provider"),
-      policy: searchParams.getAll("policy"),
-      secretName: searchParams.getAll("secretName"),
-      policyStatus: searchParams.get("policyStatus") === "true" ? true : searchParams.get("policyStatus") === "false" ? false : null,
-      duplicates: searchParams.get("duplicates") === "true" ? true : searchParams.get("duplicates") === "false" ? false : null,
-      lastAccess: searchParams.get("lastAccess") || null,
-      lastRotation: searchParams.get("lastRotation") || null,
-      accessors: searchParams.get("accessors") === "true" ? true : searchParams.get("accessors") === "false" ? false : null,
+      policy: searchParams.get("policy") || undefined,
+      secretName: searchParams.get("secretName") || undefined,
+      policyStatus: searchParams.get("policyStatus") === "true" ? "true" : searchParams.get("policyStatus") === "false" ? "false" : undefined,
+      duplicates: searchParams.get("duplicates") === "true" ? "true" : searchParams.get("duplicates") === "false" ? "false" : undefined,
+      lastAccess: searchParams.get("lastAccess") || undefined,
+      lastRotation: searchParams.get("lastRotation") || undefined,
+      accessors: searchParams.get("accessors") === "true" ? "true" : searchParams.get("accessors") === "false" ? "false" : undefined,
     }
     return currentFilters;
   });
@@ -170,7 +172,7 @@ const FilterComponent = ({ searchParams, onFiltersChange }: { searchParams: URLS
       </DialogHeader>
       <div className="p-4 border rounded-md space-y-4">
         <ProviderFilter filters={filters} toggleArrayFilter={toggleArrayFilter} />
-        <ArrayFilter
+        {/* <ArrayFilter
           title="Policies"
           filters={filters}
           toggleArrayFilter={toggleArrayFilter}
@@ -183,7 +185,7 @@ const FilterComponent = ({ searchParams, onFiltersChange }: { searchParams: URLS
           toggleArrayFilter={toggleArrayFilter}
           options={autocompleteOptions.secretNames}
           listId="secretName"
-        />
+        /> */}
         <SelectFilter
           title="Policy Status"
           filters={filters}
