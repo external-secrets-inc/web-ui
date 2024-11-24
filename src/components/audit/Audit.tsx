@@ -9,6 +9,8 @@ import { ApiHttpError } from "@/types";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
 import { Button } from "../ui/button";
 import ListenerInstallDialogContent from "./ListenerInstallDialogContent";
+import AuditChartProblems from "./AuditChartProblems";
+import AuditChartProviders from "./AuditChartProviders";
 import useGetListener from "@/services/audit/queries/useGetListener";
 import { trackListenerInstallDialogOpened } from "@/analytics";
 import FilterComponent from "./FilterComponent";
@@ -189,33 +191,9 @@ export default function Audit() {
         </Dialog>
       </div>
 
-      <div className="flex justify-around gap-x-4 flex-col space-y-4 min-[640px]:flex-row min-[640px]:space-y-0">
-        <div className="p-6 border rounded-lg shadow-sm w-full flex flex-col space-y-4 min-[640px]:w-1/2">
-          <div className="text-lg font-semibold mb-2">Pizza graph</div>
-          <div className="flex items-center">
-            <div className="h-24 w-24 border rounded-full flex items-center justify-center">
-              [Pie Chart]
-            </div>
-            <div className="ml-6 flex-grow space-y-2">
-              <p>Graph info</p>
-              <p>Graph info</p>
-              <p>Graph info</p>
-            </div>
-          </div>
-        </div>
-        <div className="p-6 border rounded-lg shadow-sm w-full flex flex-col space-y-4 min-[640px]:w-1/2">
-          <div className="text-lg font-semibold mb-2">Pizza graph</div>
-          <div className="flex items-center">
-            <div className="h-24 w-24 border rounded-full flex items-center justify-center">
-              [Pie Chart]
-            </div>
-            <div className="ml-6 space-y-2">
-              <p>Graph info</p>
-              <p>Graph info</p>
-              <p>Graph info</p>
-            </div>
-          </div>
-        </div>
+      <div className="grid grid-cols-2 gap-4 mt-6">
+        <AuditChartProviders />
+        <AuditChartProblems />
       </div>
 
       <div className="p-6 border rounded-lg shadow-sm space-y-4">
