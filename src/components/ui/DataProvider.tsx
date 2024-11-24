@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils"
-import { type ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, type SortingState, useReactTable } from "@tanstack/react-table"
+import { type ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, type SortingState, useReactTable, type TableOptions } from "@tanstack/react-table"
 import { LucideArrowDown, LucideArrowDownNarrowWide, LucideArrowUp, LucideArrowUpNarrowWide, LucideChevronsUpDown, LucideSearch } from "lucide-react"
 import * as React from "react"
 import { Button } from "./button"
@@ -32,13 +32,15 @@ interface DataProviderProps<TData extends DataWithId> {
   columns: ColumnDef<TData, any>[];
   children: React.ReactNode;
   initialSort?: { id: string; desc: boolean };
+  reactTableExtraOptions?: Partial<TableOptions<TData>>;
 }
 
 function DataProvider<TData extends DataWithId>({
   data,
   columns,
   children,
-  initialSort = { id: 'id', desc: false }
+  initialSort = { id: 'id', desc: false },
+  reactTableExtraOptions = {}
 }: DataProviderProps<TData>) {
   const [sorting, setSorting] = React.useState<SortingState>([initialSort])
   const [globalFilter, setGlobalFilter] = React.useState("")
@@ -56,6 +58,7 @@ function DataProvider<TData extends DataWithId>({
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    ...reactTableExtraOptions
   })
 
   return (
