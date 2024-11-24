@@ -1,4 +1,4 @@
-// import { trackListenerInstallCopyProcess, trackListenerInstallCopyKubernetes } from "@/analytics"
+import { trackListenerInstallCopyProcess, trackListenerInstallCopyKubernetes } from "@/analytics"
 import { Button } from "@/components/ui/button"
 import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
@@ -10,13 +10,14 @@ import { toast } from "sonner"
 import DescribedScrollArea from "./DescribedScrollArea"
 
 interface ListenerInstallDialogContentProps {
+  id: string;
   processFile: string;
   processCommand: string;
   applyCommand: string;
   openTab?: string;
 }
 
-function ListenerInstallDialogContent({ processFile, processCommand, applyCommand, openTab }: ListenerInstallDialogContentProps) {
+function ListenerInstallDialogContent({ id, processFile, processCommand, applyCommand, openTab }: ListenerInstallDialogContentProps) {
   const defaultTab = 'process';
   const [activeTab, setActiveTab] = useState(openTab ?? defaultTab);
 
@@ -40,12 +41,12 @@ function ListenerInstallDialogContent({ processFile, processCommand, applyComman
 
   const handleCopyProcess = () => {
     copyToClipboard(processCommand, "'bash' command");
-    // trackListenerInstallCopyProcess()
+    trackListenerInstallCopyProcess(id)
   }
 
   const handleCopyKubernetes = () => {
     copyToClipboard(applyCommand, "'apply' command");
-    // trackListenerInstallCopyKubernetes()
+    trackListenerInstallCopyKubernetes(id)
   };
 
   return (
