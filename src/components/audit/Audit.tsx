@@ -245,6 +245,11 @@ export default function Audit() {
               }}
               secretsNames={["secret-1", "secret-2"]}
               policiesNames={["policy-1", "policy-2"]}
+              toFilterProvidersList={[
+                { value: "gcp", label: "GCP" },
+                { value: "aws", label: "AWS" },
+                { value: "azure", label: "Azure" }
+              ]}
             />
           </Dialog>
         </div>

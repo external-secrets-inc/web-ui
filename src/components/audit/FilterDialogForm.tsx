@@ -1,9 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Control, useForm } from "react-hook-form";
+import { Control, useForm, UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -11,11 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover";
 import {
   DialogContent,
   DialogDescription,
@@ -31,7 +25,8 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import { useEffect, useState } from "react";
+import { ComponentType, useState } from "react";
+import { MultiSelect } from "../ui/Multi-select";
 
 const filterSchema = z.object({
   provider: z.array(z.string()),
@@ -53,8 +48,8 @@ const InputFilter = ({
   placeholder,
   suggestions,
 }: {
-  formControl: any;
-  name: string;
+  formControl: Control<FilterFormValues>;
+  name: keyof FilterFormValues;
   label: string;
   placeholder: string;
   suggestions: string[];
@@ -93,8 +88,8 @@ const BooleanFilter = ({
   trueItem,
   falseItem,
 }: {
-  formControl: any;
-  name: string;
+  formControl: Control<FilterFormValues>;
+  name: keyof FilterFormValues;
   label: string;
   placeholder: string;
   trueItem: string;
@@ -107,7 +102,7 @@ const BooleanFilter = ({
       <FormItem>
         <FormLabel>{label}</FormLabel>
         <Select
-          value={field.value === "" ? "null" : field.value.toString()}
+          value={field.value === "" || !field.value ? "null" : field.value.toString()}
           onValueChange={(value) =>
             field.onChange(
               value === "true" ? "true" : value === "false" ? "false" : ""
@@ -136,21 +131,12 @@ const DateFilter = ({
   minDate,
   maxDate,
 }: {
-  form: any;
-  name: string;
+  form: UseFormReturn<FilterFormValues>;
+  name: Extract<keyof FilterFormValues, "lastAccess" | "lastRotation">;
   label: string;
   minDate?: string;
   maxDate?: string;
 }) => {
-  const [isSpecificDate, setIsSpecificDate] = useState(false);
-  useEffect(() => {
-    // Check if the field value is a valid date and toggle "Specific Date" mode
-    const fieldValue = form.getValues(name);
-    if (fieldValue && !isNaN(Date.parse(fieldValue))) {
-      setIsSpecificDate(true);
-    }
-  }, [form, form.getValues(name), name]);
-
   return (
     <FormField
       control={form.control}
@@ -159,50 +145,19 @@ const DateFilter = ({
         <FormItem>
           <FormLabel>{label}</FormLabel>
           <FormControl>
-            <Select
+            <Input
+              type="date"
+              min={minDate}
+              max={maxDate}
+              className="mt-2"
               value={
-                field.value === "asc" || field.value === "desc" || isSpecificDate
-                  ? isSpecificDate
-                    ? "date"
-                    : field.value
-                  : "null"
+                field.value && !isNaN(Date.parse(field.value)) // Pre-fill if the value is a valid date
+                  ? field.value
+                  : ""
               }
-              onValueChange={(value) => {
-                if (value === "date") {
-                  setIsSpecificDate(true); // Show the specific date input
-                } else {
-                  setIsSpecificDate(false); // Hide the specific date input
-                  value === "null"? field.onChange(undefined) : field.onChange(value); // Handle "Ascending" or "Descending"
-                }
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select option" />
-              </SelectTrigger>
-              <SelectContent>
-              <SelectItem value="null">None</SelectItem>
-                <SelectItem value="asc">Ascending</SelectItem>
-                <SelectItem value="desc">Descending</SelectItem>
-                <SelectItem value="date">Specific Date</SelectItem>
-              </SelectContent>
-            </Select>
+              onChange={(e) => field.onChange(e.target.value)}
+            />
           </FormControl>
-          {isSpecificDate && (
-            <FormControl>
-              <Input
-                type="date"
-                min={minDate}
-                max={maxDate}
-                className="mt-2"
-                value={
-                  field.value && !isNaN(Date.parse(field.value)) // Pre-fill if the value is a valid date
-                    ? field.value
-                    : ""
-                }
-                onChange={(e) => field.onChange(e.target.value)}
-              />
-            </FormControl>
-          )}
           <FormMessage />
         </FormItem>
       )}
@@ -210,17 +165,26 @@ const DateFilter = ({
   );
 };
 
+
 const FilterDialogForm = ({
   initialValues,
   onSubmit,
   secretsNames,
   policiesNames,
+  toFilterProvidersList,
 }: {
   initialValues: FilterFormValues;
   onSubmit: (data: FilterFormValues) => void;
   secretsNames: string[];
   policiesNames: string[];
+  toFilterProvidersList: {
+    label: string;
+    value: string;
+    icon?: ComponentType<{ className?: string | undefined; }> | undefined;
+  }[];
 }) => {
+  const [resetKey, setResetKey] = useState(0);
+
   const form = useForm<FilterFormValues>({
     resolver: zodResolver(filterSchema),
     defaultValues: initialValues,
@@ -238,8 +202,8 @@ const FilterDialogForm = ({
       accessors: "",
     });
 
+    setResetKey((prev) => prev + 1);
   };
-  console.log(form);
 
   return (
     <DialogContent
@@ -252,122 +216,100 @@ const FilterDialogForm = ({
       </DialogHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          {/* Provider Filter */}
-          <FormField
-            control={form.control}
-            name="provider"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Providers</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start">
-                      {field.value.length > 0
-                        ? field.value.join(", ")
-                        : "Select Providers"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent>
-                    {["GCP", "Amazon", "Azure"].map((provider) => (
-                      <div
-                        key={provider}
-                        className="gap-2 px-2 py-1 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer"
-                        onClick={() => {
-                          const isSelected = field.value.includes(provider);
-                          const updatedProviders = isSelected
-                            ? field.value.filter((item) => item !== provider)
-                            : [...field.value, provider];
-                          field.onChange(updatedProviders);
-                        }}
-                      >
-                        <Checkbox
-                          checked={field.value.includes(provider)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              field.onChange([...field.value, provider]);
-                            } else {
-                              field.onChange(
-                                field.value.filter((p) => p !== provider)
-                              );
-                            }
-                          }}
-                        />
-                        <span className="ml-2">{provider}</span>
-                      </div>
-                    ))}
-                  </PopoverContent>
-                </Popover>
-              </FormItem>
-            )}
-          />
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="grid gap-4">
+              {/* Provider Filter */}
+              <FormField
+                key={"provider" + resetKey}
+                control={form.control}
+                name="provider"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Providers</FormLabel>
+                    <MultiSelect
+                      options={toFilterProvidersList}
+                      onValueChange={function (value: string[]): void { field.onChange(value) }}
+                      defaultValue={field.value}
+                      placeholder="Select providers"
+                      variant="inverted"
+                      maxCount={3}
+                    />
+                  </FormItem>
+                )}
+              />
 
-          {/* Secret Name Input */}
-          <InputFilter
-            formControl={form.control}
-            name="secretName"
-            label="Secret Name"
-            placeholder="Enter secret name"
-            suggestions={secretsNames}
-          />
+              {/* Secret Name Input */}
+              <InputFilter
+                formControl={form.control}
+                name="secretName"
+                label="Secret Name"
+                placeholder="Enter secret name"
+                suggestions={secretsNames}
+              />
 
-          {/* Policy Input */}
-          <InputFilter
-            formControl={form.control}
-            name="policy"
-            label="Policy"
-            placeholder="Enter policy"
-            suggestions={policiesNames}
-          />
+              {/* Policy Input */}
+              <InputFilter
+                formControl={form.control}
+                name="policy"
+                label="Policy"
+                placeholder="Enter policy"
+                suggestions={policiesNames}
+              />
+            </div>
 
-          {/* Policy Status */}
-          <BooleanFilter
-            formControl={form.control}
-            name="policyStatus"
-            label="Policy Status"
-            placeholder="Select policy status"
-            trueItem="Compliant"
-            falseItem="Non-Compliant"
-          />
+            <div className="grid gap-4">
+              {/* Policy Status */}
+              <BooleanFilter
+                formControl={form.control}
+                name="policyStatus"
+                label="Policy Status"
+                placeholder="Select policy status"
+                trueItem="Compliant"
+                falseItem="Non-Compliant"
+              />
 
-          {/* Duplicates  */}
-          <BooleanFilter
-            formControl={form.control}
-            name="duplicates"
-            label="Duplicates"
-            placeholder="Select duplicates"
-            trueItem="Contains"
-            falseItem="Does not Contain"
-          />
+              {/* Duplicates  */}
+              <BooleanFilter
+                formControl={form.control}
+                name="duplicates"
+                label="Duplicates"
+                placeholder="Select duplicates"
+                trueItem="Contains"
+                falseItem="Does not Contain"
+              />
 
-          <DateFilter
-            form={form}
-            name="lastAccess"
-            label="Last Access"
-            minDate=""
-            maxDate={new Date().toISOString().split("T")[0]} // Current date
-          />
-          <DateFilter
-            form={form}
-            name="lastRotation"
-            label="Last Rotation"
-            minDate={new Date(new Date().setDate(new Date().getDate() - 90))
-              .toISOString()
-              .split("T")[0]} // 90 days ago
-            maxDate={new Date().toISOString().split("T")[0]} // Current date
-          />
+              {/* Accessors  */}
+              <BooleanFilter
+                formControl={form.control}
+                name="accessors"
+                label="Accessors"
+                placeholder="Select accessors"
+                trueItem="Contains"
+                falseItem="Does not Contain"
+              />
+            </div>
 
-          {/* Accessors  */}
-          <BooleanFilter
-            formControl={form.control}
-            name="accessors"
-            label="Accessors"
-            placeholder="Select accessors"
-            trueItem="Contains"
-            falseItem="Does not Contain"
-          />
+            <DateFilter
+              form={form}
+              name="lastAccess"
+              label="Last Access"
+              minDate=""
+              maxDate={new Date().toISOString().split("T")[0]} // Current date
+            />
+
+            <DateFilter
+              form={form}
+              name="lastRotation"
+              label="Last Rotation"
+              minDate={new Date(new Date().setDate(new Date().getDate() - 90))
+                .toISOString()
+                .split("T")[0]} // 90 days ago
+              maxDate={new Date().toISOString().split("T")[0]} // Current date
+            />
+          </div>
 
           {/* Clear and Apply Buttons */}
-          <DialogFooter>
+          <DialogFooter className="flex justify-end gap-4">
             <Button type="button" variant="secondary" onClick={handleClear}>
               Clear
             </Button>
