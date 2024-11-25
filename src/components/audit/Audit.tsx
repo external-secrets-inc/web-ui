@@ -4,7 +4,6 @@ import { API_DOMAIN, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import useCreateAuditInstallationToken from "@/services/audit/mutations/useCreateAuditInstallationToken";
 import useGetAuditProcessFile from "@/services/audit/queries/useGetAuditProcessFile";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
-import { STATUS_MAP } from "@/components/FeatureCollection/FeatureCollection.constants";
 import { ApiHttpError } from "@/types";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
 import { Button } from "../ui/button";
@@ -12,14 +11,46 @@ import ListenerInstallDialogContent from "./ListenerInstallDialogContent";
 import AuditChartProblems from "./AuditChartProblems";
 import AuditChartProviders from "./AuditChartProviders";
 import useGetListener from "@/services/audit/queries/useGetListener";
+import useGetListenerAuditData from "@/services/audit/queries/useGetListenerAuditData";
 import { trackListenerInstallDialogOpened } from "@/analytics";
 import FilterComponent from "./FilterComponent";
-import { AuditTableData, FilterState, columns } from "./Audit.interfaces";
-import useGetListenerAuditData from "@/services/audit/queries/useGetListenerAuditData";
-import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import { AuditTableData, FilterState } from "./Audit.interfaces";
+import { DataProvider, DataTable } from "../ui/DataProvider";
 import { useSearchParams } from "react-router-dom";
+import { createColumnHelper } from "@tanstack/react-table"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { LucideAlertCircle, LucideFilter } from "lucide-react";
 
 export default function Audit() {
+  const columnHelper = createColumnHelper<AuditTableData>()
+
+  const columns = useMemo(() => [
+    columnHelper.accessor('secret', {
+      header: 'Secret',
+      cell: info => <strong>{info.getValue()}</strong>
+    }),
+    columnHelper.accessor('lastRotation', {
+      header: 'Last Rotation',
+      cell: info => <span className="font-mono">{new Date(info.getValue()).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}</span>
+    }),
+    columnHelper.accessor('policies', {
+      header: 'Policies',
+      cell: info => info.getValue()
+    }),
+    columnHelper.accessor('duplicates', {
+      header: 'Duplicates',
+      cell: info => info.getValue()
+    }),
+    columnHelper.accessor('lastAccess', {
+      header: 'Last Access',
+      cell: info => <span className="font-mono">{new Date(info.getValue()).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}</span>
+    }),
+    columnHelper.accessor('accessors', {
+      header: 'Accessors',
+      cell: info => info.getValue()
+    })
+  ], [columnHelper])
+
   const [processCommand, setProcessCommand] = useState("")
   const [applyCommand, setApplyCommand] = useState("")
   const [isListenerInstallDialogOpen, setIsListenerInstallDialogOpen] = useState(false);
@@ -36,7 +67,7 @@ export default function Audit() {
   const listener = useMemo(() => {
     if (!listenerData) return {
       id: "",
-      status: "PENDING_REGISTRATION"
+      status: ""
     }
 
     return {
@@ -51,20 +82,13 @@ export default function Audit() {
     handleDefaultApiHttpError(listenerError, "Error while fetching listener")
   }, [listenerError, listenerIsError])
 
-  const { data: listenerAuditData, refetch: listenerAuditRefetch, isError: listenerAuditIsError, isRefetchError: listenerAuditIsRefetchError, error: listenerAuditError } = useGetListenerAuditData(true, {
+  const { data: listenerAuditData, refetch: listenerAuditRefetch, isLoading: listenerAuditIsLoading, isError: listenerAuditIsError, isRefetchError: listenerAuditIsRefetchError, error: listenerAuditError } = useGetListenerAuditData(true, {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
   });
 
   const listenerAudit = useMemo(() => {
-    if (!listenerAuditData) return [{
-      secret: "",
-      lastRotation: "",
-      policies: "",
-      duplicates: 0,
-      lastAccess: "",
-      accessors: 0,
-    }] as AuditTableData[]
+    if (!listenerAuditData) return []
 
     return listenerAuditData
   }, [listenerAuditData]);
@@ -73,7 +97,7 @@ export default function Audit() {
     if (!(listenerAuditError || listenerAuditIsRefetchError)) return;
 
     handleDefaultApiHttpError(listenerAuditError, "Error while fetching listener Audit data")
-  }, [listenerAuditError, listenerAuditIsError])
+  }, [listenerAuditError, listenerAuditIsError, listenerAuditIsRefetchError])
 
   const { mutate: createToken, data: token } = useCreateAuditInstallationToken({
     onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to generate manifest token")
@@ -155,87 +179,81 @@ export default function Audit() {
     }
   }, [isListenerInstallDialogOpen, listener.id]);
 
-  const table = useReactTable({
-    data: listenerAudit,
-    columns,
-    getCoreRowModel: getCoreRowModel(), // Implement core row model as per your requirements
-  });
-
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between p-4 border rounded-lg flex-col w-full space-y-4 min-[530px]:flex-row min-[530px]:w-auto min-[530px]:space-y-0">
-        <div className="text-lg">
-          <span className="flex flex-col items-center text-center gap-2 min-[530px]:flex-row min-[530px]:text-left">
-            Listener Status:
-            <div className="flex flex-row gap-2 items-center">
-              {STATUS_MAP[listener.status].icon}
-              {STATUS_MAP[listener.status].text}
-            </div>
-          </span>
+    <div className="space-y-4">
+      {listener.status === "PENDING_REGISTRATION" && (
+      <Alert variant="warning">
+        <div className="flex justify-between items-center">
+          <div>
+            <AlertTitle className="flex gap-2 items-center">
+              <LucideAlertCircle className="text-orange-500"/> Listener not installed
+            </AlertTitle>
+            <AlertDescription className="flex items-center justify-between">
+              To start receiving audit data, you need to install our listener in your cluster
+            </AlertDescription>
+          </div>
+          <Dialog open={isListenerInstallDialogOpen} onOpenChange={handleListenerInstallDialogOpenChange}>
+            <DialogTrigger asChild>
+              <Button
+                variant="outline"
+              >
+                Install listener
+              </Button>
+            </DialogTrigger>
+            <ListenerInstallDialogContent
+              id={listener.id}
+              processFile={processFileData ? processFileData.process : ''}
+              processCommand={processCommand}
+              applyCommand={applyCommand}
+            />
+          </Dialog>
         </div>
-        <Dialog open={isListenerInstallDialogOpen} onOpenChange={handleListenerInstallDialogOpenChange}>
-          <DialogTrigger asChild>
-            <Button
-              size="default"
-              className="self-center min-[530px]:self-end"
-            >
-              Install listener
-            </Button>
-          </DialogTrigger>
-          <ListenerInstallDialogContent
-            id={listener.id}
-            processFile={processFileData ? processFileData.process : ''}
-            processCommand={processCommand}
-            applyCommand={applyCommand}
-          />
-        </Dialog>
-      </div>
+      </Alert>
+    )}
 
+    {listener.status === "OFFLINE" && (
+      <Alert variant="destructive">
+        <AlertTitle className="flex gap-2 items-center">
+          <LucideAlertCircle className="text-destructive"/> Listener Offline or Unreachable
+        </AlertTitle>
+        <AlertDescription>
+          The listener is currently offline or cannot be accessed. Please check the cluster configuration on your end.
+        </AlertDescription>
+      </Alert>
+    )}
+
+      <h2 className="font-bold pt-4">Analytics</h2>
       <div className="grid grid-cols-2 gap-4 mt-6">
         <AuditChartProviders />
         <AuditChartProblems />
       </div>
 
-      <div className="p-6 border rounded-lg shadow-sm space-y-4">
-        <div className="flex items-center justify-between flex-col space-y-4 min-[260px]:flex-row min-[260px]:space-y-0">
-          <h3 className="text-lg font-semibold">Table title</h3>
-          <Dialog open={isFiltersDialogOpen} onOpenChange={handleFiltersDialogOpenChange}>
-            <DialogTrigger asChild>
-              <Button className="self-center min-[260px]:self-end">
-                Filters
-              </Button>
-            </DialogTrigger>
-            <FilterComponent searchParams={searchParams} onFiltersChange={handleFilterChange} />
-          </Dialog>
-        </div>
-
-        <div className="flex w-full">
-          <table className="w-full border-collapse table-auto text-left">
-            <thead>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <th key={header.id}>{
-                      header.isPlaceholder ?
-                        null :
-                        flexRender(header.column.columnDef.header, header.getContext())
-                    }</th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody>
-              {table.getRowModel().rows.map((row) => (
-                <tr key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <div className="flex items-center justify-between pt-4">
+        <h2 className="font-bold">All Secrets</h2>
+        <Dialog open={isFiltersDialogOpen} onOpenChange={handleFiltersDialogOpenChange}>
+          <DialogTrigger asChild>
+            <Button
+              size="icon"
+              variant="outline"
+              className="self-center min-[260px]:self-end"
+              aria-label="Filters"
+              title="Filters"
+            >
+              <LucideFilter/>
+            </Button>
+          </DialogTrigger>
+          <FilterComponent searchParams={searchParams} onFiltersChange={handleFilterChange} />
+        </Dialog>
       </div>
+
+      <DataProvider
+        data={listenerAudit}
+        columns={columns}
+        initialSort={{ id: 'lastRotation', desc: true }}
+        isLoading={listenerAuditIsLoading}
+      >
+        <DataTable />
+      </DataProvider>
     </div>
   );
 }

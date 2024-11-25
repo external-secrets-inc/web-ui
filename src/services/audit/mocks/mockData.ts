@@ -73,7 +73,8 @@ export const mockProblemStats = [
 
 export const mockTableData = [
   {
-    secret: "Staff",
+    id: "550e8400-e29b-41d4-a716-446655440000",
+    secret: "Solid Serpent",
     lastRotation: "2024-06-03",
     policies: "3/4",
     duplicates: 5,
@@ -81,7 +82,8 @@ export const mockTableData = [
     accessors: 4,
   },
   {
-    secret: "Kid",
+    id: "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+    secret: "Laughing Octopus",
     lastRotation: "2023-11-27",
     policies: "2/2",
     duplicates: 3,
@@ -89,7 +91,8 @@ export const mockTableData = [
     accessors: 8,
   },
   {
-    secret: "Describe",
+    id: "6ba7b812-9dad-11d1-80b4-00c04fd430c8",
+    secret: "Liquid Cobra",
     lastRotation: "2024-07-12",
     policies: "1/3",
     duplicates: 0,
@@ -97,7 +100,8 @@ export const mockTableData = [
     accessors: 7,
   },
   {
-    secret: "Occur",
+    id: "6ba7b814-9dad-11d1-80b4-00c04fd430c8",
+    secret: "Crying Wolf",
     lastRotation: "2024-04-20",
     policies: "0/0",
     duplicates: 1,
@@ -105,7 +109,8 @@ export const mockTableData = [
     accessors: 2,
   },
   {
-    secret: "Policy",
+    id: "6ba7b816-9dad-11d1-80b4-00c04fd430c8",
+    secret: "Raging Raven",
     lastRotation: "2024-03-31",
     policies: "2/4",
     duplicates: 4,
@@ -113,7 +118,8 @@ export const mockTableData = [
     accessors: 5,
   },
   {
-    secret: "Field",
+    id: "6ba7b818-9dad-11d1-80b4-00c04fd430c8",
+    secret: "Screaming Mantis",
     lastRotation: "2023-12-25",
     policies: "3/3",
     duplicates: 2,
@@ -121,7 +127,8 @@ export const mockTableData = [
     accessors: 6,
   },
   {
-    secret: "Project",
+    id: "6ba7b81a-9dad-11d1-80b4-00c04fd430c8",
+    secret: "Venom Ocelot",
     lastRotation: "2024-02-14",
     policies: "1/1",
     duplicates: 0,
@@ -129,7 +136,8 @@ export const mockTableData = [
     accessors: 3,
   },
   {
-    secret: "Task",
+    id: "6ba7b81c-9dad-11d1-80b4-00c04fd430c8",
+    secret: "Quiet Scorpion",
     lastRotation: "2024-08-07",
     policies: "3/4",
     duplicates: 1,
@@ -137,7 +145,8 @@ export const mockTableData = [
     accessors: 9,
   },
   {
-    secret: "Build",
+    id: "6ba7b81e-9dad-11d1-80b4-00c04fd430c8",
+    secret: "Burning Centipede",
     lastRotation: "2024-07-01",
     policies: "4/4",
     duplicates: 3,
@@ -145,14 +154,14 @@ export const mockTableData = [
     accessors: 2,
   },
   {
-    secret: "Create",
+    id: "6ba7b820-9dad-11d1-80b4-00c04fd430c8",
+    secret: "Dancing Spider",
     lastRotation: "2024-01-30",
     policies: "1/1",
     duplicates: 0,
     lastAccess: "2023-12-15",
     accessors: 8,
   },
-];
-
+] as const
 
 export const mockNetworkResponseDelay = () => new Promise(resolve => setTimeout(resolve, 2500))
