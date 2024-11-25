@@ -13,8 +13,9 @@ export interface AuditTableData {
   id: string;
   secret: string;
   lastRotation: string;
-  policies: string;
-  duplicates: number;
+  policiesAmount: string;
+  fullCompliant: boolean;
+  duplicatesAmount: number;
   lastAccess: string;
-  accessors: number;
+  accessorsAmount: number;
 }

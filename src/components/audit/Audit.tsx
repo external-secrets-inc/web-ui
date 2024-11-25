@@ -33,11 +33,17 @@ export default function Audit() {
       header: 'Last Rotation',
       cell: info => <span className="font-mono">{new Date(info.getValue()).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}</span>
     }),
-    columnHelper.accessor('policies', {
+    columnHelper.accessor('policiesAmount', {
       header: 'Policies',
-      cell: info => info.getValue()
+      cell: info => {
+        return (
+          <span className={info.row.original.fullCompliant ? undefined : "text-orange-400"}>
+            {info.getValue()}
+          </span>
+        )
+      }
     }),
-    columnHelper.accessor('duplicates', {
+    columnHelper.accessor('duplicatesAmount', {
       header: 'Duplicates',
       cell: info => info.getValue()
     }),
@@ -45,7 +51,7 @@ export default function Audit() {
       header: 'Last Access',
       cell: info => <span className="font-mono">{new Date(info.getValue()).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}</span>
     }),
-    columnHelper.accessor('accessors', {
+    columnHelper.accessor('accessorsAmount', {
       header: 'Accessors',
       cell: info => info.getValue()
     })
@@ -182,45 +188,45 @@ export default function Audit() {
   return (
     <div className="space-y-4">
       {listener.status === "PENDING_REGISTRATION" && (
-      <Alert variant="warning">
-        <div className="flex justify-between items-center">
-          <div>
-            <AlertTitle className="flex gap-2 items-center">
-              <LucideAlertCircle className="text-orange-500"/> Listener not installed
-            </AlertTitle>
-            <AlertDescription className="flex items-center justify-between">
-              To start receiving audit data, you need to install our listener in your cluster
-            </AlertDescription>
+        <Alert variant="warning">
+          <div className="flex justify-between items-center">
+            <div>
+              <AlertTitle className="flex gap-2 items-center">
+                <LucideAlertCircle className="text-orange-500" /> Listener not installed
+              </AlertTitle>
+              <AlertDescription className="flex items-center justify-between">
+                To start receiving audit data, you need to install our listener in your cluster
+              </AlertDescription>
+            </div>
+            <Dialog open={isListenerInstallDialogOpen} onOpenChange={handleListenerInstallDialogOpenChange}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                >
+                  Install listener
+                </Button>
+              </DialogTrigger>
+              <ListenerInstallDialogContent
+                id={listener.id}
+                processFile={processFileData ? processFileData.process : ''}
+                processCommand={processCommand}
+                applyCommand={applyCommand}
+              />
+            </Dialog>
           </div>
-          <Dialog open={isListenerInstallDialogOpen} onOpenChange={handleListenerInstallDialogOpenChange}>
-            <DialogTrigger asChild>
-              <Button
-                variant="outline"
-              >
-                Install listener
-              </Button>
-            </DialogTrigger>
-            <ListenerInstallDialogContent
-              id={listener.id}
-              processFile={processFileData ? processFileData.process : ''}
-              processCommand={processCommand}
-              applyCommand={applyCommand}
-            />
-          </Dialog>
-        </div>
-      </Alert>
-    )}
+        </Alert>
+      )}
 
-    {listener.status === "OFFLINE" && (
-      <Alert variant="destructive">
-        <AlertTitle className="flex gap-2 items-center">
-          <LucideAlertCircle className="text-destructive"/> Listener Offline or Unreachable
-        </AlertTitle>
-        <AlertDescription>
-          The listener is currently offline or cannot be accessed. Please check the cluster configuration on your end.
-        </AlertDescription>
-      </Alert>
-    )}
+      {listener.status === "OFFLINE" && (
+        <Alert variant="destructive">
+          <AlertTitle className="flex gap-2 items-center">
+            <LucideAlertCircle className="text-destructive" /> Listener Offline or Unreachable
+          </AlertTitle>
+          <AlertDescription>
+            The listener is currently offline or cannot be accessed. Please check the cluster configuration on your end.
+          </AlertDescription>
+        </Alert>
+      )}
 
       <h2 className="font-bold pt-4">Analytics</h2>
       <div className="grid grid-cols-2 gap-4 mt-6">
@@ -239,7 +245,7 @@ export default function Audit() {
               aria-label="Filters"
               title="Filters"
             >
-              <LucideFilter/>
+              <LucideFilter />
             </Button>
           </DialogTrigger>
           <FilterComponent searchParams={searchParams} onFiltersChange={handleFilterChange} />
