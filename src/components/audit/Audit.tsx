@@ -192,37 +192,39 @@ export default function Audit() {
   return (
     <div className="space-y-4">
       {listener.status === "PENDING_REGISTRATION" && (
-        <Alert variant="warning">
-          <div className="flex justify-between items-center">
-            <div>
-              <AlertTitle className="flex gap-2 items-center">
-                <LucideAlertCircle className="text-orange-500" /> Listener not installed
-              </AlertTitle>
-              <AlertDescription className="flex items-center justify-between">
-                To start receiving audit data, you need to install our listener in your cluster
-              </AlertDescription>
-            </div>
-            <Dialog open={isListenerInstallDialogOpen} onOpenChange={handleListenerInstallDialogOpenChange}>
-              <DialogTrigger asChild>
-                <Button
-                  variant="outline"
-                >
-                  Install listener
-                </Button>
-              </DialogTrigger>
-              <ListenerInstallDialogContent
-                id={listener.id}
-                processFile={processFileData ? processFileData.process : ''}
-                processCommand={processCommand}
-                applyCommand={applyCommand}
-              />
-            </Dialog>
+        <Alert
+          className="flex gap-2 items-center justify-between flex-wrap"
+          variant="warning"
+        >
+          <div>
+            <AlertTitle className="flex gap-3 items-center">
+              <LucideAlertCircle className="text-orange-500" /> Listener not installed
+            </AlertTitle>
+            <AlertDescription className="flex items-center justify-between">
+              To start receiving audit data, you need to install our listener in your cluster
+            </AlertDescription>
           </div>
+          <Dialog open={isListenerInstallDialogOpen} onOpenChange={handleListenerInstallDialogOpenChange}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                Install listener
+              </Button>
+            </DialogTrigger>
+            <ListenerInstallDialogContent
+              id={listener.id}
+              processFile={processFileData ? processFileData.process : ''}
+              processCommand={processCommand}
+              applyCommand={applyCommand}
+            />
+          </Dialog>
         </Alert>
       )}
 
       {listener.status === "OFFLINE" && (
-        <Alert variant="destructive">
+        <Alert
+          className="flex gap-2 items-center justify-between flex-wrap"
+          variant="destructive"
+        >
           <AlertTitle className="flex gap-2 items-center">
             <LucideAlertCircle className="text-destructive" /> Listener Offline or Unreachable
           </AlertTitle>
@@ -233,7 +235,7 @@ export default function Audit() {
       )}
 
       <h2 className="font-bold pt-4">Analytics</h2>
-      <div className="grid grid-cols-2 gap-4 mt-6">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(416px,100%),1fr))] gap-4 mt-6">
         <AuditChartProviders />
         <AuditChartProblems />
       </div>
