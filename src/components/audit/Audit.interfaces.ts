@@ -12,6 +12,7 @@ export interface FilterState {
 export interface AuditTableData {
   id: string;
   secret: string;
+  provider: string;
   lastRotation: string;
   policiesAmount: string;
   fullCompliant: boolean;

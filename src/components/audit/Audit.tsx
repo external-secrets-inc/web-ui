@@ -29,31 +29,35 @@ export default function Audit() {
       header: 'Secret',
       cell: info => <strong>{info.getValue()}</strong>
     }),
+    columnHelper.accessor('provider', {
+      header: 'Provider',
+      cell: info => info.getValue()
+    }),
     columnHelper.accessor('lastRotation', {
       header: 'Last Rotation',
       cell: info => <span className="font-mono">{new Date(info.getValue()).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}</span>
-    }),
-    columnHelper.accessor('policiesAmount', {
-      header: 'Policies',
-      cell: info => {
-        return (
-          <span className={info.row.original.fullCompliant ? undefined : "text-orange-400"}>
-            {info.getValue()}
-          </span>
-        )
-      }
-    }),
-    columnHelper.accessor('duplicatesAmount', {
-      header: 'Duplicates',
-      cell: info => info.getValue()
     }),
     columnHelper.accessor('lastAccess', {
       header: 'Last Access',
       cell: info => <span className="font-mono">{new Date(info.getValue()).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}</span>
     }),
+    columnHelper.accessor('duplicatesAmount', {
+      header: 'Duplicates',
+      cell: info => info.getValue()
+    }),
     columnHelper.accessor('accessorsAmount', {
       header: 'Accessors',
       cell: info => info.getValue()
+    }),
+    columnHelper.accessor('policiesAmount', {
+      header: 'Policy compliance',
+      cell: info => {
+        return (
+          <div className="flex gap-2 w-full items-center justify-between">
+            {info.getValue()} {!info.row.original.fullCompliant && <LucideAlertCircle className="text-orange-500" />}
+          </div>
+        )
+      }
     })
   ], [columnHelper])
 

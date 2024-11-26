@@ -75,6 +75,7 @@ export const mockTableData = [
   {
     id: "550e8400-e29b-41d4-a716-446655440000",
     secret: "Solid Serpent",
+    provider: "aws",
     lastRotation: "2024-06-03",
     policiesAmount: "3/4",
     fullCompliant: false, // 3/4 policies are compliant
@@ -99,6 +100,7 @@ export const mockTableData = [
   {
     id: "6ba7b812-9dad-11d1-80b4-00c04fd430c8",
     secret: "Liquid Cobra",
+    provider: "gcp",
     lastRotation: "2024-07-12",
     policiesAmount: "1/3",
     fullCompliant: false, // 1/3 policies are compliant
@@ -119,6 +121,7 @@ export const mockTableData = [
   {
     id: "6ba7b814-9dad-11d1-80b4-00c04fd430c8",
     secret: "Crying Wolf",
+    provider: "kubernetes",
     lastRotation: "2024-04-20",
     policiesAmount: "0/0",
     fullCompliant: true, // 0/0 policies (empty array is considered fully compliant)
@@ -136,6 +139,7 @@ export const mockTableData = [
   {
     id: "6ba7b816-9dad-11d1-80b4-00c04fd430c8",
     secret: "Raging Raven",
+    provider: "azure",
     lastRotation: "2024-03-31",
     policiesAmount: "3/4",
     fullCompliant: false, // 3/4 policies are compliant
@@ -160,6 +164,7 @@ export const mockTableData = [
   {
     id: "6ba7b818-9dad-11d1-80b4-00c04fd430c8",
     secret: "Screaming Mantis",
+    provider: "vault",
     lastRotation: "2023-12-25",
     policiesAmount: "3/3",
     fullCompliant: true, // 3/3 policies are compliant
