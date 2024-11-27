@@ -1,5 +1,5 @@
 import { Bar, BarChart, XAxis, YAxis, LabelList } from "recharts"
-import { LucideAlertCircle, LucideLoader } from "lucide-react"
+import { LucideAlertCircle } from "lucide-react"
 import {
   Card,
   CardContent,
@@ -14,6 +14,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 import { useMemo } from "react"
+import { Loader } from "@/components/ui/Loader"
 
 const CHART_COLORS = [
   "hsl(var(--chart-1))",
@@ -99,7 +100,7 @@ export function AuditBarChartCard({
           </div>
 
         : isLoading ?
-          <LucideLoader className="w-8 h-72 animate-spin text-muted-foreground place-self-center -mt-12" />
+          <Loader size="lg" className="h-72 place-self-center -mt-12"/>
 
         : !data ?
           <div className="flex gap-2 items-center justify-center -mt-12">
