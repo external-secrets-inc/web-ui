@@ -1,14 +1,37 @@
+import { z } from 'zod';
+
 export type ListenerStatus = 'PENDING_INSTALLATION' | 'OFFLINE';
 
-export interface FilterState {
-  provider: string[]; // GCP, Amazon, Azure
-  policy?: string | undefined;
-  secretName?: string | undefined;
-  policyStatus?: string | undefined; // compliant or non-compliant
-  duplicates?: string | undefined; // contains or not
-  lastAccess?: string | undefined; // ascending, descending, or date
-  lastRotation?: string | undefined; // ascending, descending, or date
-  accessors?: string | undefined; // contains or not
+export const filterSchema = z.object({
+  provider: z.array(z.string()),
+  policy: z.string().optional(),
+  secretName: z.string().optional(),
+  policyStatus: z.string().optional(),
+  duplicates: z.string().optional(),
+  lastAccess: z.string().optional(),
+  lastRotation: z.string().optional(),
+  accessors: z.string().optional(),
+});
+
+export type FilterSchema = z.infer<typeof filterSchema>;
+
+export interface AuditResponseData {
+  secretData: AuditTableData[];
+  secretsNames: {
+    label: string;
+    value: string;
+    icon?: React.ComponentType<{ className?: string }>;
+  }[]
+  policiesNames: {
+    label: string;
+    value: string;
+    icon?: React.ComponentType<{ className?: string }>;
+  }[];
+  providers: {
+    label: string;
+    value: string;
+    icon?: React.ComponentType<{ className?: string }>;
+  }[];
 }
 
 export interface AuditTableData {

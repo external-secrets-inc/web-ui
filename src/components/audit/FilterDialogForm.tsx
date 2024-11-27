@@ -1,6 +1,7 @@
+// TODO: investigate less manual approaches to deal with stringified values from query params
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Control, useForm, UseFormReturn } from "react-hook-form";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -27,32 +28,27 @@ import {
 } from "@/components/ui/form";
 import { ComponentType, useState } from "react";
 import { MultiSelect } from "../ui/Multi-select";
+import { filterSchema, FilterSchema } from "./Audit.interfaces";
+import { Combobox } from "../ui/Combobox";
 
-const filterSchema = z.object({
-  provider: z.array(z.string()),
-  policy: z.string().optional(),
-  secretName: z.string().optional(),
-  policyStatus: z.string().optional(),
-  duplicates: z.string().optional(),
-  lastAccess: z.string().optional(),
-  lastRotation: z.string().optional(),
-  accessors: z.string().optional(),
-});
-
-type FilterFormValues = z.infer<typeof filterSchema>;
-
-const InputFilter = ({
+const ComboboxFilter = ({
   formControl,
   name,
   label,
   placeholder,
-  suggestions,
+  emptyPlaceholder,
+  options,
 }: {
-  formControl: Control<FilterFormValues>;
-  name: keyof FilterFormValues;
+  formControl: Control<FilterSchema>;
+  name: keyof FilterSchema;
   label: string;
   placeholder: string;
-  suggestions: string[];
+  emptyPlaceholder: string;
+  options: {
+    label: string;
+    value: string;
+    icon?: React.ComponentType<{ className?: string }>;
+  }[];
 }) => (
   <FormField
     control={formControl}
@@ -62,16 +58,14 @@ const InputFilter = ({
         <FormLabel>{label}</FormLabel>
         <FormControl>
           <div>
-            <Input
+            <Combobox
+              options={options}
+              onSelect={(value) => {
+                field.onChange(value)
+              }}
               placeholder={placeholder}
-              list={`${name}-suggestions`}
-              {...field}
+              emptyPlaceholder={emptyPlaceholder}
             />
-            <datalist id={`${name}-suggestions`}>
-              {suggestions.map((suggestion) => (
-                <option key={suggestion} value={suggestion} />
-              ))}
-            </datalist>
           </div>
         </FormControl>
         <FormMessage />
@@ -88,8 +82,8 @@ const BooleanFilter = ({
   trueItem,
   falseItem,
 }: {
-  formControl: Control<FilterFormValues>;
-  name: keyof FilterFormValues;
+  formControl: Control<FilterSchema>;
+  name: keyof FilterSchema;
   label: string;
   placeholder: string;
   trueItem: string;
@@ -131,8 +125,8 @@ const DateFilter = ({
   minDate,
   maxDate,
 }: {
-  form: UseFormReturn<FilterFormValues>;
-  name: Extract<keyof FilterFormValues, "lastAccess" | "lastRotation">;
+  form: UseFormReturn<FilterSchema>;
+  name: Extract<keyof FilterSchema, "lastAccess" | "lastRotation">;
   label: string;
   minDate?: string;
   maxDate?: string;
@@ -171,13 +165,21 @@ const FilterDialogForm = ({
   onSubmit,
   secretsNames,
   policiesNames,
-  toFilterProvidersList,
+  providers,
 }: {
-  initialValues: FilterFormValues;
-  onSubmit: (data: FilterFormValues) => void;
-  secretsNames: string[];
-  policiesNames: string[];
-  toFilterProvidersList: {
+  initialValues: FilterSchema;
+  onSubmit: (data: FilterSchema) => void;
+  secretsNames: {
+    label: string;
+    value: string;
+    icon?: React.ComponentType<{ className?: string }>;
+  }[];
+  policiesNames: {
+    label: string;
+    value: string;
+    icon?: React.ComponentType<{ className?: string }>;
+  }[];
+  providers: {
     label: string;
     value: string;
     icon?: ComponentType<{ className?: string | undefined; }> | undefined;
@@ -185,7 +187,7 @@ const FilterDialogForm = ({
 }) => {
   const [resetKey, setResetKey] = useState(0);
 
-  const form = useForm<FilterFormValues>({
+  const form = useForm<FilterSchema>({
     resolver: zodResolver(filterSchema),
     defaultValues: initialValues,
   });
@@ -227,7 +229,7 @@ const FilterDialogForm = ({
                   <FormItem>
                     <FormLabel>Providers</FormLabel>
                     <MultiSelect
-                      options={toFilterProvidersList}
+                      options={providers}
                       onValueChange={function (value: string[]): void { field.onChange(value) }}
                       defaultValue={field.value}
                       placeholder="Select providers"
@@ -239,21 +241,25 @@ const FilterDialogForm = ({
               />
 
               {/* Secret Name Input */}
-              <InputFilter
+              <ComboboxFilter
+                key={"secret_name" + resetKey}
                 formControl={form.control}
                 name="secretName"
                 label="Secret Name"
                 placeholder="Enter secret name"
-                suggestions={secretsNames}
+                emptyPlaceholder="No secret name found"
+                options={secretsNames}
               />
 
               {/* Policy Input */}
-              <InputFilter
+              <ComboboxFilter
+                key={"policy" + resetKey}
                 formControl={form.control}
                 name="policy"
                 label="Policy"
                 placeholder="Enter policy"
-                suggestions={policiesNames}
+                emptyPlaceholder="No policy found"
+                options={policiesNames}
               />
             </div>
 
@@ -308,7 +314,6 @@ const FilterDialogForm = ({
             />
           </div>
 
-          {/* Clear and Apply Buttons */}
           <DialogFooter className="flex justify-end gap-4">
             <Button type="button" variant="secondary" onClick={handleClear}>
               Clear

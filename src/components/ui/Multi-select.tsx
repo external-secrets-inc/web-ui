@@ -1,4 +1,5 @@
 // source: https://github.com/sersavan/shadcn-multi-select-component
+// TODO: tweak styles for consistency with our current theme. It seems this repo assumes everyone uses the default Shadcn theme, while ours is the new-york theme.
 
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";

@@ -13,7 +13,7 @@ import AuditChartProblems from "./AuditChartProblems";
 import AuditChartProviders from "./AuditChartProviders";
 import useGetListenerAuditData from "@/services/audit/queries/useGetListenerAuditData";
 import { trackListenerInstallDialogOpened } from "@/analytics";
-import { AuditTableData, FilterState, Listener, ListenerStatus } from "./Audit.interfaces";
+import { AuditTableData, FilterSchema, Listener, ListenerStatus } from "./Audit.interfaces";
 import { DataProvider, DataTable } from "../ui/DataProvider";
 import { useSearchParams } from "react-router-dom";
 import { createColumnHelper } from "@tanstack/react-table"
@@ -69,6 +69,19 @@ export default function Audit() {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
+  const initialFilters = useMemo(() => {
+    return {
+      provider: searchParams.getAll('provider'),
+      policy: searchParams.get('policy') ?? undefined,
+      secretName: searchParams.get('secretName') ?? undefined,
+      policyStatus: searchParams.get('policyStatus') ?? undefined,
+      duplicates: searchParams.get('duplicates') ?? undefined,
+      lastAccess: searchParams.get('lastAccess') ?? undefined,
+      lastRotation: searchParams.get('lastRotation') ?? undefined,
+      accessors: searchParams.get('accessors') ?? undefined,
+    } as FilterSchema
+  }, [searchParams])
+
   // TODO remove mock https://github.com/external-secrets-inc/web-ui/issues/115
   const { data: listenerData, isError: listenerIsError, isLoading: listenerIsLoading, error: listenerError } = useGetListener(true, {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
@@ -99,7 +112,12 @@ export default function Audit() {
   });
 
   const listenerAudit = useMemo(() => {
-    if (!listenerAuditData) return []
+    if (!listenerAuditData) return {
+      secretData: [],
+      secretsNames: [],
+      policiesNames: [],
+      providers: [],
+    }
 
     return listenerAuditData;
   }, [listenerAuditData]);
@@ -168,7 +186,7 @@ export default function Audit() {
     setIsFiltersDialogOpen(isOpen);
   };
 
-  const handleFilterChange = (selectedFilters: FilterState) => {
+  const handleFilterChange = (selectedFilters: FilterSchema) => {
     const filteredFilters = Object.fromEntries(
       Object.entries(selectedFilters).filter(
         ([, value]) =>
@@ -267,48 +285,20 @@ export default function Audit() {
             </Button>
           </DialogTrigger>
           <FilterDialogForm
-              initialValues={{
-                provider: searchParams.getAll("provider"),
-                policy: searchParams.get("policy") || undefined,
-                secretName: searchParams.get("secretName") || undefined,
-                policyStatus:
-                  searchParams.get("policyStatus") === "true"
-                    ? "true"
-                    : searchParams.get("policyStatus") === "false"
-                    ? "false"
-                    : undefined,
-                duplicates:
-                  searchParams.get("duplicates") === "true"
-                    ? "true"
-                    : searchParams.get("duplicates") === "false"
-                    ? "false"
-                    : undefined,
-                lastAccess: searchParams.get("lastAccess") || undefined,
-                lastRotation: searchParams.get("lastRotation") || undefined,
-                accessors:
-                  searchParams.get("accessors") === "true"
-                    ? "true"
-                    : searchParams.get("accessors") === "false"
-                    ? "false"
-                    : undefined,
-              }}
+              initialValues={initialFilters}
               onSubmit={(data) => {
                 handleFilterChange(data);
                 handleFiltersDialogOpenChange(false);
               }}
-              secretsNames={["secret-1", "secret-2"]}
-              policiesNames={["policy-1", "policy-2"]}
-              toFilterProvidersList={[
-                { value: "gcp", label: "GCP" },
-                { value: "aws", label: "AWS" },
-                { value: "azure", label: "Azure" },
-              ]}
+              secretsNames={listenerAudit.secretsNames}
+              policiesNames={listenerAudit.policiesNames}
+              providers={listenerAudit.providers}
             />
         </Dialog>
       </div>
 
       <DataProvider
-        data={listenerAudit}
+        data={listenerAudit.secretData}
         columns={columns}
         initialSort={{ id: 'lastRotation', desc: true }}
         isLoading={listenerAuditIsLoading}
