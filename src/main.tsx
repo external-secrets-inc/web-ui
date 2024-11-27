@@ -110,9 +110,8 @@ const router = createBrowserRouter([
               title="Audit"
               description={
                 <>
-                  Audit is cool!<br />
+                  Gather insights about your secrets and policies based on audit logs from multiple providers<br />
                   {/* TODO:  add link to quickstart guide*/}
-                  See our <a href={`${DOCS_DOMAIN}/docs/`}>Quickstart guide</a> for more details
                 </>
               }
             />

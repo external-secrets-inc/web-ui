@@ -6,6 +6,7 @@ import { Button } from "./button"
 import { Input } from "./input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./table"
+import { Loader } from "@/components/ui/Loader"
 
 interface DataProviderContextValue<TData> {
   data: TData[]
@@ -15,6 +16,7 @@ interface DataProviderContextValue<TData> {
   globalFilter: string
   setGlobalFilter: (value: string) => void
   table: ReturnType<typeof useReactTable>
+  isLoading?: boolean
 }
 
 const DataProviderContext = React.createContext<DataProviderContextValue<any>>({} as any)
@@ -33,6 +35,7 @@ interface DataProviderProps<TData extends DataWithId> {
   children: React.ReactNode;
   initialSort?: { id: string; desc: boolean };
   reactTableExtraOptions?: Partial<TableOptions<TData>>;
+  isLoading?: boolean;
 }
 
 function DataProvider<TData extends DataWithId>({
@@ -40,7 +43,8 @@ function DataProvider<TData extends DataWithId>({
   columns,
   children,
   initialSort = { id: 'id', desc: false },
-  reactTableExtraOptions = {}
+  reactTableExtraOptions = {},
+  isLoading = false
 }: DataProviderProps<TData>) {
   const [sorting, setSorting] = React.useState<SortingState>([initialSort])
   const [globalFilter, setGlobalFilter] = React.useState("")
@@ -62,7 +66,7 @@ function DataProvider<TData extends DataWithId>({
   })
 
   return (
-    <DataProviderContext.Provider value={{ data, columns, sorting, setSorting, globalFilter, setGlobalFilter, table }}>
+    <DataProviderContext.Provider value={{ data, columns, sorting, setSorting, globalFilter, setGlobalFilter, table, isLoading }}>
       {children}
     </DataProviderContext.Provider>
   )
@@ -163,7 +167,7 @@ interface DataTableProps<TMeta = any> extends React.HTMLAttributes<HTMLDivElemen
 
 const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
   ({ className, onRowClick, rowsAppend, meta, ...props }, ref) => {
-    const { table } = React.useContext(DataProviderContext)
+    const { table, isLoading } = React.useContext(DataProviderContext)
 
     const tableOptions = React.useMemo(() => ({
       ...table.options,
@@ -206,16 +210,35 @@ const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} onClick={() => onRowClick?.(row.original)} className="cursor-pointer">
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
+            { isLoading ?
+              <TableRow>
+                <TableCell colSpan={table.getAllColumns().length}>
+                  <div className="flex justify-center">
+                    <Loader />
+                  </div>
+                </TableCell>
               </TableRow>
-            ))}
-            {rowsAppend}
+
+            : table.getRowModel().rows.length === 0 ?
+              <TableRow>
+                <TableCell colSpan={table.getAllColumns().length} className="text-center">
+                  <p className="text-sm text-muted-foreground">No data available</p>
+                </TableCell>
+              </TableRow>
+
+            : <>
+                {table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id} onClick={() => onRowClick?.(row.original)} className="cursor-pointer">
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+                {rowsAppend}
+              </>
+            }
           </TableBody>
         </Table>
       </div>
