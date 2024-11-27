@@ -1,11 +1,12 @@
 import { cn } from "@/lib/utils"
 import { type ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, type SortingState, useReactTable, type TableOptions } from "@tanstack/react-table"
-import { LucideArrowDown, LucideArrowDownNarrowWide, LucideArrowUp, LucideArrowUpNarrowWide, LucideChevronsUpDown, LucideSearch, LucideLoader } from "lucide-react"
+import { LucideArrowDown, LucideArrowDownNarrowWide, LucideArrowUp, LucideArrowUpNarrowWide, LucideChevronsUpDown, LucideSearch } from "lucide-react"
 import * as React from "react"
 import { Button } from "./button"
 import { Input } from "./input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./table"
+import { Loader } from "@/components/ui/Loader"
 
 interface DataProviderContextValue<TData> {
   data: TData[]
@@ -213,7 +214,7 @@ const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
               <TableRow>
                 <TableCell colSpan={table.getAllColumns().length}>
                   <div className="flex justify-center">
-                    <LucideLoader className="h-4 w-4 animate-spin" />
+                    <Loader />
                   </div>
                 </TableCell>
               </TableRow>
