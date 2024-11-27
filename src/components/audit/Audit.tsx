@@ -21,6 +21,8 @@ import { createColumnHelper } from "@tanstack/react-table"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LucideAlertCircle, LucideFilter } from "lucide-react";
 import { LISTENER_STATUS } from "./Audit.constants";
+import AuditTimelineProviders from "./AuditTimelineProviders";
+import AuditTimelineProblems from "./AuditTimelineProblems";
 
 export default function Audit() {
   const columnHelper = createColumnHelper<AuditTableData>()
@@ -239,6 +241,11 @@ export default function Audit() {
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(416px,100%),1fr))] gap-4 mt-6">
         <AuditChartProviders />
         <AuditChartProblems />
+      </div>
+
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(416px,100%),1fr))] gap-4 mt-6">
+        <AuditTimelineProviders />
+        <AuditTimelineProblems />
       </div>
 
       <div className="flex items-center justify-between pt-4">

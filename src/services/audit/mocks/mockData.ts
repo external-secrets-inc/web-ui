@@ -187,4 +187,78 @@ export const mockTableData = [
   },
 ] as const
 
+// Seeded random function for consistent results
+const seededRandom = (date: string) => {
+  let seed = Array.from(date).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const x = Math.sin(seed++) * 10000;
+  return x - Math.floor(x);
+};
+
+export const mockProviderTimelineStats = Array.from({ length: 90 }).map((_, index) => {
+  const date = new Date();
+  date.setDate(date.getDate() - (6 - index));
+  const dateStr = date.toISOString().split('T')[0];
+
+  return {
+    date: dateStr,
+    stats: [
+      {
+        kind: "aws",
+        amount: 245 - Math.floor(seededRandom(dateStr) * 30),
+        label: "AWS",
+        tooltipLabel: "AWS Secrets Manager"
+      },
+      {
+        kind: "gcp",
+        amount: 156 - Math.floor(seededRandom(dateStr + "gcp") * 20),
+        label: "GCP",
+        tooltipLabel: "Google Secret Manager"
+      },
+      {
+        kind: "azure",
+        amount: 98 - Math.floor(seededRandom(dateStr + "azure") * 15),
+        label: "Azure",
+        tooltipLabel: "Azure Key Vault"
+      },
+      {
+        kind: "vault",
+        amount: 45 - Math.floor(seededRandom(dateStr + "vault") * 10),
+        label: "HashiCorp",
+        tooltipLabel: "HashiCorp Vault"
+      }
+    ]
+  }
+});
+
+export const mockProblemTimelineStats = Array.from({ length: 7 }).map((_, index) => {
+  const date = new Date();
+  date.setDate(date.getDate() - (6 - index));
+  // Changed: Use YYYY-MM-DD format
+  const dateStr = date.toISOString().split('T')[0];
+
+  return {
+    date: dateStr,
+    stats: [
+      {
+        kind: "duplicated",
+        amount: 4 - Math.floor(seededRandom(dateStr + "dup") * 2),
+        label: "Duplicated",
+        tooltipLabel: "Secrets with duplicate values"
+      },
+      {
+        kind: "nonCompliant",
+        amount: 18 - Math.floor(seededRandom(dateStr + "non") * 5),
+        label: "Non-compliant",
+        tooltipLabel: "Secrets not following compliance rules"
+      },
+      {
+        kind: "neverAccessed",
+        amount: 5 - Math.floor(seededRandom(dateStr + "never") * 2),
+        label: "Never Accessed",
+        tooltipLabel: "Secrets that were never accessed"
+      }
+    ]
+  }
+});
+
 export const mockNetworkResponseDelay = () => new Promise(resolve => setTimeout(resolve, 2500))
