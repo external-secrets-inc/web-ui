@@ -1,4 +1,4 @@
-export type ListenerStatus = 'PENDING_REGISTRATION' | 'OFFLINE';
+export type ListenerStatus = 'PENDING_INSTALLATION' | 'OFFLINE';
 
 export interface FilterState {
   provider: string[]; // GCP, Amazon, Azure

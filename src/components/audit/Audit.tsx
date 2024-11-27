@@ -70,13 +70,13 @@ export default function Audit() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // TODO remove mock https://github.com/external-secrets-inc/web-ui/issues/115
-  const { data: listenerData, isError: listenerIsError, error: listenerError } = useGetListener(true, {
+  const { data: listenerData, isError: listenerIsError, isLoading: listenerIsLoading, error: listenerError } = useGetListener(true, {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
   });
 
   const listener = useMemo((): Listener => {
-    if (!listenerData) return {
+    if (listenerIsLoading || !listenerData) return {
       id: "",
       status: LISTENER_STATUS.PENDING_INSTALLATION
     }
@@ -85,7 +85,7 @@ export default function Audit() {
       id: listenerData.id,
       status: listenerData.current_status as ListenerStatus
     }
-  }, [listenerData]);
+  }, [listenerData, listenerIsLoading]);
 
   useEffect(() => {
     if (!(listenerError)) return;
@@ -192,7 +192,7 @@ export default function Audit() {
 
   return (
     <div className="space-y-4">
-      {listener.status === LISTENER_STATUS.PENDING_INSTALLATION && (
+      {!listenerIsLoading && listener.status === LISTENER_STATUS.PENDING_INSTALLATION && (
         <Alert
           className="flex gap-2 items-center justify-between flex-wrap"
           variant="warning"
@@ -221,7 +221,7 @@ export default function Audit() {
         </Alert>
       )}
 
-      {listener.status === LISTENER_STATUS.OFFLINE && (
+      {!listenerIsLoading && listener.status === LISTENER_STATUS.OFFLINE && (
         <Alert
           className="flex gap-2 items-center justify-between flex-wrap"
           variant="destructive"
