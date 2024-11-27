@@ -14,12 +14,13 @@ import useGetListener from "@/services/audit/queries/useGetListener";
 import useGetListenerAuditData from "@/services/audit/queries/useGetListenerAuditData";
 import { trackListenerInstallDialogOpened } from "@/analytics";
 import FilterComponent from "./FilterComponent";
-import { AuditTableData, FilterState } from "./Audit.interfaces";
+import { AuditTableData, FilterState, Listener, ListenerStatus } from "./Audit.interfaces";
 import { DataProvider, DataTable } from "../ui/DataProvider";
 import { useSearchParams } from "react-router-dom";
 import { createColumnHelper } from "@tanstack/react-table"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LucideAlertCircle, LucideFilter } from "lucide-react";
+import { LISTENER_STATUS } from "./Audit.constants";
 
 export default function Audit() {
   const columnHelper = createColumnHelper<AuditTableData>()
@@ -74,15 +75,15 @@ export default function Audit() {
     refetchIntervalInBackground: true,
   });
 
-  const listener = useMemo(() => {
+  const listener = useMemo((): Listener => {
     if (!listenerData) return {
       id: "",
-      status: ""
+      status: LISTENER_STATUS.PENDING_INSTALLATION
     }
 
     return {
       id: listenerData.id,
-      status: listenerData.current_status
+      status: listenerData.current_status as ListenerStatus
     }
   }, [listenerData]);
 
@@ -191,7 +192,7 @@ export default function Audit() {
 
   return (
     <div className="space-y-4">
-      {listener.status === "PENDING_REGISTRATION" && (
+      {listener.status === LISTENER_STATUS.PENDING_INSTALLATION && (
         <Alert
           className="flex gap-2 items-center justify-between flex-wrap"
           variant="warning"
@@ -220,7 +221,7 @@ export default function Audit() {
         </Alert>
       )}
 
-      {listener.status === "OFFLINE" && (
+      {listener.status === LISTENER_STATUS.OFFLINE && (
         <Alert
           className="flex gap-2 items-center justify-between flex-wrap"
           variant="destructive"

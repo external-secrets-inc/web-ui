@@ -1,3 +1,5 @@
+export type ListenerStatus = 'PENDING_REGISTRATION' | 'OFFLINE';
+
 export interface FilterState {
   provider: string[]; // GCP, Amazon, Azure
   policy: string[];
@@ -19,4 +21,9 @@ export interface AuditTableData {
   duplicatesAmount: number;
   lastAccess: string;
   accessorsAmount: number;
+}
+
+export interface Listener {
+  id: string;
+  status: ListenerStatus;
 }
