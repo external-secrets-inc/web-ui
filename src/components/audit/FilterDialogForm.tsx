@@ -36,14 +36,14 @@ const ComboboxFilter = ({
   name,
   label,
   placeholder,
-  emptyPlaceholder,
+  emptyText,
   options,
 }: {
   formControl: Control<FilterSchema>;
-  name: keyof FilterSchema;
+  name: keyof Omit<FilterSchema, 'provider'>;
   label: string;
   placeholder: string;
-  emptyPlaceholder: string;
+  emptyText: string;
   options: {
     label: string;
     value: string;
@@ -59,12 +59,11 @@ const ComboboxFilter = ({
         <FormControl>
           <div>
             <Combobox
-              options={options}
-              onSelect={(value) => {
-                field.onChange(value)
-              }}
+              items={options}
+              value={field.value}
+              onSelect={field.onChange}
               placeholder={placeholder}
-              emptyPlaceholder={emptyPlaceholder}
+              emptyText={emptyText}
             />
           </div>
         </FormControl>
@@ -247,7 +246,7 @@ const FilterDialogForm = ({
                 name="secretName"
                 label="Secret Name"
                 placeholder="Enter secret name"
-                emptyPlaceholder="No secret name found"
+                emptyText="No secret name found"
                 options={secretsNames}
               />
 
@@ -258,7 +257,7 @@ const FilterDialogForm = ({
                 name="policy"
                 label="Policy"
                 placeholder="Enter policy"
-                emptyPlaceholder="No policy found"
+                emptyText="No policy found"
                 options={policiesNames}
               />
             </div>

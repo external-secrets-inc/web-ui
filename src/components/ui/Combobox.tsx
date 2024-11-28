@@ -1,11 +1,11 @@
-// TODO: tweak styles for consistency with our current theme. It seems this repo assumes everyone uses the default Shadcn theme, while ours is the new-york theme.
-"use client";
+// Inspired by https://ui.shadcn.com/docs/components/combobox which is not installable
 
-import * as React from "react";
-import { Check, ChevronsUpDown } from "lucide-react";
+import * as React from "react"
+import { LucideCheck } from "lucide-react"
+import { CaretSortIcon } from "@radix-ui/react-icons"
 
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 import {
   Command,
   CommandEmpty,
@@ -13,75 +13,87 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
+} from "@/components/ui/command"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@/components/ui/popover"
 
-export const Combobox = ({
-  options,
+export interface ComboboxItem {
+  value: string
+  label: string
+}
+
+export interface ComboboxProps {
+  items: ComboboxItem[]
+  value?: string
+  onSelect?: (value: string) => void
+  placeholder?: string
+  searchPlaceholder?: string
+  emptyText?: string
+  className?: string
+  disabled?: boolean
+}
+
+const Combobox = React.forwardRef<
+  React.ElementRef<typeof Button>,
+  ComboboxProps
+>(({
+  items,
+  value,
   onSelect,
-  placeholder = "Select options",
-  emptyPlaceholder = "No option found",
+  placeholder = "Select an item...",
+  searchPlaceholder = "Search...",
+  emptyText = "No items found.",
   className,
-}: {
-  options: {
-    label: string;
-    value: string;
-    icon?: React.ComponentType<{ className?: string }>;
-  }[];
-  onSelect: (value: string) => void;
-  placeholder: string;
-  emptyPlaceholder: string;
-  className?: string;
-}) => {
-  const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState("");
+  disabled = false,
+}, ref) => {
+  const [open, setOpen] = React.useState(false)
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          ref={ref}
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          // className="w-[200px] justify-between"
-          className={cn(
-            "flex w-full p-1 rounded-md border min-h-10 h-auto items-center justify-between bg-inherit hover:bg-inherit [&_svg]:pointer-events-auto",
-            className
-          )}
+          disabled={disabled}
+          className={cn("w-full px-3 flex justify-between", className)}
         >
           {value
-            ? options.find((option) => option.value === value)?.label
-            : placeholder }
-          <ChevronsUpDown /> {/* className="ml-2 h-4 w-4 shrink-0 opacity-50" />*/}
+            ? items.find((item) => item.value === value)?.label
+            : placeholder}
+          <CaretSortIcon className="ml-auto flex-none opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent> {/* className="w-[200px] p-0"> */}
+      <PopoverContent
+        className="w-[var(--radix-popover-trigger-width)] p-0"
+        align="start"
+        sideOffset={4}
+      >
         <Command>
-          <CommandInput placeholder={placeholder} />
+          <CommandInput placeholder={searchPlaceholder} />
           <CommandList>
-            <CommandEmpty>{emptyPlaceholder}</CommandEmpty>
+            <CommandEmpty className="py-2.5 text-center text-sm">{emptyText}</CommandEmpty>
             <CommandGroup>
-              {options.map((option) => (
+              {items.map((item) => (
                 <CommandItem
-                  key={option.value}
-                  value={option.value}
+                  key={item.value}
+                  value={item.value}
                   onSelect={(currentValue) => {
-                    onSelect(currentValue === value ? "" : currentValue);
-                    setValue(currentValue === value ? "" : currentValue)
-                    setOpen(false);
+                    onSelect?.(currentValue === value ? "" : currentValue)
+                    setOpen(false)
                   }}
                 >
-                  <Check
+                  {item.label}
+                  <LucideCheck
                     className={cn(
-                      "mr-2 h-4 w-4",
-                      value === option.value ? "opacity-100" : "opacity-0"
+                      "ml-auto h-4 w-4",
+                      value === item.value ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {option.label}
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -89,7 +101,10 @@ export const Combobox = ({
         </Command>
       </PopoverContent>
     </Popover>
-  );
-}
+  )
+})
+Combobox.displayName = "Combobox"
 
-Combobox.displayName = "Combobox";
+export { Combobox }
+
+
