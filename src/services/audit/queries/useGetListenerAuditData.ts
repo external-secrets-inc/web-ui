@@ -4,7 +4,7 @@ import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError, } from "@/types";
 import { AxiosError } from "axios";
 import { mockNetworkResponseDelay, mockTableData } from "../mocks/mockData";
-import { AuditTableData } from "@/components/audit/Audit.interfaces";
+import { AuditResponseData } from "@/components/audit/Audit.interfaces";
 
 // TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/115
 const getListenerAuditData = async (
@@ -23,7 +23,7 @@ const getListenerAuditData = async (
 
 const useGetListenerAuditData = (
   mock: boolean,
-  options?: Omit<UseQueryOptions<AuditTableData[], AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<AuditResponseData, AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
 ) => {
   return useQuery({
     queryKey: ["useGetListenerAuditData", mock],

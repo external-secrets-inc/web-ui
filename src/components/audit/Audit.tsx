@@ -8,19 +8,19 @@ import { ApiHttpError } from "@/types";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
 import { Button } from "../ui/button";
 import ListenerInstallDialogContent from "./ListenerInstallDialogContent";
+import useGetListener from "@/services/audit/queries/useGetListener";
 import AuditChartProblems from "./AuditChartProblems";
 import AuditChartProviders from "./AuditChartProviders";
-import useGetListener from "@/services/audit/queries/useGetListener";
 import useGetListenerAuditData from "@/services/audit/queries/useGetListenerAuditData";
 import { trackListenerInstallDialogOpened } from "@/analytics";
-import FilterComponent from "./FilterComponent";
-import { AuditTableData, FilterState, Listener, ListenerStatus } from "./Audit.interfaces";
+import { AuditTableData, FilterSchema, Listener, ListenerStatus } from "./Audit.interfaces";
 import { DataProvider, DataTable } from "../ui/DataProvider";
 import { useSearchParams } from "react-router-dom";
 import { createColumnHelper } from "@tanstack/react-table"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LucideAlertCircle, LucideFilter } from "lucide-react";
 import { LISTENER_STATUS } from "./Audit.constants";
+import FilterDialogForm from "./FilterDialogForm";
 
 export default function Audit() {
   const columnHelper = createColumnHelper<AuditTableData>()
@@ -69,6 +69,19 @@ export default function Audit() {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
+  const initialFilters = useMemo(() => {
+    return {
+      provider: searchParams.getAll('provider'),
+      policy: searchParams.get('policy') ?? undefined,
+      secretName: searchParams.get('secretName') ?? undefined,
+      policyStatus: searchParams.get('policyStatus') ?? undefined,
+      duplicates: searchParams.get('duplicates') ?? undefined,
+      lastAccess: searchParams.get('lastAccess') ?? undefined,
+      lastRotation: searchParams.get('lastRotation') ?? undefined,
+      accessors: searchParams.get('accessors') ?? undefined,
+    } as FilterSchema
+  }, [searchParams])
+
   // TODO remove mock https://github.com/external-secrets-inc/web-ui/issues/115
   const { data: listenerData, isError: listenerIsError, isLoading: listenerIsLoading, error: listenerError } = useGetListener(true, {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
@@ -88,10 +101,10 @@ export default function Audit() {
   }, [listenerData, listenerIsLoading]);
 
   useEffect(() => {
-    if (!(listenerError)) return;
+    if (!listenerError) return;
 
-    handleDefaultApiHttpError(listenerError, "Error while fetching listener")
-  }, [listenerError, listenerIsError])
+    handleDefaultApiHttpError(listenerError, "Error while fetching listener");
+  }, [listenerError, listenerIsError]);
 
   const { data: listenerAuditData, refetch: listenerAuditRefetch, isLoading: listenerAuditIsLoading, isError: listenerAuditIsError, isRefetchError: listenerAuditIsRefetchError, error: listenerAuditError } = useGetListenerAuditData(true, {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
@@ -99,9 +112,14 @@ export default function Audit() {
   });
 
   const listenerAudit = useMemo(() => {
-    if (!listenerAuditData) return []
+    if (!listenerAuditData) return {
+      secretData: [],
+      secretsNames: [],
+      policiesNames: [],
+      providers: [],
+    }
 
-    return listenerAuditData
+    return listenerAuditData;
   }, [listenerAuditData]);
 
   useEffect(() => {
@@ -111,33 +129,44 @@ export default function Audit() {
   }, [listenerAuditError, listenerAuditIsError, listenerAuditIsRefetchError])
 
   const { mutate: createToken, data: token } = useCreateAuditInstallationToken({
-    onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to generate manifest token")
+    onError: (error: AxiosError<ApiHttpError>) =>
+      handleDefaultApiHttpError(
+        error,
+        "Error while trying to generate manifest token"
+      ),
   });
 
-  const { data: processFileData, error: processFileError, isError: processFileIsError } = useGetAuditProcessFile(true, token ?? '', "latest", {
+  const {
+    data: processFileData,
+    error: processFileError,
+    isError: processFileIsError,
+  } = useGetAuditProcessFile(true, token ?? "", "latest", {
     enabled: token !== "",
   });
 
   useEffect(() => {
-    if (!(processFileError)) return;
+    if (!processFileError) return;
 
-    handleDefaultApiHttpError(processFileError, "Error while fetching process file")
-  }, [processFileError, processFileIsError])
+    handleDefaultApiHttpError(
+      processFileError,
+      "Error while fetching process file"
+    );
+  }, [processFileError, processFileIsError]);
 
   useEffect(() => {
-    createToken({ mock: true })
-  }, [createToken])
+    createToken({ mock: true });
+  }, [createToken]);
 
   // TODO update commands to real endpoints https://github.com/external-secrets-inc/web-ui/issues/118
   useEffect(() => {
-    if (!token) return
+    if (!token) return;
 
     let command = [
       "curl \\",
       `${API_DOMAIN}/public/audit/manifest/latest\\`,
       `?token=${token} \\`,
       "| kubectl apply -f -",
-    ].join('\n');
+    ].join("\n");
     setApplyCommand(command);
 
     command = [
@@ -145,9 +174,9 @@ export default function Audit() {
       `${API_DOMAIN}/public/audit/process/latest\\`,
       `?token=${token} \\`,
       "| sh process.sh",
-    ].join('\n');
+    ].join("\n");
     setProcessCommand(command);
-  }, [token])
+  }, [token]);
 
   const handleListenerInstallDialogOpenChange = (isOpen: boolean) => {
     setIsListenerInstallDialogOpen(isOpen);
@@ -157,7 +186,7 @@ export default function Audit() {
     setIsFiltersDialogOpen(isOpen);
   };
 
-  const handleFilterChange = (selectedFilters: FilterState) => {
+  const handleFilterChange = (selectedFilters: FilterSchema) => {
     const filteredFilters = Object.fromEntries(
       Object.entries(selectedFilters).filter(
         ([, value]) =>
@@ -166,7 +195,7 @@ export default function Audit() {
           value !== "" &&
           (!Array.isArray(value) || value.length > 0)
       )
-    )
+    );
     setSearchParams(() => {
       const newSearchParams: Record<string, string | string[]> = {};
       Object.entries(filteredFilters).forEach(([key, value]) => {
@@ -177,12 +206,12 @@ export default function Audit() {
         }
       });
 
-      return newSearchParams
-    })
+      return newSearchParams;
+    });
     handleFiltersDialogOpenChange(false);
 
     listenerAuditRefetch();
-  }
+  };
 
   useEffect(() => {
     if (isListenerInstallDialogOpen) {
@@ -255,12 +284,21 @@ export default function Audit() {
               <LucideFilter />
             </Button>
           </DialogTrigger>
-          <FilterComponent searchParams={searchParams} onFiltersChange={handleFilterChange} />
+          <FilterDialogForm
+              initialValues={initialFilters}
+              onSubmit={(data) => {
+                handleFilterChange(data);
+                handleFiltersDialogOpenChange(false);
+              }}
+              secretsNames={listenerAudit.secretsNames}
+              policiesNames={listenerAudit.policiesNames}
+              providers={listenerAudit.providers}
+            />
         </Dialog>
       </div>
 
       <DataProvider
-        data={listenerAudit}
+        data={listenerAudit.secretData}
         columns={columns}
         initialSort={{ id: 'lastRotation', desc: true }}
         isLoading={listenerAuditIsLoading}
