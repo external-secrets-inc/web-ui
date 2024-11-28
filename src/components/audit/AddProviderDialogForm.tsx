@@ -1,5 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Input } from '../ui/input';
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "../ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
 type FieldType = 'string' | 'date' | 'file' | 'number' | 'boolean';
 
@@ -18,13 +31,66 @@ interface FormSchema {
   [formType: string]: FormType;
 }
 
+const baseSchema = z.object({
+  name: z.string().min(1, { message: "Name is required." }),
+  type: z.string().min(1, { message: "Type is required." }),
+});
+
+const renderInputField = (
+  schema: FieldSchema,
+  field: string,
+  fieldProps: any
+) => {
+  switch (schema.type) {
+    case "string":
+      return (
+        <Input
+          placeholder={`Enter ${field}`}
+          maxLength={schema.maxLength}
+          {...fieldProps}
+        />
+      );
+    case "date":
+      return <Input type="date" {...fieldProps} />;
+    case "file":
+      return (
+        <Input
+          type="file"
+          onChange={(e) =>
+            fieldProps.onChange((e.target as HTMLInputElement).files?.[0])
+          }
+        />
+      );
+    case "number":
+      return (
+        <Input
+          type="number"
+          placeholder={`Enter ${field}`}
+          onChange={(e) => fieldProps.onChange(parseFloat(e.target.value))}
+        />
+      );
+    case "boolean":
+      return (
+        <Input
+          type="checkbox"
+          checked={fieldProps.value}
+          onChange={(e) => fieldProps.onChange(e.target.checked)}
+        />
+      );
+    default:
+      return null;
+  }
+};
+
 const DynamicForm: React.FC = () => {
-  const [formSchema, setFormSchema] = useState<FormSchema | null>(
+  const [formSchemaData, setFormSchema] = useState<FormSchema>(
     {
       "formExample": {
         "field1": { "type": "string", "required": true, "maxLength": 50 },
         "field2": { "type": "date", "required": false },
-        "field3": { "type": "file", "required": true, "accept": "image/*" }
+        "field3": { "type": "file", "required": true, "accept": "image/*" },
+        "field4": { "type": "number", "required": true },
+        "field5": { "type": "boolean", "required": true },
       },
       "gcp": {
         "project-id": { "type": "string", "required": true },
@@ -34,8 +100,6 @@ const DynamicForm: React.FC = () => {
     }
   );
   const [selectedFormType, setSelectedFormType] = useState<string>('');
-  const [formValues, setFormValues] = useState<Record<string, any>>({});
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   // useEffect(() => {
   //   // Fetch the JSON structure
@@ -48,129 +112,141 @@ const DynamicForm: React.FC = () => {
   //   fetchFormSchema();
   // }, []);
 
-  const handleInputChange = (field: string, value: any) => {
-    setFormValues((prevValues) => ({
-      ...prevValues,
-      [field]: value,
-    }));
-  };
-
-  const validateField = (field: string, value: any, schema: FieldSchema): string | null => {
-    if (schema.required && !value) {
-      return `${field} is required.`;
-    }
-    if (schema.type === 'string' && schema.maxLength && value.length > schema.maxLength) {
-      return `${field} must not exceed ${schema.maxLength} characters.`;
-    }
-    return null;
-  };
-
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-
-    if (!selectedFormType || !formSchema) return;
-
-    const fields = formSchema[selectedFormType];
-    const errors: Record<string, string> = {};
-
-    for (const [field, schema] of Object.entries(fields)) {
-      const error = validateField(field, formValues[field], schema);
-      if (error) {
-        errors[field] = error;
+  const generateZodSchema = (formType: string) => {
+    const fields = formSchemaData[formType];
+    const dynamicSchema = Object.entries(fields).reduce((acc, [key, value]) => {
+      switch (value.type) {
+        case "string":
+          acc[key] = value.required
+            ? z
+              .string()
+              .min(1, { message: `${key} is required.` })
+              .max(value.maxLength || Infinity)
+            : z.string().max(value.maxLength || Infinity).optional();
+          break;
+        case "date":
+          acc[key] = value.required ? z.string().min(1) : z.string().optional();
+          break;
+        case "file":
+          acc[key] = value.required ? z.any() : z.any().optional();
+          break;
+        case "number":
+          acc[key] = value.required
+            ? z.number({ invalid_type_error: `${key} must be a number.` })
+            : z.number().optional();
+          break;
+        case "boolean":
+          acc[key] = value.required ? z.boolean() : z.boolean().optional();
+          break;
+        default:
+          acc[key] = z.any();
       }
-    }
+      return acc;
+    }, {} as Record<string, z.ZodType<any>>);
 
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
-      return;
-    }
-
-    console.log('Submitted Data:', formValues);
+    return baseSchema.merge(z.object(dynamicSchema));
   };
 
-  const handleFormTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const formType = event.target.value;
-    setSelectedFormType(formType);
-    setFormValues({});
-    setFormErrors({});
+  const formSchema = selectedFormType ? generateZodSchema(selectedFormType) : baseSchema;
+
+  const form = useForm({
+    resolver: formSchema ? zodResolver(formSchema) : undefined,
+    defaultValues: selectedFormType
+      ? Object.keys(formSchemaData[selectedFormType]).reduce((acc, key) => {
+        acc[key] = "";
+        return acc;
+      }, {} as Record<string, any>)
+      : {},
+  });
+
+  const handleFormTypeChange = (value: string) => {
+    setSelectedFormType(value);
+    form.reset({
+      ...form.getValues(),
+      type: value,
+    });
   };
 
-  if (!formSchema) {
+  const handleSubmit = (values: any) => {
+    console.log("Submitted Data:", values);
+  };
+
+  if (!formSchemaData) {
     return <div>Loading...</div>;
   }
 
   return (
-    <div>
-      {/* Form Type Selector */}
-      <label htmlFor="formType">Select Form Type:</label>
-      <select id="formType" onChange={handleFormTypeChange} value={selectedFormType}>
-        <option value="" disabled>
-          -- Select a Form Type --
-        </option>
-        {Object.keys(formSchema).map((formType) => (
-          <option key={formType} value={formType}>
-            {formType}
-          </option>
-        ))}
-      </select>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        {/* Name Field */}
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter Name" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      {/* Render Form for Selected Type */}
-      {selectedFormType && (
-        <form onSubmit={handleSubmit}>
-          {Object.entries(formSchema[selectedFormType]).map(([field, schema]) => {
-            const { type, required, maxLength, accept } = schema;
-            return (
-              <div key={field}>
-                <label>
-                  {field} {required && '*'}
-                </label>
-                {type === 'string' && (
-                  <input
-                    type="text"
-                    name={field}
-                    maxLength={maxLength}
-                    onChange={(e) => handleInputChange(field, e.target.value)}
-                  />
-                )}
-                {type === 'date' && (
-                  <input
-                    type="date"
-                    name={field}
-                    onChange={(e) => handleInputChange(field, e.target.value)}
-                  />
-                )}
-                {type === 'file' && (
-                  <input
-                    type="file"
-                    name={field}
-                    accept={accept}
-                    onChange={(e) =>
-                      handleInputChange(field, (e.target as HTMLInputElement).files?.[0])
-                    }
-                  />
-                )}
-                {type === 'number' && (
-                  <input
-                    type="number"
-                    name={field}
-                    onChange={(e) => handleInputChange(field, parseFloat(e.target.value))}
-                  />
-                )}
-                {type === 'boolean' && (
-                  <input
-                    type="checkbox"
-                    name={field}
-                    onChange={(e) => handleInputChange(field, e.target.checked)}
-                  />
-                )}
-                {formErrors[field] && <p style={{ color: 'red' }}>{formErrors[field]}</p>}
-              </div>
-            );
-          })}
-          <button type="submit">Submit</button>
-        </form>
-      )}
-    </div>
+        {/* Type Field (Select) */}
+        <FormField
+          control={form.control}
+          name="type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Type</FormLabel>
+              <FormControl>
+                <Select
+                  value={field.value}
+                  onValueChange={(value) => {
+                    field.onChange(value); // Update the form state
+                    handleFormTypeChange(value); // Handle type-specific logic
+                  }}
+                >
+                  <SelectTrigger >
+                    <SelectValue placeholder="Select the provider type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.keys(formSchemaData).map((formType) => (
+                      <SelectItem key={formType} value={formType}>
+                        {formType}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+
+                </Select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Dynamically Rendered Fields */}
+        {selectedFormType &&
+          Object.entries(formSchemaData[selectedFormType]).map(([field, schema]) => (
+            <FormField
+              key={field}
+              control={form.control}
+              name={field}
+              render={({ field: fieldProps }) => (
+                <FormItem>
+                  <FormLabel>{field}</FormLabel>
+                  <FormControl>
+                    {renderInputField(schema, field, fieldProps)}
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          ))}
+        <Button type="submit">Submit</Button>
+      </form>
+    </Form >
   );
 };
 
