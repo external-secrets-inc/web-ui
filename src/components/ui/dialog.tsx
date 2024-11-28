@@ -1,8 +1,9 @@
+"use client"
+
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
-import { Cross2Icon } from "@radix-ui/react-icons"
-
 import { cn } from "@/lib/utils"
+import { Cross2Icon } from "@radix-ui/react-icons"
 
 const Dialog = DialogPrimitive.Root
 
@@ -54,8 +55,8 @@ const DialogContent = React.forwardRef<
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>
   </DialogPortal>
-));
-DialogContent.displayName = DialogPrimitive.Content.displayName;
+))
+DialogContent.displayName = DialogPrimitive.Content.displayName
 
 const DialogHeader = ({
   className,
