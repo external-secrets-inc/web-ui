@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { capitalizeWords } from '@/helpers/stringsHelpers';
+import { CreateProviderPayload } from './Audit.interfaces';
 
 type FieldType = 'string' | 'date' | 'file' | 'number' | 'boolean';
 
@@ -94,7 +95,7 @@ const AddProviderDialogForm = ({
   onSubmit,
   onCancel,
 }: {
-  onSubmit: () => void;
+  onSubmit: (payload: CreateProviderPayload) => void;
   onCancel: () => void;
 }) => {
   const [formSchemaData, setFormSchema] = useState<FormSchema>(
@@ -181,6 +182,18 @@ const AddProviderDialogForm = ({
     });
   };
 
+  const handleSubmit = (formValues: Record<string, any>) => {
+    const { name, type, ...customFields } = formValues;
+    onSubmit({
+      listenerID: "",
+      tenantID: "",
+      name: name,
+      backendIdentifier: name,
+      backendType: type,
+      config: customFields,
+    });
+  }
+
   const handleCancel = () => {
     form.reset({
       ...form.getValues(),
@@ -204,7 +217,7 @@ const AddProviderDialogForm = ({
         <DialogDescription />
       </DialogHeader>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
           <FormField
             control={form.control}
             name="name"

@@ -21,6 +21,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LucideAlertCircle, LucideFilter } from "lucide-react";
 import { LISTENER_STATUS } from "./Audit.constants";
 import FilterDialogForm from "./FilterDialogForm";
+import AuditProvider from "./AuditProvider";
 
 export default function Audit() {
   const columnHelper = createColumnHelper<AuditTableData>()
@@ -91,12 +92,14 @@ export default function Audit() {
   const listener = useMemo((): Listener => {
     if (listenerIsLoading || !listenerData) return {
       id: "",
+      tenant_id: "",
       status: LISTENER_STATUS.PENDING_INSTALLATION
     }
 
     return {
       id: listenerData.id,
-      status: listenerData.current_status as ListenerStatus
+      tenant_id: listenerData.tenant_id,
+      status: listenerData.status as ListenerStatus
     }
   }, [listenerData, listenerIsLoading]);
 
@@ -269,6 +272,11 @@ export default function Audit() {
         <AuditChartProviders />
         <AuditChartProblems />
       </div>
+
+      <AuditProvider
+        tenantID={listener.tenant_id}
+        listenerID={listener.id}
+      />
 
       <div className="flex items-center justify-between pt-4">
         <h2 className="font-bold">All Secrets</h2>

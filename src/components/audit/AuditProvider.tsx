@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
-import { LucidePlus } from "lucide-react";
+import { LucideMoreVertical, LucidePlus, LucideSquareArrowOutUpRight, LucideTrash2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { DataProvider, DataTable } from "../ui/DataProvider";
 import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
@@ -14,8 +14,14 @@ import { toast } from "sonner";
 import useCreateProvider from "@/services/audit/mutations/useCreateProvider";
 import useDeleteProvider from "@/services/audit/mutations/useDeleteProvider";
 import useGetProviders from "@/services/audit/queries/useGetProviders";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { FeatureItemDeleteAction } from "../FeatureCollection";
 
-function AuditProvider() {
+interface ProviderTableMeta {
+  renderRowActions?: (row: ProviderTableData) => React.ReactNode;
+}
+
+function AuditProvider({ tenantID, listenerID }: { tenantID: string, listenerID: string }) {
   const columnHelper = createColumnHelper<ProviderTableData>()
 
   const columns = useMemo(() => [
@@ -27,7 +33,49 @@ function AuditProvider() {
       header: 'Type',
       cell: info => info.getValue()
     }),
+    columnHelper.display({
+      id: 'actions',
+      cell: props => (
+        <div className='flex justify-end'>
+          {(props.table.options.meta as ProviderTableMeta)?.renderRowActions?.(props.row.original)}
+        </div>
+      )
+    })
   ], [columnHelper])
+
+  const providerTableMeta: ProviderTableMeta = {
+    renderRowActions: (row) => (
+      <div className="flex items-center gap-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <LucideMoreVertical />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            onClick={(event) => event.stopPropagation()}
+            onCloseAutoFocus={(event) => event.preventDefault()}
+          >
+            <FeatureItemDeleteAction
+              featureType={"Audit Provider"}
+              featureID={row.id}
+              featureName={row.name}
+              onDelete={() => { performDelete(row.id) }}
+            >
+              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                <LucideTrash2 className="mr-2" />
+                Delete Provider
+              </DropdownMenuItem>
+            </FeatureItemDeleteAction>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    )
+  };
 
   const [isAddProviderDialogOpen, setIsAddProviderDialogOpen] = useState(false);
 
@@ -59,6 +107,8 @@ function AuditProvider() {
   })
 
   const performCreate = (payload: CreateProviderPayload) => {
+    payload.tenantID = tenantID;
+    payload.listenerID = listenerID;
     createProvider(payload)
   }
 
@@ -93,7 +143,10 @@ function AuditProvider() {
             </Button>
           </DialogTrigger>
           <AddProviderDialogForm
-            onSubmit={() => { handleAddProviderDialogOpenChange(false) }}
+            onSubmit={(payload: CreateProviderPayload) => {
+              performCreate(payload)
+              handleAddProviderDialogOpenChange(false)
+            }}
             onCancel={() => { handleAddProviderDialogOpenChange(false) }}
           />
         </Dialog>
@@ -104,7 +157,9 @@ function AuditProvider() {
         initialSort={{ id: 'lastRotation', desc: true }}
         isLoading={providersIsLoading}
       >
-        <DataTable />
+        <DataTable
+          meta={providerTableMeta}
+        />
       </DataProvider>
     </>
   )

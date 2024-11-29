@@ -48,6 +48,7 @@ export interface AuditTableData {
 
 export interface Listener {
   id: string;
+  tenant_id: string;
   status: ListenerStatus;
 }
 
