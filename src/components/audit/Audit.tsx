@@ -18,10 +18,9 @@ import { DataProvider, DataTable } from "../ui/DataProvider";
 import { useSearchParams } from "react-router-dom";
 import { createColumnHelper } from "@tanstack/react-table"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { LucideAlertCircle, LucideFilter, LucidePlus } from "lucide-react";
+import { LucideAlertCircle, LucideFilter } from "lucide-react";
 import { LISTENER_STATUS } from "./Audit.constants";
 import FilterDialogForm from "./FilterDialogForm";
-import AddProviderDialogForm from "./AddProviderDialogForm";
 
 export default function Audit() {
   const columnHelper = createColumnHelper<AuditTableData>()
@@ -67,7 +66,6 @@ export default function Audit() {
   const [applyCommand, setApplyCommand] = useState("")
   const [isListenerInstallDialogOpen, setIsListenerInstallDialogOpen] = useState(false);
   const [isFiltersDialogOpen, setIsFiltersDialogOpen] = useState(false);
-  const [isAddProviderDialogOpen, setIsAddProviderDialogOpen] = useState(false);
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -130,7 +128,7 @@ export default function Audit() {
     handleDefaultApiHttpError(listenerAuditError, "Error while fetching listener Audit data")
   }, [listenerAuditError, listenerAuditIsError, listenerAuditIsRefetchError])
 
-  const { mutate: createToken, data: token } = useCreateAuditInstallationToken({
+  const { mutate: createToken, data: token } = useCreateAuditInstallationToken(true, {
     onError: (error: AxiosError<ApiHttpError>) =>
       handleDefaultApiHttpError(
         error,
@@ -156,7 +154,7 @@ export default function Audit() {
   }, [processFileError, processFileIsError]);
 
   useEffect(() => {
-    createToken({ mock: true });
+    createToken();
   }, [createToken]);
 
   // TODO update commands to real endpoints https://github.com/external-secrets-inc/web-ui/issues/118
@@ -215,10 +213,6 @@ export default function Audit() {
     listenerAuditRefetch();
   };
 
-  const handleAddProviderDialogOpenChange = (isOpen: boolean) => {
-    setIsAddProviderDialogOpen(isOpen);
-  };
-
   useEffect(() => {
     if (isListenerInstallDialogOpen) {
       trackListenerInstallDialogOpened(listener.id);
@@ -269,27 +263,6 @@ export default function Audit() {
           </AlertDescription>
         </Alert>
       )}
-
-      <div className="flex items-center justify-between pt-4">
-        <h2 className="font-bold">Providers</h2>
-        <Dialog open={isAddProviderDialogOpen} onOpenChange={handleAddProviderDialogOpenChange}>
-          <DialogTrigger asChild>
-            <Button
-              size="icon"
-              variant="outline"
-              className="self-center min-[260px]:self-end"
-              aria-label="Add Provider"
-              title="Add Provider"
-            >
-              <LucidePlus />
-            </Button>
-          </DialogTrigger>
-          <AddProviderDialogForm
-            onSubmit={() => { handleAddProviderDialogOpenChange(false) }}
-            onCancel={() => { handleAddProviderDialogOpenChange(false) }}
-          />
-        </Dialog>
-      </div>
 
       <h2 className="font-bold pt-4">Analytics</h2>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(416px,100%),1fr))] gap-4 mt-6">

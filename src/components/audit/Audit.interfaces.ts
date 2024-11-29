@@ -50,3 +50,9 @@ export interface Listener {
   id: string;
   status: ListenerStatus;
 }
+
+export interface ProviderTableData {
+  id: string;
+  name: string;
+  type: string;
+}
