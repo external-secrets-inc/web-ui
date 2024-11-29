@@ -21,24 +21,9 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { capitalizeWords } from '@/helpers/stringsHelpers';
-import { CreateProviderPayload } from './Audit.interfaces';
-
-type FieldType = 'string' | 'date' | 'file' | 'number' | 'boolean';
-
-interface FieldSchema {
-  type: FieldType;
-  required: boolean;
-  maxLength?: number;
-  accept?: string;
-}
-
-interface FormType {
-  [key: string]: FieldSchema;
-}
-
-interface FormSchema {
-  [formType: string]: FormType;
-}
+import { AddProviderFieldSchema, AddProviderFormSchema, CreateProviderPayload } from './Audit.interfaces';
+import useGetProvidersTypes from '@/services/audit/queries/useGetProvidersType';
+import { handleDefaultApiHttpError } from '@/services/servicesHelpers';
 
 const baseSchema = z.object({
   name: z.string().min(1, { message: "Name is required." }),
@@ -46,7 +31,7 @@ const baseSchema = z.object({
 });
 
 const renderInputField = (
-  schema: FieldSchema,
+  schema: AddProviderFieldSchema,
   field: string,
   fieldProps: any
 ) => {
@@ -98,7 +83,7 @@ const AddProviderDialogForm = ({
   onSubmit: (payload: CreateProviderPayload) => void;
   onCancel: () => void;
 }) => {
-  const [formSchemaData, setFormSchema] = useState<FormSchema>(
+  const [formSchemaData, setFormSchema] = useState<AddProviderFormSchema>(
     {
       "formExample": {
         "field1": { "type": "string", "required": true, "maxLength": 50 },
@@ -116,16 +101,18 @@ const AddProviderDialogForm = ({
   );
   const [selectedFormType, setSelectedFormType] = useState<string>('');
 
-  // useEffect(() => {
-  //   // Fetch the JSON structure
-  //   const fetchFormSchema = async () => {
-  //     const response = await fetch('/api/form-schema'); // Replace with your API endpoint
-  //     const data: FormSchema = await response.json();
-  //     setFormSchema(data);
-  //   };
+  const { data: providersTypeData, isLoading: providersTypesIsLoading, isError: providersTypesIsError, error: providersTypesError } = useGetProvidersTypes(true);
 
-  //   fetchFormSchema();
-  // }, []);
+  const providersTypes = providersTypeData?? {};
+  useEffect(() => {
+    setFormSchema(providersTypes);
+  }, [providersTypes]);
+
+  useEffect(() => {
+    if (!(providersTypesError)) return;
+
+    handleDefaultApiHttpError(providersTypesError, "Error while fetching listener Audit data")
+  }, [providersTypesError, providersTypesIsError])
 
   const generateZodSchema = (formType: string) => {
     const fields = formSchemaData[formType];
@@ -203,7 +190,7 @@ const AddProviderDialogForm = ({
     onCancel();
   }
 
-  if (!formSchemaData) {
+  if (providersTypesIsLoading) {
     return <div>Loading...</div>;
   }
 

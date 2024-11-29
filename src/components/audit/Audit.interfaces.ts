@@ -68,3 +68,20 @@ export interface CreateProviderPayload {
     [key: string]: string;
   };
 }
+
+type FieldType = 'string' | 'date' | 'file' | 'number' | 'boolean';
+
+export interface AddProviderFieldSchema {
+  type: FieldType;
+  required: boolean;
+  maxLength?: number;
+  accept?: string;
+}
+
+interface AddProviderType {
+  [key: string]: AddProviderFieldSchema;
+}
+
+export interface AddProviderFormSchema {
+  [formType: string]: AddProviderType;
+}
