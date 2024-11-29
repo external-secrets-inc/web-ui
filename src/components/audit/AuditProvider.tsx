@@ -6,8 +6,13 @@ import { DataProvider, DataTable } from "../ui/DataProvider";
 import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import AddProviderDialogForm from "./AddProviderDialogForm";
-import { ProviderTableData } from "./Audit.interfaces";
+import { CreateProviderPayload, ProviderTableData } from "./Audit.interfaces";
 import { createColumnHelper } from "@tanstack/react-table";
+import { AxiosError } from "axios";
+import { ApiHttpError } from "@/types";
+import { toast } from "sonner";
+import useCreateProvider from "@/services/audit/mutations/useCreateProvider";
+import useDeleteProvider from "@/services/audit/mutations/useDeleteProvider";
 import useGetProviders from "@/services/audit/queries/useGetProviders";
 
 function AuditProvider() {
@@ -36,6 +41,30 @@ function AuditProvider() {
 
     return providersData;
   }, [providersData]);
+
+  const { mutate: createProvider } = useCreateProvider(true, {
+    onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to create Provider"),
+    onSuccess: () => {
+      providersRefetch();
+      toast.success("Provider created successfully")
+    }
+  });
+
+  const { mutate: deleteProvider } = useDeleteProvider(true, {
+    onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to delete Provider"),
+    onSuccess: () => {
+      providersRefetch();
+      toast.success("Provider deleted successfully")
+    },
+  })
+
+  const performCreate = (payload: CreateProviderPayload) => {
+    createProvider(payload)
+  }
+
+  const performDelete = (providerId: string) => {
+    deleteProvider({ id: providerId });
+  }
 
   useEffect(() => {
     if (!(providersError || providersIsRefetchError)) return;

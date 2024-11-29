@@ -56,3 +56,14 @@ export interface ProviderTableData {
   name: string;
   type: string;
 }
+
+export interface CreateProviderPayload {
+  listenerID: string;
+  tenantID: string;
+  name: string;
+  backendIdentifier: string;
+  backendType: string;
+  config: {
+    [key: string]: string;
+  };
+}
