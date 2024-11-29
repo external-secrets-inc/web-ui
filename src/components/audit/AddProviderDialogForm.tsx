@@ -12,7 +12,15 @@ import {
   FormControl,
   FormMessage,
 } from "../ui/form";
+import {
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { capitalizeWords } from '@/helpers/stringsHelpers';
 
 type FieldType = 'string' | 'date' | 'file' | 'number' | 'boolean';
 
@@ -82,7 +90,13 @@ const renderInputField = (
   }
 };
 
-const DynamicForm: React.FC = () => {
+const AddProviderDialogForm = ({
+  onSubmit,
+  onCancel,
+}: {
+  onSubmit: () => void;
+  onCancel: () => void;
+}) => {
   const [formSchemaData, setFormSchema] = useState<FormSchema>(
     {
       "formExample": {
@@ -167,87 +181,114 @@ const DynamicForm: React.FC = () => {
     });
   };
 
-  const handleSubmit = (values: any) => {
-    console.log("Submitted Data:", values);
-  };
+  const handleCancel = () => {
+    form.reset({
+      ...form.getValues(),
+      type: "",
+      name: "",
+    });
+    onCancel();
+  }
 
   if (!formSchemaData) {
     return <div>Loading...</div>;
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        {/* Name Field */}
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter Name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+    <DialogContent
+      className="w-[max(50%,640px)] max-w-[calc(100%-theme(spacing.12))] max-h-[calc(100%-theme(spacing.12))] overflow-auto grid-rows-[auto_minmax(100px,1fr)_auto] grid-cols-[minmax(100%,1fr)]"
+      onOpenAutoFocus={(e) => e.preventDefault()}
+    >
+      <DialogHeader>
+        <DialogTitle>Add Provider</DialogTitle>
+        <DialogDescription />
+      </DialogHeader>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter Name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Type</FormLabel>
+                <FormControl>
+                  <Select
+                    value={field.value}
+                    onValueChange={(value) => {
+                      field.onChange(value); // Update the form state
+                      handleFormTypeChange(value); // Handle type-specific logic
+                    }}
+                  >
+                    <SelectTrigger >
+                      <SelectValue placeholder="Select the provider type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.keys(formSchemaData).map((formType) => (
+                        <SelectItem key={formType} value={formType}>
+                          {formType}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          {selectedFormType && (
+            <>
+              <div className="pt-4">
+                <h2 className="text-lg font-semibold text-gray-300">Configuration</h2>
+              </div>
+              {
+                Object.entries(formSchemaData[selectedFormType]).map(([field, schema]) => (
+                  <FormField
+                    key={field}
+                    control={form.control}
+                    name={field}
+                    render={({ field: fieldProps }) => (
+                      <FormItem>
+                        <FormLabel>{capitalizeWords(field)}</FormLabel>
+                        <FormControl>
+                          {renderInputField(schema, field, fieldProps)}
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ))
+              }
+            </>
           )}
-        />
-
-        {/* Type Field (Select) */}
-        <FormField
-          control={form.control}
-          name="type"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Type</FormLabel>
-              <FormControl>
-                <Select
-                  value={field.value}
-                  onValueChange={(value) => {
-                    field.onChange(value); // Update the form state
-                    handleFormTypeChange(value); // Handle type-specific logic
-                  }}
-                >
-                  <SelectTrigger >
-                    <SelectValue placeholder="Select the provider type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.keys(formSchemaData).map((formType) => (
-                      <SelectItem key={formType} value={formType}>
-                        {formType}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-
-                </Select>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Dynamically Rendered Fields */}
-        {selectedFormType &&
-          Object.entries(formSchemaData[selectedFormType]).map(([field, schema]) => (
-            <FormField
-              key={field}
-              control={form.control}
-              name={field}
-              render={({ field: fieldProps }) => (
-                <FormItem>
-                  <FormLabel>{field}</FormLabel>
-                  <FormControl>
-                    {renderInputField(schema, field, fieldProps)}
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          ))}
-        <Button type="submit">Submit</Button>
-      </form>
-    </Form >
+          <DialogFooter className="flex justify-end gap-4">
+            <Button
+              type="button"
+              aria-keyshortcuts="Escape"
+              variant={"secondary"}
+              onClick={handleCancel}
+            >
+              Cancel
+            </Button>
+            <Button type="submit">Submit</Button>
+          </DialogFooter>
+        </form>
+      </Form>
+    </DialogContent>
   );
 };
 
-export default DynamicForm;
+export default AddProviderDialogForm;

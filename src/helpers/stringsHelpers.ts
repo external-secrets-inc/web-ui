@@ -18,3 +18,28 @@ export const stripURLProtocol = (url: string): string => {
     return url; // Return the original URL
   }
 };
+
+/**
+ * Capitalize the first letter of a string.
+ *
+ * @param str - The string that will be capitalized.
+ * @returns The capitalized version of the string.
+ */
+export const capitalizeFirstLetter = (str: string): string => {
+  if (!str) return "";
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+};
+
+/**
+ * Capitalize the all words of a string.
+ *
+ * @param str - The string that will be capitalized.
+ * @returns The capitalized version of the string.
+ */
+export const capitalizeWords = (str: string): string => {
+  if (!str) return "";
+  return str
+    .split(" ")
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+};
