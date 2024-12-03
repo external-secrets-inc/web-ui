@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useForm } from "react-hook-form";
+import { useState, useEffect } from 'react';
+import { ControllerRenderProps, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "../ui/button";
@@ -33,7 +33,7 @@ const baseSchema = z.object({
 const renderInputField = (
   schema: AddProviderFieldSchema,
   field: string,
-  fieldProps: any
+  fieldProps: ControllerRenderProps<Record<string, string>, string>
 ) => {
   switch (schema.type) {
     case "string":
@@ -67,7 +67,7 @@ const renderInputField = (
       return (
         <Input
           type="checkbox"
-          checked={fieldProps.value}
+          checked={fieldProps.value == "true"? true :  fieldProps.value == "false"? false : undefined}
           onChange={(e) => fieldProps.onChange(e.target.checked)}
         />
       );
@@ -116,7 +116,7 @@ const AddProviderDialogForm = ({
 
   const generateZodSchema = (formType: string) => {
     const fields = formSchemaData[formType];
-    const dynamicSchema = Object.entries(fields).reduce((acc, [key, value]) => {
+    const dynamicSchema = Object.entries(fields).reduce<Record<string, z.ZodType>>((acc, [key, value]) => {
       switch (value.type) {
         case "string":
           acc[key] = value.required
@@ -130,7 +130,9 @@ const AddProviderDialogForm = ({
           acc[key] = value.required ? z.string().min(1) : z.string().optional();
           break;
         case "file":
-          acc[key] = value.required ? z.any() : z.any().optional();
+          acc[key] = value.required ?
+            z.instanceof(File).refine((file) => file.size > 0, { message: `${key} must not be empty.` })
+            : z.instanceof(File).optional();
           break;
         case "number":
           acc[key] = value.required
@@ -141,10 +143,10 @@ const AddProviderDialogForm = ({
           acc[key] = value.required ? z.boolean() : z.boolean().optional();
           break;
         default:
-          acc[key] = z.any();
+          acc[key] = z.unknown();
       }
       return acc;
-    }, {} as Record<string, z.ZodType<any>>);
+    }, {});
 
     return baseSchema.merge(z.object(dynamicSchema));
   };
@@ -154,10 +156,10 @@ const AddProviderDialogForm = ({
   const form = useForm({
     resolver: formSchema ? zodResolver(formSchema) : undefined,
     defaultValues: selectedFormType
-      ? Object.keys(formSchemaData[selectedFormType]).reduce((acc, key) => {
+      ? Object.keys(formSchemaData[selectedFormType]).reduce<Record<string, string>>((acc, key) => {
         acc[key] = "";
         return acc;
-      }, {} as Record<string, any>)
+      }, {})
       : {},
   });
 
@@ -169,15 +171,29 @@ const AddProviderDialogForm = ({
     });
   };
 
-  const handleSubmit = (formValues: Record<string, any>) => {
+  const handleSubmit = (formValues: Record<string, string | boolean | File | number>) => {
     const { name, type, ...customFields } = formValues;
+
+    const config = Object.entries(customFields).reduce<Record<string, string>>((acc, [key, value]) => {
+      if (typeof value === "boolean") {
+        acc[key] = value ? "true" : "false"; // Converte boolean para string
+      } else if (value instanceof File) {
+        acc[key] = value.name; // Usa o nome do arquivo para File
+      } else if (typeof value === "number") {
+        acc[key] = value.toString(); // Converte número para string
+      } else if (typeof value === "string") {
+        acc[key] = value; // Já é string
+      }
+      return acc;
+    }, {});
+
     onSubmit({
       listenerID: "",
       tenantID: "",
-      name: name,
-      backendIdentifier: name,
-      backendType: type,
-      config: customFields,
+      name: String(name),
+      backendIdentifier: String(name),
+      backendType: String(type),
+      config: config,
     });
   }
 
