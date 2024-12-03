@@ -104,7 +104,7 @@ const AddProviderDialogForm = ({
   );
   const [selectedFormType, setSelectedFormType] = useState<string>('');
 
-  const { data: providersTypeData, isLoading: providersTypesIsLoading, isError: providersTypesIsError, error: providersTypesError } = useGetProvidersTypes(true);
+  const { data: providersTypeData, isLoading: isLoadingProvidersTypes, isError: isErrorProvidersTypes, error: providersTypesError } = useGetProvidersTypes(true);
 
   useEffect(() => {
     const providersTypes = providersTypeData ?? {};
@@ -115,7 +115,7 @@ const AddProviderDialogForm = ({
     if (!(providersTypesError)) return;
 
     handleDefaultApiHttpError(providersTypesError, "Error while fetching listener Audit data")
-  }, [providersTypesError, providersTypesIsError])
+  }, [providersTypesError, isErrorProvidersTypes])
 
   const generateZodSchema = (formType: string) => {
     const fields = formSchemaData[formType];
@@ -230,7 +230,7 @@ const AddProviderDialogForm = ({
     resetForm()
   }
 
-  if (providersTypesIsLoading) {
+  if (isLoadingProvidersTypes) {
     return <div>Loading...</div>;
   }
 

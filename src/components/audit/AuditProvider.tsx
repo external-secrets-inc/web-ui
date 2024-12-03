@@ -79,7 +79,7 @@ function AuditProvider({ tenantID, listenerID }: { tenantID: string, listenerID:
 
   const [isAddProviderDialogOpen, setIsAddProviderDialogOpen] = useState(false);
 
-  const { data: providersData, refetch: providersRefetch, isLoading: providersIsLoading, isError: providersIsError, isRefetchError: providersIsRefetchError, error: providersError } = useGetProviders(true, {
+  const { data: providersData, refetch: providersRefetch, isLoading: isLoadingProviders, isError: isErrorProviders, isRefetchError: isRefetchErrorProviders, error: providersError } = useGetProviders(true, {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
   });
@@ -117,10 +117,10 @@ function AuditProvider({ tenantID, listenerID }: { tenantID: string, listenerID:
   }
 
   useEffect(() => {
-    if (!(providersError || providersIsRefetchError)) return;
+    if (!(providersError || isRefetchErrorProviders)) return;
 
     handleDefaultApiHttpError(providersError, "Error while fetching listener Audit data")
-  }, [providersError, providersIsError, providersIsRefetchError])
+  }, [providersError, isErrorProviders, isRefetchErrorProviders])
 
   const handleAddProviderDialogOpenChange = (isOpen: boolean) => {
     setIsAddProviderDialogOpen(isOpen);
@@ -155,7 +155,7 @@ function AuditProvider({ tenantID, listenerID }: { tenantID: string, listenerID:
         data={providers}
         columns={columns}
         initialSort={{ id: 'lastRotation', desc: true }}
-        isLoading={providersIsLoading}
+        isLoading={isLoadingProviders}
       >
         <DataTable
           meta={providerTableMeta}
