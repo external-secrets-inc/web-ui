@@ -1,30 +1,30 @@
-import FeatureList from "@/components/FeatureList";
-import FeatureDetailsCardDialog from "@/components/FeatureList/FeatureDetailsCardDialog";
-import NewFeatureCard from "@/components/FeatureList/NewFeatureCard";
+import { useEffect, useState } from "react";
+import { AxiosError } from "axios";
+import { toast } from "sonner";
+
+import FeatureCollection from "@/components/FeatureCollection";
 import { NewAgentForm } from "@/components/agents/NewAgentForm";
-import { API_DOMAIN } from "@/constants";
+import { API_DOMAIN, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import useCreateAgent from "@/services/agents/mutations/useCreateAgent";
 import useCreateAgentManifestToken from "@/services/agents/mutations/useCreateAgentManifestToken";
 import useDeleteAgent from "@/services/agents/mutations/useDeleteAgent";
 import useGetAgentManifest from "@/services/agents/queries/useGetAgentManifest";
 import useGetAgents from "@/services/agents/queries/useGetAgents";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
-import { ApiHttpError, Agent } from "@/types";
-import { AxiosError } from "axios";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-
-
+import { ApiHttpError } from "@/types";
 
 export default function ListAgents() {
-  const featureName: string = "Agent"
+  const featureType: string = "Agent"
 
-  const [featureId, setFeatureId] = useState("")
+  const [featureID, setFeatureID] = useState("")
   const [applyCommand, setApplyCommand] = useState("")
 
-  const { data: agentsData, refetch: agentsRefetch, isError: agentsIsError, error: agentError, isRefetchError: agentIsRefetchError} = useGetAgents();
-  const { data: manifestData, error: manifestError, isError: manifestIsError } = useGetAgentManifest(featureId, "latest", {
-    enabled: featureId !== "",
+  const { data: agentsData, refetch: agentsRefetch, isError: agentsIsError, error: agentError, isRefetchError: agentIsRefetchError } = useGetAgents({
+    refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
+    refetchIntervalInBackground: true,
+  });
+  const { data: manifestData, error: manifestError, isError: manifestIsError } = useGetAgentManifest(featureID, "latest", {
+    enabled: featureID !== "",
   });
 
   const { mutate: createToken, data: token } = useCreateAgentManifestToken({
@@ -34,7 +34,7 @@ export default function ListAgents() {
     onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to create agent"),
     onSuccess: () => {
       agentsRefetch();
-      toast.success("Agent created successfully") 
+      toast.success("Agent created successfully")
     }
   });
   const { mutate: deleteAgent } = useDeleteAgent({
@@ -45,32 +45,32 @@ export default function ListAgents() {
     },
   })
 
-  const performCreate = ({featureName} : {featureName: string}) => {
-    createAgent({name: featureName})
+  const performCreate = ({ featureName }: { featureName: string }) => {
+    createAgent({ name: featureName })
   }
 
   const performDelete = (agentId: string) => {
-    deleteAgent({id: agentId});
+    deleteAgent({ id: agentId });
   }
 
   useEffect(() => {
-    if (featureId === "") return
+    if (featureID === "") return
 
-    createToken({id: featureId})
-  }, [featureId, createToken])
-  
+    createToken({ id: featureID })
+  }, [featureID, createToken])
+
   useEffect(() => {
-    if (featureId === "") return
+    if (featureID === "") return
     if (!token) return
 
     const command = [
       "curl \\",
-      `${API_DOMAIN}/public/agents/${featureId}/manifest/latest\\`,
+      `${API_DOMAIN}/public/agents/${featureID}/manifest/latest\\`,
       `?token=${token} \\`,
       "| kubectl apply -f -",
     ].join('\n');
     setApplyCommand(command);
-  }, [token, featureId])
+  }, [token, featureID])
 
   useEffect(() => {
     if (!(agentError || agentIsRefetchError)) return;
@@ -85,27 +85,16 @@ export default function ListAgents() {
   }, [manifestError, manifestIsError])
 
   return (
-    <FeatureList>
-      <NewFeatureCard
-        featureName={featureName} 
-        performCreate={performCreate}
-        Form={NewAgentForm} 
-      />
-      {agentsData && agentsData.map((agent: Agent) => (
-        <FeatureDetailsCardDialog 
-          key={agent.id}
-          featureID={agent.id}
-          featureName={agent.name}
-          featureStatus={agent.current_status} 
-          featureType={featureName}
-          featureDescription="Agent used for an External Secrets Operator installation in your Kubernetes cluster"
-          setFeatureId={setFeatureId}
-          applyCommand={applyCommand}
-          manifest={manifestData ? manifestData.manifest : ""}
-          onDeleteFeature={performDelete}
-        />
-      )
-      )}
-    </FeatureList>
-  )
+    <FeatureCollection
+      data={agentsData || []}
+      featureType={featureType}
+      featureDescription="Agent used for an External Secrets Operator installation in your Kubernetes cluster"
+      onDeleteFeature={performDelete}
+      setFeatureID={setFeatureID}
+      applyCommand={applyCommand}
+      manifestData={manifestData?.manifest}
+      performCreate={performCreate}
+      Form={NewAgentForm}
+    />
+  );
 }

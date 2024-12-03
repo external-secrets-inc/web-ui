@@ -1,30 +1,28 @@
-import FeatureList from "@/components/FeatureList";
-import FeatureDetailsCardDialog from "@/components/FeatureList/FeatureDetailsCardDialog";
-import NewFeatureCard from "@/components/FeatureList/NewFeatureCard";
+import FeatureCollection from "@/components/FeatureCollection";
 import { NewRotatorForm } from "@/components/rotators/NewRotatorForm";
-import { API_DOMAIN } from "@/constants";
+import { API_DOMAIN, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import useCreateRotator from "@/services/rotators/mutations/useCreateRotator";
 import useCreateRotatorManifestToken from "@/services/rotators/mutations/useCreateRotatorManifestToken";
 import useDeleteRotator from "@/services/rotators/mutations/useDeleteRotator";
 import useGetRotatorManifest from "@/services/rotators/queries/useGetRotatorManifest";
 import useGetRotators from "@/services/rotators/queries/useGetRotators";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
-import { ApiHttpError, Rotator } from "@/types";
+import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-
-
 export default function ListRotators() {
-  const featureName: string = "Async Rotator"
-
-  const [featureId, setFeatureId] = useState("")
+  const featureType = "Async Rotator"
+  const [featureID, setFeatureID] = useState("")
   const [applyCommand, setApplyCommand] = useState("")
 
-  const { data: rotatorsData, refetch: rotatorsRefetch, isError: rotatorsIsError, error: rotatorError, isRefetchError: rotatorIsRefetchError} = useGetRotators();
-  const { data: manifestData, error: manifestError, isError: manifestIsError } = useGetRotatorManifest(featureId, "latest", {
-    enabled: featureId !== "",
+  const { data: rotatorsData, refetch: rotatorsRefetch, isError: rotatorsIsError, error: rotatorError, isRefetchError: rotatorIsRefetchError } = useGetRotators({
+    refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
+    refetchIntervalInBackground: true,
+  });
+  const { data: manifestData, error: manifestError, isError: manifestIsError } = useGetRotatorManifest(featureID, "latest", {
+    enabled: featureID !== "",
   });
 
   const { mutate: createToken, data: token } = useCreateRotatorManifestToken({
@@ -34,7 +32,7 @@ export default function ListRotators() {
     onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to create async rotator"),
     onSuccess: () => {
       rotatorsRefetch();
-      toast.success("Async rotator created successfully") 
+      toast.success("Async rotator created successfully")
     }
   });
   const { mutate: deleteRotator } = useDeleteRotator({
@@ -45,32 +43,32 @@ export default function ListRotators() {
     },
   })
 
-  const performCreate = ({featureName} : {featureName: string}) => {
-    createRotator({name: featureName})
+  const performCreate = ({ featureName }: { featureName: string }) => {
+    createRotator({ name: featureName })
   }
 
   const performDelete = (rotatorId: string) => {
-    deleteRotator({id: rotatorId});
+    deleteRotator({ id: rotatorId });
   }
 
   useEffect(() => {
-    if (featureId === "") return
+    if (featureID === "") return
 
-    createToken({id: featureId})
-  }, [featureId, createToken])
-  
+    createToken({ id: featureID })
+  }, [featureID, createToken])
+
   useEffect(() => {
-    if (featureId === "") return
+    if (featureID === "") return
     if (!token) return
 
     const command = [
       "curl \\",
-      `${API_DOMAIN}/public/rotators/${featureId}/manifest/latest\\`,
+      `${API_DOMAIN}/public/rotators/${featureID}/manifest/latest\\`,
       `?token=${token} \\`,
       "| kubectl apply -f -",
     ].join('\n');
     setApplyCommand(command);
-  }, [token, featureId])
+  }, [token, featureID])
 
   useEffect(() => {
     if (!(rotatorError || rotatorIsRefetchError)) return;
@@ -85,27 +83,16 @@ export default function ListRotators() {
   }, [manifestError, manifestIsError])
 
   return (
-    <FeatureList>
-      <NewFeatureCard
-        featureName={featureName} 
-        performCreate={performCreate}
-        Form={NewRotatorForm} 
-      />
-      {rotatorsData && rotatorsData.map((rotator: Rotator) => (
-        <FeatureDetailsCardDialog 
-          key={rotator.id}
-          featureID={rotator.id}
-          featureName={rotator.name}
-          featureStatus={rotator.current_status} 
-          featureType={featureName}
-          featureDescription="Async Rotator listens to secret rotation notifications and triggers the External Secrets Operator reconciliation"
-          setFeatureId={setFeatureId}
-          applyCommand={applyCommand}
-          manifest={manifestData ? manifestData.manifest : ""}
-          onDeleteFeature={performDelete}
-        />
-      )
-      )}
-    </FeatureList>
-  )
+    <FeatureCollection
+      data={rotatorsData || []}
+      featureType={featureType}
+      featureDescription="Async Rotator listens to secret rotation notifications and triggers the External Secrets Operator reconciliation"
+      onDeleteFeature={performDelete}
+      setFeatureID={setFeatureID}
+      applyCommand={applyCommand}
+      manifestData={manifestData?.manifest}
+      performCreate={performCreate}
+      Form={NewRotatorForm}
+    />
+  );
 }

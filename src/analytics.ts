@@ -23,15 +23,15 @@ export const trackFeatureCopyYAMLWithApplyCommand = (featureType: string, featur
 };
 
 export const trackFeatureDownloadYAML = (featureType: string, featureID: string) => {
-  track("Download Feature YAML", { featureType,featureID });
+  track("Download Feature YAML", { featureType, featureID });
 };
 
 export const trackFeatureDeleteDialogOpened = (featureType: string, featureID: string, triggeredFrom: "details-dialog" | "dropdown") => {
   track("Feature Delete Dialog Opened", { featureType, featureID, triggeredFrom });
 };
 
-export const trackFeatureYamlDialogOpened = (featureType: string, featureID: string, featureName: string) => {
-  track("Feature YAML Dialog Opened", { featureType, featureID, featureName });
+export const trackFeatureItemDialogOpened = (featureType: string, featureID: string, featureName: string) => {
+  track("Feature Item Dialog Opened", { featureType, featureID, featureName });
 };
 
 export const trackFeatureDeleted = (featureType: string, featureID: string) => {
@@ -75,4 +75,16 @@ export const trackSettingsTabChanged = (tab: string) => {
 
 export const trackSettingsSectionModified = (section: string, values?: any) => {
   track("Settings Section Modified", { section, ...values });
+};
+
+export const trackListenerInstallDialogOpened = (id: string) => {
+  track("Listener Install Dialog Opened", { id });
+}
+
+export const trackListenerInstallCopyProcess = (id: string) => {
+  track("Copy Listener Install Process", { id });
+};
+
+export const trackListenerInstallCopyKubernetes = (id: string) => {
+  track("Copy Listener Install Kubernetes", { id });
 };
