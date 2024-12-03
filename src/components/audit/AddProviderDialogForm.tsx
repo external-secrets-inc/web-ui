@@ -20,7 +20,6 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { capitalizeWords } from '@/helpers/stringsHelpers';
 import { AddProviderFieldSchema, AddProviderFormSchema, CreateProviderPayload } from './Audit.interfaces';
 import useGetProvidersTypes from '@/services/audit/queries/useGetProvidersType';
 import { handleDefaultApiHttpError } from '@/services/servicesHelpers';
@@ -86,22 +85,7 @@ const AddProviderDialogForm = ({
   onSubmit: (payload: CreateProviderPayload) => void;
   onCancel: () => void;
 }) => {
-  const [formSchemaData, setFormSchema] = useState<AddProviderFormSchema>(
-    {
-      "formExample": {
-        "field1": { "type": "string", "required": true, "maxLength": 50 },
-        "field2": { "type": "date", "required": false },
-        "field3": { "type": "file", "required": true, "accept": "image/*" },
-        "field4": { "type": "number", "required": true },
-        "field5": { "type": "boolean", "required": true },
-      },
-      "gcp": {
-        "project-id": { "type": "string", "required": true },
-        "topic": { "type": "string", "required": true },
-        "subscription": { "type": "string", "required": true }
-      }
-    }
-  );
+  const [formSchemaData, setFormSchema] = useState<AddProviderFormSchema>({});
   const [selectedFormType, setSelectedFormType] = useState<string>('');
 
   const { data: providersTypeData, isLoading: isLoadingProvidersTypes, isError: isErrorProvidersTypes, error: providersTypesError } = useGetProvidersTypes(true);
@@ -237,7 +221,6 @@ const AddProviderDialogForm = ({
   return (
     <DialogContent
       className="w-[max(50%,640px)] max-w-[calc(100%-theme(spacing.12))] max-h-[calc(100%-theme(spacing.12))] overflow-auto grid-rows-[auto_minmax(100px,1fr)_auto] grid-cols-[minmax(100%,1fr)]"
-      onOpenAutoFocus={(e) => e.preventDefault()}
     >
       <DialogHeader>
         <DialogTitle>Add Provider</DialogTitle>
@@ -302,7 +285,7 @@ const AddProviderDialogForm = ({
                     name={field}
                     render={({ field: fieldProps }) => (
                       <FormItem>
-                        <FormLabel>{capitalizeWords(field)}</FormLabel>
+                        <FormLabel className='capitalize'>{field}</FormLabel>
                         <FormControl>
                           {renderInputField(
                             schema,
