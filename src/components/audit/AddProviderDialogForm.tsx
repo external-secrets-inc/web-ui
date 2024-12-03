@@ -24,6 +24,7 @@ import { capitalizeWords } from '@/helpers/stringsHelpers';
 import { AddProviderFieldSchema, AddProviderFormSchema, CreateProviderPayload } from './Audit.interfaces';
 import useGetProvidersTypes from '@/services/audit/queries/useGetProvidersType';
 import { handleDefaultApiHttpError } from '@/services/servicesHelpers';
+import { Switch } from '../ui/switch';
 
 const baseSchema = z.object({
   name: z.string().min(1, { message: "Name is required." }),
@@ -65,11 +66,13 @@ const renderInputField = (
       );
     case "boolean":
       return (
-        <Input
-          type="checkbox"
-          checked={fieldProps.value == "true"? true :  fieldProps.value == "false"? false : undefined}
-          onChange={(e) => fieldProps.onChange(e.target.checked)}
-        />
+        <div>
+          <Switch
+            checked={fieldProps.value == "true" ? true : fieldProps.value == "false" ? false : undefined}
+            onCheckedChange={(checked) => fieldProps.onChange(checked)}
+            aria-readonly
+          />
+        </div>
       );
     default:
       return null;
@@ -103,7 +106,7 @@ const AddProviderDialogForm = ({
 
   const { data: providersTypeData, isLoading: providersTypesIsLoading, isError: providersTypesIsError, error: providersTypesError } = useGetProvidersTypes(true);
 
-  const providersTypes = providersTypeData?? {};
+  const providersTypes = providersTypeData ?? {};
   useEffect(() => {
     setFormSchema(providersTypes);
   }, [providersTypes]);
@@ -163,6 +166,20 @@ const AddProviderDialogForm = ({
       : {},
   });
 
+  const resetForm = () => {
+    const resetValues = Object.keys(formSchemaData[selectedFormType]).reduce<Record<string, string>>((acc, key) => {
+      acc[key] = "";
+      return acc;
+    }, {});
+
+    form.reset({
+      ...resetValues,
+      type: "",
+      name: "",
+    });
+    setSelectedFormType("");
+  }
+
   const handleFormTypeChange = (value: string) => {
     setSelectedFormType(value);
     form.reset({
@@ -195,15 +212,12 @@ const AddProviderDialogForm = ({
       backendType: String(type),
       config: config,
     });
+    resetForm()
   }
 
   const handleCancel = () => {
-    form.reset({
-      ...form.getValues(),
-      type: "",
-      name: "",
-    });
     onCancel();
+    resetForm()
   }
 
   if (providersTypesIsLoading) {
