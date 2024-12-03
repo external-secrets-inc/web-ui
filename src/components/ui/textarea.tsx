@@ -1,4 +1,3 @@
-/*************  ✨ Codeium Command 🌟  *************/
 /* eslint-disable */
 import * as React from "react"
 
@@ -24,5 +23,3 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 Textarea.displayName = "Textarea"
 
 export { Textarea }
-
-/******  5e99a0d1-4348-4de6-9f0c-ae98539674c2  *******/
