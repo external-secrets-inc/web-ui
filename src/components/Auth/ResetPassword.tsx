@@ -31,7 +31,9 @@ const ResetPasswordSchema = z.object({
 type ResetPasswordData = z.infer<typeof ResetPasswordSchema>;
 
 function ResetPasswordForm() {
+  // eslint-disable-next-line prefer-const, @typescript-eslint/no-unused-vars
   let [searchParams, _] = useSearchParams();
+
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState("");

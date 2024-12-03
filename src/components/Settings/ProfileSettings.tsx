@@ -43,7 +43,8 @@ const ProfileSettings: React.FC = () => {
           form.reset({
             name: data.name,
           });
-        } catch (error) {
+        } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
+
           toast.error('Failed to load profile data');
         }
       }
@@ -59,7 +60,7 @@ const ProfileSettings: React.FC = () => {
         await updateUserData(userData.id, values);
         toast.success('Profile updated successfully');
         form.reset(values);
-      } catch (error) {
+      } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
         toast.error('Failed to update profile');
       }
     }
