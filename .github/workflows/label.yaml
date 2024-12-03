@@ -42,6 +42,8 @@ jobs:
               }
             }
 
+            core.setOutput('changes', totalChanges);
+
       - name: Determine size label
         id: size
         run: |
