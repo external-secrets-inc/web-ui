@@ -27,8 +27,8 @@ import { handleDefaultApiHttpError } from '@/services/servicesHelpers';
 import { Switch } from '../ui/switch';
 
 const baseSchema = z.object({
-  name: z.string().min(1, { message: "Name is required." }),
-  type: z.string().min(1, { message: "Type is required." }),
+  providerName: z.string().min(1, { message: "Name is required." }),
+  providerType: z.string().min(1, { message: "Type is required." }),
 });
 
 const renderInputField = (
@@ -156,50 +156,60 @@ const AddProviderDialogForm = ({
 
   const formSchema = selectedFormType ? generateZodSchema(selectedFormType) : baseSchema;
 
-  const form = useForm({
+  const form = useForm<
+    Record<"providerName" | "providerType" | string, string>
+  >({
     resolver: formSchema ? zodResolver(formSchema) : undefined,
-    defaultValues: selectedFormType
-      ? Object.keys(formSchemaData[selectedFormType]).reduce<Record<string, string>>((acc, key) => {
-        acc[key] = "";
-        return acc;
-      }, {})
-      : {},
+    defaultValues: {
+      providerName: "",
+      providerType: "",
+      ...(selectedFormType
+        ? Object.keys(formSchemaData[selectedFormType]).reduce<Record<string, string>>((acc, key) => {
+          acc[key] = "";
+          return acc;
+        }, {})
+        : {}
+      ),
+    }
   });
 
-  const resetForm = () => {
-    const resetValues = Object.keys(formSchemaData[selectedFormType]).reduce<Record<string, string>>((acc, key) => {
+  const resetForm = (options?: { providerName?: string; providerType?: string }) => {
+    const { providerName, providerType } = {
+      providerName: options?.providerName ?? "",
+      providerType: options?.providerType ?? "",
+    };
+
+    const resetValues = selectedFormType ? Object.keys(formSchemaData[selectedFormType]).reduce<Record<string, string>>((acc, key) => {
       acc[key] = "";
       return acc;
-    }, {});
+    }, {}) : {};
 
     form.reset({
       ...resetValues,
-      type: "",
-      name: "",
+      providerType: providerType,
+      providerName: providerName,
     });
-    setSelectedFormType("");
+    setSelectedFormType(providerType);
   }
 
   const handleFormTypeChange = (value: string) => {
     setSelectedFormType(value);
-    form.reset({
-      ...form.getValues(),
-      type: value,
-    });
+    const formValues = form.getValues(["providerName", "providerType"])
+    resetForm({ providerName: formValues[0], providerType: formValues[1] })
   };
 
   const handleSubmit = (formValues: Record<string, string | boolean | File | number>) => {
-    const { name, type, ...customFields } = formValues;
+    const { providerName, providerType, ...customFields } = formValues;
 
     const config = Object.entries(customFields).reduce<Record<string, string>>((acc, [key, value]) => {
       if (typeof value === "boolean") {
-        acc[key] = value ? "true" : "false"; // Converte boolean para string
+        acc[key] = value ? "true" : "false";
       } else if (value instanceof File) {
-        acc[key] = value.name; // Usa o nome do arquivo para File
+        acc[key] = value.name;
       } else if (typeof value === "number") {
-        acc[key] = value.toString(); // Converte número para string
+        acc[key] = value.toString();
       } else if (typeof value === "string") {
-        acc[key] = value; // Já é string
+        acc[key] = value;
       }
       return acc;
     }, {});
@@ -207,9 +217,9 @@ const AddProviderDialogForm = ({
     onSubmit({
       listenerID: "",
       tenantID: "",
-      name: String(name),
-      backendIdentifier: String(name),
-      backendType: String(type),
+      name: String(providerName),
+      backendIdentifier: String(providerName),
+      backendType: String(providerType),
       config: config,
     });
     resetForm()
@@ -237,7 +247,7 @@ const AddProviderDialogForm = ({
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
           <FormField
             control={form.control}
-            name="name"
+            name="providerName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Name</FormLabel>
@@ -250,7 +260,7 @@ const AddProviderDialogForm = ({
           />
           <FormField
             control={form.control}
-            name="type"
+            name="providerType"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Type</FormLabel>
@@ -258,8 +268,8 @@ const AddProviderDialogForm = ({
                   <Select
                     value={field.value}
                     onValueChange={(value) => {
-                      field.onChange(value); // Update the form state
-                      handleFormTypeChange(value); // Handle type-specific logic
+                      field.onChange(value);
+                      handleFormTypeChange(value);
                     }}
                   >
                     <SelectTrigger >
@@ -294,7 +304,14 @@ const AddProviderDialogForm = ({
                       <FormItem>
                         <FormLabel>{capitalizeWords(field)}</FormLabel>
                         <FormControl>
-                          {renderInputField(schema, field, fieldProps)}
+                          {renderInputField(
+                            schema,
+                            field,
+                            {
+                              ...fieldProps,
+                              value: fieldProps.value ?? "", // Ensure value is always defined
+                            }
+                          )}
                         </FormControl>
                         <FormMessage />
                       </FormItem>
