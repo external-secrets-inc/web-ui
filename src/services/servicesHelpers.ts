@@ -20,7 +20,7 @@ export async function apiWrapper<T>(
   const { defaultError, suppressToast = false } = options;
   try {
     return await apiCall();
-  } catch (error: any) {
+  } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
     let responseError = null;
 
     if (isAxiosError(error) && typeof error?.request?.response === 'string') {

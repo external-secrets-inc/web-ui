@@ -6,13 +6,14 @@ import { LucideCircleAlert } from 'lucide-react';
 
 const SubscriptionSettings: React.FC = () => {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  
+
   useEffect(() => {
     const fetchSubscriptions = async () => {
       try {
         const subscriptionsData = await getSubscriptions();
         setSubscriptions(subscriptionsData);
-      } catch (error) {
+      } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
+
         toast.error('Failed to load subscriptions');
       }
     };
@@ -27,7 +28,7 @@ const SubscriptionSettings: React.FC = () => {
         Manage your subscription information
       </h3>
 
-      <div className="space-y-4"> 
+      <div className="space-y-4">
         {subscriptions.length > 0 ? (
           subscriptions.map((subscription) => {
 
