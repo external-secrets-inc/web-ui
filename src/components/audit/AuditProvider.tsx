@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
-import { LucideMoreVertical, LucidePlus, LucideSquareArrowOutUpRight, LucideTrash2 } from "lucide-react";
+import { LucideMoreVertical, LucidePlus, LucideTrash2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { DataProvider, DataTable } from "../ui/DataProvider";
 import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";

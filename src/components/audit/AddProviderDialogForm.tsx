@@ -106,10 +106,10 @@ const AddProviderDialogForm = ({
 
   const { data: providersTypeData, isLoading: providersTypesIsLoading, isError: providersTypesIsError, error: providersTypesError } = useGetProvidersTypes(true);
 
-  const providersTypes = providersTypeData ?? {};
   useEffect(() => {
+    const providersTypes = providersTypeData ?? {};
     setFormSchema(providersTypes);
-  }, [providersTypes]);
+  }, [providersTypeData]);
 
   useEffect(() => {
     if (!(providersTypesError)) return;
