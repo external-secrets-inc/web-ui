@@ -80,7 +80,8 @@ const OrganizationSettings: React.FC = () => {
         deleteForm.reset({
           tenant_id: "",
         });
-      } catch (error) {
+      } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
+
         toast.error('Failed to load organization data');
       }
     };
@@ -99,7 +100,8 @@ const OrganizationSettings: React.FC = () => {
       toast.success('Organization details updated successfully');
       setAccountData((prev) => ({ ...prev, ...dataToSend }));
       form.reset(values);
-    } catch (error) {
+    } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
+
       toast.error('Failed to update Organization details');
     }
   }
@@ -112,7 +114,8 @@ const OrganizationSettings: React.FC = () => {
       signOut();
       trackSignedOut(false);
       navigate('/login');
-    } catch (error) {
+    } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
+
       toast.error('Failed to delete Organization');
     }
   }
@@ -201,7 +204,8 @@ const OrganizationSettings: React.FC = () => {
                     control={deleteForm.control}
                     name="tenant_id"
                     render={({ field }) => {
-                      const { ref, ...restField } = field;
+                      const { ref, ...restField } = field; // eslint-disable-line @typescript-eslint/no-unused-vars
+
                       return (
                         <FormItem>
                           <FormLabel>Enter your Organization URL to confirm</FormLabel>

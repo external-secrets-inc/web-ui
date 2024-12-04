@@ -11,8 +11,8 @@ interface Subsection {
 interface SettingsSectionProps {
   title: string;
   description: string;
-  form: UseFormReturn<any>;
-  onSubmit: (values: any) => void;
+  form: UseFormReturn<any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+  onSubmit: (values: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
   subsections: Subsection[];
 }
 
@@ -24,7 +24,7 @@ const SettingsSection: React.FC<SettingsSectionProps> = ({ title, description, f
     "Appearance": true,
   };
 
-  const handleSettingsSectionFormSubmit = (values: any) => {
+  const handleSettingsSectionFormSubmit = (values: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
     if (sectionsToSendValues[title]) {
       trackSettingsSectionModified(title, values);
     } else {

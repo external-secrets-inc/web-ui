@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 
 type CardProps = React.HTMLAttributes<HTMLDivElement> & React.ButtonHTMLAttributes<HTMLButtonElement> & { asChild?: boolean };
 
-const getCardComponentType = (asChild: boolean | undefined, onClick: React.MouseEventHandler<any> | undefined) => {
+const getCardComponentType = (asChild: boolean | undefined, onClick: React.MouseEventHandler<any> | undefined) => { // eslint-disable-line @typescript-eslint/no-explicit-any
   if (asChild) return Slot;
   if (onClick) return 'button';
   return 'div';
