@@ -13,7 +13,7 @@ import AuditChartProblems from "./AuditChartProblems";
 import AuditChartProviders from "./AuditChartProviders";
 import useGetListenerAuditData from "@/services/audit/queries/useGetListenerAuditData";
 import { trackListenerInstallDialogOpened } from "@/analytics";
-import { AuditTableData, FilterSchema, Listener, ListenerStatus, TimeRange } from "./Audit.interfaces";
+import { AuditTableData, FilterSchema, Listener, ListenerStatus, TimeRange, filterSchema } from "./Audit.interfaces";
 import { DataProvider, DataTable } from "../ui/DataProvider";
 import { useSearchParams } from "react-router-dom";
 import { createColumnHelper } from "@tanstack/react-table"
@@ -223,29 +223,30 @@ export default function Audit() {
   };
 
   const handleFilterChange = (selectedFilters: FilterSchema) => {
-    const filteredFilters = Object.fromEntries(
-      Object.entries(selectedFilters).filter(
-        ([, value]) =>
-          value !== null &&
-          value !== undefined &&
-          value !== "" &&
-          (!Array.isArray(value) || value.length > 0)
-      )
-    );
-    setSearchParams(() => {
-      const newSearchParams: Record<string, string | string[]> = {};
-      Object.entries(filteredFilters).forEach(([key, value]) => {
-        if (Array.isArray(value) && value.length > 0) {
-          newSearchParams[key] = value;
-        } else if (value !== null && value !== undefined && value !== "") {
-          newSearchParams[key] = String(value);
+    setSearchParams(prevParams => {
+      // First, remove all existing filter parameters specifically to avoid stale values
+      filterSchema.keyof().options.forEach(key => prevParams.delete(key));
+
+      // Then add new filter values if they exist
+      for (const [key, value] of Object.entries(selectedFilters)) {
+        if (!value) continue; // Skip unset values
+
+        if (Array.isArray(value)) {
+          // For array values (like providers), set each value as a separate entry
+          // TODO: Consider if we should use a single key with delimiters for each value instead
+          if (value.length) {
+            value.forEach(value => prevParams.append(key, value));
+          }
+        } else {
+          // For single values, just set them directly
+          prevParams.set(key, value);
         }
-      });
+      }
 
-      return newSearchParams;
+      return prevParams;
     });
-    handleFiltersDialogOpenChange(false);
 
+    handleFiltersDialogOpenChange(false);
     listenerAuditRefetch();
   };
 
@@ -258,19 +259,20 @@ export default function Audit() {
   const handleTimeRangeChange = (days: number | null) => {
     setCurrentToggledTimeRange(days);
 
-    if (!days) {
-      searchParams.delete('chartsStartDate');
-      searchParams.delete('chartsEndDate');
-    } else {
-      const end = new Date();
-      const start = new Date(end);
-      start.setDate(end.getDate() - days);
+    setSearchParams(prevParams => {
+      if (!days) {
+        prevParams.delete('chartsStartDate');
+        prevParams.delete('chartsEndDate');
+      } else {
+        const end = new Date();
+        const start = new Date(end);
+        start.setDate(end.getDate() - days);
 
-      searchParams.set('chartsStartDate', toYYYYMMDD(start));
-      searchParams.set('chartsEndDate', toYYYYMMDD(end));
-    }
-
-    setSearchParams(searchParams);
+        prevParams.set('chartsStartDate', toYYYYMMDD(start));
+        prevParams.set('chartsEndDate', toYYYYMMDD(end));
+      }
+      return prevParams;
+    });
   };
 
   const chartsStartDate = searchParams.get('chartsStartDate');
