@@ -50,3 +50,11 @@ export interface Listener {
   id: string;
   status: ListenerStatus;
 }
+
+export type TimeRange = "Now" | "7D" | "30D" | "90D" | null;
+
+export interface TimeRangeOption {
+  days: number;
+  label: TimeRange;
+}
+

@@ -13,18 +13,36 @@ import AuditChartProblems from "./AuditChartProblems";
 import AuditChartProviders from "./AuditChartProviders";
 import useGetListenerAuditData from "@/services/audit/queries/useGetListenerAuditData";
 import { trackListenerInstallDialogOpened } from "@/analytics";
-import { AuditTableData, FilterSchema, Listener, ListenerStatus } from "./Audit.interfaces";
+import { AuditTableData, FilterSchema, Listener, ListenerStatus, TimeRange } from "./Audit.interfaces";
 import { DataProvider, DataTable } from "../ui/DataProvider";
 import { useSearchParams } from "react-router-dom";
 import { createColumnHelper } from "@tanstack/react-table"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LucideAlertCircle, LucideFilter } from "lucide-react";
-import { LISTENER_STATUS } from "./Audit.constants";
+import { LISTENER_STATUS, TIME_RANGES } from "./Audit.constants";
 import AuditTimelineProviders from "./AuditTimelineProviders";
 import AuditTimelineProblems from "./AuditTimelineProblems";
 import FilterDialogForm from "./FilterDialogForm";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-import type { TimeRange } from "./Audit.interfaces"
+
+const formatChartRangeDate = (date: Date) => date.toISOString().split('T')[0]; // YYYY-MM-DD
+
+const getDaysBetweenDates = (start: string, end: string) =>
+  Math.round((new Date(end).getTime() - new Date(start).getTime()) / (1000 * 60 * 60 * 24));
+
+const isDateFromToday = (dateStr: string) => {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const date = new Date(dateStr)
+  date.setHours(0, 0, 0, 0)
+  return date.getTime() === today.getTime()
+}
+
+const getTimeRangeFromDays = (days: number | null): TimeRange => {
+  const range = TIME_RANGES.find(r => r.days === days);
+  if (!range) return null;
+  return range.label as TimeRange;
+};
 
 export default function Audit() {
   const columnHelper = createColumnHelper<AuditTableData>()
@@ -70,9 +88,20 @@ export default function Audit() {
   const [applyCommand, setApplyCommand] = useState("")
   const [isListenerInstallDialogOpen, setIsListenerInstallDialogOpen] = useState(false);
   const [isFiltersDialogOpen, setIsFiltersDialogOpen] = useState(false);
-  const [timeRange, setTimeRange] = useState<TimeRange>('now')
 
   const [searchParams, setSearchParams] = useSearchParams();
+  const [currentToggledTimeRange, setCurrentToggledTimeRange] = useState<number | null>(() => {
+    const startDate = searchParams.get('chartsStartDate');
+    const endDate = searchParams.get('chartsEndDate');
+    if (!startDate || !endDate) return 0;
+
+    // Only set a timeRange if endDate is today
+    if (!isDateFromToday(endDate)) return null;
+
+    const diffDays = getDaysBetweenDates(startDate, endDate);
+    // Only return a value if it matches one of our predefined ranges
+    return TIME_RANGES.find(r => r.days === diffDays)?.days ?? null;
+  });
 
   const initialFilters = useMemo(() => {
     return {
@@ -224,6 +253,27 @@ export default function Audit() {
     }
   }, [isListenerInstallDialogOpen, listener.id]);
 
+  const handleTimeRangeChange = (days: number | null) => {
+    setCurrentToggledTimeRange(days);
+
+    if (!days) {
+      searchParams.delete('chartsStartDate');
+      searchParams.delete('chartsEndDate');
+    } else {
+      const end = new Date();
+      const start = new Date();
+      start.setDate(end.getDate() - days);
+
+      searchParams.set('chartsStartDate', formatChartRangeDate(start));
+      searchParams.set('chartsEndDate', formatChartRangeDate(end));
+    }
+
+    setSearchParams(searchParams);
+  };
+
+  const chartsStartDate = searchParams.get('chartsStartDate');
+  const chartsEndDate = searchParams.get('chartsEndDate');
+
   return (
     <div className="space-y-4">
       {!listenerIsLoading && listener.status === LISTENER_STATUS.PENDING_INSTALLATION && (
@@ -274,28 +324,37 @@ export default function Audit() {
         <ToggleGroup
           variant="outline"
           type="single"
-          value={timeRange}
-          onValueChange={(v) => setTimeRange(v as TimeRange)}
+          value={String(currentToggledTimeRange)}
+          onValueChange={(value) => handleTimeRangeChange(Number(value))}
         >
-          <ToggleGroupItem className="w-12" value="now">Now</ToggleGroupItem>
-          <ToggleGroupItem className="w-12" value="7d">7D</ToggleGroupItem>
-          <ToggleGroupItem className="w-12" value="30d">30D</ToggleGroupItem>
-          <ToggleGroupItem className="w-12" value="90d">90D</ToggleGroupItem>
+          {TIME_RANGES.map(({ days, label }) => (
+            <ToggleGroupItem key={days} className="w-12" value={String(days)}>
+              {label}
+            </ToggleGroupItem>
+          ))}
         </ToggleGroup>
       </div>
 
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(416px,100%),1fr))] gap-4 mt-6">
-        {timeRange === 'now' ? (
+        {currentToggledTimeRange === 0 ? (
           <>
             <AuditChartProviders />
             <AuditChartProblems />
           </>
-        ) : (
+        ) : (chartsStartDate && chartsEndDate) ? (
           <>
-            <AuditTimelineProviders timeRange={timeRange} />
-            <AuditTimelineProblems timeRange={timeRange} />
+            <AuditTimelineProviders
+              timeRange={getTimeRangeFromDays(currentToggledTimeRange)}
+              startDate={chartsStartDate}
+              endDate={chartsEndDate}
+            />
+            <AuditTimelineProblems
+              timeRange={getTimeRangeFromDays(currentToggledTimeRange)}
+              startDate={chartsStartDate}
+              endDate={chartsEndDate}
+            />
           </>
-        )}
+        ) : null}
       </div>
 
       <div className="flex items-center justify-between pt-4">

@@ -3,7 +3,7 @@ import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
-import { mockNetworkResponseDelay, mockProblemTimelineStats } from "@/services/audit/mocks/mockData";
+import { mockNetworkResponseDelay, getMockProblemTimelineStats } from "@/services/audit/mocks/mockData";
 
 export interface ProblemTimelineStats {
   date: string;
@@ -16,19 +16,21 @@ export interface ProblemTimelineStats {
 }
 
 interface QueryOptions {
-  timeRange: '7d' | '30d' | '90d'
+  startDate: string;
+  endDate: string;
 }
 
 const getAuditProblemTimelineStats = async (mock: boolean, options: QueryOptions, signal: AbortSignal) => {
   if (mock) {
     await mockNetworkResponseDelay();
-    return mockProblemTimelineStats[options.timeRange];
+    return getMockProblemTimelineStats(options.startDate, options.endDate);
   }
 
   const headers = await getAuthHeaders();
-  const response = await axiosInstance.get(`/api/audit/stats/problems/timeline/${options.timeRange}`, {
+  const response = await axiosInstance.get('/api/audit/stats/problems/timeline', {
     headers,
     signal,
+    params: options
   });
   return response.data;
 }
@@ -39,7 +41,7 @@ export default function useGetAuditProblemTimelineStats(
   queryOptions?: Omit<UseQueryOptions<ProblemTimelineStats[], AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
 ) {
   return useQuery({
-    queryKey: ['audit', 'problem', 'timeline', options.timeRange],
+    queryKey: ['audit', 'problem', 'timeline', options.startDate, options.endDate],
     queryFn: ({ signal }) => getAuditProblemTimelineStats(mock, options, signal),
     ...queryOptions,
   });

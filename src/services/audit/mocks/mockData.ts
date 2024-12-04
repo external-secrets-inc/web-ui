@@ -40,10 +40,19 @@ export const mockProblemStats: StatsItem[] = [
 ]
 
 // Internal helpers for mock data generation
-const generateMockTimelineData = (days: number, baseStats: StatsItem[]): TimelineData[] => {
+const generateMockTimelineData = (startDate: Date | string, endDate: Date | string, baseStats: StatsItem[]): TimelineData[] => {
+  // Ensure we're working with Date objects and set to start/end of day
+  const start = new Date(startDate)
+  start.setHours(0, 0, 0, 0)
+
+  const end = new Date(endDate)
+  end.setHours(23, 59, 59, 999)
+
+  const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
+
   return Array.from({ length: days }).map((_, index) => {
-    const date = new Date()
-    date.setDate(date.getDate() - (days - 1 - index))
+    const date = new Date(start)
+    date.setDate(date.getDate() + index)
     const dateStr = date.toISOString().split('T')[0]
 
     return {
@@ -56,18 +65,12 @@ const generateMockTimelineData = (days: number, baseStats: StatsItem[]): Timelin
   })
 }
 
-// Example of timeline stats response
-export const mockProviderTimelineStats = {
-  '7d': generateMockTimelineData(7, mockProviderStats),
-  '30d': generateMockTimelineData(30, mockProviderStats),
-  '90d': generateMockTimelineData(90, mockProviderStats),
-}
+// Remove static range objects and export the generator function
+export const getMockProviderTimelineStats = (startDate: string, endDate: string) =>
+  generateMockTimelineData(new Date(startDate), new Date(endDate), mockProviderStats)
 
-export const mockProblemTimelineStats = {
-  '7d': generateMockTimelineData(7, mockProblemStats),
-  '30d': generateMockTimelineData(30, mockProblemStats),
-  '90d': generateMockTimelineData(90, mockProblemStats),
-}
+export const getMockProblemTimelineStats = (startDate: string, endDate: string) =>
+  generateMockTimelineData(new Date(startDate), new Date(endDate), mockProblemStats)
 
 export const mockLastUpdate = new Date().toLocaleString('en-US', {
   month: '2-digit',

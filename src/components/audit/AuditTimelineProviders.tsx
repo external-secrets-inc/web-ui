@@ -1,7 +1,7 @@
 import { AuditTimelineChartCard } from "@/components/audit/AuditTimelineChartCard"
 import { ChartConfig } from "@/components/ui/chart"
 import useGetAuditProviderTimelineStats from "@/services/audit/queries/useGetAuditProviderTimelineStats"
-import { TimeRange } from "./AuditToggleGroup"
+import { TimeRange } from "./Audit.interfaces"
 
 const BASE_CHART_CONFIG = {
   amount: {
@@ -10,16 +10,25 @@ const BASE_CHART_CONFIG = {
 } satisfies ChartConfig
 
 interface Props {
-  timeRange: Exclude<TimeRange, 'now'>
+  timeRange: Exclude<TimeRange, 'now'>;
+  startDate: string;
+  endDate: string;
 }
 
-function AuditTimelineProviders({ timeRange }: Props) {
-  const { data, error, isLoading } = useGetAuditProviderTimelineStats(true, { timeRange })
+function AuditTimelineProviders({ timeRange, startDate, endDate }: Props) {
+  const { data, error, isLoading } = useGetAuditProviderTimelineStats(true, {
+    startDate,
+    endDate
+  })
+
+  const description = timeRange
+    ? `Last ${timeRange}`
+    : `From ${new Date(startDate).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()}`
 
   return (
     <AuditTimelineChartCard
       title="Secrets by Provider"
-      description={`Last ${timeRange}`}
+      description={description}
       data={data}
       baseConfig={BASE_CHART_CONFIG}
       error={!!error}
