@@ -21,7 +21,7 @@ interface ProviderTableMeta {
   renderRowActions?: (row: ProviderTableData) => React.ReactNode;
 }
 
-function AuditProvider({ tenantID, listenerID }: { tenantID: string, listenerID: string }) {
+function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, listenerID: string }) {
   const columnHelper = createColumnHelper<ProviderTableData>()
 
   const columns = useMemo(() => [
@@ -165,4 +165,4 @@ function AuditProvider({ tenantID, listenerID }: { tenantID: string, listenerID:
   )
 }
 
-export default AuditProvider
+export default AuditProviderDataTable

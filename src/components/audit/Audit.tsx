@@ -21,7 +21,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LucideAlertCircle, LucideFilter } from "lucide-react";
 import { LISTENER_STATUS } from "./Audit.constants";
 import FilterDialogForm from "./FilterDialogForm";
-import AuditProvider from "./AuditProvider";
+import AuditProviderDataTable from "./AuditProviderDataTable";
 
 export default function Audit() {
   const columnHelper = createColumnHelper<AuditTableData>()
@@ -273,7 +273,7 @@ export default function Audit() {
         <AuditChartProblems />
       </div>
 
-      <AuditProvider
+      <AuditProviderDataTable
         tenantID={listener.tenant_id}
         listenerID={listener.id}
       />

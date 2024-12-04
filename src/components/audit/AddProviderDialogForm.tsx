@@ -20,7 +20,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { AddProviderFieldSchema, AddProviderFormSchema, CreateProviderPayload } from './Audit.interfaces';
+import { AddProviderFieldSchema, AddProviderFieldType, AddProviderFormSchema, CreateProviderPayload } from './Audit.interfaces';
 import useGetProvidersTypes from '@/services/audit/queries/useGetProvidersType';
 import { handleDefaultApiHttpError } from '@/services/servicesHelpers';
 import { Switch } from '../ui/switch';
@@ -30,52 +30,92 @@ const baseSchema = z.object({
   providerType: z.string().min(1, { message: "Type is required." }),
 });
 
+const fieldHandlers: Record<
+  AddProviderFieldType,
+  {
+    generateSchema: (key: string, schema: AddProviderFieldSchema) => z.ZodType;
+    render: (
+      schema: AddProviderFieldSchema,
+      field: string,
+      fieldProps: ControllerRenderProps<Record<string, string>, string>
+    ) => JSX.Element | null;
+  }
+> = {
+  string: {
+    generateSchema: (key, schema) =>
+      schema.required
+        ? z.string().min(1, { message: `${key} is required.` }).max(schema.maxLength || Infinity)
+        : z.string().max(schema.maxLength || Infinity).optional(),
+    render: (schema, field, fieldProps) => (
+      <Input
+        placeholder={`Enter ${field}`}
+        maxLength={schema.maxLength}
+        {...fieldProps}
+      />
+    ),
+  },
+  date: {
+    generateSchema: (_, schema) =>
+      schema.required ? z.string().min(1) : z.string().optional(),
+    render: (_, __, fieldProps) => <Input type="date" {...fieldProps} />,
+  },
+  file: {
+    generateSchema: (_, schema) =>
+      schema.required
+        ? z
+            .instanceof(File)
+            .refine((file) => file.size > 0, { message: `File must not be empty.` })
+        : z.instanceof(File).optional(),
+    render: (_, __, fieldProps) => (
+      <Input
+        type="file"
+        onChange={(e) =>
+          fieldProps.onChange((e.target as HTMLInputElement).files?.[0])
+        }
+      />
+    ),
+  },
+  number: {
+    generateSchema: (key, schema) =>
+      schema.required
+        ? z.number({ invalid_type_error: `${key} must be a number.` })
+        : z.number().optional(),
+    render: (_, field, fieldProps) => (
+      <Input
+        type="number"
+        placeholder={`Enter ${field}`}
+        onChange={(e) => fieldProps.onChange(parseFloat(e.target.value))}
+      />
+    ),
+  },
+  boolean: {
+    generateSchema: (_, schema) =>
+      schema.required ? z.boolean() : z.boolean().optional(),
+    render: (_, __, fieldProps) => (
+      <div>
+        <Switch
+          checked={
+            fieldProps.value === "true"
+              ? true
+              : fieldProps.value === "false"
+              ? false
+              : undefined
+          }
+          onCheckedChange={(checked) => fieldProps.onChange(checked)}
+          aria-readonly
+        />
+      </div>
+    ),
+  },
+};
+
 const renderInputField = (
   schema: AddProviderFieldSchema,
   field: string,
   fieldProps: ControllerRenderProps<Record<string, string>, string>
-) => {
-  switch (schema.type) {
-    case "string":
-      return (
-        <Input
-          placeholder={`Enter ${field}`}
-          maxLength={schema.maxLength}
-          {...fieldProps}
-        />
-      );
-    case "date":
-      return <Input type="date" {...fieldProps} />;
-    case "file":
-      return (
-        <Input
-          type="file"
-          onChange={(e) =>
-            fieldProps.onChange((e.target as HTMLInputElement).files?.[0])
-          }
-        />
-      );
-    case "number":
-      return (
-        <Input
-          type="number"
-          placeholder={`Enter ${field}`}
-          onChange={(e) => fieldProps.onChange(parseFloat(e.target.value))}
-        />
-      );
-    case "boolean":
-      return (
-        <div>
-          <Switch
-            checked={fieldProps.value == "true" ? true : fieldProps.value == "false" ? false : undefined}
-            onCheckedChange={(checked) => fieldProps.onChange(checked)}
-            aria-readonly
-          />
-        </div>
-      );
-    default:
-      return null;
-  }
+): JSX.Element | null => {
+  const handler = fieldHandlers[schema.type];
+  return handler ? handler.render(schema, field, fieldProps) : null;
 };
 
 const AddProviderDialogForm = ({
@@ -101,39 +141,20 @@ const AddProviderDialogForm = ({
     handleDefaultApiHttpError(providersTypesError, "Error while fetching listener Audit data")
   }, [providersTypesError, isErrorProvidersTypes])
 
-  const generateZodSchema = (formType: string) => {
+  const generateZodSchema = (formType: string): z.ZodObject<Record<string, z.ZodType>> => {
     const fields = formSchemaData[formType];
-    const dynamicSchema = Object.entries(fields).reduce<Record<string, z.ZodType>>((acc, [key, value]) => {
-      switch (value.type) {
-        case "string":
-          acc[key] = value.required
-            ? z
-              .string()
-              .min(1, { message: `${key} is required.` })
-              .max(value.maxLength || Infinity)
-            : z.string().max(value.maxLength || Infinity).optional();
-          break;
-        case "date":
-          acc[key] = value.required ? z.string().min(1) : z.string().optional();
-          break;
-        case "file":
-          acc[key] = value.required ?
-            z.instanceof(File).refine((file) => file.size > 0, { message: `${key} must not be empty.` })
-            : z.instanceof(File).optional();
-          break;
-        case "number":
-          acc[key] = value.required
-            ? z.number({ invalid_type_error: `${key} must be a number.` })
-            : z.number().optional();
-          break;
-        case "boolean":
-          acc[key] = value.required ? z.boolean() : z.boolean().optional();
-          break;
-        default:
-          acc[key] = z.unknown();
-      }
-      return acc;
-    }, {});
+    const dynamicSchema = Object.entries(fields).reduce<Record<string, z.ZodType>>(
+      (acc, [key, schema]) => {
+        const handler = fieldHandlers[schema.type];
+        if (handler) {
+          acc[key] = handler.generateSchema(key, schema);
+        } else {
+          acc[key] = z.unknown(); // Fallback for unsupported types
+        }
+        return acc;
+      },
+      {}
+    );
 
     return baseSchema.merge(z.object(dynamicSchema));
   };
