@@ -23,6 +23,8 @@ import { LISTENER_STATUS } from "./Audit.constants";
 import AuditTimelineProviders from "./AuditTimelineProviders";
 import AuditTimelineProblems from "./AuditTimelineProblems";
 import FilterDialogForm from "./FilterDialogForm";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import type { TimeRange } from "./Audit.interfaces"
 
 export default function Audit() {
   const columnHelper = createColumnHelper<AuditTableData>()
@@ -68,6 +70,7 @@ export default function Audit() {
   const [applyCommand, setApplyCommand] = useState("")
   const [isListenerInstallDialogOpen, setIsListenerInstallDialogOpen] = useState(false);
   const [isFiltersDialogOpen, setIsFiltersDialogOpen] = useState(false);
+  const [timeRange, setTimeRange] = useState<TimeRange>('now')
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -261,20 +264,38 @@ export default function Audit() {
             <LucideAlertCircle className="text-destructive" /> Listener Offline or Unreachable
           </AlertTitle>
           <AlertDescription>
-            The listener is currently offline or cannot be accessed. Please check the cluster configuration on your end.
+            The listener is currently offline or cannot be accessed. Please check the cluster configuration on your end.a
           </AlertDescription>
         </Alert>
       )}
 
-      <h2 className="font-bold pt-4">Analytics</h2>
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(416px,100%),1fr))] gap-4 mt-6">
-        <AuditChartProviders />
-        <AuditChartProblems />
+      <div className="flex items-center justify-between pt-4">
+        <h2 className="font-bold">Analytics</h2>
+        <ToggleGroup
+          variant="outline"
+          type="single"
+          value={timeRange}
+          onValueChange={(v) => setTimeRange(v as TimeRange)}
+        >
+          <ToggleGroupItem className="w-12" value="now">Now</ToggleGroupItem>
+          <ToggleGroupItem className="w-12" value="7d">7D</ToggleGroupItem>
+          <ToggleGroupItem className="w-12" value="30d">30D</ToggleGroupItem>
+          <ToggleGroupItem className="w-12" value="90d">90D</ToggleGroupItem>
+        </ToggleGroup>
       </div>
 
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(416px,100%),1fr))] gap-4 mt-6">
-        <AuditTimelineProviders />
-        <AuditTimelineProblems />
+        {timeRange === 'now' ? (
+          <>
+            <AuditChartProviders />
+            <AuditChartProblems />
+          </>
+        ) : (
+          <>
+            <AuditTimelineProviders timeRange={timeRange} />
+            <AuditTimelineProblems timeRange={timeRange} />
+          </>
+        )}
       </div>
 
       <div className="flex items-center justify-between pt-4">

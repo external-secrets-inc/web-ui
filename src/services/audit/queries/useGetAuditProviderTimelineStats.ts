@@ -1,4 +1,3 @@
-
 import { UseQueryOptions, useQuery } from "@tanstack/react-query";
 import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
@@ -16,27 +15,32 @@ export interface ProviderTimelineStats {
   }[];
 }
 
-const getAuditProviderTimelineStats = async (mock: boolean, signal: AbortSignal) => {
-  // TODO: Remove this mock when the API is ready
+interface QueryOptions {
+  timeRange: '7d' | '30d' | '90d'
+}
+
+const getAuditProviderTimelineStats = async (mock: boolean, options: QueryOptions, signal: AbortSignal) => {
   if (mock) {
     await mockNetworkResponseDelay();
-    return mockProviderTimelineStats;
+    return mockProviderTimelineStats[options.timeRange];
   }
 
   const headers = await getAuthHeaders();
-  const response = await axiosInstance.get('/api/audit/stats/providers/timeline', { headers, signal }); // TODO: endpoint design not final
+  const response = await axiosInstance.get(`/api/audit/stats/providers/timeline/${options.timeRange}`, {
+    headers,
+    signal,
+  });
   return response.data;
 }
 
-const useGetAuditProviderTimelineStats = (
+export default function useGetAuditProviderTimelineStats(
   mock: boolean = true,
-  options?: Omit<UseQueryOptions<ProviderTimelineStats[], AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
-) => {
+  options: QueryOptions,
+  queryOptions?: Omit<UseQueryOptions<ProviderTimelineStats[], AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
+) {
   return useQuery({
-    queryKey: ["useGetAuditProviderTimelineStats", mock],
-    queryFn: ({ signal }) => getAuditProviderTimelineStats(mock, signal),
-    ...options,
+    queryKey: ['audit', 'provider', 'timeline', options.timeRange],
+    queryFn: ({ signal }) => getAuditProviderTimelineStats(mock, options, signal),
+    ...queryOptions,
   });
-};
-
-export default useGetAuditProviderTimelineStats;
+}

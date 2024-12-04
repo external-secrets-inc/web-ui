@@ -1,5 +1,5 @@
 import { Line, LineChart, XAxis, YAxis } from "recharts"
-import { LucideAlertCircle, LucideLoader } from "lucide-react"
+import { LucideAlertCircle } from "lucide-react"
 import {
   Card,
   CardContent,
@@ -16,6 +16,7 @@ import {
   ChartLegendContent,
 } from "@/components/ui/chart"
 import { useMemo } from "react"
+import { Loader } from "@/components/ui/Loader"
 
 const CHART_COLORS = [
   "hsl(var(--chart-1))",
@@ -55,7 +56,7 @@ export function AuditTimelineChartCard({
   isLoading,
 }: TimelineChartCardProps) {
   const { data, config } = useMemo(() => {
-    if (!rawData) return { data: undefined, config: baseConfig }
+    if (!rawData || !Array.isArray(rawData)) return { data: undefined, config: baseConfig }
 
     const allKinds = Array.from(
       new Set(rawData.flatMap(d => d.stats.map(s => s.kind)))
@@ -112,9 +113,7 @@ export function AuditTimelineChartCard({
             {errorMessage}
           </div>
         ) : isLoading ? (
-          <div className="flex items-center justify-center h-[300px]">
-            <LucideLoader className="w-8 h-8 animate-spin text-muted-foreground" />
-          </div>
+          <Loader size="lg" className="h-72 place-self-center -mt-12"/>
         ) : !data ? (
           <div className="flex gap-2 items-center justify-center h-[300px]">
             <LucideAlertCircle className="text-destructive" />

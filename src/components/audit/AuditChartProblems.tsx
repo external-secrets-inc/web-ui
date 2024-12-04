@@ -1,5 +1,6 @@
 import { AuditBarChartCard } from "@/components/audit/AuditBarChartCard"
 import { ChartConfig } from "@/components/ui/chart"
+import { mockLastUpdate } from "@/services/audit/mocks/mockData"
 import useGetAuditProblemStats from "@/services/audit/queries/useGetAuditProblemStats"
 
 const BASE_CHART_CONFIG = {
@@ -14,8 +15,12 @@ function AuditChartProblems() {
 
   return (
     <AuditBarChartCard
-      title="Secret Problems Overview"
-      description={<>Total problems: <span className="text-foreground">{isLoading ? null : total}</span></>}
+      title="Secret Problems"
+      description={<>
+        Total problems: <span className="text-foreground">{isLoading ? null : total}</span>
+        <br />
+        <span className="text-xs text-muted-foreground">Last update: {mockLastUpdate}</span>
+      </>}
       data={data}
       baseConfig={BASE_CHART_CONFIG}
       error={!!error}

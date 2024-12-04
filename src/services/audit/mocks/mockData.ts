@@ -1,75 +1,81 @@
-// TODO: Either remove or use this mock as a "demo mode" when API is ready
-export const mockProviderStats = [
-  {
-    kind: "aws",
-    amount: 245,
-    label: "AWS",
-    tooltipLabel: "AWS Secrets Manager"
-  },
-  {
-    kind: "gcp",
-    amount: 156,
-    label: "GCP",
-    tooltipLabel: "Google Secret Manager"
-  },
-  {
-    kind: "azure",
-    amount: 98,
-    label: "Azure",
-    tooltipLabel: "Azure Key Vault"
-  },
-  {
-    kind: "vault",
-    amount: 45,
-    label: "HashiCorp",
-    tooltipLabel: "HashiCorp Vault"
-  },
-  {
-    kind: "kubernetes",
-    amount: 87,
-    label: "K8s",
-    tooltipLabel: "Kubernetes Secrets"
-  },
-  {
-    kind: "onePassword",
-    amount: 65,
-    label: "1Pass",
-    tooltipLabel: "1Password Connect"
-  },
-  {
-    kind: "delinea",
-    amount: 42,
-    label: "Delinea",
-    tooltipLabel: "Delinea Secret Server"
-  },
-  {
-    kind: "conjur",
-    amount: 23,
-    label: "Conjur",
-    tooltipLabel: "CyberArk Conjur"
-  },
-] as const
+/**
+ * Mock API Response Structures
+ * These represent the exact format we expect from the backend
+ */
+type StatsItem = {
+  kind: string
+  label: string
+  tooltipLabel: string
+  amount: number
+}
 
-export const mockProblemStats = [
-  {
-    kind: "duplicated",
-    amount: 4,
-    label: "Duplicated",
-    tooltipLabel: "Secrets with duplicate values"
-  },
-  {
-    kind: "nonCompliant",
-    amount: 18,
-    label: "Non-compliant",
-    tooltipLabel: "Secrets not following compliance rules"
-  },
-  {
-    kind: "neverAccessed",
-    amount: 5,
-    label: "Never Accessed",
-    tooltipLabel: "Secrets that were never accessed"
-  },
-] as const
+type TimelineData = {
+  date: string
+  stats: StatsItem[]
+}
+
+// Helper functions (internal use only)
+const seededRandom = (date: string) => {
+  let seed = Array.from(date).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const x = Math.sin(seed++) * 10000;
+  return x - Math.floor(x);
+};
+
+// Example of current stats response
+export const mockProviderStats: StatsItem[] = [
+  { kind: "aws", label: "AWS", tooltipLabel: "AWS Secrets Manager", amount: 245 },
+  { kind: "gcp", label: "GCP", tooltipLabel: "Google Secret Manager", amount: 156 },
+  { kind: "azure", label: "Azure", tooltipLabel: "Azure Key Vault", amount: 98 },
+  { kind: "vault", label: "HashiCorp", tooltipLabel: "HashiCorp Vault", amount: 45 },
+  { kind: "kubernetes", label: "K8s", tooltipLabel: "Kubernetes Secrets", amount: 87 },
+  { kind: "onePassword", label: "1Pass", tooltipLabel: "1Password Connect", amount: 65 },
+  { kind: "delinea", label: "Delinea", tooltipLabel: "Delinea Secret Server", amount: 42 },
+  { kind: "conjur", label: "Conjur", tooltipLabel: "CyberArk Conjur", amount: 23 }
+]
+
+export const mockProblemStats: StatsItem[] = [
+  { kind: "duplicated", label: "Duplicated", tooltipLabel: "Secrets with duplicate values", amount: 4 },
+  { kind: "nonCompliant", label: "Non-compliant", tooltipLabel: "Secrets not following compliance rules", amount: 18 },
+  { kind: "neverAccessed", label: "Never Accessed", tooltipLabel: "Secrets that were never accessed", amount: 5 }
+]
+
+// Internal helpers for mock data generation
+const generateMockTimelineData = (days: number, baseStats: StatsItem[]): TimelineData[] => {
+  return Array.from({ length: days }).map((_, index) => {
+    const date = new Date()
+    date.setDate(date.getDate() - (days - 1 - index))
+    const dateStr = date.toISOString().split('T')[0]
+
+    return {
+      date: dateStr,
+      stats: baseStats.map(stat => ({
+        ...stat,
+        amount: stat.amount - Math.floor(seededRandom(dateStr + stat.kind) * (stat.amount * 0.2))
+      }))
+    }
+  })
+}
+
+// Example of timeline stats response
+export const mockProviderTimelineStats = {
+  '7d': generateMockTimelineData(7, mockProviderStats),
+  '30d': generateMockTimelineData(30, mockProviderStats),
+  '90d': generateMockTimelineData(90, mockProviderStats),
+}
+
+export const mockProblemTimelineStats = {
+  '7d': generateMockTimelineData(7, mockProblemStats),
+  '30d': generateMockTimelineData(30, mockProblemStats),
+  '90d': generateMockTimelineData(90, mockProblemStats),
+}
+
+export const mockLastUpdate = new Date().toLocaleString('en-US', {
+  month: '2-digit',
+  day: '2-digit',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+})
 
 export const mockTableData = {
   secretData: [
@@ -208,79 +214,5 @@ export const mockTableData = {
     { value: "vault", label: "vault" },
   ]
 } as const
-
-// Seeded random function for consistent results
-const seededRandom = (date: string) => {
-  let seed = Array.from(date).reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const x = Math.sin(seed++) * 10000;
-  return x - Math.floor(x);
-};
-
-export const mockProviderTimelineStats = Array.from({ length: 90 }).map((_, index) => {
-  const date = new Date();
-  date.setDate(date.getDate() - (6 - index));
-  const dateStr = date.toISOString().split('T')[0];
-
-  return {
-    date: dateStr,
-    stats: [
-      {
-        kind: "aws",
-        amount: 245 - Math.floor(seededRandom(dateStr) * 30),
-        label: "AWS",
-        tooltipLabel: "AWS Secrets Manager"
-      },
-      {
-        kind: "gcp",
-        amount: 156 - Math.floor(seededRandom(dateStr + "gcp") * 20),
-        label: "GCP",
-        tooltipLabel: "Google Secret Manager"
-      },
-      {
-        kind: "azure",
-        amount: 98 - Math.floor(seededRandom(dateStr + "azure") * 15),
-        label: "Azure",
-        tooltipLabel: "Azure Key Vault"
-      },
-      {
-        kind: "vault",
-        amount: 45 - Math.floor(seededRandom(dateStr + "vault") * 10),
-        label: "HashiCorp",
-        tooltipLabel: "HashiCorp Vault"
-      }
-    ]
-  }
-});
-
-export const mockProblemTimelineStats = Array.from({ length: 7 }).map((_, index) => {
-  const date = new Date();
-  date.setDate(date.getDate() - (6 - index));
-  // Changed: Use YYYY-MM-DD format
-  const dateStr = date.toISOString().split('T')[0];
-
-  return {
-    date: dateStr,
-    stats: [
-      {
-        kind: "duplicated",
-        amount: 4 - Math.floor(seededRandom(dateStr + "dup") * 2),
-        label: "Duplicated",
-        tooltipLabel: "Secrets with duplicate values"
-      },
-      {
-        kind: "nonCompliant",
-        amount: 18 - Math.floor(seededRandom(dateStr + "non") * 5),
-        label: "Non-compliant",
-        tooltipLabel: "Secrets not following compliance rules"
-      },
-      {
-        kind: "neverAccessed",
-        amount: 5 - Math.floor(seededRandom(dateStr + "never") * 2),
-        label: "Never Accessed",
-        tooltipLabel: "Secrets that were never accessed"
-      }
-    ]
-  }
-});
 
 export const mockNetworkResponseDelay = () => new Promise(resolve => setTimeout(resolve, 2500))
