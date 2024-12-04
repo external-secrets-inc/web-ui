@@ -2,6 +2,8 @@ import { getSubscriptions } from "@/services/subscriptions/subscriptionsService"
 import { useEffect, useState } from "react";
 import { Alert, AlertDescription } from "./ui/alert";
 import { LucideCalendarClock, LucideX } from "lucide-react";
+import { calculateDiffDays } from "@/utils/calculateDiffDays";
+import { formatDateToUS } from "@/utils/dateFormatingUS";
 import { Button } from "./ui/button";
 
 export default function ExpirySubscriptionBanner() {
@@ -28,9 +30,7 @@ export default function ExpirySubscriptionBanner() {
                 setSubData({ id, ...updatedData });
 
                 // Check how many days are left until expiry
-                const expiryDateObj = new Date(expiryDate).getTime();
-                const currentDate = new Date().getTime();
-                const diffDays = Math.floor((expiryDateObj - currentDate) / (1000 * 60 * 60 * 24));
+                const diffDays = calculateDiffDays(expiryDate);
 
                 // Determine which range the expiryDate falls into and show the banner
                 if (diffDays <= 0) {
@@ -52,12 +52,10 @@ export default function ExpirySubscriptionBanner() {
         getSubs();
     }, []);
 
-    const handleClose = () => {
-        // Find the correct range based on the remaining days
-        const expiryDateObj = new Date(subData.expiryDate).getTime();
-        const currentDate = new Date().getTime();
-        const diffDays = Math.floor((expiryDateObj - currentDate) / (1000 * 60 * 60 * 24));
+    // Calculate the days left to expiry
+    const diffDays = calculateDiffDays(subData.expiryDate);
 
+    const handleClose = () => {
         const updatedClosed = [...subData.isClosed];
         if (diffDays <= 15 && diffDays > 7) {
             updatedClosed[0] = true;
@@ -76,16 +74,6 @@ export default function ExpirySubscriptionBanner() {
         setShowBanner(false);
     }
 
-    // Calculate the days left to expiry
-    const expiryDateObj = new Date(subData.expiryDate);
-    const currentDate = new Date();
-    const diffDays = Math.floor((expiryDateObj.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24));
-
-    const formatDate = (dateString: string) => {
-        const [year, month, day] = dateString.split('-');
-        return `${month}/${day}/${year}`;
-    };
-
     return (
         <>
             {showBanner &&
@@ -97,11 +85,11 @@ export default function ExpirySubscriptionBanner() {
                                 Your subscription will expire in{" "}
                                 <span className="font-semibold">{diffDays} day{diffDays > 1 ? "s" : ""}</span>. Please ensure the
                                 payment is made until{" "}
-                                <span className="font-semibold">{formatDate(subData.expiryDate)}</span>.
+                                <span className="font-semibold">{formatDateToUS(subData.expiryDate)}</span>.
                             </AlertDescription>
                             :
                             <AlertDescription>
-                                Your subscription has expired on {formatDate(subData.expiryDate)}. Please make your payment to continue using our service.
+                                Your subscription has expired on {formatDateToUS(subData.expiryDate)}. Please make your payment to continue using our service.
                             </AlertDescription>
                         }
 
