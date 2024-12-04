@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AxiosError } from "axios";
-import { API_DOMAIN, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
+import { API_DOMAIN, ONE_SECOND_IN_MILLISECONDS, ONE_MINUTE_IN_SECONDS } from "@/constants";
 import useCreateAuditInstallationToken from "@/services/audit/mutations/useCreateAuditInstallationToken";
 import useGetAuditProcessFile from "@/services/audit/queries/useGetAuditProcessFile";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
@@ -25,23 +25,25 @@ import AuditTimelineProblems from "./AuditTimelineProblems";
 import FilterDialogForm from "./FilterDialogForm";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
-const formatChartRangeDate = (date: Date) => date.toISOString().split('T')[0]; // YYYY-MM-DD
+const toYYYYMMDD = (date: Date) => {
+  return date.toISOString().slice(0, 10); // YYYY-MM-DD in UTC
+};
 
-const getDaysBetweenDates = (start: string, end: string) =>
-  Math.round((new Date(end).getTime() - new Date(start).getTime()) / (1000 * 60 * 60 * 24));
+const getDaysBetweenDates = (start: string, end: string) => {
+  const ONE_DAY_IN_MILLISECONDS = ONE_SECOND_IN_MILLISECONDS * ONE_MINUTE_IN_SECONDS * 60 * 24;
+  return Math.round((new Date(end).getTime() - new Date(start).getTime()) / ONE_DAY_IN_MILLISECONDS);
+};
 
 const isDateFromToday = (dateStr: string) => {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const date = new Date(dateStr)
-  date.setHours(0, 0, 0, 0)
-  return date.getTime() === today.getTime()
-}
+  const today = toYYYYMMDD(new Date());
+  const date = toYYYYMMDD(new Date(dateStr));
+  return today === date;
+};
 
 const getTimeRangeFromDays = (days: number | null): TimeRange => {
   const range = TIME_RANGES.find(r => r.days === days);
   if (!range) return null;
-  return range.label as TimeRange;
+  return range.label;
 };
 
 export default function Audit() {
@@ -261,11 +263,11 @@ export default function Audit() {
       searchParams.delete('chartsEndDate');
     } else {
       const end = new Date();
-      const start = new Date();
+      const start = new Date(end);
       start.setDate(end.getDate() - days);
 
-      searchParams.set('chartsStartDate', formatChartRangeDate(start));
-      searchParams.set('chartsEndDate', formatChartRangeDate(end));
+      searchParams.set('chartsStartDate', toYYYYMMDD(start));
+      searchParams.set('chartsEndDate', toYYYYMMDD(end));
     }
 
     setSearchParams(searchParams);
