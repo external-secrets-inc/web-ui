@@ -3,7 +3,7 @@ import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError, } from "@/types";
 import { AxiosError } from "axios";
-import { AddProviderFormSchema, ProviderTableData } from "@/components/audit/Audit.interfaces";
+import { AddProviderFormSchema } from "@/components/audit/Audit.interfaces";
 
 // TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/119
 const getProvidersTypes = async (
