@@ -15,13 +15,13 @@ type TimelineData = {
 }
 
 // Helper functions (internal use only)
+// Random number but seeded for consistent mock data
 const seededRandom = (date: string) => {
   let seed = Array.from(date).reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const x = Math.sin(seed++) * 10000;
   return x - Math.floor(x);
 };
 
-// Example of current stats response
 export const mockProviderStats: StatsItem[] = [
   { kind: "aws", label: "AWS", tooltipLabel: "AWS Secrets Manager", amount: 245 },
   { kind: "gcp", label: "GCP", tooltipLabel: "Google Secret Manager", amount: 156 },
@@ -39,9 +39,7 @@ export const mockProblemStats: StatsItem[] = [
   { kind: "neverAccessed", label: "Never Accessed", tooltipLabel: "Secrets that were never accessed", amount: 5 }
 ]
 
-// Internal helpers for mock data generation
 const generateMockTimelineData = (startDate: Date | string, endDate: Date | string, baseStats: StatsItem[]): TimelineData[] => {
-  // Ensure we're working with Date objects and set to start/end of day
   const start = new Date(startDate)
   start.setHours(0, 0, 0, 0)
 
@@ -65,7 +63,7 @@ const generateMockTimelineData = (startDate: Date | string, endDate: Date | stri
   })
 }
 
-// Remove static range objects and export the generator function
+// Timeline mock generators
 export const getMockProviderTimelineStats = (startDate: string, endDate: string) =>
   generateMockTimelineData(new Date(startDate), new Date(endDate), mockProviderStats)
 
