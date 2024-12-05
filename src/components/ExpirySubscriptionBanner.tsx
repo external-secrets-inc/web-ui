@@ -83,26 +83,32 @@ export default function ExpirySubscriptionBanner() {
 						{diffDays > 0 ?
 							<AlertDescription>
 								Your subscription will expire in{" "}
-								<span className="font-semibold">{diffDays} day{diffDays > 1 ? "s" : ""}</span>. Please ensure the
-								payment is made until{" "}
+								<span className="font-semibold">{diffDays} day{diffDays > 1 ? "s" : ""}</span>.
+								Please ensure the payment is made until{" "}
 								<span className="font-semibold">{formatDateToUS(subData.expiryDate)}</span>.
 							</AlertDescription>
-							:
-							<AlertDescription>
-								Your subscription has expired on {formatDateToUS(subData.expiryDate)}. Please make your payment to continue using our service.
-							</AlertDescription>
-						}
 
+							: diffDays === 0 ?
+								<AlertDescription>
+									Your subscription expires today! Please make your payment to continue using our services.
+								</AlertDescription>
+
+								:
+								<AlertDescription>
+									Your subscription has expired on {formatDateToUS(subData.expiryDate)}. Please make your payment to continue using our services.
+								</AlertDescription>
+						}
 					</div>
-					<Button
-						variant="ghost"
-						size="sm"
-						className="text-gray-500 hover:text-white rounded-full h-8 w-8 p-0"
-						onClick={handleClose}
-						disabled={diffDays <= 0}
-					>
-						<LucideX size={16} />
-					</Button>
+					{diffDays > 0 &&
+						<Button
+							variant="ghost"
+							size="sm"
+							className="text-gray-500 hover:text-white rounded-full h-8 w-8 p-0"
+							onClick={handleClose}
+						>
+							<LucideX size={16} />
+						</Button>
+					}
 				</Alert>
 			}
 		</>
