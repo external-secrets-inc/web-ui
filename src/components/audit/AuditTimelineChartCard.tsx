@@ -83,7 +83,7 @@ export function AuditTimelineChartCard({
       const date = new Date(item.date)
       return {
         date: date.toLocaleString('en-US', {
-          weekday: 'short',
+          month: 'short',
           day: '2-digit',
         }),
         fullDate: date.toLocaleDateString('en-US', {
