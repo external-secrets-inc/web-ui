@@ -107,23 +107,29 @@ export function AuditTimelineChartCard({
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        {error ? (
-          <div className="flex gap-2 items-center justify-center h-[300px]">
+        {
+          error ?
+          <div className="flex gap-2 items-center justify-center -mt-12">
             <LucideAlertCircle className="text-destructive" />
             {errorMessage}
           </div>
-        ) : isLoading ? (
+
+        : isLoading ?
           <Loader size="lg" className="h-72 place-self-center -mt-12"/>
-        ) : !data ? (
-          <div className="flex gap-2 items-center justify-center h-[300px]">
+
+        : !data ?
+          <div className="flex gap-2 items-center justify-center -mt-12">
             <LucideAlertCircle className="text-destructive" />
             No data available
           </div>
-        ) : (
-          <ChartContainer config={config} className="h-[300px]">
+
+        : <ChartContainer
+            config={config}
+            className="w-full max-h-60"
+          >
             <LineChart
               data={data}
-              margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+              margin={{ top: 20, right: 10, bottom: 20, left: -10 }}
             >
               <XAxis
                 dataKey="date"
@@ -152,13 +158,14 @@ export function AuditTimelineChartCard({
                   dot={false}
                 />
               ))}
+              {/* TODO: when multiple items are shown, legends can overflow outside parent area. Investigate a fix. */}
               <ChartLegend
                 content={<ChartLegendContent />}
                 verticalAlign="top"
               />
             </LineChart>
           </ChartContainer>
-        )}
+        }
       </CardContent>
     </Card>
   )

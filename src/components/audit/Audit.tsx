@@ -318,7 +318,7 @@ export default function Audit() {
             <LucideAlertCircle className="text-destructive" /> Listener Offline or Unreachable
           </AlertTitle>
           <AlertDescription>
-            The listener is currently offline or cannot be accessed. Please check the cluster configuration on your end.a
+            The listener is currently offline or cannot be accessed. Please check the cluster configuration on your end.
           </AlertDescription>
         </Alert>
       )}

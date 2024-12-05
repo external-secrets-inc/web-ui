@@ -15,12 +15,17 @@ function AuditChartProviders() {
 
   return (
     <AuditBarChartCard
-      title="Secrets by Provider"
-      description={<>
-        Total secrets: <span className="text-foreground">{isLoading ? null : total}</span>
-        <br />
-        <span className="text-xs text-muted-foreground">Last update: {mockLastUpdate}</span>
-      </>}
+      title={
+        <div className="flex items-center justify-between leading-none">
+          Secret by Provider
+          {!isLoading &&
+            <span className="text-muted-foreground font-normal text-sm leading-none">
+              <span className="text-foreground text-base font-bold leading-none">{total}</span> secrets
+            </span>
+          }
+        </div>
+      }
+      description={<>Last update: {mockLastUpdate}</>}
       data={data}
       baseConfig={BASE_CHART_CONFIG}
       error={!!error}
