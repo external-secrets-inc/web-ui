@@ -14,12 +14,13 @@ const createInstallationToken = async (mock: boolean) => {
 }
 
 const useCreateAuditInstallationToken = (
-  options?: Omit<UseMutationOptions<string, AxiosError<ApiHttpError>, { mock: boolean }>, 'mutationKey' | 'mutationFn'>
+  mock: boolean,
+  options?: Omit<UseMutationOptions<string, AxiosError<ApiHttpError>>, 'mutationKey' | 'mutationFn'>
 ) => {
   return useMutation({
     mutationKey: ["useCreateAuditInstallationToken"],
-    mutationFn: (variables: { mock: boolean }) => {
-      return createInstallationToken(variables.mock)
+    mutationFn: () => {
+      return createInstallationToken(mock)
     },
     ...options,
   });

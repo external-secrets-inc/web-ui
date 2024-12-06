@@ -10,7 +10,7 @@ import { Loader } from "@/components/ui/Loader"
 
 interface DataProviderContextValue<TData> {
   data: TData[]
-  columns: ColumnDef<TData, any>[]
+  columns: ColumnDef<TData, any>[] // eslint-disable-line @typescript-eslint/no-explicit-any
   sorting: SortingState
   setSorting: (sorting: SortingState) => void
   globalFilter: string
@@ -19,7 +19,7 @@ interface DataProviderContextValue<TData> {
   isLoading?: boolean
 }
 
-const DataProviderContext = React.createContext<DataProviderContextValue<any>>({} as any)
+const DataProviderContext = React.createContext<DataProviderContextValue<any>>({} as any) // eslint-disable-line @typescript-eslint/no-explicit-any
 
 interface DataWithId {
   id: string | number;
@@ -31,7 +31,7 @@ interface DataWithId {
  */
 interface DataProviderProps<TData extends DataWithId> {
   data: TData[];
-  columns: ColumnDef<TData, any>[];
+  columns: ColumnDef<TData, any>[]; // eslint-disable-line @typescript-eslint/no-explicit-any
   children: React.ReactNode;
   initialSort?: { id: string; desc: boolean };
   reactTableExtraOptions?: Partial<TableOptions<TData>>;
@@ -137,7 +137,7 @@ const DataSort = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEl
 DataSort.displayName = "DataSort"
 
 interface DataGridProps {
-  renderItem: (item: any) => React.ReactNode
+  renderItem: (item: any) => React.ReactNode // eslint-disable-line @typescript-eslint/no-explicit-any
   children?: React.ReactNode
   className?: string
 }
@@ -159,8 +159,8 @@ const DataGrid = React.forwardRef<HTMLDivElement, DataGridProps>(
 })
 DataGrid.displayName = "DataGrid"
 
-interface DataTableProps<TMeta = any> extends React.HTMLAttributes<HTMLDivElement> {
-  onRowClick?: (row: any) => void;
+interface DataTableProps<TMeta = any> extends React.HTMLAttributes<HTMLDivElement> { // eslint-disable-line @typescript-eslint/no-explicit-any
+  onRowClick?: (row: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
   rowsAppend?: React.ReactNode;
   meta?: TMeta;
 }

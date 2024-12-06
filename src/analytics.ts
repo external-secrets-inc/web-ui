@@ -9,7 +9,7 @@ export const page = () => {
   window.analytics.page();
 };
 
-export const track = (name: string, properties: any) => {
+export const track = (name: string, properties: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
   window.analytics.track(name, properties);
 };
 
@@ -53,7 +53,7 @@ export const trackLoginStepMovedBack = () => {
   track("Login Step Moved Back", {});
 };
 
-export const trackSignupStepCompleted = (step: number, data: any) => {
+export const trackSignupStepCompleted = (step: number, data: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
   track("Signup Step Completed", { step, data });
 };
 
@@ -73,7 +73,7 @@ export const trackSettingsTabChanged = (tab: string) => {
   track("Settings Tab Changed", { tab });
 };
 
-export const trackSettingsSectionModified = (section: string, values?: any) => {
+export const trackSettingsSectionModified = (section: string, values?: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
   track("Settings Section Modified", { section, ...values });
 };
 

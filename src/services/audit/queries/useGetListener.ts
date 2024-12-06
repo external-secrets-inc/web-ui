@@ -1,9 +1,10 @@
 import { UseQueryOptions, useQuery } from "@tanstack/react-query";
 import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
-import { ApiHttpError, Listener } from "@/types";
+import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
 import { mockNetworkResponseDelay } from "../mocks/mockData";
+import { Listener } from "@/components/audit/Audit.interfaces";
 
 // TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/115
 const getListener = async (
@@ -14,7 +15,8 @@ const getListener = async (
     await mockNetworkResponseDelay();
     return {
       id: '1234-5678-9870',
-      current_status: "PENDING_REGISTRATION",
+      tenant_id: "4567-8910",
+      status: "PENDING_INSTALLATION",
     } as Listener;
   }
 
