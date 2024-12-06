@@ -10,6 +10,8 @@ function calculateDiffDays(endDate: string, startDate: string = new Date().toISO
 	return Math.ceil((endDateObj.getTime() - startDateObj.getTime()) / (1000 * 60 * 60 * 24));
 }
 
+const SHOW_BANNER_THRESHOLDS = [1, 3, 7, 15];
+
 export default function ExpirySubscriptionBanner() {
 	const [subData, setSubData] = useState({ id: "", expiryDate: "" });
 	const [showBanner, setShowBanner] = useState(false);
@@ -20,94 +22,79 @@ export default function ExpirySubscriptionBanner() {
 				const response = await getSubscriptions();
 				const { expiryDate, id } = { ...response[0] };
 
-				// Check localStorage for existing banner state
 				const storedData = localStorage.getItem(`banner_${id}`);
-
-				// Initialize localStorage if not found or expiryDate is different
 				if (!storedData || JSON.parse(storedData).expiryDate !== expiryDate) {
-					const newData = { expiryDate, lastDismissedAt: null };
+					const newData = { expiryDate, lastDismissedAtThreshold: null };
 					localStorage.setItem(`banner_${id}`, JSON.stringify(newData));
 				}
 
-				// Update local state based on localStorage
 				const updatedData = JSON.parse(localStorage.getItem(`banner_${id}`) || "{}");
 				setSubData({ id, expiryDate: updatedData.expiryDate });
 
-				// Check how many days are left until expiry
 				const diffDays = calculateDiffDays(expiryDate);
-
-				// Determine if we should show the banner based on lastDismissedAt
-				const lastDismissedAt = updatedData.lastDismissedAt;
-
-				// Determine which range the expiryDate falls into and show the banner
-				const thresholds = [0, 1, 3, 7, 15];
-				const thresholdDay = thresholds.find(threshold => diffDays <= threshold);
-				if (thresholdDay !== undefined && lastDismissedAt !== thresholdDay) {
+				const lastDismissedAtThreshold = updatedData.lastDismissedAtThreshold;
+				const thresholdDay = [0, ...SHOW_BANNER_THRESHOLDS].find(threshold => diffDays <= threshold);
+				if (thresholdDay !== undefined && lastDismissedAtThreshold !== thresholdDay) {
 					setShowBanner(true);
 				}
-
 			} catch (error) {
-				console.log(error);
+				console.error('Failed to load subscriptions', error);
 			}
 		};
 
 		getSubs();
 	}, []);
 
-	// Calculate the days left to expiry
 	const diffDays = calculateDiffDays(subData.expiryDate);
 
 	const handleClose = () => {
-		const thresholds = [1, 3, 7, 15];
-		const lastDismissedAt = thresholds.find(day => diffDays <= day) || null;
-
-		// Update localStorage with new closed state
-		const updatedData = { expiryDate: subData.expiryDate, lastDismissedAt };
+		const lastDismissedAtThreshold = SHOW_BANNER_THRESHOLDS.find(day => diffDays <= day) || null;
+		const updatedData = { expiryDate: subData.expiryDate, lastDismissedAtThreshold };
 		localStorage.setItem(`banner_${subData.id}`, JSON.stringify(updatedData));
 
 		setShowBanner(false);
 	}
 
-	// Formatting date to US:
 	const [year, month, day] = subData.expiryDate.split('-');
 	const expiryDateUS = `${month}/${day}/${year}`;
 
 	return (
 		<>
-			<div className={showBanner ? "md:-mt-6" : "hidden"}>
-				<Alert variant={diffDays > 0 ? "default" : "destructive"} className="flex items-center justify-between mb-4">
-					<div className="flex items-center space-x-2">
-						<LucideCalendarClock size={20} />
-						{diffDays > 0 ?
+			<Alert
+				variant={diffDays > 0 ? "default" : "destructive"}
+				className={`flex items-center justify-between mb-4 ${showBanner ? 'md:-mt-6' : 'hidden'}`}
+			>
+				<div className="flex items-center space-x-2">
+					<LucideCalendarClock size={20} />
+					{diffDays > 0 ?
+						<AlertDescription>
+							Your subscription will expire in{" "}
+							<span className="font-semibold">{diffDays} day{diffDays > 1 ? "s" : ""}</span>.
+							Please ensure the payment is made until <span className="font-semibold">{expiryDateUS}</span>.
+						</AlertDescription>
+
+						: diffDays === 0 ?
 							<AlertDescription>
-								Your subscription will expire in{" "}
-								<span className="font-semibold">{diffDays} day{diffDays > 1 ? "s" : ""}</span>.
-								Please ensure the payment is made until <span className="font-semibold">{expiryDateUS}</span>.
+								Your subscription expires <span className="font-semibold">today</span>! Please make your payment to continue using our services.
 							</AlertDescription>
 
-							: diffDays === 0 ?
-								<AlertDescription>
-									Your subscription expires <span className="font-semibold">today</span>! Please make your payment to continue using our services.
-								</AlertDescription>
-
-								:
-								<AlertDescription>
-									Your subscription has expired on <span className="font-semibold">{expiryDateUS}</span>. Please make your payment to continue using our services.
-								</AlertDescription>
-						}
-					</div>
-					{diffDays > 0 &&
-						<Button
-							variant="ghost"
-							size="icon"
-							className="-mr-1"
-							onClick={handleClose}
-						>
-							<LucideX size={16} />
-						</Button>
+							:
+							<AlertDescription>
+								Your subscription has expired on <span className="font-semibold">{expiryDateUS}</span>. Please make your payment to continue using our services.
+							</AlertDescription>
 					}
-				</Alert>
-			</div>
+				</div>
+				{diffDays > 0 &&
+					<Button
+						variant="ghost"
+						size="icon"
+						className="-mr-1"
+						onClick={handleClose}
+					>
+						<LucideX size={16} />
+					</Button>
+				}
+			</Alert>
 		</>
 	);
 }
