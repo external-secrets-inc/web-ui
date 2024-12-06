@@ -9,12 +9,12 @@ export async function getSubscriptions(options: Partial<ApiWrapperOptions> = {})
   return apiWrapper(async () => {
     const response = await axiosInstance.get('/api/subscriptions', { headers });
 
-    return response.data.subscriptions.map((subscription: any): Subscription => ({
+    return response.data.subscriptions.map((subscription: any): Subscription => ({ // eslint-disable-line @typescript-eslint/no-explicit-any
       id: subscription.id,
       name: subscription.name,
       maxLimit: subscription.max_limit,
       expiryDate: subscription.expiry_date,
-      features: subscription.features.map((feature: any): Feature => ({
+      features: subscription.features.map((feature: any): Feature => ({  // eslint-disable-line @typescript-eslint/no-explicit-any
         name: feature.name,
         description: feature.description
       }))

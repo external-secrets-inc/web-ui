@@ -14,11 +14,6 @@ export interface Rotator {
   tags: string[];
 }
 
-export interface Listener {
-  id: string;
-  current_status: string;
-}
-
 export interface Manifest {
   manifest: string
 }

@@ -78,7 +78,7 @@ export const mockLastUpdate = new Date().toLocaleString('en-US', {
   minute: '2-digit',
 })
 
-export const mockTableData = {
+export const mockAuditTableData = {
   secretData: [
     {
       id: "550e8400-e29b-41d4-a716-446655440000",
@@ -215,5 +215,23 @@ export const mockTableData = {
     { value: "vault", label: "vault" },
   ]
 } as const
+
+export const mockProvidersData = [
+  {
+    id: "provider-id-1",
+    name: "Provider 1",
+    type: "GCP",
+  },
+  {
+    id: "provider-id-2",
+    name: "Provider 2",
+    type: "Azure",
+  },
+  {
+    id: "provider-id-3",
+    name: "Provider 3",
+    type: "AWS",
+  },
+] as const
 
 export const mockNetworkResponseDelay = () => new Promise(resolve => setTimeout(resolve, 2500))

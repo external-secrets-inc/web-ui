@@ -1,29 +1,30 @@
-import { useEffect, useMemo, useState } from "react";
-import { AxiosError } from "axios";
-import { API_DOMAIN, ONE_SECOND_IN_MILLISECONDS, ONE_MINUTE_IN_SECONDS } from "@/constants";
+import { trackListenerInstallDialogOpened } from "@/analytics";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { API_DOMAIN, ONE_MINUTE_IN_SECONDS, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import useCreateAuditInstallationToken from "@/services/audit/mutations/useCreateAuditInstallationToken";
 import useGetAuditProcessFile from "@/services/audit/queries/useGetAuditProcessFile";
+import useGetListener from "@/services/audit/queries/useGetListener";
+import useGetListenerAuditData from "@/services/audit/queries/useGetListenerAuditData";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { ApiHttpError } from "@/types";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
+import { createColumnHelper } from "@tanstack/react-table";
+import { AxiosError } from "axios";
+import { LucideAlertCircle, LucideFilter } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "../ui/button";
-import ListenerInstallDialogContent from "./ListenerInstallDialogContent";
-import useGetListener from "@/services/audit/queries/useGetListener";
+import { DataProvider, DataTable } from "../ui/DataProvider";
+import { LISTENER_STATUS, TIME_RANGES } from "./Audit.constants";
+import { AuditTableData, FilterSchema, Listener, ListenerStatus, TimeRange, filterSchema } from "./Audit.interfaces";
 import AuditChartProblems from "./AuditChartProblems";
 import AuditChartProviders from "./AuditChartProviders";
-import useGetListenerAuditData from "@/services/audit/queries/useGetListenerAuditData";
-import { trackListenerInstallDialogOpened } from "@/analytics";
-import { AuditTableData, FilterSchema, Listener, ListenerStatus, TimeRange, filterSchema } from "./Audit.interfaces";
-import { DataProvider, DataTable } from "../ui/DataProvider";
-import { useSearchParams } from "react-router-dom";
-import { createColumnHelper } from "@tanstack/react-table"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { LucideAlertCircle, LucideFilter } from "lucide-react";
-import { LISTENER_STATUS, TIME_RANGES } from "./Audit.constants";
-import AuditTimelineProviders from "./AuditTimelineProviders";
+import AuditProviderDataTable from "./AuditProviderDataTable";
 import AuditTimelineProblems from "./AuditTimelineProblems";
+import AuditTimelineProviders from "./AuditTimelineProviders";
 import FilterDialogForm from "./FilterDialogForm";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import ListenerInstallDialogContent from "./ListenerInstallDialogContent";
 
 const toYYYYMMDD = (date: Date) => {
   return date.toISOString().slice(0, 10); // YYYY-MM-DD in UTC
@@ -119,30 +120,32 @@ export default function Audit() {
   }, [searchParams])
 
   // TODO remove mock https://github.com/external-secrets-inc/web-ui/issues/115
-  const { data: listenerData, isError: listenerIsError, isLoading: listenerIsLoading, error: listenerError } = useGetListener(true, {
+  const { data: listenerData, isError: isErrorListener, isLoading: isLoadingListener, error: listenerError } = useGetListener(true, {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
   });
 
   const listener = useMemo((): Listener => {
-    if (listenerIsLoading || !listenerData) return {
+    if (isLoadingListener || !listenerData) return {
       id: "",
+      tenant_id: "",
       status: LISTENER_STATUS.PENDING_INSTALLATION
     }
 
     return {
       id: listenerData.id,
-      status: listenerData.current_status as ListenerStatus
+      tenant_id: listenerData.tenant_id,
+      status: listenerData.status as ListenerStatus
     }
-  }, [listenerData, listenerIsLoading]);
+  }, [listenerData, isLoadingListener]);
 
   useEffect(() => {
     if (!listenerError) return;
 
     handleDefaultApiHttpError(listenerError, "Error while fetching listener");
-  }, [listenerError, listenerIsError]);
+  }, [listenerError, isErrorListener]);
 
-  const { data: listenerAuditData, refetch: listenerAuditRefetch, isLoading: listenerAuditIsLoading, isError: listenerAuditIsError, isRefetchError: listenerAuditIsRefetchError, error: listenerAuditError } = useGetListenerAuditData(true, {
+  const { data: listenerAuditData, refetch: listenerAuditRefetch, isLoading: isLoadingListenerAudit, isError: isErrorListenerAudit, isRefetchError: isRefetchErrorListenerAudit, error: listenerAuditError } = useGetListenerAuditData(true, {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
   });
@@ -159,12 +162,12 @@ export default function Audit() {
   }, [listenerAuditData]);
 
   useEffect(() => {
-    if (!(listenerAuditError || listenerAuditIsRefetchError)) return;
+    if (!(listenerAuditError || isRefetchErrorListenerAudit)) return;
 
     handleDefaultApiHttpError(listenerAuditError, "Error while fetching listener Audit data")
-  }, [listenerAuditError, listenerAuditIsError, listenerAuditIsRefetchError])
+  }, [listenerAuditError, isErrorListenerAudit, isRefetchErrorListenerAudit])
 
-  const { mutate: createToken, data: token } = useCreateAuditInstallationToken({
+  const { mutate: createToken, data: token } = useCreateAuditInstallationToken(true, {
     onError: (error: AxiosError<ApiHttpError>) =>
       handleDefaultApiHttpError(
         error,
@@ -175,7 +178,7 @@ export default function Audit() {
   const {
     data: processFileData,
     error: processFileError,
-    isError: processFileIsError,
+    isError: isErrorProcessFile,
   } = useGetAuditProcessFile(true, token ?? "", "latest", {
     enabled: token !== "",
   });
@@ -187,10 +190,10 @@ export default function Audit() {
       processFileError,
       "Error while fetching process file"
     );
-  }, [processFileError, processFileIsError]);
+  }, [processFileError, isErrorProcessFile]);
 
   useEffect(() => {
-    createToken({ mock: true });
+    createToken();
   }, [createToken]);
 
   // TODO update commands to real endpoints https://github.com/external-secrets-inc/web-ui/issues/118
@@ -280,7 +283,7 @@ export default function Audit() {
 
   return (
     <div className="space-y-4">
-      {!listenerIsLoading && listener.status === LISTENER_STATUS.PENDING_INSTALLATION && (
+      {!isLoadingListener && listener.status === LISTENER_STATUS.PENDING_INSTALLATION && (
         <Alert
           className="flex gap-2 items-center justify-between flex-wrap"
           variant="warning"
@@ -309,7 +312,7 @@ export default function Audit() {
         </Alert>
       )}
 
-      {!listenerIsLoading && listener.status === LISTENER_STATUS.OFFLINE && (
+      {!isLoadingListener && listener.status === LISTENER_STATUS.OFFLINE && (
         <Alert
           className="flex gap-2 items-center justify-between flex-wrap"
           variant="destructive"
@@ -361,6 +364,11 @@ export default function Audit() {
         ) : null}
       </div>
 
+      <AuditProviderDataTable
+        tenantID={listener.tenant_id}
+        listenerID={listener.id}
+      />
+
       <div className="flex items-center justify-between pt-4">
         <h2 className="font-bold">All Secrets</h2>
         <Dialog open={isFiltersDialogOpen} onOpenChange={handleFiltersDialogOpenChange}>
@@ -376,15 +384,15 @@ export default function Audit() {
             </Button>
           </DialogTrigger>
           <FilterDialogForm
-              initialValues={initialFilters}
-              onSubmit={(data) => {
-                handleFilterChange(data);
-                handleFiltersDialogOpenChange(false);
-              }}
-              secretsNames={listenerAudit.secretsNames}
-              policiesNames={listenerAudit.policiesNames}
-              providers={listenerAudit.providers}
-            />
+            initialValues={initialFilters}
+            onSubmit={(data) => {
+              handleFilterChange(data);
+              handleFiltersDialogOpenChange(false);
+            }}
+            secretsNames={listenerAudit.secretsNames}
+            policiesNames={listenerAudit.policiesNames}
+            providers={listenerAudit.providers}
+          />
         </Dialog>
       </div>
 
@@ -392,7 +400,7 @@ export default function Audit() {
         data={listenerAudit.secretData}
         columns={columns}
         initialSort={{ id: 'lastRotation', desc: true }}
-        isLoading={listenerAuditIsLoading}
+        isLoading={isLoadingListenerAudit}
       >
         <DataTable />
       </DataProvider>

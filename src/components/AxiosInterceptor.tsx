@@ -13,11 +13,11 @@ const AxiosInterceptor: React.FC<AxiosInterceptorProps> = ({ children }) => {
   const signOut = useSignOut();
 
   useEffect(() => {
-    const resInterceptor = (response: any) => {
+    const resInterceptor = (response: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
       return response;
     };
 
-    const errInterceptor = (error: any) => {
+    const errInterceptor = (error: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
       if (error?.response?.status === 401) {
         signOut();
         trackSignedOut(false);

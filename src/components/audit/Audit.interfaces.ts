@@ -48,6 +48,7 @@ export interface AuditTableData {
 
 export interface Listener {
   id: string;
+  tenant_id: string;
   status: ListenerStatus;
 }
 
@@ -58,3 +59,36 @@ export interface TimeRangeOption {
   label: TimeRange;
 }
 
+export interface ProviderTableData {
+  id: string;
+  name: string;
+  type: string;
+}
+
+export interface CreateProviderPayload {
+  listenerID: string;
+  tenantID: string;
+  name: string;
+  backendIdentifier: string;
+  backendType: string;
+  config: {
+    [key: string]: string;
+  };
+}
+
+export type AddProviderFieldType = 'string' | 'date' | 'file' | 'number' | 'boolean';
+
+export interface AddProviderFieldSchema {
+  type: AddProviderFieldType;
+  required: boolean;
+  maxLength?: number;
+  accept?: string;
+}
+
+interface AddProviderType {
+  [key: string]: AddProviderFieldSchema;
+}
+
+export interface AddProviderFormSchema {
+  [formType: string]: AddProviderType;
+}

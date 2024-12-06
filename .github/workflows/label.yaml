@@ -14,6 +14,9 @@ jobs:
       - name: Get PR diff stats
         id: diff
         uses: actions/github-script@v6
+        env:
+          IGNORE_LIST: 'package-lock.json, go.mod, go.sum, README.md'
+          IGNORE_DIRS: 'docs/'
         with:
           script: |
             const prNumber = context.payload.pull_request.number;
@@ -23,9 +26,22 @@ jobs:
               pull_number: prNumber,
             });
             let totalChanges = 0;
+
+            // Access environment variables
+            const ignoreList = process.env.IGNORE_LIST ? process.env.IGNORE_LIST.split(',').map(s => s.trim()) : [];
+            const ignoreDirs = process.env.IGNORE_DIRS ? process.env.IGNORE_DIRS.split(',').map(s => s.trim()) : [];
+
             for (const file of files) {
-              totalChanges += file.changes;
+              const filename = file.filename;
+
+              const isIgnoredFile = ignoreList.includes(filename);
+              const isIgnoredDir = ignoreDirs.some(dir => filename.startsWith(dir));
+
+              if (!isIgnoredFile && !isIgnoredDir) {
+                totalChanges += file.changes;
+              }
             }
+
             core.setOutput('changes', totalChanges);
 
       - name: Determine size label
