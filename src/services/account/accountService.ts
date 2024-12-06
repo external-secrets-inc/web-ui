@@ -13,7 +13,8 @@ export async function getAccountData(options: Partial<ApiWrapperOptions & { manu
       contact_email: response.data.email,
       contact_name: response.data.name,
       contact_phone: response.data.phone,
-      tenant_id: response.data.tenant,
+      tenant_id: response.data.tenant_id,
+      tenant_name: response.data.tenant
     };
   }, { defaultError: 'Failed to fetch account details', ...options });
 }
