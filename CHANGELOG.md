@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.7.0](https://github.com/external-secrets-inc/web-ui/compare/v0.6.1...v0.7.0) (2024-12-06)
+
+
+### Features
+
+* add audit charts ([#130](https://github.com/external-secrets-inc/web-ui/issues/130)) ([732307f](https://github.com/external-secrets-inc/web-ui/commit/732307feb956aab54c4f985b3b1ecdb170732641))
+* add DataProvider with DataTable and DataGrid UI components ([#129](https://github.com/external-secrets-inc/web-ui/issues/129)) ([ab7e5b9](https://github.com/external-secrets-inc/web-ui/commit/ab7e5b9b74930fab09bc33aab11d613b783dc3c7))
+* add shadcn chart component ([#131](https://github.com/external-secrets-inc/web-ui/issues/131)) ([2d46d32](https://github.com/external-secrets-inc/web-ui/commit/2d46d328211d938b2e750639203388eb70bafe2d))
+* add shadcn/ui table component ([#132](https://github.com/external-secrets-inc/web-ui/issues/132)) ([9b261e5](https://github.com/external-secrets-inc/web-ui/commit/9b261e5dbaedd3a5a57b4a2ee91caa9b41185e00))
+* add toggle and toggle-group components ([#128](https://github.com/external-secrets-inc/web-ui/issues/128)) ([6e44eef](https://github.com/external-secrets-inc/web-ui/commit/6e44eef32b575bbebd5ce4ef21e9a35c05039652))
+* adds tenant id to organization setting ([#149](https://github.com/external-secrets-inc/web-ui/issues/149)) ([17aa3c7](https://github.com/external-secrets-inc/web-ui/commit/17aa3c72bd291921eef1cbd9f651e180d9f1b756))
+* audit screen ([#127](https://github.com/external-secrets-inc/web-ui/issues/127)) ([9373497](https://github.com/external-secrets-inc/web-ui/commit/9373497a120d257b5fa8ef81cb67e8b35eeeb703))
+* audit with data table component ([#133](https://github.com/external-secrets-inc/web-ui/issues/133)) ([239d2ce](https://github.com/external-secrets-inc/web-ui/commit/239d2ce2c455641c689aafcd3d63f811c9095c2c))
+* filter files for label gha ([335fdfc](https://github.com/external-secrets-inc/web-ui/commit/335fdfc52d0f57455900889dadb507e6ad528c2b))
+* filter section ([#134](https://github.com/external-secrets-inc/web-ui/issues/134)) ([f2f2b03](https://github.com/external-secrets-inc/web-ui/commit/f2f2b0384c25ae1d123a6636235d46a218dd6d10))
+* install listener components ([#125](https://github.com/external-secrets-inc/web-ui/issues/125)) ([94c2b73](https://github.com/external-secrets-inc/web-ui/commit/94c2b739ada24473b62ba21b57c4f18277df1883))
+* tanstack table features in current feature collections ([#113](https://github.com/external-secrets-inc/web-ui/issues/113)) ([8921315](https://github.com/external-secrets-inc/web-ui/commit/8921315d60b489f7e5012393b20aeb827b7fdeef))
+
+
+### Bug Fixes
+
+* label ([f79d041](https://github.com/external-secrets-inc/web-ui/commit/f79d04106261d4e300043012a2f11779ef7a0414))
+* lint action ([#145](https://github.com/external-secrets-inc/web-ui/issues/145)) ([965b3f0](https://github.com/external-secrets-inc/web-ui/commit/965b3f0ef37a027f0d32a218b242ce4aa106fe55))
+
 ## [0.6.1](https://github.com/external-secrets-inc/web-ui/compare/v0.6.0...v0.6.1) (2024-11-04)
 
 
