@@ -11,7 +11,7 @@ function calculateDiffDays(endDate: string, startDate: string = new Date().toISO
 }
 
 export default function ExpirySubscriptionBanner() {
-	const [subData, setSubData] = useState({ id: "", expiryDate: "", isClosed: [false, false, false, false] });
+	const [subData, setSubData] = useState({ id: "", expiryDate: "" });
 	const [showBanner, setShowBanner] = useState(false);
 
 	useEffect(() => {
@@ -25,29 +25,27 @@ export default function ExpirySubscriptionBanner() {
 
 				// Initialize localStorage if not found or expiryDate is different
 				if (!storedData || JSON.parse(storedData).expiryDate !== expiryDate) {
-					const newData = { expiryDate, isClosed: [false, false, false, false] };
+					const newData = { expiryDate, lastDismissedAt: null };
 					localStorage.setItem(`banner_${id}`, JSON.stringify(newData));
 				}
 
 				// Update local state based on localStorage
 				const updatedData = JSON.parse(localStorage.getItem(`banner_${id}`) || "{}");
-				setSubData({ id, ...updatedData });
+				setSubData({ id, expiryDate: updatedData.expiryDate });
 
 				// Check how many days are left until expiry
 				const diffDays = calculateDiffDays(expiryDate);
 
+				// Determine if we should show the banner based on lastDismissedAt
+				const lastDismissedAt = updatedData.lastDismissedAt;
+
 				// Determine which range the expiryDate falls into and show the banner
-				if (diffDays <= 0) {
-					setShowBanner(true);
-				} else if (diffDays == 1) {
-					if (!updatedData.isClosed[3]) setShowBanner(true)
-				} else if (diffDays <= 3) {
-					if (!updatedData.isClosed[2]) setShowBanner(true)
-				} else if (diffDays <= 7) {
-					if (!updatedData.isClosed[1]) setShowBanner(true)
-				} else if (diffDays <= 15) {
-					if (!updatedData.isClosed[0]) setShowBanner(true)
-				}
+				if (diffDays <= 0) setShowBanner(true);
+				else if (diffDays == 1 && lastDismissedAt !== 1) setShowBanner(true);
+				else if (diffDays <= 3 && lastDismissedAt !== 3) setShowBanner(true);
+				else if (diffDays <= 7 && lastDismissedAt !== 7) setShowBanner(true);
+				else if (diffDays <= 15 && lastDismissedAt !== 15) setShowBanner(true);
+
 			} catch (error) {
 				console.log(error);
 			}
@@ -60,19 +58,14 @@ export default function ExpirySubscriptionBanner() {
 	const diffDays = calculateDiffDays(subData.expiryDate);
 
 	const handleClose = () => {
-		const updatedClosed = [...subData.isClosed];
-		if (diffDays <= 15 && diffDays > 7) {
-			updatedClosed[0] = true;
-		} else if (diffDays <= 7 && diffDays > 3) {
-			updatedClosed[1] = true;
-		} else if (diffDays <= 3 && diffDays > 1) {
-			updatedClosed[2] = true;
-		} else if (diffDays == 1) {
-			updatedClosed[3] = true;
-		}
+		let lastDismissedAt = 99;
+		if (diffDays == 1) lastDismissedAt = 1;
+		else if (diffDays <= 3) lastDismissedAt = 3;
+		else if (diffDays <= 7) lastDismissedAt = 7;
+		else if (diffDays <= 15) lastDismissedAt = 15;
 
 		// Update localStorage with new closed state
-		const updatedData = { expiryDate: subData.expiryDate, isClosed: updatedClosed };
+		const updatedData = { expiryDate: subData.expiryDate, lastDismissedAt };
 		localStorage.setItem(`banner_${subData.id}`, JSON.stringify(updatedData));
 
 		setShowBanner(false);
