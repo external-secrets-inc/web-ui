@@ -21,6 +21,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from "sonner";
 import { z } from "zod";
 import SettingsSection from './SettingsSection';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const formSchema = z.object({
   contact_email: z.string().email({ message: "Invalid email address" }),
@@ -29,7 +30,7 @@ const formSchema = z.object({
 });
 
 const deleteFormSchema = (tenantId: string) => z.object({
-  tenant_id: z.string().min(1, { message: "Organization URL cannot be empty" }).refine(value => value === tenantId, {
+  tenant_name: z.string().min(1, { message: "Organization URL cannot be empty" }).refine(value => value === tenantId, {
     message: "Organization URL does not match",
   }),
 });
@@ -45,6 +46,7 @@ const OrganizationSettings: React.FC = () => {
     contact_email: "",
     contact_name: "",
     contact_phone: "",
+    tenant_name: "",
     tenant_id: "",
   });
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -60,9 +62,9 @@ const OrganizationSettings: React.FC = () => {
   });
 
   const deleteForm = useForm<DeleteFormSchemaType>({
-    resolver: zodResolver(deleteFormSchema(accountData.tenant_id)),
+    resolver: zodResolver(deleteFormSchema(accountData.tenant_name)),
     defaultValues: {
-      tenant_id: "",
+      tenant_name: "",
     },
   });
 
@@ -78,7 +80,7 @@ const OrganizationSettings: React.FC = () => {
           contact_phone: data.contact_phone || "",
         });
         deleteForm.reset({
-          tenant_id: "",
+          tenant_name: "",
         });
       } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -121,6 +123,20 @@ const OrganizationSettings: React.FC = () => {
   }
 
   const subsections = [
+    {
+      title: 'Tenant Information',
+      content: (
+        <>
+          <div className='space-y-2'>
+            <FormLabel>Tenant ID</FormLabel>
+            { accountData
+              ? <p className="text-sm text-muted-foreground">{accountData?.tenant_id}</p>
+              : <Skeleton className='h-5 w-[stretch] max-w-48' />
+            }
+          </div>
+        </>
+      ),
+    },
     {
       title: 'Contact Information',
       content: (
@@ -195,14 +211,14 @@ const OrganizationSettings: React.FC = () => {
                 <AlertDialogTitle>Delete Organization</AlertDialogTitle>
                 <AlertDialogDescription>
                   Deleting this Organization will permanently remove all data associated with it in our database. This action is final and cannot be undone.
-                  <strong className='block mt-2'>To confirm you must type your Organization URL: <span className='text-foreground'>{accountData.tenant_id}</span></strong>
+                  <strong className='block mt-2'>To confirm you must type your Organization URL: <span className='text-foreground'>{accountData.tenant_name}</span></strong>
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <Form {...deleteForm}>
                 <form onSubmit={deleteForm.handleSubmit(handleDeleteAccount)} className="grid gap-4">
                   <FormField
                     control={deleteForm.control}
-                    name="tenant_id"
+                    name="tenant_name"
                     render={({ field }) => {
                       const { ref, ...restField } = field; // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -213,7 +229,7 @@ const OrganizationSettings: React.FC = () => {
                             <Input
                               ref={inputRef}
                               autoFocus
-                              placeholder={accountData.tenant_id}
+                              placeholder={accountData.tenant_name}
                               autoCapitalize="none"
                               {...restField}
                             />
