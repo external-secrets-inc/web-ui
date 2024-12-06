@@ -2,9 +2,13 @@ import { getSubscriptions } from "@/services/subscriptions/subscriptionsService"
 import { useEffect, useState } from "react";
 import { Alert, AlertDescription } from "./ui/alert";
 import { LucideCalendarClock, LucideX } from "lucide-react";
-import { calculateDiffDays } from "@/utils/calculateDiffDays";
-import { formatDateToUS } from "@/utils/dateFormatingUS";
 import { Button } from "./ui/button";
+
+function calculateDiffDays(endDate: string, startDate: string = new Date().toISOString()): number {
+  const endDateObj = new Date(endDate);
+  const startDateObj = new Date(startDate);
+  return Math.ceil((endDateObj.getTime() - startDateObj.getTime()) / (1000 * 60 * 60 * 24));
+}
 
 export default function ExpirySubscriptionBanner() {
 	const [subData, setSubData] = useState({ id: "", expiryDate: "", isClosed: [false, false, false, false] });
@@ -74,6 +78,10 @@ export default function ExpirySubscriptionBanner() {
 		setShowBanner(false);
 	}
 
+	// Formatting date to US:
+	const [year, month, day] = subData.expiryDate.split('-');
+	const expiryDateUS = `${month}/${day}/${year}`;
+
 	return (
 		<>
 			{showBanner &&
@@ -84,18 +92,17 @@ export default function ExpirySubscriptionBanner() {
 							<AlertDescription>
 								Your subscription will expire in{" "}
 								<span className="font-semibold">{diffDays} day{diffDays > 1 ? "s" : ""}</span>.
-								Please ensure the payment is made until{" "}
-								<span className="font-semibold">{formatDateToUS(subData.expiryDate)}</span>.
+								Please ensure the payment is made until <span className="font-semibold">{expiryDateUS}</span>.
 							</AlertDescription>
 
 							: diffDays === 0 ?
 								<AlertDescription>
-									Your subscription expires today! Please make your payment to continue using our services.
+									Your subscription expires <span className="font-semibold">today</span>! Please make your payment to continue using our services.
 								</AlertDescription>
 
 								:
 								<AlertDescription>
-									Your subscription has expired on {formatDateToUS(subData.expiryDate)}. Please make your payment to continue using our services.
+									Your subscription has expired on <span className="font-semibold">{expiryDateUS}</span>. Please make your payment to continue using our services.
 								</AlertDescription>
 						}
 					</div>
