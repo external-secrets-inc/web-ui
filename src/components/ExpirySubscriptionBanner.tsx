@@ -5,9 +5,9 @@ import { LucideCalendarClock, LucideX } from "lucide-react";
 import { Button } from "./ui/button";
 
 function calculateDiffDays(endDate: string, startDate: string = new Date().toISOString()): number {
-  const endDateObj = new Date(endDate);
-  const startDateObj = new Date(startDate);
-  return Math.ceil((endDateObj.getTime() - startDateObj.getTime()) / (1000 * 60 * 60 * 24));
+	const endDateObj = new Date(endDate);
+	const startDateObj = new Date(startDate);
+	return Math.ceil((endDateObj.getTime() - startDateObj.getTime()) / (1000 * 60 * 60 * 24));
 }
 
 export default function ExpirySubscriptionBanner() {
@@ -84,8 +84,8 @@ export default function ExpirySubscriptionBanner() {
 
 	return (
 		<>
-			{showBanner &&
-				<Alert variant={diffDays > 0 ? "default" : "destructive"} className="flex items-center justify-between py-2 px-4 mb-4">
+			<div className={showBanner ? "md:-mt-6" : "hidden"}>
+				<Alert variant={diffDays > 0 ? "default" : "destructive"} className="flex items-center justify-between mb-4">
 					<div className="flex items-center space-x-2">
 						<LucideCalendarClock size={20} />
 						{diffDays > 0 ?
@@ -109,15 +109,15 @@ export default function ExpirySubscriptionBanner() {
 					{diffDays > 0 &&
 						<Button
 							variant="ghost"
-							size="sm"
-							className="text-gray-500 hover:text-white rounded-full h-8 w-8 p-0"
+							size="icon"
+							className="-mr-1"
 							onClick={handleClose}
 						>
 							<LucideX size={16} />
 						</Button>
 					}
 				</Alert>
-			}
+			</div>
 		</>
 	);
 }
