@@ -98,7 +98,12 @@ export default function Audit() {
     const endDate = searchParams.get('chartsEndDate');
     if (!startDate || !endDate) return 0;
 
-    // Only set a timeRange if endDate is today
+    /**
+     * Our predefined time ranges are all from the *last* N days, so we gotta
+     * measure backwards from *today*. Right now, if any custom date outside the
+     * toggleable range is set, we allow it, but the toggle-group should become
+     * unset (null).
+     */
     if (!isDateFromToday(endDate)) return null;
 
     const diffDays = getDaysBetweenDates(startDate, endDate);
