@@ -92,3 +92,15 @@ interface AddProviderType {
 export interface AddProviderFormSchema {
   [formType: string]: AddProviderType;
 }
+
+export interface AuditMetric {
+  kind: string;
+  amount: number;
+  label: string;
+  tooltipLabel?: string;
+}
+
+export interface AuditTimelineEntry {
+  date: string;
+  stats: AuditMetric[];
+}

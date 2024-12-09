@@ -1,20 +1,10 @@
-import { UseQueryOptions, useQuery } from "@tanstack/react-query";
+import { AuditTimelineEntry } from "@/components/audit/Audit.interfaces";
+import { getMockProviderTimelineStats, mockNetworkResponseDelay } from "@/services/audit/mocks/mockData";
 import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError } from "@/types";
+import { UseQueryOptions, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { mockNetworkResponseDelay, getMockProviderTimelineStats } from "@/services/audit/mocks/mockData";
-
-export interface ProviderTimelineStats {
-  date: string;
-  stats: {
-    kind: string;
-    amount: number;
-    label: string;
-    tooltipLabel?: string;
-  }[];
-}
-
 interface QueryOptions {
   startDate: string;
   endDate: string;
@@ -38,7 +28,7 @@ const getAuditProviderTimelineStats = async (mock: boolean, options: QueryOption
 export default function useGetAuditProviderTimelineStats(
   mock: boolean = true,
   options: QueryOptions,
-  queryOptions?: Omit<UseQueryOptions<ProviderTimelineStats[], AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
+  queryOptions?: Omit<UseQueryOptions<AuditTimelineEntry[], AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
 ) {
   return useQuery({
     queryKey: ['audit', 'provider', 'timeline', options.startDate, options.endDate],

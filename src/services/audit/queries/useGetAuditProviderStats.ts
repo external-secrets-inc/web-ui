@@ -1,17 +1,10 @@
-import { UseQueryOptions, useQuery } from "@tanstack/react-query";
+import { AuditMetric } from "@/components/audit/Audit.interfaces";
+import { mockNetworkResponseDelay, mockProviderStats } from "@/services/audit/mocks/mockData";
 import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError } from "@/types";
+import { UseQueryOptions, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { mockNetworkResponseDelay, mockProviderStats } from "@/services/audit/mocks/mockData";
-
-export interface ProviderStats {
-  kind: string;
-  amount: number;
-  label: string;
-  tooltipLabel?: string;
-}
-
 const getAuditProviderStats = async (mock: boolean, signal: AbortSignal) => {
   // TODO: Remove this mock when the API is ready
   if (mock) {
@@ -26,7 +19,7 @@ const getAuditProviderStats = async (mock: boolean, signal: AbortSignal) => {
 
 const useGetAuditProviderStats = (
   mock: boolean = true,
-  options?: Omit<UseQueryOptions<ProviderStats[], AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<AuditMetric[], AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
 ) => {
   return useQuery({
     queryKey: ["useGetAuditProviderStats", mock],
