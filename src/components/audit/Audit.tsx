@@ -1,27 +1,51 @@
-import { useEffect, useMemo, useState } from "react";
-import { AxiosError } from "axios";
-import { API_DOMAIN, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
+import { trackListenerInstallDialogOpened } from "@/analytics";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { API_DOMAIN, ONE_MINUTE_IN_SECONDS, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import useCreateAuditInstallationToken from "@/services/audit/mutations/useCreateAuditInstallationToken";
 import useGetAuditProcessFile from "@/services/audit/queries/useGetAuditProcessFile";
+import useGetListener from "@/services/audit/queries/useGetListener";
+import useGetListenerAuditData from "@/services/audit/queries/useGetListenerAuditData";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { ApiHttpError } from "@/types";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
+import { createColumnHelper } from "@tanstack/react-table";
+import { AxiosError } from "axios";
+import { LucideAlertCircle, LucideFilter } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "../ui/button";
-import ListenerInstallDialogContent from "./ListenerInstallDialogContent";
-import useGetListener from "@/services/audit/queries/useGetListener";
+import { DataProvider, DataTable } from "../ui/DataProvider";
+import { LISTENER_STATUS, TIME_RANGES } from "./Audit.constants";
+import { AuditTableData, FilterSchema, Listener, ListenerStatus, TimeRange, filterSchema } from "./Audit.interfaces";
 import AuditChartProblems from "./AuditChartProblems";
 import AuditChartProviders from "./AuditChartProviders";
-import useGetListenerAuditData from "@/services/audit/queries/useGetListenerAuditData";
-import { trackListenerInstallDialogOpened } from "@/analytics";
-import { AuditTableData, FilterSchema, Listener, ListenerStatus } from "./Audit.interfaces";
-import { DataProvider, DataTable } from "../ui/DataProvider";
-import { useSearchParams } from "react-router-dom";
-import { createColumnHelper } from "@tanstack/react-table"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { LucideAlertCircle, LucideFilter } from "lucide-react";
-import { LISTENER_STATUS } from "./Audit.constants";
-import FilterDialogForm from "./FilterDialogForm";
 import AuditProviderDataTable from "./AuditProviderDataTable";
+import AuditTimelineProblems from "./AuditTimelineProblems";
+import AuditTimelineProviders from "./AuditTimelineProviders";
+import FilterDialogForm from "./FilterDialogForm";
+import ListenerInstallDialogContent from "./ListenerInstallDialogContent";
+
+const toYYYYMMDD = (date: Date) => {
+  return date.toISOString().slice(0, 10); // YYYY-MM-DD in UTC
+};
+
+const getDaysBetweenDates = (start: string, end: string) => {
+  const ONE_DAY_IN_MILLISECONDS = ONE_SECOND_IN_MILLISECONDS * ONE_MINUTE_IN_SECONDS * 60 * 24;
+  return Math.round((new Date(end).getTime() - new Date(start).getTime()) / ONE_DAY_IN_MILLISECONDS);
+};
+
+const isDateFromToday = (dateStr: string) => {
+  const today = toYYYYMMDD(new Date());
+  const date = toYYYYMMDD(new Date(dateStr));
+  return today === date;
+};
+
+const getTimeRangeFromDays = (days: number | null): TimeRange => {
+  const range = TIME_RANGES.find(r => r.days === days);
+  if (!range) return null;
+  return range.label;
+};
 
 export default function Audit() {
   const columnHelper = createColumnHelper<AuditTableData>()
@@ -69,6 +93,23 @@ export default function Audit() {
   const [isFiltersDialogOpen, setIsFiltersDialogOpen] = useState(false);
 
   const [searchParams, setSearchParams] = useSearchParams();
+  const [currentToggledTimeRange, setCurrentToggledTimeRange] = useState<number | null>(() => {
+    const startDate = searchParams.get('chartsStartDate');
+    const endDate = searchParams.get('chartsEndDate');
+    if (!startDate || !endDate) return 0;
+
+    /**
+     * Our predefined time ranges are all from the *last* N days, so we gotta
+     * measure backwards from *today*. Right now, if any custom date outside the
+     * toggleable range is set, we allow it, but the toggle-group should become
+     * unset (null).
+     */
+    if (!isDateFromToday(endDate)) return null;
+
+    const diffDays = getDaysBetweenDates(startDate, endDate);
+    // Only return a value if it matches one of our predefined ranges
+    return TIME_RANGES.find(r => r.days === diffDays)?.days ?? null;
+  });
 
   const initialFilters = useMemo(() => {
     return {
@@ -190,29 +231,30 @@ export default function Audit() {
   };
 
   const handleFilterChange = (selectedFilters: FilterSchema) => {
-    const filteredFilters = Object.fromEntries(
-      Object.entries(selectedFilters).filter(
-        ([, value]) =>
-          value !== null &&
-          value !== undefined &&
-          value !== "" &&
-          (!Array.isArray(value) || value.length > 0)
-      )
-    );
-    setSearchParams(() => {
-      const newSearchParams: Record<string, string | string[]> = {};
-      Object.entries(filteredFilters).forEach(([key, value]) => {
-        if (Array.isArray(value) && value.length > 0) {
-          newSearchParams[key] = value;
-        } else if (value !== null && value !== undefined && value !== "") {
-          newSearchParams[key] = String(value);
+    setSearchParams(prevParams => {
+      // First, remove all existing filter parameters specifically to avoid stale values
+      filterSchema.keyof().options.forEach(key => prevParams.delete(key));
+
+      // Then add new filter values if they exist
+      for (const [key, value] of Object.entries(selectedFilters)) {
+        if (!value) continue; // Skip unset values
+
+        if (Array.isArray(value)) {
+          // For array values (like providers), set each value as a separate entry
+          // TODO: Consider if we should use a single key with delimiters for each value instead
+          if (value.length) {
+            value.forEach(value => prevParams.append(key, value));
+          }
+        } else {
+          // For single values, just set them directly
+          prevParams.set(key, value);
         }
-      });
+      }
 
-      return newSearchParams;
+      return prevParams;
     });
-    handleFiltersDialogOpenChange(false);
 
+    handleFiltersDialogOpenChange(false);
     listenerAuditRefetch();
   };
 
@@ -221,6 +263,28 @@ export default function Audit() {
       trackListenerInstallDialogOpened(listener.id);
     }
   }, [isListenerInstallDialogOpen, listener.id]);
+
+  const handleTimeRangeChange = (days: number | null) => {
+    setCurrentToggledTimeRange(days);
+
+    setSearchParams(prevParams => {
+      if (!days) {
+        prevParams.delete('chartsStartDate');
+        prevParams.delete('chartsEndDate');
+      } else {
+        const end = new Date();
+        const start = new Date(end);
+        start.setDate(end.getDate() - days);
+
+        prevParams.set('chartsStartDate', toYYYYMMDD(start));
+        prevParams.set('chartsEndDate', toYYYYMMDD(end));
+      }
+      return prevParams;
+    });
+  };
+
+  const chartsStartDate = searchParams.get('chartsStartDate');
+  const chartsEndDate = searchParams.get('chartsEndDate');
 
   return (
     <div className="space-y-4">
@@ -267,10 +331,42 @@ export default function Audit() {
         </Alert>
       )}
 
-      <h2 className="font-bold pt-4">Analytics</h2>
+      <div className="flex items-center justify-between pt-4">
+        <h2 className="font-bold">Analytics</h2>
+        <ToggleGroup
+          variant="outline"
+          type="single"
+          value={String(currentToggledTimeRange)}
+          onValueChange={(value) => handleTimeRangeChange(Number(value))}
+        >
+          {TIME_RANGES.map(({ days, label }) => (
+            <ToggleGroupItem key={days} className="w-12" value={String(days)}>
+              {label}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+      </div>
+
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(416px,100%),1fr))] gap-4 mt-6">
-        <AuditChartProviders />
-        <AuditChartProblems />
+        {currentToggledTimeRange === 0 ? (
+          <>
+            <AuditChartProviders />
+            <AuditChartProblems />
+          </>
+        ) : (chartsStartDate && chartsEndDate) ? (
+          <>
+            <AuditTimelineProviders
+              timeRange={getTimeRangeFromDays(currentToggledTimeRange)}
+              startDate={chartsStartDate}
+              endDate={chartsEndDate}
+            />
+            <AuditTimelineProblems
+              timeRange={getTimeRangeFromDays(currentToggledTimeRange)}
+              startDate={chartsStartDate}
+              endDate={chartsEndDate}
+            />
+          </>
+        ) : null}
       </div>
 
       <AuditProviderDataTable
