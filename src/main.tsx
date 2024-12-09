@@ -23,6 +23,7 @@ import { DOCS_DOMAIN } from "@/constants";
 import ListRotators from "@/components/rotators/ListRotators";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Audit from "@/components/audit/Audit"
+import OrgRedirector from "./components/OrgRedirector";
 
 const queryClient = new QueryClient()
 
@@ -62,11 +63,17 @@ const router = createBrowserRouter([
     element: (
       <AxiosInterceptor>
         <RequireActiveUser loginFallbackPath="/login" inactiveFallbackPath="/verify">
-          <App />
+          <OrgRedirector>
+            <App />
+          </OrgRedirector>
         </RequireActiveUser>
       </AxiosInterceptor>
     ),
     children: [
+      {
+        path: '',
+        element: <NavigateWithOrg to="/agents" replace />,
+      },
       {
         path: 'agents',
         element: (
