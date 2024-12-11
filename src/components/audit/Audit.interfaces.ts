@@ -52,6 +52,13 @@ export interface Listener {
   status: ListenerStatus;
 }
 
+export type TimeRange = "Now" | "7D" | "30D" | "90D" | null;
+
+export interface TimeRangeOption {
+  days: number;
+  label: TimeRange;
+}
+
 export interface ProviderTableData {
   id: string;
   name: string;
@@ -84,4 +91,16 @@ interface AddProviderType {
 
 export interface AddProviderFormSchema {
   [formType: string]: AddProviderType;
+}
+
+export interface AuditMetric {
+  kind: string;
+  amount: number;
+  label: string;
+  tooltipLabel?: string;
+}
+
+export interface AuditTimelineEntry {
+  date: string;
+  stats: AuditMetric[];
 }
