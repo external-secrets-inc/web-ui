@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import useSignOut from 'react-auth-kit/hooks/useSignOut';
 import axiosInstance, { BACKEND_DOMAINS } from '@/services/axiosConfig';
 import { trackSignedOut } from '@/analytics';
+import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
 interface AxiosInterceptorProps {
   children: ReactNode;
@@ -22,17 +23,19 @@ const AxiosInterceptor: React.FC<AxiosInterceptorProps> = ({ children }) => {
 
   useEffect(() => {
     // Routes requests to different backend services based on config.backend
-    const backendRouter = axiosInstance.interceptors.request.use((config) => {
-      if (config.backend) {
-        config.baseURL = BACKEND_DOMAINS[config.backend];
+    const backendRouter = axiosInstance.interceptors.request.use(
+      (config: InternalAxiosRequestConfig) => {
+        if (config.backend) {
+          config.baseURL = BACKEND_DOMAINS[config.backend];
+        }
+        return config;
       }
-      return config;
-    });
+    );
 
     // Handles authentication failures globally
     const authGuard = axiosInstance.interceptors.response.use(
-      response => response,
-      error => {
+      (response: AxiosResponse) => response,
+      (error: AxiosError) => {
         if (error?.response?.status === 401) {
           signOut();
           trackSignedOut(false);
