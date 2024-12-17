@@ -1,10 +1,15 @@
 import { trackListenerInstallDialogOpened } from "@/analytics";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { API_DOMAIN, ONE_MINUTE_IN_SECONDS, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
-import useCreateAuditInstallationToken from "@/services/audit/mutations/useCreateAuditInstallationToken";
-import useGetAuditProcessFile from "@/services/audit/queries/useGetAuditProcessFile";
-import useGetListener from "@/services/audit/queries/useGetListener";
+import {
+  API_DOMAIN,
+  ONE_MINUTE_IN_SECONDS,
+  ONE_SECOND_IN_MILLISECONDS,
+} from "@/constants";
+import useCreateTenantInstallationToken from "@/services/audit/mutations/useCreateTenantInstallationToken";
+import useGetTenantBashFile from "@/services/audit/queries/useGetTenantBashFile";
+import useGetTenantListeners from "@/services/audit/queries/useGetTenantListeners";
+import useGetAuditListener from "@/services/audit/queries/useGetAuditListener";
 import useGetListenerAuditData from "@/services/audit/queries/useGetListenerAuditData";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { ApiHttpError } from "@/types";
@@ -17,7 +22,16 @@ import { useSearchParams } from "react-router-dom";
 import { Button } from "../ui/button";
 import { DataProvider, DataTable } from "../ui/DataProvider";
 import { LISTENER_STATUS, TIME_RANGES } from "./Audit.constants";
-import { AuditTableData, FilterSchema, Listener, ListenerStatus, TimeRange, filterSchema } from "./Audit.interfaces";
+import {
+  AuditTableData,
+  CreateListenerTenantPayload,
+  FilterSchema,
+  Listener,
+  ListenerStatus,
+  ListenerTenant,
+  TimeRange,
+  filterSchema,
+} from "./Audit.interfaces";
 import AuditChartProblems from "./AuditChartProblems";
 import AuditChartProviders from "./AuditChartProviders";
 import AuditProviderDataTable from "./AuditProviderDataTable";
@@ -25,14 +39,19 @@ import AuditTimelineProblems from "./AuditTimelineProblems";
 import AuditTimelineProviders from "./AuditTimelineProviders";
 import FilterDialogForm from "./FilterDialogForm";
 import ListenerInstallDialogContent from "./ListenerInstallDialogContent";
+import useCreateTenantListener from "@/services/audit/mutations/useCreateTenantListener";
 
 const toYYYYMMDD = (date: Date) => {
   return date.toISOString().slice(0, 10); // YYYY-MM-DD in UTC
 };
 
 const getDaysBetweenDates = (start: string, end: string) => {
-  const ONE_DAY_IN_MILLISECONDS = ONE_SECOND_IN_MILLISECONDS * ONE_MINUTE_IN_SECONDS * 60 * 24;
-  return Math.round((new Date(end).getTime() - new Date(start).getTime()) / ONE_DAY_IN_MILLISECONDS);
+  const ONE_DAY_IN_MILLISECONDS =
+    ONE_SECOND_IN_MILLISECONDS * ONE_MINUTE_IN_SECONDS * 60 * 24;
+  return Math.round(
+    (new Date(end).getTime() - new Date(start).getTime()) /
+      ONE_DAY_IN_MILLISECONDS
+  );
 };
 
 const isDateFromToday = (dateStr: string) => {
@@ -42,60 +61,85 @@ const isDateFromToday = (dateStr: string) => {
 };
 
 const getTimeRangeFromDays = (days: number | null): TimeRange => {
-  const range = TIME_RANGES.find(r => r.days === days);
+  const range = TIME_RANGES.find((r) => r.days === days);
   if (!range) return null;
   return range.label;
 };
 
 export default function Audit() {
-  const columnHelper = createColumnHelper<AuditTableData>()
+  const columnHelper = createColumnHelper<AuditTableData>();
 
-  const columns = useMemo(() => [
-    columnHelper.accessor('secret', {
-      header: 'Secret',
-      cell: info => <strong>{info.getValue()}</strong>
-    }),
-    columnHelper.accessor('provider', {
-      header: 'Provider',
-      cell: info => info.getValue()
-    }),
-    columnHelper.accessor('lastRotation', {
-      header: 'Last Rotation',
-      cell: info => <span className="font-mono">{new Date(info.getValue()).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}</span>
-    }),
-    columnHelper.accessor('lastAccess', {
-      header: 'Last Access',
-      cell: info => <span className="font-mono">{new Date(info.getValue()).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}</span>
-    }),
-    columnHelper.accessor('duplicatesAmount', {
-      header: 'Duplicates',
-      cell: info => info.getValue()
-    }),
-    columnHelper.accessor('accessorsAmount', {
-      header: 'Accessors',
-      cell: info => info.getValue()
-    }),
-    columnHelper.accessor('policiesAmount', {
-      header: 'Policy compliance',
-      cell: info => {
-        return (
-          <div className="flex gap-2 w-full items-center justify-between">
-            {info.getValue()} {!info.row.original.fullCompliant && <LucideAlertCircle className="text-orange-500" />}
-          </div>
-        )
-      }
-    })
-  ], [columnHelper])
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor("secret", {
+        header: "Secret",
+        cell: (info) => <strong>{info.getValue()}</strong>,
+      }),
+      columnHelper.accessor("provider", {
+        header: "Provider",
+        cell: (info) => info.getValue(),
+      }),
+      columnHelper.accessor("lastRotation", {
+        header: "Last Rotation",
+        cell: (info) => (
+          <span className="font-mono">
+            {new Date(info.getValue()).toLocaleDateString("en-US", {
+              month: "2-digit",
+              day: "2-digit",
+              year: "numeric",
+            })}
+          </span>
+        ),
+      }),
+      columnHelper.accessor("lastAccess", {
+        header: "Last Access",
+        cell: (info) => (
+          <span className="font-mono">
+            {new Date(info.getValue()).toLocaleDateString("en-US", {
+              month: "2-digit",
+              day: "2-digit",
+              year: "numeric",
+            })}
+          </span>
+        ),
+      }),
+      columnHelper.accessor("duplicatesAmount", {
+        header: "Duplicates",
+        cell: (info) => info.getValue(),
+      }),
+      columnHelper.accessor("accessorsAmount", {
+        header: "Accessors",
+        cell: (info) => info.getValue(),
+      }),
+      columnHelper.accessor("policiesAmount", {
+        header: "Policy compliance",
+        cell: (info) => {
+          return (
+            <div className="flex gap-2 w-full items-center justify-between">
+              {info.getValue()}{" "}
+              {!info.row.original.fullCompliant && (
+                <LucideAlertCircle className="text-orange-500" />
+              )}
+            </div>
+          );
+        },
+      }),
+    ],
+    [columnHelper]
+  );
 
-  const [processCommand, setProcessCommand] = useState("")
-  const [applyCommand, setApplyCommand] = useState("")
-  const [isListenerInstallDialogOpen, setIsListenerInstallDialogOpen] = useState(false);
+  const [bashCommand, setBashCommand] = useState("");
+  const [manifestCommand, setManifestCommand] = useState("");
+  const [isListenerInstallDialogOpen, setIsListenerInstallDialogOpen] =
+    useState(false);
   const [isFiltersDialogOpen, setIsFiltersDialogOpen] = useState(false);
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const [currentToggledTimeRange, setCurrentToggledTimeRange] = useState<number | null>(() => {
-    const startDate = searchParams.get('chartsStartDate');
-    const endDate = searchParams.get('chartsEndDate');
+  const [currentToggledTimeRange, setCurrentToggledTimeRange] = useState<
+    number | null
+  >(() => {
+    const startDate = searchParams.get("chartsStartDate");
+    const endDate = searchParams.get("chartsEndDate");
     if (!startDate || !endDate) return 0;
 
     /**
@@ -108,40 +152,94 @@ export default function Audit() {
 
     const diffDays = getDaysBetweenDates(startDate, endDate);
     // Only return a value if it matches one of our predefined ranges
-    return TIME_RANGES.find(r => r.days === diffDays)?.days ?? null;
+    return TIME_RANGES.find((r) => r.days === diffDays)?.days ?? null;
   });
 
   const initialFilters = useMemo(() => {
     return {
-      provider: searchParams.getAll('provider'),
-      policy: searchParams.get('policy') ?? undefined,
-      secretName: searchParams.get('secretName') ?? undefined,
-      policyStatus: searchParams.get('policyStatus') ?? undefined,
-      duplicates: searchParams.get('duplicates') ?? undefined,
-      lastAccess: searchParams.get('lastAccess') ?? undefined,
-      lastRotation: searchParams.get('lastRotation') ?? undefined,
-      accessors: searchParams.get('accessors') ?? undefined,
-    } as FilterSchema
-  }, [searchParams])
+      provider: searchParams.getAll("provider"),
+      policy: searchParams.get("policy") ?? undefined,
+      secretName: searchParams.get("secretName") ?? undefined,
+      policyStatus: searchParams.get("policyStatus") ?? undefined,
+      duplicates: searchParams.get("duplicates") ?? undefined,
+      lastAccess: searchParams.get("lastAccess") ?? undefined,
+      lastRotation: searchParams.get("lastRotation") ?? undefined,
+      accessors: searchParams.get("accessors") ?? undefined,
+    } as FilterSchema;
+  }, [searchParams]);
 
   // TODO remove mock https://github.com/external-secrets-inc/web-ui/issues/115
-  const { data: listenerData, isError: isErrorListener, isLoading: isLoadingListener, error: listenerError } = useGetListener(true, {
+  const { data: tenantListenersData } = useGetTenantListeners(false, {
+    refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
+    refetchIntervalInBackground: true,
+  });
+
+  const defaultTenantListenerPayload: CreateListenerTenantPayload = {
+    name: "Listener-1",
+    tags: { additionalProp1: "v0" },
+  };
+
+  const { mutate: createTenantListener } = useCreateTenantListener(false, {
+    onMutate: () => {
+      if (tenantListenersData && tenantListenersData?.length > 0) {
+        throw new Error("A listener already exists for this tenant");
+      }
+    },
+    onError: (error: AxiosError<ApiHttpError>) => {
+      handleDefaultApiHttpError(error, "Error while creating tenant listener");
+    }
+  });
+
+  useEffect(() => {
+    if (tenantListenersData && tenantListenersData.length === 0) {
+      createTenantListener(defaultTenantListenerPayload);
+    }
+  }, [tenantListenersData]);
+
+  const tenantListener = useMemo((): ListenerTenant => {
+    if (!tenantListenersData || tenantListenersData.length === 0)
+      return {
+        id: "",
+        name: "",
+        enabled: false,
+        tags: {},
+      };
+
+    const firstListener = tenantListenersData[0];
+
+    return {
+      id: firstListener.id,
+      name: firstListener.name,
+      enabled: firstListener.enabled,
+      tags: firstListener.tags,
+    };
+  }, [tenantListenersData]);
+
+  // TODO: make a post request to create a listener on audit-poc-api
+
+  const {
+    data: listenerData,
+    isError: isErrorListener,
+    isLoading: isLoadingListener,
+    error: listenerError,
+  } = useGetAuditListener(true, {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
   });
 
   const listener = useMemo((): Listener => {
-    if (isLoadingListener || !listenerData) return {
-      id: "",
-      tenant_id: "",
-      status: LISTENER_STATUS.PENDING_INSTALLATION
-    }
+    if (isLoadingListener || !listenerData)
+      return {
+        id: "",
+        tenant_id: "",
+        status: LISTENER_STATUS.PENDING_INSTALLATION,
+      };
 
     return {
       id: listenerData.id,
       tenant_id: listenerData.tenant_id,
-      status: listenerData.status as ListenerStatus
-    }
+      status: listenerData.status as ListenerStatus,
+    };
   }, [listenerData, isLoadingListener]);
 
   useEffect(() => {
@@ -150,18 +248,26 @@ export default function Audit() {
     handleDefaultApiHttpError(listenerError, "Error while fetching listener");
   }, [listenerError, isErrorListener]);
 
-  const { data: listenerAuditData, refetch: listenerAuditRefetch, isLoading: isLoadingListenerAudit, isError: isErrorListenerAudit, isRefetchError: isRefetchErrorListenerAudit, error: listenerAuditError } = useGetListenerAuditData(true, {
+  const {
+    data: listenerAuditData,
+    refetch: listenerAuditRefetch,
+    isLoading: isLoadingListenerAudit,
+    isError: isErrorListenerAudit,
+    isRefetchError: isRefetchErrorListenerAudit,
+    error: listenerAuditError,
+  } = useGetListenerAuditData(true, {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
   });
 
   const listenerAudit = useMemo(() => {
-    if (!listenerAuditData) return {
-      secretData: [],
-      secretsNames: [],
-      policiesNames: [],
-      providers: [],
-    }
+    if (!listenerAuditData)
+      return {
+        secretData: [],
+        secretsNames: [],
+        policiesNames: [],
+        providers: [],
+      };
 
     return listenerAuditData;
   }, [listenerAuditData]);
@@ -169,22 +275,28 @@ export default function Audit() {
   useEffect(() => {
     if (!(listenerAuditError || isRefetchErrorListenerAudit)) return;
 
-    handleDefaultApiHttpError(listenerAuditError, "Error while fetching listener Audit data")
-  }, [listenerAuditError, isErrorListenerAudit, isRefetchErrorListenerAudit])
+    handleDefaultApiHttpError(
+      listenerAuditError,
+      "Error while fetching listener Audit data"
+    );
+  }, [listenerAuditError, isErrorListenerAudit, isRefetchErrorListenerAudit]);
 
-  const { mutate: createToken, data: token } = useCreateAuditInstallationToken(true, {
-    onError: (error: AxiosError<ApiHttpError>) =>
-      handleDefaultApiHttpError(
-        error,
-        "Error while trying to generate manifest token"
-      ),
-  });
+  const { mutate: createToken, data: token } = useCreateTenantInstallationToken(
+    false,
+    {
+      onError: (error: AxiosError<ApiHttpError>) =>
+        handleDefaultApiHttpError(
+          error,
+          "Error while trying to generate manifest token"
+        ),
+    }
+  );
 
   const {
     data: processFileData,
     error: processFileError,
     isError: isErrorProcessFile,
-  } = useGetAuditProcessFile(true, token ?? "", "latest", {
+  } = useGetTenantBashFile(false, token ?? "", "latest", tenantListener.id, {
     enabled: token !== "",
   });
 
@@ -198,8 +310,10 @@ export default function Audit() {
   }, [processFileError, isErrorProcessFile]);
 
   useEffect(() => {
-    createToken();
-  }, [createToken]);
+    if (tenantListener.id) {
+      createToken({ id: tenantListener.id });
+    }
+  }, [tenantListener.id, createToken]);
 
   // TODO update commands to real endpoints https://github.com/external-secrets-inc/web-ui/issues/118
   useEffect(() => {
@@ -207,19 +321,19 @@ export default function Audit() {
 
     let command = [
       "curl \\",
-      `${API_DOMAIN}/public/audit/manifest/latest\\`,
+      `${API_DOMAIN}/public/listeners/${token}/manifest/latest\\`,
       `?token=${token} \\`,
       "| kubectl apply -f -",
     ].join("\n");
-    setApplyCommand(command);
+    setManifestCommand(command);
 
     command = [
       "curl \\",
-      `${API_DOMAIN}/public/audit/process/latest\\`,
+      `${API_DOMAIN}/public/listeners/${token}/bash/latest\\`,
       `?token=${token} \\`,
       "| sh process.sh",
     ].join("\n");
-    setProcessCommand(command);
+    setBashCommand(command);
   }, [token]);
 
   const handleListenerInstallDialogOpenChange = (isOpen: boolean) => {
@@ -231,9 +345,9 @@ export default function Audit() {
   };
 
   const handleFilterChange = (selectedFilters: FilterSchema) => {
-    setSearchParams(prevParams => {
+    setSearchParams((prevParams) => {
       // First, remove all existing filter parameters specifically to avoid stale values
-      filterSchema.keyof().options.forEach(key => prevParams.delete(key));
+      filterSchema.keyof().options.forEach((key) => prevParams.delete(key));
 
       // Then add new filter values if they exist
       for (const [key, value] of Object.entries(selectedFilters)) {
@@ -243,7 +357,7 @@ export default function Audit() {
           // For array values (like providers), set each value as a separate entry
           // TODO: Consider if we should use a single key with delimiters for each value instead
           if (value.length) {
-            value.forEach(value => prevParams.append(key, value));
+            value.forEach((value) => prevParams.append(key, value));
           }
         } else {
           // For single values, just set them directly
@@ -267,55 +381,59 @@ export default function Audit() {
   const handleTimeRangeChange = (days: number | null) => {
     setCurrentToggledTimeRange(days);
 
-    setSearchParams(prevParams => {
+    setSearchParams((prevParams) => {
       if (!days) {
-        prevParams.delete('chartsStartDate');
-        prevParams.delete('chartsEndDate');
+        prevParams.delete("chartsStartDate");
+        prevParams.delete("chartsEndDate");
       } else {
         const end = new Date();
         const start = new Date(end);
         start.setDate(end.getDate() - days);
 
-        prevParams.set('chartsStartDate', toYYYYMMDD(start));
-        prevParams.set('chartsEndDate', toYYYYMMDD(end));
+        prevParams.set("chartsStartDate", toYYYYMMDD(start));
+        prevParams.set("chartsEndDate", toYYYYMMDD(end));
       }
       return prevParams;
     });
   };
 
-  const chartsStartDate = searchParams.get('chartsStartDate');
-  const chartsEndDate = searchParams.get('chartsEndDate');
+  const chartsStartDate = searchParams.get("chartsStartDate");
+  const chartsEndDate = searchParams.get("chartsEndDate");
 
   return (
     <div className="space-y-4">
-      {!isLoadingListener && listener.status === LISTENER_STATUS.PENDING_INSTALLATION && (
-        <Alert
-          className="flex gap-2 items-center justify-between flex-wrap"
-          variant="warning"
-        >
-          <div>
-            <AlertTitle className="flex gap-3 items-center">
-              <LucideAlertCircle className="text-orange-500" /> Listener not installed
-            </AlertTitle>
-            <AlertDescription className="flex items-center justify-between">
-              To start receiving audit data, you need to install our listener in your cluster
-            </AlertDescription>
-          </div>
-          <Dialog open={isListenerInstallDialogOpen} onOpenChange={handleListenerInstallDialogOpenChange}>
-            <DialogTrigger asChild>
-              <Button variant="outline">
-                Install listener
-              </Button>
-            </DialogTrigger>
-            <ListenerInstallDialogContent
-              id={listener.id}
-              processFile={processFileData ? processFileData.process : ''}
-              processCommand={processCommand}
-              applyCommand={applyCommand}
-            />
-          </Dialog>
-        </Alert>
-      )}
+      {!isLoadingListener &&
+        listener.status === LISTENER_STATUS.PENDING_INSTALLATION && (
+          <Alert
+            className="flex gap-2 items-center justify-between flex-wrap"
+            variant="warning"
+          >
+            <div>
+              <AlertTitle className="flex gap-3 items-center">
+                <LucideAlertCircle className="text-orange-500" /> Listener not
+                installed
+              </AlertTitle>
+              <AlertDescription className="flex items-center justify-between">
+                To start receiving audit data, you need to install our listener
+                in your cluster
+              </AlertDescription>
+            </div>
+            <Dialog
+              open={isListenerInstallDialogOpen}
+              onOpenChange={handleListenerInstallDialogOpenChange}
+            >
+              <DialogTrigger asChild>
+                <Button variant="outline">Install listener</Button>
+              </DialogTrigger>
+              <ListenerInstallDialogContent
+                id={listener.id}
+                bashFile={processFileData ? processFileData.bash : ""}
+                bashCommand={bashCommand}
+                manifestCommand={manifestCommand}
+              />
+            </Dialog>
+          </Alert>
+        )}
 
       {!isLoadingListener && listener.status === LISTENER_STATUS.OFFLINE && (
         <Alert
@@ -323,10 +441,12 @@ export default function Audit() {
           variant="destructive"
         >
           <AlertTitle className="flex gap-2 items-center">
-            <LucideAlertCircle className="text-destructive" /> Listener Offline or Unreachable
+            <LucideAlertCircle className="text-destructive" /> Listener Offline
+            or Unreachable
           </AlertTitle>
           <AlertDescription>
-            The listener is currently offline or cannot be accessed. Please check the cluster configuration on your end.
+            The listener is currently offline or cannot be accessed. Please
+            check the cluster configuration on your end.
           </AlertDescription>
         </Alert>
       )}
@@ -353,7 +473,7 @@ export default function Audit() {
             <AuditChartProviders />
             <AuditChartProblems />
           </>
-        ) : (chartsStartDate && chartsEndDate) ? (
+        ) : chartsStartDate && chartsEndDate ? (
           <>
             <AuditTimelineProviders
               timeRange={getTimeRangeFromDays(currentToggledTimeRange)}
@@ -376,7 +496,10 @@ export default function Audit() {
 
       <div className="flex items-center justify-between pt-4">
         <h2 className="font-bold">All Secrets</h2>
-        <Dialog open={isFiltersDialogOpen} onOpenChange={handleFiltersDialogOpenChange}>
+        <Dialog
+          open={isFiltersDialogOpen}
+          onOpenChange={handleFiltersDialogOpenChange}
+        >
           <DialogTrigger asChild>
             <Button
               size="icon"
@@ -404,7 +527,7 @@ export default function Audit() {
       <DataProvider
         data={listenerAudit.secretData}
         columns={columns}
-        initialSort={{ id: 'lastRotation', desc: true }}
+        initialSort={{ id: "lastRotation", desc: true }}
         isLoading={isLoadingListenerAudit}
       >
         <DataTable />

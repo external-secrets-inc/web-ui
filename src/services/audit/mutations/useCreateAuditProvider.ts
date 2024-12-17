@@ -6,7 +6,7 @@ import { ApiHttpError } from "@/types";
 import { CreateProviderPayload } from "@/components/audit/Audit.interfaces";
 
 // TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/119
-const createProvider = async (mock: boolean, payload: CreateProviderPayload) => {
+const createAuditProvider = async (mock: boolean, payload: CreateProviderPayload) => {
   if (mock) return 'mockedProviderID'
 
   const headers = await getAuthHeaders();
@@ -14,17 +14,17 @@ const createProvider = async (mock: boolean, payload: CreateProviderPayload) => 
   return response.data.id;
 }
 
-const useCreateProvider = (
+const useCreateAuditProvider = (
   mock: boolean,
   options?: Omit<UseMutationOptions<string, AxiosError<ApiHttpError>, CreateProviderPayload>, 'mutationKey' | 'mutationFn'>
 ) => {
   return useMutation({
-    mutationKey: ["useCreateProvider"],
+    mutationKey: ["useCreateAuditProvider"],
     mutationFn: (variables: CreateProviderPayload) => {
-      return createProvider(mock, variables)
+      return createAuditProvider(mock, variables)
     },
     ...options,
   });
 };
 
-export default useCreateProvider;
+export default useCreateAuditProvider;

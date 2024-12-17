@@ -81,10 +81,10 @@ export const trackListenerInstallDialogOpened = (id: string) => {
   track("Listener Install Dialog Opened", { id });
 }
 
-export const trackListenerInstallCopyProcess = (id: string) => {
-  track("Copy Listener Install Process", { id });
+export const trackListenerInstallCopyBash = (id: string) => {
+  track("Copy Listener Install Bash", { id });
 };
 
 export const trackListenerInstallCopyKubernetes = (id: string) => {
-  track("Copy Listener Install Kubernetes", { id });
+  track("Copy Listener Install Kubernetes Manifest", { id });
 };
