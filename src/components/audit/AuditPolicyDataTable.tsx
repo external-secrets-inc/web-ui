@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { CreatePolicyPayload, PolicyTableData } from "./Audit.interfaces";
+import { PolicyTableData } from "./Audit.interfaces";
 import { createColumnHelper } from "@tanstack/react-table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { LucideMoreVertical, LucidePlus, LucideTrash2 } from "lucide-react";
@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import { DataProvider, DataTable } from "../ui/DataProvider";
 import useGetPolicies from "@/services/audit/queries/useGetPolicies";
-import useCreatePolicy from "@/services/audit/mutations/useCreatePolicy";
+// import useCreatePolicy from "@/services/audit/mutations/useCreatePolicy";
 import useDeletePolicy from "@/services/audit/mutations/useDeletePolicy";
 
 interface PolicyTableMeta {
@@ -102,16 +102,14 @@ export default function AuditPolicyDataTable({ tenantID }: { tenantID: string })
     return policiesData;
   }, [policiesData]);
 
-  // Code the useCreatePolicy
-  const { mutate: createPolicy } = useCreatePolicy(true, {
-    onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to create Policy"),
-    onSuccess: () => {
-      policiesRefetch();
-      toast.success("Policy created successfully")
-    }
-  });
+  // const { mutate: createPolicy } = useCreatePolicy(true, {
+  //   onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to create Policy"),
+  //   onSuccess: () => {
+  //     policiesRefetch();
+  //     toast.success("Policy created successfully")
+  //   }
+  // });
 
-  // Code the useDeletePolicy
   const { mutate: deletePolicy } = useDeletePolicy(true, {
     onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to delete Policy"),
     onSuccess: () => {
@@ -120,10 +118,10 @@ export default function AuditPolicyDataTable({ tenantID }: { tenantID: string })
     },
   })
 
-  const performCreate = (payload: CreatePolicyPayload) => {
-    payload.tenantID = tenantID;
-    createPolicy(payload)
-  }
+  // const performCreate = (payload: CreatePolicyPayload) => {
+  //   payload.tenantID = tenantID;
+  //   createPolicy(payload)
+  // }
 
   const performDelete = (policyID: string) => {
     deletePolicy({ id: policyID });
