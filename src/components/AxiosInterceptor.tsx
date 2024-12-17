@@ -11,18 +11,23 @@ interface AxiosInterceptorProps {
 
 /**
  * Component that provides two essential axios interceptors:
- * 1. BackendRouter: Dynamically routes requests to different backend services
- * 2. AuthGuard: Handles authentication failures and user session
+ * 1. BackendRouter (Request): Dynamically routes requests to different backend services
+ *    based on config.backend property.
  *
- * This component must wrap any part of the app that makes authenticated
- * API calls or needs to switch between backends.
+ * 2. AuthGuard (Response): Handles authentication failures (401), manages user session,
+ *    and redirects to login when necessary. Also tracks sign-out events.
+ *
+ * Order is important! Backend routing must happen before any other request modifications.
+ * This component must wrap any part of the app that makes authenticated API calls
+ * or needs to switch between backends.
  */
 const AxiosInterceptor: React.FC<AxiosInterceptorProps> = ({ children }) => {
   const navigate = useNavigate();
   const signOut = useSignOut();
 
   useEffect(() => {
-    // Routes requests to different backend services based on config.backend
+    // MUST BE FIRST: Routes requests to different backend services
+    // This allows components to target specific backends (e.g., AUDIT_POC)
     const backendRouter = axiosInstance.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
         if (config.backend) {
@@ -32,7 +37,8 @@ const AxiosInterceptor: React.FC<AxiosInterceptorProps> = ({ children }) => {
       }
     );
 
-    // Handles authentication failures globally
+    // Protects routes by handling authentication failures
+    // Manages user session and ensures proper sign-out flow
     const authGuard = axiosInstance.interceptors.response.use(
       (response: AxiosResponse) => response,
       (error: AxiosError) => {
@@ -45,10 +51,10 @@ const AxiosInterceptor: React.FC<AxiosInterceptorProps> = ({ children }) => {
       }
     );
 
-    // Cleanup all interceptors on unmount
+    // Clean up in reverse order
     return () => {
-      axiosInstance.interceptors.request.eject(backendRouter);
       axiosInstance.interceptors.response.eject(authGuard);
+      axiosInstance.interceptors.request.eject(backendRouter);
     };
   }, [navigate, signOut]);
 
