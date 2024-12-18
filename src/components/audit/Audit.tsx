@@ -174,10 +174,10 @@ export default function Audit() {
     refetchIntervalInBackground: true,
   });
 
-  const defaultTenantListenerPayload: CreateListenerTenantPayload = {
+  const defaultTenantListenerPayload = useMemo((): CreateListenerTenantPayload => ({
     name: "Listener-1",
     tags: { additionalProp1: "v0" },
-  };
+  }), []);
 
   const { mutate: createTenantListener } = useCreateTenantListener(false, {
     onMutate: () => {
@@ -194,7 +194,7 @@ export default function Audit() {
     if (tenantListenersData && tenantListenersData.length === 0) {
       createTenantListener(defaultTenantListenerPayload);
     }
-  }, [tenantListenersData]);
+  }, [tenantListenersData, createTenantListener, defaultTenantListenerPayload]);
 
   const tenantListener = useMemo((): ListenerTenant => {
     if (!tenantListenersData || tenantListenersData.length === 0)
@@ -322,7 +322,7 @@ export default function Audit() {
 
     let command = [
       "curl \\",
-      `${API_DOMAIN}/public/listeners/${token}/manifest/latest\\`,
+      `${API_DOMAIN}/public/listeners/${tenantListener.id}/manifest/latest\\`,
       `?token=${token} \\`,
       "| kubectl apply -f -",
     ].join("\n");
@@ -330,12 +330,12 @@ export default function Audit() {
 
     command = [
       "curl \\",
-      `${API_DOMAIN}/public/listeners/${token}/bash/latest\\`,
+      `${API_DOMAIN}/public/listeners/${tenantListener.id}/bash/latest\\`,
       `?token=${token} \\`,
-      "| sh install.sh",
+      "| bash",
     ].join("\n");
     setBashCommand(command);
-  }, [token]);
+  }, [token, tenantListener.id]);
 
   const handleListenerInstallDialogOpenChange = (isOpen: boolean) => {
     setIsListenerInstallDialogOpen(isOpen);

@@ -83,7 +83,7 @@ function ListenerInstallDialogContent({ id, bashFileContent, isLoadingBashFile, 
             <AlertDescription className="flex gap-2 items-center">
               <LucideInfo className="flex-none" />
               <p>
-                The provided URL in the <code>curl</code> command is a link to the listener installation file. It is piped to a <code>sh</code> command that will deploy it to server.
+                The provided URL in the <code>curl</code> command is a link to the bash installation file content. It is piped to a <code>bash</code> command that will run it and deploy it to server.
               </p>
             </AlertDescription>
           </Alert>
