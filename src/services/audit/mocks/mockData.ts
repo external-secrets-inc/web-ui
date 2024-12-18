@@ -216,6 +216,43 @@ export const mockAuditTableData = {
   ]
 } as const
 
+export const mockPoliciesData = [
+  {
+    id: "policy-id-1",
+    name: "Policy 1",
+    executeOn: [
+      "Read",
+      "UpdatePreHash",
+      "UpdatePostHash",
+      "*",
+    ],
+    providers: ["provider-1"],
+  },
+  {
+    id: "policy-id-2",
+    name: "Policy 2",
+    executeOn: [
+      "Read",
+      "UpdatePreHash",
+      "UpdatePostHash",
+      "Create",
+    ],
+    providers: ["provider-1", "provider-2"],
+  },
+  {
+    id: "policy-id-3",
+    name: "Policy 3",
+    executeOn: [
+      "Delete",
+      "RBACCreate",
+      "RBACUpdate",
+      "RBACDelete",
+      "*",
+    ],
+    providers: ["provider-1", "provider-2", "provider-3"],
+  },
+] as const
+
 export const mockProvidersData = [
   {
     id: "provider-id-1",

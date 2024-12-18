@@ -59,6 +59,22 @@ export interface TimeRangeOption {
   label: TimeRange;
 }
 
+export interface PolicyTableData {
+  id: string;
+  name: string;
+  executeOn: string[];
+  providers: string[];
+}
+
+export interface CreatePolicyPayload {
+  tenantID: string;
+  name: string;
+  executeOn: string[];
+  targets: { id: string; type: string; }[];
+  engine: string;
+  rule: string;
+}
+
 export interface ProviderTableData {
   id: string;
   name: string;
