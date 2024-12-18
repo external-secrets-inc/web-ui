@@ -46,13 +46,13 @@ export interface AuditTableData {
   accessorsAmount: number;
 }
 
-export interface Listener {
+export interface AuditListener {
   id: string;
   tenant_id: string;
   status: ListenerStatus;
 }
 
-export interface ListenerTenant {
+export interface TenantListener {
   id: string;
   name: string;
   enabled: boolean;
@@ -85,7 +85,7 @@ export interface CreateProviderPayload {
   };
 }
 
-export interface CreateListenerTenantPayload {
+export interface CreateTenantListenerPayload {
   name: string;
   tags: {
     [key: string]: string;

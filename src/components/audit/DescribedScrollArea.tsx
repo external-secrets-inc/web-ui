@@ -1,12 +1,14 @@
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { ReactNode } from "react";
+import { Loader } from "@/components/ui/Loader";
 
 interface DescribedScrollAreaProps {
   description: ReactNode;
   content: string;
+  isLoadingContent?: boolean;
 }
 
-function DescribedScrollArea({ description, content }: DescribedScrollAreaProps) {
+function DescribedScrollArea({ description, content, isLoadingContent }: DescribedScrollAreaProps) {
   return (
     <>
       <p className="text-muted-foreground text-sm mb-2">
@@ -15,7 +17,7 @@ function DescribedScrollArea({ description, content }: DescribedScrollAreaProps)
       <ScrollArea className='rounded-lg border'>
         <pre>
           <code className="flex flex-col">
-            <span>{content}</span>
+            {isLoadingContent ? <Loader className="self-center"/> : <span>{content}</span>}
           </code>
         </pre>
         <ScrollBar orientation='horizontal' />
