@@ -293,21 +293,22 @@ export default function Audit() {
   );
 
   const {
-    data: processFileData,
-    error: processFileError,
-    isError: isErrorProcessFile,
+    data: bashFileData,
+    isLoading: isLoadingBashFile,
+    error: bashFileError,
+    isError: isErrorBashFile,
   } = useGetTenantBashFile(false, token ?? "", "latest", tenantListener.id, {
-    enabled: token !== "",
+    enabled: isListenerInstallDialogOpen && Boolean(token && tenantListener.id) // Only fetch when dialog is open with token and listener ID
   });
 
   useEffect(() => {
-    if (!processFileError) return;
+    if (!bashFileError) return;
 
     handleDefaultApiHttpError(
-      processFileError,
-      "Error while fetching process file"
+      bashFileError,
+      "Error while fetching bash file"
     );
-  }, [processFileError, isErrorProcessFile]);
+  }, [bashFileError, isErrorBashFile]);
 
   useEffect(() => {
     if (tenantListener.id) {
@@ -331,7 +332,7 @@ export default function Audit() {
       "curl \\",
       `${API_DOMAIN}/public/listeners/${token}/bash/latest\\`,
       `?token=${token} \\`,
-      "| sh process.sh",
+      "| sh install.sh",
     ].join("\n");
     setBashCommand(command);
   }, [token]);
@@ -400,6 +401,11 @@ export default function Audit() {
   const chartsStartDate = searchParams.get("chartsStartDate");
   const chartsEndDate = searchParams.get("chartsEndDate");
 
+  const getBashFileContent = () => {
+    if (bashFileError) return "Failed to load bash file.";
+    return bashFileData?.bash || "";
+  };
+
   return (
     <div className="space-y-4">
       {!isLoadingListener &&
@@ -427,7 +433,8 @@ export default function Audit() {
               </DialogTrigger>
               <ListenerInstallDialogContent
                 id={listener.id}
-                bashFile={processFileData ? processFileData.bash : ""}
+                bashFileContent={getBashFileContent()}
+                isLoadingBashFile={isLoadingBashFile}
                 bashCommand={bashCommand}
                 manifestCommand={manifestCommand}
               />

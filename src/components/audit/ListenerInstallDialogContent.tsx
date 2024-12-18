@@ -11,13 +11,14 @@ import DescribedScrollArea from "./DescribedScrollArea"
 
 interface ListenerInstallDialogContentProps {
   id: string;
-  bashFile: string;
+  bashFileContent: string;
+  isLoadingBashFile: boolean;
   bashCommand: string;
   manifestCommand: string;
   openTab?: string;
 }
 
-function ListenerInstallDialogContent({ id, bashFile: bashFile, bashCommand: bashCommand, manifestCommand: manifestCommand, openTab }: ListenerInstallDialogContentProps) {
+function ListenerInstallDialogContent({ id, bashFileContent, isLoadingBashFile, bashCommand, manifestCommand, openTab }: ListenerInstallDialogContentProps) {
   const defaultTab = 'bash';
   const [activeTab, setActiveTab] = useState(openTab ?? defaultTab);
 
@@ -71,7 +72,8 @@ function ListenerInstallDialogContent({ id, bashFile: bashFile, bashCommand: bas
         <TabsContent className="data-[state=active]:grid min-h-0" value="bash">
           <DescribedScrollArea
             description='Preview of the bash script to deploy this listener'
-            content={bashFile}
+            content={bashFileContent}
+            isLoadingContent={isLoadingBashFile}
           />
           <DescribedScrollArea
             description='Run the command below to deploy this listener to your server'
