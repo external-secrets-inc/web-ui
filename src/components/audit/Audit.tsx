@@ -133,8 +133,8 @@ export default function Audit() {
   const [isListenerInstallDialogOpen, setIsListenerInstallDialogOpen] = useState(false);
   const [isFiltersDialogOpen, setIsFiltersDialogOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
-  const [isListenerCreated, setIsListenerCreated] = useState(false);
-  const [createListenerError, setCreateListenerError] = useState<AxiosError<ApiHttpError> | null>(null);
+  const [isTenantListenerCreated, setIsTenantListenerCreated] = useState(false);
+  const [createTenantListenerError, setCreateTenantListenerError] = useState<AxiosError<ApiHttpError> | null>(null);
   const [currentToggledTimeRange, setCurrentToggledTimeRange] = useState<number | null>(() => {
     const startDate = searchParams.get("chartsStartDate");
     const endDate = searchParams.get("chartsEndDate");
@@ -179,22 +179,22 @@ export default function Audit() {
 
   const { mutate: createTenantListener } = useCreateTenantListener(false, {
     onSuccess: () => {
-      setIsListenerCreated(true);
-      setCreateListenerError(null);
+      setIsTenantListenerCreated(true);
+      setCreateTenantListenerError(null);
     },
     onError: (error: AxiosError<ApiHttpError>) => {
       handleDefaultApiHttpError(error, "Error while creating tenant listener");
-      setIsListenerCreated(false);
-      setCreateListenerError(error);
+      setIsTenantListenerCreated(false);
+      setCreateTenantListenerError(error);
     },
   });
 
-  // Ensure listener is created before proceeding
+  // Ensure tenant listener is created before proceeding
   useEffect(() => {
     if (tenantListenersData && tenantListenersData.length === 0) {
       createTenantListener(defaultTenantListenerPayload);
     } else {
-      setIsListenerCreated(true);
+      setIsTenantListenerCreated(true);
     }
   }, [tenantListenersData, createTenantListener, defaultTenantListenerPayload]);
 
@@ -218,17 +218,17 @@ export default function Audit() {
   // TODO: make a post request to create a listener on audit-poc-api
 
   const {
-    data: listenerData,
-    isError: isErrorListener,
-    isLoading: isLoadingListener,
-    error: fetchListenerError,
+    data: auditListenerData,
+    isError: isErrorAuditListener,
+    isLoading: isLoadingAuditListener,
+    error: fetchAuditListenerError,
   } = useGetAuditListener(true, {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
   });
 
-  const listener = useMemo((): Listener => {
-    if (isLoadingListener || !listenerData)
+  const auditListener = useMemo((): Listener => {
+    if (isLoadingAuditListener || !auditListenerData)
       return {
         id: "",
         tenant_id: "",
@@ -236,32 +236,32 @@ export default function Audit() {
       };
 
     return {
-      id: listenerData.id,
-      tenant_id: listenerData.tenant_id,
-      status: listenerData.status as ListenerStatus,
+      id: auditListenerData.id,
+      tenant_id: auditListenerData.tenant_id,
+      status: auditListenerData.status as ListenerStatus,
     };
-  }, [listenerData, isLoadingListener]);
+  }, [auditListenerData, isLoadingAuditListener]);
 
   useEffect(() => {
-    if (!fetchListenerError) return;
+    if (!fetchAuditListenerError) return;
 
-    handleDefaultApiHttpError(fetchListenerError, "Error while fetching listener");
-  }, [fetchListenerError, isErrorListener]);
+    handleDefaultApiHttpError(fetchAuditListenerError, "Error while fetching audit listener");
+  }, [fetchAuditListenerError, isErrorAuditListener]);
 
   const {
-    data: listenerAuditData,
-    refetch: listenerAuditRefetch,
-    isLoading: isLoadingListenerAudit,
-    isError: isErrorListenerAudit,
-    isRefetchError: isRefetchErrorListenerAudit,
-    error: listenerAuditError,
+    data: auditListenerAuditData,
+    refetch: auditListenerAuditRefetch,
+    isLoading: isLoadingAuditListenerAudit,
+    isError: isErrorAuditListenerAudit,
+    isRefetchError: isRefetchErrorAuditListenerAudit,
+    error: auditListenerAuditError,
   } = useGetListenerAuditData(true, {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
   });
 
-  const listenerAudit = useMemo(() => {
-    if (!listenerAuditData)
+  const auditListenerAudit = useMemo(() => {
+    if (!auditListenerAuditData)
       return {
         secretData: [],
         secretsNames: [],
@@ -269,19 +269,19 @@ export default function Audit() {
         providers: [],
       };
 
-    return listenerAuditData;
-  }, [listenerAuditData]);
+    return auditListenerAuditData;
+  }, [auditListenerAuditData]);
 
   useEffect(() => {
-    if (!(listenerAuditError || isRefetchErrorListenerAudit)) return;
+    if (!(auditListenerAuditError || isRefetchErrorAuditListenerAudit)) return;
 
     handleDefaultApiHttpError(
-      listenerAuditError,
-      "Error while fetching listener Audit data"
+      auditListenerAuditError,
+      "Error while fetching audit listener data"
     );
-  }, [listenerAuditError, isErrorListenerAudit, isRefetchErrorListenerAudit]);
+  }, [auditListenerAuditError, isErrorAuditListenerAudit, isRefetchErrorAuditListenerAudit]);
 
-  const { mutate: createToken, data: token } = useCreateTenantInstallationToken(
+  const { mutate: createTenantInstallationToken, data: tenantInstallationToken } = useCreateTenantInstallationToken(
     false,
     {
       onError: (error: AxiosError<ApiHttpError>) =>
@@ -293,39 +293,39 @@ export default function Audit() {
   );
 
   const {
-    data: bashFileData,
-    isLoading: isLoadingBashFile,
-    error: bashFileError,
-    isError: isErrorBashFile,
-  } = useGetTenantBashFile(false, token ?? "", "latest", tenantListener.id, {
-    enabled: isListenerInstallDialogOpen && Boolean(token && tenantListener.id) // Only fetch when dialog is open with token and listener ID
+    data: tenantBashFileData,
+    isLoading: isLoadingTenantBashFile,
+    error: tenantBashFileError,
+    isError: isErrorTenantBashFile,
+  } = useGetTenantBashFile(false, tenantInstallationToken ?? "", "latest", tenantListener.id, {
+    enabled: isListenerInstallDialogOpen && Boolean(tenantInstallationToken && tenantListener.id) // Only fetch when dialog is open with token and listener ID
   });
 
   useEffect(() => {
-    if (!bashFileError) return;
+    if (!tenantBashFileError) return;
 
     handleDefaultApiHttpError(
-      bashFileError,
-      "Error while fetching bash file"
+      tenantBashFileError,
+      "Error while fetching tenant bash file"
     );
-  }, [bashFileError, isErrorBashFile]);
+  }, [tenantBashFileError, isErrorTenantBashFile]);
 
   useEffect(() => {
-    if (!isListenerCreated) return;
+    if (!isTenantListenerCreated) return;
 
     if (tenantListener.id) {
-      createToken({ id: tenantListener.id });
+      createTenantInstallationToken({ id: tenantListener.id });
     }
-  }, [tenantListener.id, createToken, isListenerCreated]);
+  }, [tenantListener.id, createTenantInstallationToken, isTenantListenerCreated]);
 
   // TODO update commands to real endpoints https://github.com/external-secrets-inc/web-ui/issues/118
   useEffect(() => {
-    if (!token) return;
+    if (!tenantInstallationToken) return;
 
     let command = [
       "curl \\",
       `${API_DOMAIN}/public/listeners/${tenantListener.id}/manifest/latest\\`,
-      `?token=${token} \\`,
+      `?token=${tenantInstallationToken} \\`,
       "| kubectl apply -f -",
     ].join("\n");
     setManifestCommand(command);
@@ -333,11 +333,11 @@ export default function Audit() {
     command = [
       "curl \\",
       `${API_DOMAIN}/public/listeners/${tenantListener.id}/bash/latest\\`,
-      `?token=${token} \\`,
+      `?token=${tenantInstallationToken} \\`,
       "| bash",
     ].join("\n");
     setBashCommand(command);
-  }, [token, tenantListener.id]);
+  }, [tenantInstallationToken, tenantListener.id]);
 
   const handleListenerInstallDialogOpenChange = (isOpen: boolean) => {
     setIsListenerInstallDialogOpen(isOpen);
@@ -372,16 +372,16 @@ export default function Audit() {
     });
 
     handleFiltersDialogOpenChange(false);
-    listenerAuditRefetch();
+    auditListenerAuditRefetch();
   };
 
   useEffect(() => {
-    if (!isListenerCreated) return;
+    if (!isTenantListenerCreated) return;
 
     if (isListenerInstallDialogOpen) {
-      trackListenerInstallDialogOpened(listener.id);
+      trackListenerInstallDialogOpened(auditListener.id);
     }
-  }, [isListenerInstallDialogOpen, listener.id, isListenerCreated]);
+  }, [isListenerInstallDialogOpen, auditListener.id, isTenantListenerCreated]);
 
   const handleTimeRangeChange = (days: number | null) => {
     setCurrentToggledTimeRange(days);
@@ -405,21 +405,21 @@ export default function Audit() {
   const chartsStartDate = searchParams.get("chartsStartDate");
   const chartsEndDate = searchParams.get("chartsEndDate");
 
-  const getBashFileContent = () => {
-    if (bashFileError) return "Failed to load bash file.";
-    return bashFileData?.bash || "";
+  const getTenantBashFileContent = () => {
+    if (tenantBashFileError) return "Failed to load bash file.";
+    return tenantBashFileData?.bash || "";
   };
 
   return (
     <div className="space-y-4">
-      {createListenerError && (
+      {createTenantListenerError && (
         <Alert
           className="flex gap-2 items-center justify-between flex-wrap"
           variant="destructive"
         >
           <div>
             <AlertTitle className="flex gap-3 items-center">
-              <LucideAlertCircle className="text-destructive" /> Failed to create or fetch listener
+              <LucideAlertCircle className="text-destructive" /> Failed to create or fetch tenant listener
             </AlertTitle>
             <AlertDescription className="flex items-center justify-between">
               Retry in order to make it available for installation, or contact support if the issue persists
@@ -429,8 +429,8 @@ export default function Audit() {
         </Alert>
       )}
 
-      {isListenerCreated && !isLoadingListener &&
-        listener.status === LISTENER_STATUS.PENDING_INSTALLATION && (
+      {isTenantListenerCreated && !isLoadingAuditListener &&
+        auditListener.status === LISTENER_STATUS.PENDING_INSTALLATION && (
           <Alert
             className="flex gap-2 items-center justify-between flex-wrap"
             variant="warning"
@@ -453,9 +453,9 @@ export default function Audit() {
                 <Button variant="outline">Install listener</Button>
               </DialogTrigger>
               <ListenerInstallDialogContent
-                id={listener.id}
-                bashFileContent={getBashFileContent()}
-                isLoadingBashFile={isLoadingBashFile}
+                id={auditListener.id}
+                bashFileContent={getTenantBashFileContent()}
+                isLoadingBashFile={isLoadingTenantBashFile}
                 bashCommand={bashCommand}
                 manifestCommand={manifestCommand}
               />
@@ -463,7 +463,7 @@ export default function Audit() {
           </Alert>
         )}
 
-      {isListenerCreated && !isLoadingListener && listener.status === LISTENER_STATUS.OFFLINE && (
+      {isTenantListenerCreated && !isLoadingAuditListener && auditListener.status === LISTENER_STATUS.OFFLINE && (
         <Alert
           className="flex gap-2 items-center justify-between flex-wrap"
           variant="destructive"
@@ -518,8 +518,8 @@ export default function Audit() {
       </div>
 
       <AuditProviderDataTable
-        tenantID={listener.tenant_id}
-        listenerID={listener.id}
+        tenantID={auditListener.tenant_id}
+        listenerID={auditListener.id}
       />
 
       <div className="flex items-center justify-between pt-4">
@@ -545,18 +545,18 @@ export default function Audit() {
               handleFilterChange(data);
               handleFiltersDialogOpenChange(false);
             }}
-            secretsNames={listenerAudit.secretsNames}
-            policiesNames={listenerAudit.policiesNames}
-            providers={listenerAudit.providers}
+            secretsNames={auditListenerAudit.secretsNames}
+            policiesNames={auditListenerAudit.policiesNames}
+            providers={auditListenerAudit.providers}
           />
         </Dialog>
       </div>
 
       <DataProvider
-        data={listenerAudit.secretData}
+        data={auditListenerAudit.secretData}
         columns={columns}
         initialSort={{ id: "lastRotation", desc: true }}
-        isLoading={isLoadingListenerAudit}
+        isLoading={isLoadingAuditListenerAudit}
       >
         <DataTable />
       </DataProvider>
