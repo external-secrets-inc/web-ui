@@ -5,25 +5,25 @@ import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
 
 // TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/118
-const createInstallationToken = async (mock: boolean) => {
+const createInstallationToken = async (mock: boolean, listenerId: string) => {
   if(mock) return 'mockedTokenValue'
 
   const headers = await getAuthHeaders();
-  const response = await axiosInstance.post(`/api/audit/installation-token`, {}, { headers });
+  const response = await axiosInstance.post(`/api/listeners/${listenerId}/manifest-token`, {}, { headers });
   return response.data.token;
 }
 
-const useCreateAuditInstallationToken = (
+const useCreateTenantInstallationToken = (
   mock: boolean,
-  options?: Omit<UseMutationOptions<string, AxiosError<ApiHttpError>>, 'mutationKey' | 'mutationFn'>
+  options?: Omit<UseMutationOptions<string, AxiosError<ApiHttpError>, { id: string }>, 'mutationKey' | 'mutationFn'>
 ) => {
   return useMutation({
-    mutationKey: ["useCreateAuditInstallationToken"],
-    mutationFn: () => {
-      return createInstallationToken(mock)
+    mutationKey: ["useCreateListenerInstallationToken"],
+    mutationFn: (variables: {id: string}) => {
+      return createInstallationToken(mock, variables.id)
     },
     ...options,
   });
 };
 
-export default useCreateAuditInstallationToken;
+export default useCreateTenantInstallationToken;

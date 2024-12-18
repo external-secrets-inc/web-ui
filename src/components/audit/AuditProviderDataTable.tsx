@@ -11,8 +11,8 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
 import { toast } from "sonner";
-import useCreateProvider from "@/services/audit/mutations/useCreateProvider";
-import useDeleteProvider from "@/services/audit/mutations/useDeleteProvider";
+import useCreateAuditProvider from "@/services/audit/mutations/useCreateAuditProvider";
+import useDeleteAuditProvider from "@/services/audit/mutations/useDeleteAuditProvider";
 import useGetProviders from "@/services/audit/queries/useGetProviders";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { FeatureItemDeleteAction } from "../FeatureCollection";
@@ -90,7 +90,7 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
     return providersData;
   }, [providersData]);
 
-  const { mutate: createProvider } = useCreateProvider(true, {
+  const { mutate: createProvider } = useCreateAuditProvider(true, {
     onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to create Provider"),
     onSuccess: () => {
       providersRefetch();
@@ -98,7 +98,7 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
     }
   });
 
-  const { mutate: deleteProvider } = useDeleteProvider(true, {
+  const { mutate: deleteProvider } = useDeleteAuditProvider(true, {
     onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to delete Provider"),
     onSuccess: () => {
       providersRefetch();
