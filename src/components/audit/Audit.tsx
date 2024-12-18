@@ -249,19 +249,19 @@ export default function Audit() {
   }, [fetchAuditListenerError, isErrorAuditListener]);
 
   const {
-    data: auditListenerAuditData,
-    refetch: auditListenerAuditRefetch,
-    isLoading: isLoadingAuditListenerAudit,
-    isError: isErrorAuditListenerAudit,
-    isRefetchError: isRefetchErrorAuditListenerAudit,
-    error: auditListenerAuditError,
+    data: listenerData,
+    refetch: listenerDataRefetch,
+    isLoading: isLoadingListenerData,
+    isError: isErrorListenerData,
+    isRefetchError: isRefetchErrorListenerData,
+    error: listenerDataError,
   } = useGetListenerAuditData(true, {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
   });
 
-  const auditListenerAudit = useMemo(() => {
-    if (!auditListenerAuditData)
+  const listenerAuditData = useMemo(() => {
+    if (!listenerData)
       return {
         secretData: [],
         secretsNames: [],
@@ -269,17 +269,17 @@ export default function Audit() {
         providers: [],
       };
 
-    return auditListenerAuditData;
-  }, [auditListenerAuditData]);
+    return listenerData;
+  }, [listenerData]);
 
   useEffect(() => {
-    if (!(auditListenerAuditError || isRefetchErrorAuditListenerAudit)) return;
+    if (!(listenerDataError || isRefetchErrorListenerData)) return;
 
     handleDefaultApiHttpError(
-      auditListenerAuditError,
+      listenerDataError,
       "Error while fetching audit listener data"
     );
-  }, [auditListenerAuditError, isErrorAuditListenerAudit, isRefetchErrorAuditListenerAudit]);
+  }, [listenerDataError, isErrorListenerData, isRefetchErrorListenerData]);
 
   const { mutate: createTenantInstallationToken, data: tenantInstallationToken } = useCreateTenantInstallationToken(
     false,
@@ -372,7 +372,7 @@ export default function Audit() {
     });
 
     handleFiltersDialogOpenChange(false);
-    auditListenerAuditRefetch();
+    listenerDataRefetch();
   };
 
   useEffect(() => {
@@ -545,18 +545,18 @@ export default function Audit() {
               handleFilterChange(data);
               handleFiltersDialogOpenChange(false);
             }}
-            secretsNames={auditListenerAudit.secretsNames}
-            policiesNames={auditListenerAudit.policiesNames}
-            providers={auditListenerAudit.providers}
+            secretsNames={listenerAuditData.secretsNames}
+            policiesNames={listenerAuditData.policiesNames}
+            providers={listenerAuditData.providers}
           />
         </Dialog>
       </div>
 
       <DataProvider
-        data={auditListenerAudit.secretData}
+        data={listenerAuditData.secretData}
         columns={columns}
         initialSort={{ id: "lastRotation", desc: true }}
-        isLoading={isLoadingAuditListenerAudit}
+        isLoading={isLoadingListenerData}
       >
         <DataTable />
       </DataProvider>
