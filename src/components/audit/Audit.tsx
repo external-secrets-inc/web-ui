@@ -24,12 +24,12 @@ import { DataProvider, DataTable } from "../ui/DataProvider";
 import { LISTENER_STATUS, TIME_RANGES } from "./Audit.constants";
 import {
   AuditTableData,
-  CreateListenerTenantPayload,
+  CreateTenantListenerPayload,
   FilterSchema,
-  Listener,
-  ListenerStatus,
-  ListenerTenant,
+  AuditListener,
+  TenantListener,
   TimeRange,
+  ListenerStatus,
   filterSchema,
 } from "./Audit.interfaces";
 import AuditChartProblems from "./AuditChartProblems";
@@ -172,7 +172,7 @@ export default function Audit() {
     refetchIntervalInBackground: true,
   });
 
-  const defaultTenantListenerPayload = useMemo((): CreateListenerTenantPayload => ({
+  const defaultTenantListenerPayload = useMemo((): CreateTenantListenerPayload => ({
     name: "default-listener",
     tags: { additionalProp1: "v0" }, // TODO: are these tags necessary now?
   }), []);
@@ -198,7 +198,7 @@ export default function Audit() {
     }
   }, [tenantListenersData, createTenantListener, defaultTenantListenerPayload]);
 
-  const tenantListener = useMemo((): ListenerTenant => {
+  const tenantListener = useMemo((): TenantListener => {
     if (!tenantListenersData || tenantListenersData.length === 0)
       return {
         id: "",
@@ -227,7 +227,7 @@ export default function Audit() {
     refetchIntervalInBackground: true,
   });
 
-  const auditListener = useMemo((): Listener => {
+  const auditListener = useMemo((): AuditListener => {
     if (isLoadingAuditListener || !auditListenerData)
       return {
         id: "",
