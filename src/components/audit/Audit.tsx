@@ -40,6 +40,7 @@ import AuditTimelineProviders from "./AuditTimelineProviders";
 import FilterDialogForm from "./FilterDialogForm";
 import ListenerInstallDialogContent from "./ListenerInstallDialogContent";
 import useCreateTenantListener from "@/services/audit/mutations/useCreateTenantListener";
+import AuditPolicyDataTable from "./AuditPolicyDataTable";
 
 const toYYYYMMDD = (date: Date) => {
   return date.toISOString().slice(0, 10); // YYYY-MM-DD in UTC
@@ -516,6 +517,10 @@ export default function Audit() {
           </>
         ) : null}
       </div>
+
+      <AuditPolicyDataTable
+        tenantID={tenantListener.id}
+      />
 
       <AuditProviderDataTable
         tenantID={auditListener.tenant_id}
