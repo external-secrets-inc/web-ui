@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export type ListenerStatus = "PENDING_INSTALLATION" | "OFFLINE";
+export type ListenerStatus = "PENDING" | "OFFLINE" | "ACTIVE";
 
 export const filterSchema = z.object({
   provider: z.array(z.string()),
@@ -47,7 +47,7 @@ export interface AuditTableData {
 }
 
 export interface AuditListener {
-  listenerId: string;
+  listenerID: string;
   tenantID: string;
   status: ListenerStatus;
 }

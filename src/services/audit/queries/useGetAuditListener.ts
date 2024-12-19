@@ -27,7 +27,7 @@ const getAuditListener = async (
     signal,
     backend: 'AUDIT_POC'
   });
-  return response.data.Listener;
+  return response.data;
 }
 
 const useGetAuditListener = <T = AuditListener>(

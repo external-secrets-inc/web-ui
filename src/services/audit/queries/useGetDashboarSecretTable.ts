@@ -7,9 +7,10 @@ import { mockNetworkResponseDelay, mockAuditTableData } from "../mocks/mockData"
 import { AuditResponseData } from "@/components/audit/Audit.interfaces";
 
 // TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/115
-const getListenerAuditData = async (
+const getDashboardSecretTable = async (
   mock: boolean,
   signal: AbortSignal,
+  listener_id: string,
 ) => {
   if (mock) {
     await mockNetworkResponseDelay();
@@ -17,21 +18,23 @@ const getListenerAuditData = async (
   }
 
   const headers = await getAuthHeaders();
-  const response = await axiosInstance.get('/api/listener/data', { headers, signal });
-  return response.data.Listener;
+  const response = await axiosInstance.get(`/api/dashboard/${listener_id}/secrets-table`, { headers, signal, backend: 'AUDIT_POC' });
+  console.log(response.data);
+  return response.data;
 }
 
-const useGetListenerAuditData = (
+const useGetDashboarSecretTable = (
   mock: boolean,
+  listener_id: string,
   options?: Omit<UseQueryOptions<AuditResponseData, AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
 ) => {
   return useQuery({
-    queryKey: ["useGetListenerAuditData", mock],
+    queryKey: ["useGetDashboarSecretTable", mock, listener_id],
     queryFn: ({ signal }) => {
-      return getListenerAuditData(mock, signal)
+      return getDashboardSecretTable(mock, signal, listener_id)
     },
     ...options,
   });
 };
 
-export default useGetListenerAuditData;
+export default useGetDashboarSecretTable;

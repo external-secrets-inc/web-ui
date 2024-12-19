@@ -10,7 +10,7 @@ import useCreateTenantInstallationToken from "@/services/audit/mutations/useCrea
 import useGetTenantBashFile from "@/services/audit/queries/useGetTenantBashFile";
 import useGetTenantListeners from "@/services/audit/queries/useGetTenantListeners";
 import useGetAuditListener from "@/services/audit/queries/useGetAuditListener";
-import useGetListenerAuditData from "@/services/audit/queries/useGetListenerAuditData";
+import useGetDashboarSecretTable from "@/services/audit/queries/useGetDashboarSecretTable";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { ApiHttpError } from "@/types";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
@@ -243,17 +243,18 @@ export default function Audit() {
   const auditListener = useMemo((): AuditListener => {
     if (isLoadingAuditListener || !auditListenerData)
       return {
-        listenerId: "",
+        listenerID: "",
         tenantID: "",
         status: LISTENER_STATUS.PENDING_INSTALLATION,
       };
 
     return {
-      listenerId: auditListenerData.listenerId,
+      listenerID: auditListenerData.listenerID,
       tenantID: auditListenerData.tenantID,
-      status: auditListenerData.status as ListenerStatus,
+      status: auditListenerData.status.toUpperCase() as ListenerStatus,
     };
   }, [auditListenerData, isLoadingAuditListener]);
+
 
   useEffect(() => {
     if (!fetchAuditListenerError) return;
@@ -286,28 +287,28 @@ export default function Audit() {
   useEffect(() => {
     if (!tenantListener.id || !isSuccessAuditListener) return;
     
-    if (!auditListener.listenerId) {
+    if (!auditListener.listenerID) {
       createAuditListener(defaultAuditListenerPayload);
     } else {
       setIsAuditListenerCreated(true);
       setCreateAuditListenerError(null);
     }
-  }, [tenantListener.id, auditListener.listenerId, createAuditListener, defaultAuditListenerPayload, isSuccessAuditListener]);
+  }, [tenantListener.id, auditListener.listenerID, createAuditListener, defaultAuditListenerPayload, isSuccessAuditListener]);
 
   const {
-    data: listenerData,
+    data: secretTableData,
     refetch: listenerDataRefetch,
-    isLoading: isLoadingListenerData,
-    isError: isErrorListenerData,
-    isRefetchError: isRefetchErrorListenerData,
-    error: listenerDataError,
-  } = useGetListenerAuditData(true, {
+    isLoading: isLoadingSecretTableData,
+    isError: isErrorSecretTableData,
+    isRefetchError: isRefetchErrorSecretTableData,
+    error: secretTableDataError,
+  } = useGetDashboarSecretTable(true, auditListener?.listenerID, {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
   });
 
-  const listenerAuditData = useMemo(() => {
-    if (!listenerData)
+  const listenerSecretTableData = useMemo(() => {
+    if (!secretTableData)
       return {
         secretData: [],
         secretsNames: [],
@@ -315,17 +316,18 @@ export default function Audit() {
         providers: [],
       };
 
-    return listenerData;
-  }, [listenerData]);
+    return secretTableData;
+  }, [secretTableData]);
+
 
   useEffect(() => {
-    if (!(listenerDataError || isRefetchErrorListenerData)) return;
+    if (!(secretTableDataError || isRefetchErrorSecretTableData)) return;
 
     handleDefaultApiHttpError(
-      listenerDataError,
+      secretTableDataError,
       "Error while fetching audit listener data"
     );
-  }, [listenerDataError, isErrorListenerData, isRefetchErrorListenerData]);
+  }, [secretTableDataError, isErrorSecretTableData, isRefetchErrorSecretTableData, auditListener]);
 
   const { mutate: createTenantInstallationToken, data: tenantInstallationToken } = useCreateTenantInstallationToken(
     false,
@@ -425,9 +427,9 @@ export default function Audit() {
     if (!isTenantListenerCreated) return;
 
     if (isListenerInstallDialogOpen) {
-      trackListenerInstallDialogOpened(auditListener.listenerId);
+      trackListenerInstallDialogOpened(auditListener.listenerID);
     }
-  }, [isListenerInstallDialogOpen, auditListener.listenerId, isTenantListenerCreated]);
+  }, [isListenerInstallDialogOpen, auditListener.listenerID, isTenantListenerCreated]);
 
   const handleTimeRangeChange = (days: number | null) => {
     setCurrentToggledTimeRange(days);
@@ -499,7 +501,7 @@ export default function Audit() {
                 <Button variant="outline">Install listener</Button>
               </DialogTrigger>
               <ListenerInstallDialogContent
-                id={auditListener.listenerId}
+                id={auditListener.listenerID}
                 bashFileContent={getTenantBashFileContent()}
                 isLoadingBashFile={isLoadingTenantBashFile}
                 bashCommand={bashCommand}
@@ -569,7 +571,7 @@ export default function Audit() {
 
       <AuditProviderDataTable
         tenantID={auditListener.tenantID}
-        listenerID={auditListener.listenerId}
+        listenerID={auditListener.listenerID}
       />
 
       <div className="flex items-center justify-between pt-4">
@@ -595,18 +597,18 @@ export default function Audit() {
               handleFilterChange(data);
               handleFiltersDialogOpenChange(false);
             }}
-            secretsNames={listenerAuditData.secretsNames}
-            policiesNames={listenerAuditData.policiesNames}
-            providers={listenerAuditData.providers}
+            secretsNames={listenerSecretTableData.secretsNames}
+            policiesNames={listenerSecretTableData.policiesNames}
+            providers={listenerSecretTableData.providers}
           />
         </Dialog>
       </div>
 
       <DataProvider
-        data={listenerAuditData.secretData}
+        data={listenerSecretTableData.secretData}
         columns={columns}
         initialSort={{ id: "lastRotation", desc: true }}
-        isLoading={isLoadingListenerData}
+        isLoading={isLoadingSecretTableData}
       >
         <DataTable />
       </DataProvider>
