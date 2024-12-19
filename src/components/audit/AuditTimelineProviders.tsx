@@ -11,6 +11,7 @@ const BASE_CHART_CONFIG = {
 } satisfies ChartConfig
 
 interface Props {
+  listenerID?: string;
   timeRange: Exclude<TimeRange, 'now'>;
   startDate: string;
   endDate: string;
@@ -28,10 +29,12 @@ function formatUSDateFromISODate(isoDate: string) {
   });
 }
 
-function AuditTimelineProviders({ timeRange, startDate, endDate }: Props) {
-  const { data, error, isLoading } = useGetAuditProviderTimelineStats(true, {
+function AuditTimelineProviders({ listenerID, timeRange, startDate, endDate }: Props) {
+  const { data, error, isLoading } = useGetAuditProviderTimelineStats(listenerID || '', false, {
     startDate,
     endDate
+  }, {
+    enabled: !!listenerID
   })
 
   const description = timeRange
@@ -45,7 +48,7 @@ function AuditTimelineProviders({ timeRange, startDate, endDate }: Props) {
       data={data}
       baseConfig={BASE_CHART_CONFIG}
       error={!!error}
-      isLoading={isLoading}
+      isLoading={isLoading || !listenerID}
     />
   )
 }

@@ -10,8 +10,13 @@ const BASE_CHART_CONFIG = {
   },
 } satisfies ChartConfig
 
-function AuditChartProviders() {
-  const { data, error, isLoading } = useGetAuditProviderStats(true)
+
+interface Props {
+  listenerID?: string;
+}
+
+function AuditChartProviders({ listenerID }: Props) {
+  const { data, error, isLoading } = useGetAuditProviderStats(listenerID || '', false, {enabled: !!listenerID})
   const total = data?.reduce((acc, { amount }) => acc + amount, 0) ?? 0
 
   return (
@@ -31,7 +36,7 @@ function AuditChartProviders() {
       data={data}
       baseConfig={BASE_CHART_CONFIG}
       error={!!error}
-      isLoading={isLoading}
+      isLoading={isLoading || !listenerID}
       sortData={true}
     />
   )
