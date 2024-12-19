@@ -11,15 +11,19 @@ interface AxiosInterceptorProps {
 
 /**
  * Component that provides two essential axios interceptors:
- * 1. BackendRouter (Request): Dynamically routes requests to different backend services
- *    based on config.backend property.
+ * 1. BackendRouter (Request): Dynamically routes requests to different backend
+ *    services based on config.backend property.
  *
- * 2. AuthGuard (Response): Handles authentication failures (401), manages user session,
- *    and redirects to login when necessary. Also tracks sign-out events.
+ * 2. AuthGuard (Response): Handles authentication failures (401), manages user
+ *    session, and redirects to login when necessary. Also tracks sign-out
+ *    events.
  *
- * Order is important! Backend routing must happen before any other request modifications.
- * This component must wrap any part of the app that makes authenticated API calls
- * or needs to switch between backends.
+ * 3. backendErrorNormalizer (Response): Normalizes error responses with a consistent
+ *    structure for each backend.
+ *
+ * Order is important! Backend routing must happen before any other request
+ * modifications. This component must wrap any part of the app that makes
+ * authenticated API calls or needs to switch between backends.
  */
 const AxiosInterceptor: React.FC<AxiosInterceptorProps> = ({ children }) => {
   const navigate = useNavigate();
@@ -51,8 +55,38 @@ const AxiosInterceptor: React.FC<AxiosInterceptorProps> = ({ children }) => {
       }
     );
 
+    // Normalizes error responses for each backend
+    // Ensures a consistent error structure for components to handle
+    const backendErrorNormalizer = axiosInstance.interceptors.response.use(
+      response => response,
+      error => {
+        if (error.response) {
+          const backend = error.config.backend;
+          if (backend === 'AUDIT_POC') {
+            // Normalize error response for AUDIT_POC backend
+            const expectedAuditError = error.response?.data?.message;
+            error.response.data = {
+              errors: {
+                body: expectedAuditError || 'An error occurred',
+              },
+            };
+          } else if (backend === 'TENANT_MANAGER') {
+            // Normalize error response for TENANT_MANAGER backend
+            const expectedTenantError = error.response?.data?.errors?.body;
+            error.response.data = {
+              errors: {
+                body: expectedTenantError || 'An error occurred',
+              },
+            };
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
+
     // Clean up in reverse order
     return () => {
+      axiosInstance.interceptors.response.eject(backendErrorNormalizer);
       axiosInstance.interceptors.response.eject(authGuard);
       axiosInstance.interceptors.request.eject(backendRouter);
     };
