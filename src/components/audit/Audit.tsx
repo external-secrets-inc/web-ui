@@ -45,7 +45,6 @@ import AuditPolicyDataTable from "./AuditPolicyDataTable";
 import useCreateAuditListener from "@/services/audit/mutations/useCreateAuditListener";
 import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 import { IUserData } from "@/types";
-import { set } from "react-hook-form";
 
 const toYYYYMMDD = (date: Date) => {
   return date.toISOString().slice(0, 10); // YYYY-MM-DD in UTC
@@ -178,7 +177,6 @@ export default function Audit() {
   const { data: tenantListenersData } = useGetTenantListeners(false, {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
-    // Add error handling to prevent refetch on error
     retry: false,
   });
 
@@ -205,7 +203,6 @@ export default function Audit() {
       createTenantListener(defaultTenantListenerPayload);
     } else {
       setIsTenantListenerCreated(true);
-      // Revert error state if listener is created
       setCreateTenantListenerError(null);
     }
   }, [tenantListenersData, createTenantListener, defaultTenantListenerPayload]);
@@ -477,7 +474,24 @@ export default function Audit() {
         </Alert>
       )}
 
-      {isTenantListenerCreated && !isLoadingAuditListener &&
+      {createAuditListenerError && (
+        <Alert
+          className="flex gap-2 items-center justify-between flex-wrap"
+          variant="destructive"
+        >
+          <div>
+            <AlertTitle className="flex gap-3 items-center">
+              <LucideAlertCircle className="text-destructive" /> Failed to create or fetch audit listener
+            </AlertTitle>
+            <AlertDescription className="flex items-center justify-between">
+              Retry in order to make it available for installation, or contact support if the issue persists
+            </AlertDescription>
+          </div>
+          <Button variant="outline" onClick={() => createTenantListener(defaultTenantListenerPayload)}>Retry</Button>
+        </Alert>
+      )}
+
+      {isTenantListenerCreated && isAuditListenerCreated && !isLoadingAuditListener &&
         auditListener.status === LISTENER_STATUS.PENDING_INSTALLATION && (
           <Alert
             className="flex gap-2 items-center justify-between flex-wrap"
@@ -511,7 +525,7 @@ export default function Audit() {
           </Alert>
         )}
 
-      {isTenantListenerCreated && !isLoadingAuditListener && auditListener.status === LISTENER_STATUS.OFFLINE && (
+      {isTenantListenerCreated && isAuditListenerCreated && !isLoadingAuditListener && auditListener.status === LISTENER_STATUS.OFFLINE && (
         <Alert
           className="flex gap-2 items-center justify-between flex-wrap"
           variant="destructive"
