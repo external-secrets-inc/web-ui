@@ -9,7 +9,7 @@ const deleteAuditProvider = async (mock: boolean, providerId: string) => {
   if(mock) return "MockedDeleteProviderToken"
 
   const headers = await getAuthHeaders();
-  const response = await axiosInstance.delete(`/api/providers/${providerId}`, { headers });
+  const response = await axiosInstance.delete(`/api/providers/${providerId}`, { headers, backend: 'AUDIT_POC' });
   return response.data.token;
 }
 

@@ -224,7 +224,7 @@ const AddProviderDialogForm = ({
       tenantID: "",
       name: String(providerName),
       backendIdentifier: String(providerName),
-      backendType: String(providerType),
+      backendType: String(providerType).toUpperCase(),
       config: config,
     });
     resetForm()
