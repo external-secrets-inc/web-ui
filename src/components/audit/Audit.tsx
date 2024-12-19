@@ -44,7 +44,7 @@ import useCreateTenantListener from "@/services/audit/mutations/useCreateTenantL
 import AuditPolicyDataTable from "./AuditPolicyDataTable";
 import useCreateAuditListener from "@/services/audit/mutations/useCreateAuditListener";
 import useAuthUser from "react-auth-kit/hooks/useAuthUser";
-import { IUserData } from "@/types";
+import { IUserData } from "@/types";  
 
 const toYYYYMMDD = (date: Date) => {
   return date.toISOString().slice(0, 10); // YYYY-MM-DD in UTC
@@ -324,7 +324,7 @@ export default function Audit() {
       secretTableDataError,
       "Error while fetching audit listener data"
     );
-  }, [secretTableDataError, isErrorSecretTableData, isRefetchErrorSecretTableData, auditListener]);
+  }, [secretTableDataError, isErrorSecretTableData, isRefetchErrorSecretTableData]);
 
   const { mutate: createTenantInstallationToken, data: tenantInstallationToken } = useCreateTenantInstallationToken(
     false,
