@@ -9,7 +9,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export function getTenantIdFromToken(token: string): string | null {
   try {
-    const decoded: any = jwtDecode(token);
+    const decoded: any = jwtDecode(token); // eslint-disable-line @typescript-eslint/no-explicit-any
     return decoded?.TenantId || null;
   } catch (error) {
     console.error("Failed to decode token", error);
@@ -19,7 +19,7 @@ export function getTenantIdFromToken(token: string): string | null {
 
 export function getUserIdFromToken(token: string): string | null {
   try {
-    const decoded: any = jwtDecode(token);
+    const decoded: any = jwtDecode(token); // eslint-disable-line @typescript-eslint/no-explicit-any
     return decoded?.UserId || null;
   } catch (error) {
     console.error("Failed to decode token", error);

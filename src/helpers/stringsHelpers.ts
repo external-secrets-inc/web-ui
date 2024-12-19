@@ -13,7 +13,8 @@ export const stripURLProtocol = (url: string): string => {
   try {
     const parsedUrl = new URL(url);
     return parsedUrl.host;
-  } catch (error) {
+  }
+   catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
     console.error('Invalid URL:', url);
     return url; // Return the original URL
   }

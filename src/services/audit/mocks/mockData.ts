@@ -1,77 +1,84 @@
-// TODO: Either remove or use this mock as a "demo mode" when API is ready
-export const mockProviderStats = [
-  {
-    kind: "aws",
-    amount: 245,
-    label: "AWS",
-    tooltipLabel: "AWS Secrets Manager"
-  },
-  {
-    kind: "gcp",
-    amount: 156,
-    label: "GCP",
-    tooltipLabel: "Google Secret Manager"
-  },
-  {
-    kind: "azure",
-    amount: 98,
-    label: "Azure",
-    tooltipLabel: "Azure Key Vault"
-  },
-  {
-    kind: "vault",
-    amount: 45,
-    label: "HashiCorp",
-    tooltipLabel: "HashiCorp Vault"
-  },
-  {
-    kind: "kubernetes",
-    amount: 87,
-    label: "K8s",
-    tooltipLabel: "Kubernetes Secrets"
-  },
-  {
-    kind: "onePassword",
-    amount: 65,
-    label: "1Pass",
-    tooltipLabel: "1Password Connect"
-  },
-  {
-    kind: "delinea",
-    amount: 42,
-    label: "Delinea",
-    tooltipLabel: "Delinea Secret Server"
-  },
-  {
-    kind: "conjur",
-    amount: 23,
-    label: "Conjur",
-    tooltipLabel: "CyberArk Conjur"
-  },
-] as const
+/**
+ * Mock API Response Structures
+ * These represent the exact format we expect from the backend
+ */
+type StatsItem = {
+  kind: string
+  label: string
+  tooltipLabel: string
+  amount: number
+}
 
-export const mockProblemStats = [
-  {
-    kind: "duplicated",
-    amount: 4,
-    label: "Duplicated",
-    tooltipLabel: "Secrets with duplicate values"
-  },
-  {
-    kind: "nonCompliant",
-    amount: 18,
-    label: "Non-compliant",
-    tooltipLabel: "Secrets not following compliance rules"
-  },
-  {
-    kind: "neverAccessed",
-    amount: 5,
-    label: "Never Accessed",
-    tooltipLabel: "Secrets that were never accessed"
-  },
-] as const
+type TimelineData = {
+  date: string
+  stats: StatsItem[]
+}
 
-export const mockTableData = {
+// Helper functions (internal use only)
+// Random number but seeded for consistent mock data
+const seededRandom = (date: string) => {
+  let seed = Array.from(date).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const x = Math.sin(seed++) * 10000;
+  return x - Math.floor(x);
+};
+
+export const mockProviderStats: StatsItem[] = [
+  { kind: "aws", label: "AWS", tooltipLabel: "AWS Secrets Manager", amount: 245 },
+  { kind: "gcp", label: "GCP", tooltipLabel: "Google Secret Manager", amount: 156 },
+  { kind: "azure", label: "Azure", tooltipLabel: "Azure Key Vault", amount: 98 },
+  { kind: "vault", label: "HashiCorp", tooltipLabel: "HashiCorp Vault", amount: 45 },
+  { kind: "kubernetes", label: "K8s", tooltipLabel: "Kubernetes Secrets", amount: 87 },
+  { kind: "onePassword", label: "1Pass", tooltipLabel: "1Password Connect", amount: 65 },
+  { kind: "delinea", label: "Delinea", tooltipLabel: "Delinea Secret Server", amount: 42 },
+  { kind: "conjur", label: "Conjur", tooltipLabel: "CyberArk Conjur", amount: 23 }
+]
+
+export const mockProblemStats: StatsItem[] = [
+  { kind: "duplicated", label: "Duplicated", tooltipLabel: "Secrets with duplicate values", amount: 4 },
+  { kind: "nonCompliant", label: "Non-compliant", tooltipLabel: "Secrets not following compliance rules", amount: 18 },
+  { kind: "neverAccessed", label: "Never Accessed", tooltipLabel: "Secrets that were never accessed", amount: 5 }
+]
+
+const generateMockTimelineData = (startDate: Date | string, endDate: Date | string, baseStats: StatsItem[]): TimelineData[] => {
+  const start = new Date(startDate)
+  start.setHours(0, 0, 0, 0)
+
+  const end = new Date(endDate)
+  end.setHours(23, 59, 59, 999)
+
+  const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
+
+  return Array.from({ length: days }).map((_, index) => {
+    const date = new Date(start)
+    date.setDate(date.getDate() + index)
+    const dateStr = date.toISOString().split('T')[0]
+
+    return {
+      date: dateStr,
+      stats: baseStats.map(stat => ({
+        ...stat,
+        amount: stat.amount - Math.floor(seededRandom(dateStr + stat.kind) * (stat.amount * 0.2))
+      }))
+    }
+  })
+}
+
+// Timeline mock generators
+export const getMockProviderTimelineStats = (startDate: string, endDate: string) =>
+  generateMockTimelineData(new Date(startDate), new Date(endDate), mockProviderStats)
+
+export const getMockProblemTimelineStats = (startDate: string, endDate: string) =>
+  generateMockTimelineData(new Date(startDate), new Date(endDate), mockProblemStats)
+
+export const mockLastUpdate = new Date().toLocaleString('en-US', {
+  month: '2-digit',
+  day: '2-digit',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+})
+
+export const mockAuditTableData = {
   secretData: [
     {
       id: "550e8400-e29b-41d4-a716-446655440000",
@@ -208,5 +215,60 @@ export const mockTableData = {
     { value: "vault", label: "vault" },
   ]
 } as const
+
+export const mockPoliciesData = [
+  {
+    id: "policy-id-1",
+    name: "Policy 1",
+    executeOn: [
+      "Read",
+      "UpdatePreHash",
+      "UpdatePostHash",
+      "*",
+    ],
+    providers: ["provider-1"],
+  },
+  {
+    id: "policy-id-2",
+    name: "Policy 2",
+    executeOn: [
+      "Read",
+      "UpdatePreHash",
+      "UpdatePostHash",
+      "Create",
+    ],
+    providers: ["provider-1", "provider-2"],
+  },
+  {
+    id: "policy-id-3",
+    name: "Policy 3",
+    executeOn: [
+      "Delete",
+      "RBACCreate",
+      "RBACUpdate",
+      "RBACDelete",
+      "*",
+    ],
+    providers: ["provider-1", "provider-2", "provider-3"],
+  },
+] as const
+
+export const mockProvidersData = [
+  {
+    id: "provider-id-1",
+    name: "Provider 1",
+    type: "GCP",
+  },
+  {
+    id: "provider-id-2",
+    name: "Provider 2",
+    type: "Azure",
+  },
+  {
+    id: "provider-id-3",
+    name: "Provider 3",
+    type: "AWS",
+  },
+] as const
 
 export const mockNetworkResponseDelay = () => new Promise(resolve => setTimeout(resolve, 2500))

@@ -14,17 +14,12 @@ export interface Rotator {
   tags: string[];
 }
 
-export interface Listener {
-  id: string;
-  current_status: string;
-}
-
 export interface Manifest {
   manifest: string
 }
 
-export interface Process {
-  process: string
+export interface Bash {
+  bash: string
 }
 
 export interface ApiWrapperOptions {

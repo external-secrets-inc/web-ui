@@ -1,6 +1,6 @@
-import { z } from 'zod';
+import { z } from "zod";
 
-export type ListenerStatus = 'PENDING_INSTALLATION' | 'OFFLINE';
+export type ListenerStatus = "PENDING_INSTALLATION" | "OFFLINE";
 
 export const filterSchema = z.object({
   provider: z.array(z.string()),
@@ -21,7 +21,7 @@ export interface AuditResponseData {
     label: string;
     value: string;
     icon?: React.ComponentType<{ className?: string }>;
-  }[]
+  }[];
   policiesNames: {
     label: string;
     value: string;
@@ -46,7 +46,98 @@ export interface AuditTableData {
   accessorsAmount: number;
 }
 
-export interface Listener {
+export interface AuditListener {
   id: string;
+  tenant_id: string;
   status: ListenerStatus;
+}
+
+export interface TenantListener {
+  id: string;
+  name: string;
+  enabled: boolean;
+  tags: {
+    [key: string]: string;
+  };
+}
+
+export type TimeRange = "Now" | "7D" | "30D" | "90D" | null;
+
+export interface TimeRangeOption {
+  days: number;
+  label: TimeRange;
+}
+
+export interface PolicyTableData {
+  id: string;
+  name: string;
+  executeOn: string[];
+  providers: string[];
+}
+
+export interface CreatePolicyPayload {
+  tenantID: string;
+  name: string;
+  executeOn: string[];
+  targets: { id: string; type: string; }[];
+  engine: string;
+  rule: string;
+}
+
+export interface ProviderTableData {
+  id: string;
+  name: string;
+  type: string;
+}
+
+export interface CreateProviderPayload {
+  listenerID: string;
+  tenantID: string;
+  name: string;
+  backendIdentifier: string;
+  backendType: string;
+  config: {
+    [key: string]: string;
+  };
+}
+
+export interface CreateTenantListenerPayload {
+  name: string;
+  tags: {
+    [key: string]: string;
+  };
+}
+
+export type AddProviderFieldType =
+  | "string"
+  | "date"
+  | "file"
+  | "number"
+  | "boolean";
+
+export interface AddProviderFieldSchema {
+  type: AddProviderFieldType;
+  required: boolean;
+  maxLength?: number;
+  accept?: string;
+}
+
+interface AddProviderType {
+  [key: string]: AddProviderFieldSchema;
+}
+
+export interface AddProviderFormSchema {
+  [formType: string]: AddProviderType;
+}
+
+export interface AuditMetric {
+  kind: string;
+  amount: number;
+  label: string;
+  tooltipLabel?: string;
+}
+
+export interface AuditTimelineEntry {
+  date: string;
+  stats: AuditMetric[];
 }

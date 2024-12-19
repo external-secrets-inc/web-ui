@@ -3,7 +3,7 @@ import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError, } from "@/types";
 import { AxiosError } from "axios";
-import { mockNetworkResponseDelay, mockTableData } from "../mocks/mockData";
+import { mockNetworkResponseDelay, mockAuditTableData } from "../mocks/mockData";
 import { AuditResponseData } from "@/components/audit/Audit.interfaces";
 
 // TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/115
@@ -13,7 +13,7 @@ const getListenerAuditData = async (
 ) => {
   if (mock) {
     await mockNetworkResponseDelay();
-    return mockTableData;
+    return mockAuditTableData;
   }
 
   const headers = await getAuthHeaders();
