@@ -69,10 +69,26 @@ export interface PolicyTableData {
 export interface CreatePolicyPayload {
   tenantID: string;
   name: string;
-  executeOn: string[];
-  targets: { id: string; type: string; }[];
   engine: string;
+  executeOn: string[];
   rule: string;
+}
+
+export type AddPolicyFieldType = 'string' | 'strArray' | 'textArea';
+
+export interface AddPolicyFieldSchema {
+  type: AddPolicyFieldType;
+  required: boolean;
+  maxLength?: number;
+  accept?: string;
+}
+
+interface AddPolicyType {
+  [key: string]: AddPolicyFieldSchema;
+}
+
+export interface AddPolicyFormSchema {
+  [formType: string]: AddPolicyType;
 }
 
 export interface ProviderTableData {
