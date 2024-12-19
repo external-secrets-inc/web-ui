@@ -47,9 +47,14 @@ export interface AuditTableData {
 }
 
 export interface AuditListener {
-  id: string;
-  tenant_id: string;
+  listenerId: string;
+  tenantID: string;
   status: ListenerStatus;
+}
+
+export interface CreateAuditListenerPayload {
+  listenerID: string;
+  tenantID: string;
 }
 
 export interface TenantListener {

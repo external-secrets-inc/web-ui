@@ -31,6 +31,7 @@ import {
   TimeRange,
   ListenerStatus,
   filterSchema,
+  CreateAuditListenerPayload,
 } from "./Audit.interfaces";
 import AuditChartProblems from "./AuditChartProblems";
 import AuditChartProviders from "./AuditChartProviders";
@@ -41,6 +42,10 @@ import FilterDialogForm from "./FilterDialogForm";
 import ListenerInstallDialogContent from "./ListenerInstallDialogContent";
 import useCreateTenantListener from "@/services/audit/mutations/useCreateTenantListener";
 import AuditPolicyDataTable from "./AuditPolicyDataTable";
+import useCreateAuditListener from "@/services/audit/mutations/useCreateAuditListener";
+import useAuthUser from "react-auth-kit/hooks/useAuthUser";
+import { IUserData } from "@/types";
+import { set } from "react-hook-form";
 
 const toYYYYMMDD = (date: Date) => {
   return date.toISOString().slice(0, 10); // YYYY-MM-DD in UTC
@@ -136,6 +141,8 @@ export default function Audit() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isTenantListenerCreated, setIsTenantListenerCreated] = useState(false);
   const [createTenantListenerError, setCreateTenantListenerError] = useState<AxiosError<ApiHttpError> | null>(null);
+  const [isAuditListenerCreated, setIsAuditListenerCreated] = useState(false);
+  const [createAuditListenerError, setCreateAuditListenerError] = useState<AxiosError<ApiHttpError> | null>(null);
   const [currentToggledTimeRange, setCurrentToggledTimeRange] = useState<number | null>(() => {
     const startDate = searchParams.get("chartsStartDate");
     const endDate = searchParams.get("chartsEndDate");
@@ -171,6 +178,8 @@ export default function Audit() {
   const { data: tenantListenersData } = useGetTenantListeners(false, {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
+    // Add error handling to prevent refetch on error
+    retry: false,
   });
 
   const defaultTenantListenerPayload = useMemo((): CreateTenantListenerPayload => ({
@@ -196,6 +205,8 @@ export default function Audit() {
       createTenantListener(defaultTenantListenerPayload);
     } else {
       setIsTenantListenerCreated(true);
+      // Revert error state if listener is created
+      setCreateTenantListenerError(null);
     }
   }, [tenantListenersData, createTenantListener, defaultTenantListenerPayload]);
 
@@ -216,29 +227,30 @@ export default function Audit() {
     };
   }, [tenantListenersData]);
 
-  // TODO: make a post request to create a listener on audit-poc-api
-
   const {
     data: auditListenerData,
     isError: isErrorAuditListener,
     isLoading: isLoadingAuditListener,
+    isSuccess: isSuccessAuditListener,
     error: fetchAuditListenerError,
-  } = useGetAuditListener(true, {
+  } = useGetAuditListener(false, tenantListener.id, {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
+    enabled: Boolean(tenantListener.id), // Only fetch when tenant listener exists
+    retry: false, 
   });
 
   const auditListener = useMemo((): AuditListener => {
     if (isLoadingAuditListener || !auditListenerData)
       return {
-        id: "",
-        tenant_id: "",
+        listenerId: "",
+        tenantID: "",
         status: LISTENER_STATUS.PENDING_INSTALLATION,
       };
 
     return {
-      id: auditListenerData.id,
-      tenant_id: auditListenerData.tenant_id,
+      listenerId: auditListenerData.listenerId,
+      tenantID: auditListenerData.tenantID,
       status: auditListenerData.status as ListenerStatus,
     };
   }, [auditListenerData, isLoadingAuditListener]);
@@ -248,6 +260,39 @@ export default function Audit() {
 
     handleDefaultApiHttpError(fetchAuditListenerError, "Error while fetching audit listener");
   }, [fetchAuditListenerError, isErrorAuditListener]);
+
+  // TODO: make a post request to create a listener on audit-poc-api
+  const authUser = useAuthUser<IUserData>();
+
+  const defaultAuditListenerPayload = useMemo((): CreateAuditListenerPayload => ({
+    listenerID: tenantListener.id,
+    tenantID: authUser?.tenantId ?? "",
+  }), [tenantListener.id, authUser?.tenantId]);
+
+  // Setup mutation with success/error handlers
+  const { mutate: createAuditListener } = useCreateAuditListener(false, {
+    onSuccess: () => {
+      setIsAuditListenerCreated(true);
+      setCreateAuditListenerError(null);
+    },
+    onError: (error: AxiosError<ApiHttpError>) => {
+      handleDefaultApiHttpError(error, "Error while creating audit listener");
+      setIsAuditListenerCreated(false);
+      setCreateAuditListenerError(error); 
+    },
+  });  
+
+  // Effect to handle audit listener creation
+  useEffect(() => {
+    if (!tenantListener.id || !isSuccessAuditListener) return;
+    
+    if (!auditListener.listenerId) {
+      createAuditListener(defaultAuditListenerPayload);
+    } else {
+      setIsAuditListenerCreated(true);
+      setCreateAuditListenerError(null);
+    }
+  }, [tenantListener.id, auditListener.listenerId, createAuditListener, defaultAuditListenerPayload, isSuccessAuditListener]);
 
   const {
     data: listenerData,
@@ -380,9 +425,9 @@ export default function Audit() {
     if (!isTenantListenerCreated) return;
 
     if (isListenerInstallDialogOpen) {
-      trackListenerInstallDialogOpened(auditListener.id);
+      trackListenerInstallDialogOpened(auditListener.listenerId);
     }
-  }, [isListenerInstallDialogOpen, auditListener.id, isTenantListenerCreated]);
+  }, [isListenerInstallDialogOpen, auditListener.listenerId, isTenantListenerCreated]);
 
   const handleTimeRangeChange = (days: number | null) => {
     setCurrentToggledTimeRange(days);
@@ -454,7 +499,7 @@ export default function Audit() {
                 <Button variant="outline">Install listener</Button>
               </DialogTrigger>
               <ListenerInstallDialogContent
-                id={auditListener.id}
+                id={auditListener.listenerId}
                 bashFileContent={getTenantBashFileContent()}
                 isLoadingBashFile={isLoadingTenantBashFile}
                 bashCommand={bashCommand}
@@ -519,12 +564,12 @@ export default function Audit() {
       </div>
 
       <AuditPolicyDataTable
-        tenantID={tenantListener.id}
+        tenantID={authUser?.tenantId ?? ""}
       />
 
       <AuditProviderDataTable
-        tenantID={auditListener.tenant_id}
-        listenerID={auditListener.id}
+        tenantID={auditListener.tenantID}
+        listenerID={auditListener.listenerId}
       />
 
       <div className="flex items-center justify-between pt-4">
