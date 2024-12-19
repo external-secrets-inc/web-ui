@@ -10,7 +10,7 @@ const createAuditProvider = async (mock: boolean, payload: CreateProviderPayload
   if (mock) return 'mockedProviderID'
 
   const headers = await getAuthHeaders();
-  const response = await axiosInstance.post(`/api/providers`, payload, { headers });
+  const response = await axiosInstance.post(`/api/providers`, payload, { headers, backend: 'AUDIT_POC' });
   return response.data.id;
 }
 
