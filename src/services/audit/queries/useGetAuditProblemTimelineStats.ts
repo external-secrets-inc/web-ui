@@ -1,5 +1,4 @@
 import { AuditTimelineEntry } from "@/components/audit/Audit.interfaces";
-import { getMockProblemTimelineStats, mockNetworkResponseDelay } from "@/services/audit/mocks/mockData";
 import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError } from "@/types";
