@@ -234,7 +234,7 @@ export default function Audit() {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
     enabled: Boolean(tenantListener.id), // Only fetch when tenant listener exists
-    retry: false, 
+    retry: false,
   });
 
   const auditListener = useMemo((): AuditListener => {
@@ -275,22 +275,23 @@ export default function Audit() {
     },
     onError: (error: AxiosError<ApiHttpError>) => {
       handleDefaultApiHttpError(error, "Error while creating audit listener");
-      setIsAuditListenerCreated(false);
       setCreateAuditListenerError(error); 
     },
   });  
 
   // Effect to handle audit listener creation
   useEffect(() => {
-    if (!tenantListener.id || !isSuccessAuditListener) return;
-    
+    if (!tenantListener.id) return;
+
+    if(!isSuccessAuditListener && fetchAuditListenerError?.status != 404) return;
+
     if (!auditListener.listenerID) {
       createAuditListener(defaultAuditListenerPayload);
     } else {
       setIsAuditListenerCreated(true);
       setCreateAuditListenerError(null);
     }
-  }, [tenantListener.id, auditListener.listenerID, createAuditListener, defaultAuditListenerPayload, isSuccessAuditListener]);
+  }, [tenantListener.id, auditListener.listenerID, createAuditListener, defaultAuditListenerPayload, isSuccessAuditListener, tenantListenersData, fetchAuditListenerError]);
 
   const {
     data: secretTableData,
@@ -487,7 +488,7 @@ export default function Audit() {
               Retry in order to make it available for installation, or contact support if the issue persists
             </AlertDescription>
           </div>
-          <Button variant="outline" onClick={() => createTenantListener(defaultTenantListenerPayload)}>Retry</Button>
+          <Button variant="outline" onClick={() => createAuditListener(defaultAuditListenerPayload)}>Retry</Button>
         </Alert>
       )}
 
