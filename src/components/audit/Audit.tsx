@@ -561,17 +561,19 @@ export default function Audit() {
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(416px,100%),1fr))] gap-4 mt-6">
         {currentToggledTimeRange === 0 ? (
           <>
-            <AuditChartProviders />
-            <AuditChartProblems />
+            <AuditChartProviders listenerID={tenantListener.id} />
+            <AuditChartProblems listenerID={tenantListener.id} />
           </>
         ) : chartsStartDate && chartsEndDate ? (
           <>
             <AuditTimelineProviders
+              listenerID={tenantListener.id}
               timeRange={getTimeRangeFromDays(currentToggledTimeRange)}
               startDate={chartsStartDate}
               endDate={chartsEndDate}
-            />
+              />
             <AuditTimelineProblems
+              listenerID={tenantListener.id}
               timeRange={getTimeRangeFromDays(currentToggledTimeRange)}
               startDate={chartsStartDate}
               endDate={chartsEndDate}
