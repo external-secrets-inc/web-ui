@@ -11,9 +11,9 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
 import { toast } from "sonner";
-import useCreateProvider from "@/services/audit/mutations/useCreateProvider";
-import useDeleteProvider from "@/services/audit/mutations/useDeleteProvider";
-import useGetProviders from "@/services/audit/queries/useGetProviders";
+import useCreateAuditProvider from "@/services/audit/mutations/useCreateAuditProvider";
+import useDeleteAuditProvider from "@/services/audit/mutations/useDeleteAuditProvider";
+import useGetAuditProviders from "@/services/audit/queries/useGetAuditProviders";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { FeatureItemDeleteAction } from "../FeatureCollection";
 
@@ -29,7 +29,7 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
       header: 'Name',
       cell: info => <strong>{info.getValue()}</strong>
     }),
-    columnHelper.accessor('type', {
+    columnHelper.accessor('backendType', {
       header: 'Type',
       cell: info => info.getValue()
     }),
@@ -62,9 +62,9 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
           >
             <FeatureItemDeleteAction
               featureType={"Audit Provider"}
-              featureID={row.id}
+              featureID={row.providerID}
               featureName={row.name}
-              onDelete={() => { performDelete(row.id) }}
+              onDelete={() => { performDelete(row.providerID) }}
             >
               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                 <LucideTrash2 className="mr-2" />
@@ -79,10 +79,17 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
 
   const [isAddProviderDialogOpen, setIsAddProviderDialogOpen] = useState(false);
 
-  const { data: providersData, refetch: providersRefetch, isLoading: isLoadingProviders, isError: isErrorProviders, isRefetchError: isRefetchErrorProviders, error: providersError } = useGetProviders(true, {
-    refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
-    refetchIntervalInBackground: true,
-  });
+  const { 
+    data: providersData, 
+    refetch: providersRefetch, 
+    isLoading: isLoadingProviders, 
+    isError: isErrorProviders, 
+    isRefetchError: isRefetchErrorProviders, 
+    error: providersError } = useGetAuditProviders(false, listenerID, {
+      refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
+      refetchIntervalInBackground: true,
+    }
+  );
 
   const providers = useMemo(() => {
     if (!providersData) return []
@@ -90,7 +97,7 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
     return providersData;
   }, [providersData]);
 
-  const { mutate: createProvider } = useCreateProvider(true, {
+  const { mutate: createProvider } = useCreateAuditProvider(false, {
     onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to create Provider"),
     onSuccess: () => {
       providersRefetch();
@@ -98,7 +105,7 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
     }
   });
 
-  const { mutate: deleteProvider } = useDeleteProvider(true, {
+  const { mutate: deleteProvider } = useDeleteAuditProvider(false, {
     onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to delete Provider"),
     onSuccess: () => {
       providersRefetch();

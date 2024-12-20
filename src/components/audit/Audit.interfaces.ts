@@ -1,6 +1,6 @@
-import { z } from 'zod';
+import { z } from "zod";
 
-export type ListenerStatus = 'PENDING_INSTALLATION' | 'OFFLINE';
+export type ListenerStatus = "PENDING" | "OFFLINE" | "ACTIVE";
 
 export const filterSchema = z.object({
   provider: z.array(z.string()),
@@ -21,7 +21,7 @@ export interface AuditResponseData {
     label: string;
     value: string;
     icon?: React.ComponentType<{ className?: string }>;
-  }[]
+  }[];
   policiesNames: {
     label: string;
     value: string;
@@ -46,10 +46,24 @@ export interface AuditTableData {
   accessorsAmount: number;
 }
 
-export interface Listener {
-  id: string;
-  tenant_id: string;
+export interface AuditListener {
+  listenerID: string;
+  tenantID: string;
   status: ListenerStatus;
+}
+
+export interface CreateAuditListenerPayload {
+  listenerID: string;
+  tenantID: string;
+}
+
+export interface TenantListener {
+  id: string;
+  name: string;
+  enabled: boolean;
+  tags: {
+    [key: string]: string;
+  };
 }
 
 export type TimeRange = "Now" | "7D" | "30D" | "90D" | null;
@@ -93,8 +107,9 @@ export interface AddPolicyFormSchema {
 
 export interface ProviderTableData {
   id: string;
+  providerID: string;
   name: string;
-  type: string;
+  backendType: string;
 }
 
 export interface CreateProviderPayload {
@@ -108,7 +123,19 @@ export interface CreateProviderPayload {
   };
 }
 
-export type AddProviderFieldType = 'string' | 'date' | 'file' | 'number' | 'boolean';
+export interface CreateTenantListenerPayload {
+  name: string;
+  tags: {
+    [key: string]: string;
+  };
+}
+
+export type AddProviderFieldType =
+  | "string"
+  | "date"
+  | "file"
+  | "number"
+  | "boolean";
 
 export interface AddProviderFieldSchema {
   type: AddProviderFieldType;
