@@ -1,5 +1,4 @@
 import { AuditTimelineEntry } from "@/components/audit/Audit.interfaces";
-import { getMockProblemTimelineStats, mockNetworkResponseDelay } from "@/services/audit/mocks/mockData";
 import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError } from "@/types";
@@ -10,29 +9,25 @@ interface QueryOptions {
   endDate: string;
 }
 
-const getAuditProblemTimelineStats = async (mock: boolean, options: QueryOptions, signal: AbortSignal) => {
-  if (mock) {
-    await mockNetworkResponseDelay();
-    return getMockProblemTimelineStats(options.startDate, options.endDate);
-  }
-
+const getAuditProblemTimelineStats = async (listenerID: string, options: QueryOptions, signal: AbortSignal) => {
   const headers = await getAuthHeaders();
-  const response = await axiosInstance.get('/api/audit/stats/problems/timeline', {
+  const response = await axiosInstance.get(`/api/dashboard/${listenerID}/secret-issues/timeseries`, {
     headers,
     signal,
-    params: options
+    params: options,
+    backend: 'AUDIT_POC',
   });
   return response.data;
 }
 
 export default function useGetAuditProblemTimelineStats(
-  mock: boolean = true,
+  listenerID: string,
   options: QueryOptions,
   queryOptions?: Omit<UseQueryOptions<AuditTimelineEntry[], AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
 ) {
   return useQuery({
     queryKey: ['audit', 'problem', 'timeline', options.startDate, options.endDate],
-    queryFn: ({ signal }) => getAuditProblemTimelineStats(mock, options, signal),
+    queryFn: ({ signal }) => getAuditProblemTimelineStats(listenerID, options, signal),
     ...queryOptions,
   });
 }
