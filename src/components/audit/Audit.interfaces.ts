@@ -16,7 +16,7 @@ export const filterSchema = z.object({
 export type FilterSchema = z.infer<typeof filterSchema>;
 
 export interface AuditResponseData {
-  secretData: AuditTableData[];
+  secretsData: AuditTableData[];
   secretsNames: {
     label: string;
     value: string;
@@ -36,14 +36,28 @@ export interface AuditResponseData {
 
 export interface AuditTableData {
   id: string;
-  secret: string;
+  name: string;
   provider: string;
+  providerName: string;
   lastRotation: string;
   policiesAmount: string;
   fullCompliant: boolean;
   duplicatesAmount: number;
   lastAccess: string;
   accessorsAmount: number;
+  duplicates: {
+    id: string;
+    provider: string;
+  }[];
+  accessors: {
+    id: string;
+    access_time: string;
+  }[];
+  policies: {
+      id: string;
+      name: string;
+      status: string;
+  }[]
 }
 
 export interface AuditListener {

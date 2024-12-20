@@ -166,7 +166,7 @@ export default function AuditPolicyDataTable({ tenantID }: { tenantID: string })
       <DataProvider
         data={policies}
         columns={columns}
-        initialSort={{ id: 'lastRotation', desc: true }}
+        initialSort={{ id: 'name', desc: false }}
         isLoading={isLoadingPolicies}
       >
         <DataTable

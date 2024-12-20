@@ -76,13 +76,13 @@ export default function Audit() {
 
   const columns = useMemo(
     () => [
-      columnHelper.accessor("secret", {
+      columnHelper.accessor("name", {
         header: "Secret",
-        cell: (info) => <strong>{info.getValue()}</strong>,
+        cell: (info) => <strong>{info.getValue() || "Unknown Secret Name"}</strong>,
       }),
-      columnHelper.accessor("provider", {
+      columnHelper.accessor("providerName", {
         header: "Provider",
-        cell: (info) => info.getValue(),
+        cell: (info) => info.getValue() || "Unknown Provider Name",
       }),
       columnHelper.accessor("lastRotation", {
         header: "Last Rotation",
@@ -92,7 +92,7 @@ export default function Audit() {
               month: "2-digit",
               day: "2-digit",
               year: "numeric",
-            })}
+            }) || "Unknown last rotation"}
           </span>
         ),
       }),
@@ -104,24 +104,24 @@ export default function Audit() {
               month: "2-digit",
               day: "2-digit",
               year: "numeric",
-            })}
+            }) || "Unknown last access"}
           </span>
         ),
       }),
       columnHelper.accessor("duplicatesAmount", {
         header: "Duplicates",
-        cell: (info) => info.getValue(),
+        cell: (info) => info.getValue() || "Unknown duplicates amount",
       }),
       columnHelper.accessor("accessorsAmount", {
         header: "Accessors",
-        cell: (info) => info.getValue(),
+        cell: (info) => info.getValue() || "Unknown accessors amount",
       }),
       columnHelper.accessor("policiesAmount", {
         header: "Policy compliance",
         cell: (info) => {
           return (
             <div className="flex gap-2 w-full items-center justify-between">
-              {info.getValue()}{" "}
+              {info.getValue() || "Unknown policies amount" }{" "}
               {!info.row.original.fullCompliant && (
                 <LucideAlertCircle className="text-orange-500" />
               )}
@@ -300,15 +300,16 @@ export default function Audit() {
     isError: isErrorSecretTableData,
     isRefetchError: isRefetchErrorSecretTableData,
     error: secretTableDataError,
-  } = useGetDashboarSecretTable(true, auditListener?.listenerID, {
+  } = useGetDashboarSecretTable(false, auditListener?.listenerID || '', {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
+    enabled: !!auditListener?.listenerID
   });
 
   const listenerSecretTableData = useMemo(() => {
     if (!secretTableData)
       return {
-        secretData: [],
+        secretsData: [],
         secretsNames: [],
         policiesNames: [],
         providers: [],
@@ -316,7 +317,6 @@ export default function Audit() {
 
     return secretTableData;
   }, [secretTableData]);
-
 
   useEffect(() => {
     if (!(secretTableDataError || isRefetchErrorSecretTableData)) return;
@@ -622,7 +622,7 @@ export default function Audit() {
       </div>
 
       <DataProvider
-        data={listenerSecretTableData.secretData}
+        data={listenerSecretTableData.secretsData}
         columns={columns}
         initialSort={{ id: "lastRotation", desc: true }}
         isLoading={isLoadingSecretTableData}
