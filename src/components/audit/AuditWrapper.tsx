@@ -9,6 +9,7 @@ export default function AuditWrapper() {
   const [hasAccess, setHasAccess] = useState(false);
 
   useEffect(() => {
+    // TODO: Temporary solution to check if the user has access to the feature. Tenant Manager should be responsible for this, not the client. #172
     async function checkFeature() {
       try {
         const subscriptions = await getSubscriptions();
