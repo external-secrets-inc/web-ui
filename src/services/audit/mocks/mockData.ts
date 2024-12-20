@@ -218,7 +218,8 @@ export const mockAuditTableData = {
 
 export const mockPoliciesData = [
   {
-    id: "policy-id-1",
+    policyID: "policy-id-1",
+    tenantID: "tenant-1",
     name: "Policy 1",
     executeOn: [
       "Read",
@@ -226,10 +227,19 @@ export const mockPoliciesData = [
       "UpdatePostHash",
       "*",
     ],
-    providers: ["provider-1"],
+    executeOnAmount: 4,
+    providers: {
+      amount: 1,
+      items: [
+        { providerID: "provider-1" }
+      ]
+    },
+    engine: "rego",
+    rule: "base64encoded",
   },
   {
-    id: "policy-id-2",
+    policyID: "policy-id-2",
+    tenantID: "tenant-2",
     name: "Policy 2",
     executeOn: [
       "Read",
@@ -237,10 +247,20 @@ export const mockPoliciesData = [
       "UpdatePostHash",
       "Create",
     ],
-    providers: ["provider-1", "provider-2"],
+    executeOnAmount: 4,
+    providers: {
+      amount: 2,
+      items: [
+        { providerID: "provider-1" },
+        { providerID: "provider-2" }
+      ]
+    },
+    engine: "rego",
+    rule: "base64encoded",
   },
   {
-    id: "policy-id-3",
+    policyID: "policy-id-3",
+    tenantID: "tenant-3",
     name: "Policy 3",
     executeOn: [
       "Delete",
@@ -249,7 +269,33 @@ export const mockPoliciesData = [
       "RBACDelete",
       "*",
     ],
-    providers: ["provider-1", "provider-2", "provider-3"],
+    executeOnAmount: 5,
+    providers: {
+      amount: 3,
+      items: [
+        { providerID: "provider-1" },
+        { providerID: "provider-2" },
+        { providerID: "provider-3" }
+      ]
+    },
+    engine: "rego",
+    rule: "base64encoded",
+  },
+  {
+    policyID: "policy-id-4",
+    tenantID: "tenant-4",
+    name: "Policy 4",
+    executeOn: [
+      "Read",
+      "UpdatePreHash",
+    ],
+    executeOnAmount: 2,
+    providers: {
+      amount: 0,
+      items: []
+    },
+    engine: "rego",
+    rule: "base64encoded",
   },
 ] as const
 
