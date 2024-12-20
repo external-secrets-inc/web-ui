@@ -44,7 +44,7 @@ import useCreateTenantListener from "@/services/audit/mutations/useCreateTenantL
 import AuditPolicyDataTable from "./AuditPolicyDataTable";
 import useCreateAuditListener from "@/services/audit/mutations/useCreateAuditListener";
 import useAuthUser from "react-auth-kit/hooks/useAuthUser";
-import { IUserData } from "@/types";  
+import { IUserData } from "@/types";
 
 const toYYYYMMDD = (date: Date) => {
   return date.toISOString().slice(0, 10); // YYYY-MM-DD in UTC
@@ -275,9 +275,9 @@ export default function Audit() {
     },
     onError: (error: AxiosError<ApiHttpError>) => {
       handleDefaultApiHttpError(error, "Error while creating audit listener");
-      setCreateAuditListenerError(error); 
+      setCreateAuditListenerError(error);
     },
-  });  
+  });
 
   // Effect to handle audit listener creation
   useEffect(() => {
@@ -584,6 +584,7 @@ export default function Audit() {
 
       <AuditPolicyDataTable
         tenantID={authUser?.tenantId ?? ""}
+        listenerID={auditListener.listenerID}
       />
 
       <AuditProviderDataTable

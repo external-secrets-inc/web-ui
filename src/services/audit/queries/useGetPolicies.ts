@@ -18,7 +18,7 @@ const getPolicies = async (
   }
 
   const headers = await getAuthHeaders();
-  const response = await axiosInstance.get(`/api/policies?tenant_id=${tenantID}`, { headers, signal });
+  const response = await axiosInstance.get(`/api/policies?tenant_id=${tenantID}`, { headers, signal, backend: 'AUDIT_POC' });
   return response.data;
 }
 
