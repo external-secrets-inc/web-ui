@@ -7,8 +7,9 @@ import { mockNetworkResponseDelay, mockProvidersData } from "../mocks/mockData";
 import { ProviderTableData } from "@/components/audit/Audit.interfaces";
 
 // TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/119
-const getProviders = async (
+const getAuditProviders = async (
   mock: boolean,
+  listenerID: string,
   signal: AbortSignal,
 ) => {
   if (mock) {
@@ -17,21 +18,22 @@ const getProviders = async (
   }
 
   const headers = await getAuthHeaders();
-  const response = await axiosInstance.get('/api/providers', { headers, signal });
-  return response.data.Provider;
+  const response = await axiosInstance.get('/api/providers', { headers, signal, backend: 'AUDIT_POC', params: {"listener_id": listenerID} });
+  return response.data;
 }
 
-const useGetProviders = (
+const useGetAuditProviders = (
   mock: boolean,
+  listenerID: string,
   options?: Omit<UseQueryOptions<ProviderTableData[], AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
 ) => {
   return useQuery({
-    queryKey: ["useGetProviders", mock],
+    queryKey: ["useGetAuditProviders", mock],
     queryFn: ({ signal }) => {
-      return getProviders(mock, signal)
+      return getAuditProviders(mock, listenerID, signal)
     },
     ...options,
   });
 };
 
-export default useGetProviders;
+export default useGetAuditProviders;

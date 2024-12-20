@@ -20,7 +20,7 @@ const getProvidersTypes = async (
         "field5": { "type": "boolean", "required": true },
       },
       "gcp": {
-        "project-id": { "type": "string", "required": true },
+        "projectID": { "type": "string", "required": true },
         "topic": { "type": "string", "required": true },
         "subscription": { "type": "string", "required": true }
       }

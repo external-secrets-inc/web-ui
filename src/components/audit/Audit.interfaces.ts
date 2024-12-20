@@ -91,8 +91,9 @@ export interface CreatePolicyPayload {
 
 export interface ProviderTableData {
   id: string;
+  providerID: string;
   name: string;
-  type: string;
+  backendType: string;
 }
 
 export interface CreateProviderPayload {
