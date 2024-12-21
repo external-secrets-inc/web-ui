@@ -88,21 +88,12 @@ export interface CreatePolicyPayload {
   rule: string;
 }
 
-export type AddPolicyFieldType = 'string' | 'strArray' | 'textArea';
-
-export interface AddPolicyFieldSchema {
-  type: AddPolicyFieldType;
-  required: boolean;
-  maxLength?: number;
-  accept?: string;
-}
-
-interface AddPolicyType {
-  [key: string]: AddPolicyFieldSchema;
-}
-
-export interface AddPolicyFormSchema {
-  [formType: string]: AddPolicyType;
+export interface PolicyForm {
+  name: string;
+  engine: string;
+  executeOn: string[];
+  sample: string;
+  rule: string;
 }
 
 export interface ProviderTableData {

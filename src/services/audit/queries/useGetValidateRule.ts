@@ -9,10 +9,14 @@ const getValidateRule = async (
   executeOn: string[],
   signal: AbortSignal,
 ) => {
-  const executeOnQuery = executeOn.map(x => `executeOn=${x}`).join("&")
-  const headers = await getAuthHeaders();
-  const response = await axiosInstance.get(`/api/validate-rule?${executeOnQuery}`, { headers, signal });
-  return response.data;
+  if (executeOn.length > 0) {
+    const executeOnQuery = executeOn.map(x => `executeOn=${x}`).join("&");
+    const headers = await getAuthHeaders();
+    const response = await axiosInstance.get(`/api/validate-rule?${executeOnQuery}`, { headers, signal, backend: 'AUDIT_POC' });
+    
+    console.log(response);
+    return response.data;
+  }
 }
 
 const useGetValidateRule = (

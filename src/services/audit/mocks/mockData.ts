@@ -255,19 +255,22 @@ export const mockPoliciesData = [
 
 export const mockProvidersData = [
   {
-    id: "provider-id-1",
+    id: "id-1",
+    providerID: "provider-id-1",
     name: "Provider 1",
-    type: "GCP",
+    backendType: "GCP",
   },
   {
-    id: "provider-id-2",
+    id: "id-2",
+    providerID: "provider-id-2",
     name: "Provider 2",
-    type: "Azure",
+    backendType: "Azure",
   },
   {
-    id: "provider-id-3",
+    id: "id-3",
+    providerID: "provider-id-3",
     name: "Provider 3",
-    type: "AWS",
+    backendType: "AWS",
   },
 ] as const
 

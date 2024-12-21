@@ -103,7 +103,7 @@ export default function AuditPolicyDataTable({ tenantID }: { tenantID: string })
     return policiesData;
   }, [policiesData]);
 
-  const { mutate: createPolicy } = useCreatePolicy(true, {
+  const { mutate: createPolicy } = useCreatePolicy({
     onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to create Policy"),
     onSuccess: () => {
       policiesRefetch();
@@ -111,7 +111,7 @@ export default function AuditPolicyDataTable({ tenantID }: { tenantID: string })
     }
   });
 
-  const { mutate: deletePolicy } = useDeletePolicy(true, {
+  const { mutate: deletePolicy } = useDeletePolicy({
     onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to delete Policy"),
     onSuccess: () => {
       policiesRefetch();
