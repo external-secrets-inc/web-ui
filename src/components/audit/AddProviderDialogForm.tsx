@@ -49,7 +49,6 @@ const fieldHandlers: Record<
     render: (schema, field, fieldProps) => (
       <Input
         placeholder={schema.default? schema.default : `Enter ${field}`}
-        defaultValue={schema.default}
         maxLength={schema.maxLength}
         {...fieldProps}
       />
@@ -85,7 +84,6 @@ const fieldHandlers: Record<
       <Input
         type="number"
         placeholder={`Enter ${field}`}
-        defaultValue={schema.default}
         onChange={(e) => fieldProps.onChange(parseFloat(e.target.value))}
       />
     ),
