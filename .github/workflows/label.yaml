@@ -96,3 +96,25 @@ jobs:
               issue_number: prNumber,
               labels: [label],
             });
+    - name: login to github app
+      uses: actions/create-github-app-token@v1
+      id: app-token
+      with:
+        app-id: ${{ vars.ESI_BOT_APP_ID }}
+        private-key: ${{ secrets.ESI_BOT_PRIVATE_KEY }}
+        repositories: "k8s-flux"
+        owner: external-secrets-inc
+    - name: Approve PR if Small
+        if: ${{ steps.size.outputs.label == 'size/XXS' }}
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            await github.rest.pulls.createReview({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              event: 'APPROVE',
+              body: 'Auto-approved because this is so small :see_no_evil:'
+            });
