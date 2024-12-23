@@ -148,6 +148,7 @@ export type AddProviderFieldType =
 export interface AddProviderFieldSchema {
   type: AddProviderFieldType;
   required: boolean;
+  default?: any;
   maxLength?: number;
   accept?: string;
 }
