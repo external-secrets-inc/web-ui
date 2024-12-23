@@ -5,6 +5,7 @@ import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
 import { mockNetworkResponseDelay } from "../mocks/mockData";
 import { TenantListener } from "@/components/audit/Audit.interfaces"; // Update the import for TenantListener
+import { useAuditMock } from '@/services/audit/context/AuditMockContext';
 
 // TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/115
 const getTenantListeners = async (
@@ -32,10 +33,12 @@ const useGetTenantListeners = <T = TenantListener[]>(
   mock: boolean,
   options?: Omit<UseQueryOptions<TenantListener[], AxiosError<ApiHttpError>, T>, 'queryKey' | 'queryFn'>
 ) => {
+  const { isMocked } = useAuditMock(mock);
+
   return useQuery({
-    queryKey: ["useGetTenantListeners", mock],
+    queryKey: ["useGetTenantListeners", isMocked],
     queryFn: ({ signal }) => {
-      return getTenantListeners(mock, signal)
+      return getTenantListeners(isMocked, signal)
     },
     ...options,
   });

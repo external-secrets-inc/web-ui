@@ -38,9 +38,5 @@ export async function apiWrapper<T>(
 }
 
 export function handleDefaultApiHttpError(error: AxiosError<ApiHttpError>, defaultMessage: string = "An error occurred") {
-  if (error.response) {
-    toast.error(error.response.data.errors.body)
-  } else {
-    toast.error(defaultMessage)
-  }
+  return toast.error(error.response?.data?.errors?.body || defaultMessage)
 }

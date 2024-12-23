@@ -4,6 +4,7 @@ import axiosInstance from "@/services/axiosConfig";
 import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
 import { CreateTenantListenerPayload } from "@/components/audit/Audit.interfaces"; // Fix the import for CreateTenantListenerPayload
+import { useAuditMock } from '@/services/audit/context/AuditMockContext';
 
 // TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/119
 const createTenantListener = async (
@@ -30,10 +31,12 @@ const useCreateTenantListener = (
     "mutationKey" | "mutationFn"
   >
 ) => {
+  const { isMocked } = useAuditMock(mock);
+
   return useMutation({
-    mutationKey: ["useCreateTenantListener"],
+    mutationKey: ["useCreateTenantListener", isMocked],
     mutationFn: (variables: CreateTenantListenerPayload) => {
-      return createTenantListener(mock, variables);
+      return createTenantListener(isMocked, variables);
     },
     ...options,
   });
