@@ -3,6 +3,7 @@ import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError, Bash } from "@/types";
 import { AxiosError } from "axios";
+import { useAuditMock } from '@/services/audit/context/AuditMockContext';
 
 // TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/118
 const getTenantBashFile = async (mock: boolean, signal:  AbortSignal, version: string = "latest", listenerId: string) => {
@@ -20,10 +21,12 @@ const useGetTenantBashFile = <T = Bash>(
   listenerId: string,
   options?: Omit<UseQueryOptions<Bash, AxiosError<ApiHttpError>, T>, 'queryKey' | 'queryFn'>
 ) => {
+  const { isMocked } = useAuditMock(mock);
+
   return useQuery({
-    queryKey: ["useGetTenantBashFile", token, listenerId],
+    queryKey: ["useGetTenantBashFile", isMocked, token, listenerId],
     queryFn: ({signal}) => {
-      return getTenantBashFile(mock, signal, version, listenerId)
+      return getTenantBashFile(isMocked, signal, version, listenerId)
     },
     ...options,
   });

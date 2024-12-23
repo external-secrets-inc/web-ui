@@ -4,6 +4,7 @@ import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
 import { mockNetworkResponseDelay } from "../mocks/mockData";
+import { useAuditMock } from '@/services/audit/context/AuditMockContext';
 
 interface UnassignProviderPolicyPayload {
   providerId: string;
@@ -31,8 +32,11 @@ const useUnassignProviderPolicy = (
     "mutationFn"
   >
 ) => {
+  const { isMocked } = useAuditMock(mock);
+
   return useMutation({
-    mutationFn: (payload) => unassignProviderPolicy(mock, payload),
+    mutationKey: ["useUnassignProviderPolicy", isMocked],
+    mutationFn: (payload) => unassignProviderPolicy(isMocked, payload),
     ...options,
   });
 };

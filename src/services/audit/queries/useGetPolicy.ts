@@ -5,6 +5,7 @@ import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
 import { PolicyTableData } from "@/components/audit/Audit.interfaces";
 import { mockNetworkResponseDelay, mockPoliciesData } from "../mocks/mockData";
+import { useAuditMock } from '@/services/audit/context/AuditMockContext';
 
 const getPolicy = async (mock: boolean, policyId: string, signal: AbortSignal) => {
   if (mock) {
@@ -26,9 +27,11 @@ const useGetPolicy = (
   policyId: string,
   options?: Omit<UseQueryOptions<PolicyTableData, AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
 ) => {
+  const { isMocked } = useAuditMock(mock);
+
   return useQuery({
-    queryKey: ["policy", policyId, mock],
-    queryFn: ({ signal }) => getPolicy(mock, policyId, signal),
+    queryKey: ["policy", policyId, isMocked],
+    queryFn: ({ signal }) => getPolicy(isMocked, policyId, signal),
     enabled: Boolean(policyId),
     ...options,
   });

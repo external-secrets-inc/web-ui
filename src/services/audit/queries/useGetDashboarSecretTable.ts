@@ -5,6 +5,7 @@ import { ApiHttpError, } from "@/types";
 import { AxiosError } from "axios";
 import { mockNetworkResponseDelay, mockAuditTableData } from "../mocks/mockData";
 import { AuditResponseData } from "@/components/audit/Audit.interfaces";
+import { useAuditMock } from '@/services/audit/context/AuditMockContext';
 
 // TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/115
 const getDashboardSecretTable = async (
@@ -28,10 +29,12 @@ const useGetDashboarSecretTable = (
   listener_id: string,
   options?: Omit<UseQueryOptions<AuditResponseData, AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
 ) => {
+  const { isMocked } = useAuditMock(mock);
+
   return useQuery({
-    queryKey: ["useGetDashboarSecretTable", mock, listener_id],
+    queryKey: ["useGetDashboarSecretTable", isMocked, listener_id],
     queryFn: ({ signal }) => {
-      return getDashboardSecretTable(mock, signal, listener_id)
+      return getDashboardSecretTable(isMocked, signal, listener_id)
     },
     ...options,
   });
