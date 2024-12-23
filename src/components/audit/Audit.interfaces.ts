@@ -148,6 +148,7 @@ export type AddProviderFieldType =
 export interface AddProviderFieldSchema {
   type: AddProviderFieldType;
   required: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   default?: any;
   maxLength?: number;
   accept?: string;
