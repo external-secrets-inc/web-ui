@@ -72,7 +72,9 @@ export const loginAndIdentifyUser = async ({
     });
 
     if (isSignedIn) {
-      const { userId, email, name, ...segmentUserState } = userState; // Remove sensitive data and pass the rest to Segment
+      // Remove sensitive data and pass the rest to Segment
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { userId, email, name, ...segmentUserState } = userState;
       try {
         analytics.identify(userId as string, segmentUserState);
       } catch (error) {

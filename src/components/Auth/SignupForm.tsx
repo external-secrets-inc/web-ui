@@ -60,7 +60,7 @@ function SignupForm() {
     const maxLoginRetries = 6;
     const loginRetryDelay = 3000;
 
-    const handleSignupErrors = (error: any) => {
+    const handleSignupErrors = (error: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
       if (isAxiosError(error)) {
         const responseError = error.response?.data?.errors?.body;
 

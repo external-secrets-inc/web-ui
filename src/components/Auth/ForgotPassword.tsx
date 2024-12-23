@@ -84,7 +84,7 @@ function ForgotPassword() {
           onClick: () => {},
         },
       });
-    } catch (e) {
+    } catch (e) { // eslint-disable-line @typescript-eslint/no-unused-vars
       setFormError("Failed to start the reset password flow")
     } finally {
       setLoading(false)
@@ -110,7 +110,7 @@ function ForgotPassword() {
               control={form.control}
               name="tenant"
               render={({ field }) => {
-                const { ref, ...restField } = field;
+                const { ref, ...restField } = field; // eslint-disable-line @typescript-eslint/no-unused-vars
                 return (
                   <FormItem>
                     <FormLabel>Enter your Organization URL</FormLabel>

@@ -20,7 +20,7 @@ export async function apiWrapper<T>(
   const { defaultError, suppressToast = false } = options;
   try {
     return await apiCall();
-  } catch (error: any) {
+  } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
     let responseError = null;
 
     if (isAxiosError(error) && typeof error?.request?.response === 'string') {
@@ -38,9 +38,5 @@ export async function apiWrapper<T>(
 }
 
 export function handleDefaultApiHttpError(error: AxiosError<ApiHttpError>, defaultMessage: string = "An error occurred") {
-  if (error.response) {
-    toast.error(error.response.data.errors.body)
-  } else {
-    toast.error(defaultMessage)
-  }
+  return toast.error(error.response?.data?.errors?.body || defaultMessage)
 }

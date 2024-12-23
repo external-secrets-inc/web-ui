@@ -12,11 +12,11 @@ import { Button } from "@/components/ui/button";
 import { LucideLoader } from "lucide-react";
 import NewPasswordField from "./fields/NewPasswordField";
 
-const SignupCredentialsStep = ({ onSubmit, onBack, loading }: { onSubmit: (data: any) => void, onBack: () => void, loading: boolean }) => {
+const SignupCredentialsStep = ({ onSubmit, onBack, loading }: { onSubmit: (data: any) => void, onBack: () => void, loading: boolean }) => { // eslint-disable-line @typescript-eslint/no-explicit-any
   const { handleSubmit, control } = useFormContext();
   const [submittedWithErrors, setSubmittedWithErrors] = useState(false);
 
-  const handleFormSubmit = (data: any) => {
+  const handleFormSubmit = (data: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
     setSubmittedWithErrors(false);
     onSubmit(data);
   };

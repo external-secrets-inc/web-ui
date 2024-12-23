@@ -60,7 +60,7 @@ function LoginForm({ onStepChange, onOrganizationURLChange }: LoginFormProps) {
     setFormError(null);
     const stockError = "Login failed. Please try again.";
 
-    const handleLoginErrors = (error: any) => {
+    const handleLoginErrors = (error: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
       if (isAxiosError(error)) {
         const responseError = error.response?.data?.errors?.body;
 

@@ -1,4 +1,4 @@
-// import { trackListenerInstallCopyProcess, trackListenerInstallCopyKubernetes } from "@/analytics"
+import { trackListenerInstallCopyBash, trackListenerInstallCopyKubernetes } from "@/analytics"
 import { Button } from "@/components/ui/button"
 import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
@@ -10,14 +10,16 @@ import { toast } from "sonner"
 import DescribedScrollArea from "./DescribedScrollArea"
 
 interface ListenerInstallDialogContentProps {
-  processFile: string;
-  processCommand: string;
-  applyCommand: string;
+  id: string;
+  bashFileContent: string;
+  isLoadingBashFile: boolean;
+  bashCommand: string;
+  manifestCommand: string;
   openTab?: string;
 }
 
-function ListenerInstallDialogContent({ processFile, processCommand, applyCommand, openTab }: ListenerInstallDialogContentProps) {
-  const defaultTab = 'process';
+function ListenerInstallDialogContent({ id, bashFileContent, isLoadingBashFile, bashCommand, manifestCommand, openTab }: ListenerInstallDialogContentProps) {
+  const defaultTab = 'bash';
   const [activeTab, setActiveTab] = useState(openTab ?? defaultTab);
 
   const onTabChange = (value: string) => {
@@ -38,14 +40,14 @@ function ListenerInstallDialogContent({ processFile, processCommand, applyComman
     }
   }
 
-  const handleCopyProcess = () => {
-    copyToClipboard(processCommand, "'bash' command");
-    // trackListenerInstallCopyProcess()
+  const handleCopyBash = () => {
+    copyToClipboard(bashCommand, "'bash' command");
+    trackListenerInstallCopyBash(id)
   }
 
-  const handleCopyKubernetes = () => {
-    copyToClipboard(applyCommand, "'apply' command");
-    // trackListenerInstallCopyKubernetes()
+  const handleCopyKubernetesManifest = () => {
+    copyToClipboard(manifestCommand, "'manifest' command");
+    trackListenerInstallCopyKubernetes(id)
   };
 
   return (
@@ -64,23 +66,24 @@ function ListenerInstallDialogContent({ processFile, processCommand, applyComman
         className="grid grid-rows-[auto_1fr]"
       >
         <TabsList className="mb-2 w-fit">
-          <TabsTrigger value="process">Process</TabsTrigger>
+          <TabsTrigger value="bash">Bash</TabsTrigger>
           <TabsTrigger value="kubernetes">Kubernetes</TabsTrigger>
         </TabsList>
-        <TabsContent className="data-[state=active]:grid min-h-0" value="process">
+        <TabsContent className="data-[state=active]:grid min-h-0" value="bash">
           <DescribedScrollArea
             description='Preview of the bash script to deploy this listener'
-            content={processFile}
+            content={bashFileContent}
+            isLoadingContent={isLoadingBashFile}
           />
           <DescribedScrollArea
             description='Run the command below to deploy this listener to your server'
-            content={processCommand}
+            content={bashCommand}
           />
           <Alert className="mt-4">
             <AlertDescription className="flex gap-2 items-center">
               <LucideInfo className="flex-none" />
               <p>
-                The provided URL in the <code>curl</code> command is a link to the listener installation file. It is piped to a <code>sh</code> command that will deploy it to server.
+                The provided URL in the <code>curl</code> command is a link to the bash installation file content. It is piped to a <code>bash</code> command that will run it and deploy it to server.
               </p>
             </AlertDescription>
           </Alert>
@@ -88,7 +91,7 @@ function ListenerInstallDialogContent({ processFile, processCommand, applyComman
         <TabsContent className="data-[state=active]:grid min-h-0" value="kubernetes">
           <DescribedScrollArea
             description='Run the command below to deploy this listener to your Kubernetes cluster'
-            content={applyCommand}
+            content={manifestCommand}
           />
           <Alert className="mt-4">
             <AlertDescription className="flex gap-2 items-center">
@@ -101,13 +104,13 @@ function ListenerInstallDialogContent({ processFile, processCommand, applyComman
         </TabsContent>
       </Tabs>
       <DialogFooter>
-        {activeTab === 'process' &&
-          <Button onClick={handleCopyProcess}>
+        {activeTab === 'bash' &&
+          <Button onClick={handleCopyBash}>
             <ClipboardCopyIcon className="mr-2" />Copy
           </Button>
         }
         {activeTab === 'kubernetes' &&
-          <Button onClick={handleCopyKubernetes}>
+          <Button onClick={handleCopyKubernetesManifest}>
             <ClipboardCopyIcon className="mr-2" />Copy
           </Button>
         }

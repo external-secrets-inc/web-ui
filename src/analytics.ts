@@ -9,7 +9,7 @@ export const page = () => {
   window.analytics.page();
 };
 
-export const track = (name: string, properties: any) => {
+export const track = (name: string, properties: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
   window.analytics.track(name, properties);
 };
 
@@ -23,7 +23,7 @@ export const trackFeatureCopyYAMLWithApplyCommand = (featureType: string, featur
 };
 
 export const trackFeatureDownloadYAML = (featureType: string, featureID: string) => {
-  track("Download Feature YAML", { featureType,featureID });
+  track("Download Feature YAML", { featureType, featureID });
 };
 
 export const trackFeatureDeleteDialogOpened = (featureType: string, featureID: string, triggeredFrom: "details-dialog" | "dropdown") => {
@@ -53,7 +53,7 @@ export const trackLoginStepMovedBack = () => {
   track("Login Step Moved Back", {});
 };
 
-export const trackSignupStepCompleted = (step: number, data: any) => {
+export const trackSignupStepCompleted = (step: number, data: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
   track("Signup Step Completed", { step, data });
 };
 
@@ -73,14 +73,18 @@ export const trackSettingsTabChanged = (tab: string) => {
   track("Settings Tab Changed", { tab });
 };
 
-export const trackSettingsSectionModified = (section: string, values?: any) => {
+export const trackSettingsSectionModified = (section: string, values?: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
   track("Settings Section Modified", { section, ...values });
 };
 
-export const trackListenerInstallCopyProcess = () => {
-  track("Copy Listener Install Process", null);
+export const trackListenerInstallDialogOpened = (id: string) => {
+  track("Listener Install Dialog Opened", { id });
+}
+
+export const trackListenerInstallCopyBash = (id: string) => {
+  track("Copy Listener Install Bash", { id });
 };
 
-export const trackListenerInstallCopyKubernetes = () => {
-  track("Copy Listener Install Kubernetes", null);
+export const trackListenerInstallCopyKubernetes = (id: string) => {
+  track("Copy Listener Install Kubernetes Manifest", { id });
 };

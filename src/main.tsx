@@ -22,7 +22,9 @@ import './index.css';
 import { DOCS_DOMAIN } from "@/constants";
 import ListRotators from "@/components/rotators/ListRotators";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Audit from "@/components/audit/Audit"
+import AuditWrapper from "@/components/audit/AuditWrapper";
+import OrgRedirector from "./components/OrgRedirector";
+import { Loader } from "@/components/ui/Loader";
 
 const queryClient = new QueryClient()
 
@@ -62,11 +64,17 @@ const router = createBrowserRouter([
     element: (
       <AxiosInterceptor>
         <RequireActiveUser loginFallbackPath="/login" inactiveFallbackPath="/verify">
-          <App />
+          <OrgRedirector>
+            <App />
+          </OrgRedirector>
         </RequireActiveUser>
       </AxiosInterceptor>
     ),
     children: [
+      {
+        path: '',
+        element: <NavigateWithOrg to="/agents" replace />,
+      },
       {
         path: 'agents',
         element: (
@@ -110,12 +118,14 @@ const router = createBrowserRouter([
               title="Audit"
               description={
                 <>
-                  Audit is cool!<br />
-                  See our <a href={`${DOCS_DOMAIN}/docs/`}>Quickstart guide</a> for more details
+                  Gather insights about your secrets and policies based on audit logs from multiple providers<br />
+                  {/* TODO:  add link to quickstart guide*/}
                 </>
               }
             />
-            <Audit />
+            <React.Suspense fallback={<Loader/>}>
+              <AuditWrapper />
+            </React.Suspense>
           </>
         )
       } : {},
