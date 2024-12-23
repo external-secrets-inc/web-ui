@@ -105,16 +105,16 @@ jobs:
           repositories: "k8s-flux"
           owner: external-secrets-inc
       - name: Approve PR if Small
-          if: ${{ steps.size.outputs.label == 'size/XXS' }}
-          uses: actions/github-script@v6
-          with:
-            github-token: ${{ steps.app-token.outputs.token }}
-            script: |
-              const prNumber = context.payload.pull_request.number;
-              await github.rest.pulls.createReview({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: prNumber,
-                event: 'APPROVE',
-                body: 'Auto-approved because this is so small :see_no_evil:'
-              });
+        if: ${{ steps.size.outputs.label == 'size/XXS' }}
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            await github.rest.pulls.createReview({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              event: 'APPROVE',
+              body: 'Auto-approved because this is so small :see_no_evil:'
+            });
