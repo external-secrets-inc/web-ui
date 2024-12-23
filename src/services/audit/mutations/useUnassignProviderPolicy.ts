@@ -20,7 +20,10 @@ const unassignProviderPolicy = async (mock: boolean, payload: UnassignProviderPo
   const headers = await getAuthHeaders();
   const response = await axiosInstance.delete(
     `/api/providers/${payload.providerId}/unassign-policy/${payload.policyId}`,
-    { headers }
+    {
+      headers,
+      backend: 'AUDIT_POC',
+    }
   );
   return response.data;
 };
