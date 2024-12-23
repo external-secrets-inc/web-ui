@@ -4,8 +4,15 @@ import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError } from "@/types";
 import { UseQueryOptions, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
+import { mockNetworkResponseDelay, mockProblemStats } from "../mocks/mockData";
+import { useAuditMock } from '@/services/audit/context/AuditMockContext';
 
-const getAuditProblemStats = async (listenerID: string, signal: AbortSignal) => {
+const getAuditProblemStats = async (mock: boolean, listenerID: string, signal: AbortSignal) => {
+  // TODO: Remove this mock when the API is ready
+  if (mock) {
+    await mockNetworkResponseDelay();
+    return mockProblemStats;
+  }
   const headers = await getAuthHeaders();
   const response = await axiosInstance.get(`/api/dashboard/${listenerID}/secret-issues`, {
     headers,
@@ -16,12 +23,14 @@ const getAuditProblemStats = async (listenerID: string, signal: AbortSignal) => 
 }
 
 const useGetAuditProblemStats = (
-  listenerID: string, 
+  mock: boolean,
+  listenerID: string,
   options?: Omit<UseQueryOptions<AuditMetric[], AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
 ) => {
+  const { isMocked } = useAuditMock(mock);
   return useQuery({
-    queryKey: ["useGetAuditProblemStats"],
-    queryFn: ({ signal }) => getAuditProblemStats(listenerID, signal),
+    queryKey: ["useGetAuditProblemStats", isMocked],
+    queryFn: ({ signal }) => getAuditProblemStats(isMocked, listenerID, signal),
     ...options,
   });
 };

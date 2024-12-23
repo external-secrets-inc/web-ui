@@ -4,6 +4,7 @@ import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError, } from "@/types";
 import { AxiosError } from "axios";
 import { AddProviderFormSchema } from "@/components/audit/Audit.interfaces";
+import { useAuditMock } from '@/services/audit/context/AuditMockContext';
 
 // TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/119
 const getProvidersTypes = async (
@@ -43,10 +44,12 @@ const useGetProvidersTypes = (
   mock: boolean,
   options?: Omit<UseQueryOptions<AddProviderFormSchema, AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
 ) => {
+  const { isMocked } = useAuditMock(mock);
+
   return useQuery({
-    queryKey: ["useGetProvidersTypes", mock],
+    queryKey: ["useGetProvidersTypes", isMocked],
     queryFn: ({ signal }) => {
-      return getProvidersTypes(mock, signal)
+      return getProvidersTypes(isMocked, signal)
     },
     ...options,
   });

@@ -29,7 +29,7 @@ function formatUSDateFromISODate(isoDate: string) {
 }
 
 function AuditTimelineProblems({listenerID, timeRange, startDate, endDate }: Props) {
-  const { data, error, isLoading } = useGetAuditProblemTimelineStats(listenerID || '', false, {
+  const { data, error, isLoading } = useGetAuditProblemTimelineStats(false, listenerID || '', {
     startDate,
     endDate
   }, {
