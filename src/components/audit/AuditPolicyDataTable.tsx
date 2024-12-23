@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { CreatePolicyPayload, PolicyTableData } from "./Audit.interfaces";
+import { CreatePolicyPayload, PolicyForm, PolicyTableData } from "./Audit.interfaces";
 import { createColumnHelper } from "@tanstack/react-table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { LucideMoreVertical, LucidePlus, LucideTrash2 } from "lucide-react";
@@ -46,7 +46,7 @@ export default function AuditPolicyDataTable({ tenantID }: { tenantID: string })
         </div>
       )
     })
-  ], [columnHelper])
+  ], [columnHelper]);
 
   // Include EditPolicy/AssignProvider Buttons
   const policyTableMeta: PolicyTableMeta = {
@@ -84,6 +84,14 @@ export default function AuditPolicyDataTable({ tenantID }: { tenantID: string })
   };
 
   const [isAddPolicyDialogOpen, setIsAddPolicyDialogOpen] = useState(false);
+  const defaultFormValues = {
+    name: "",
+    engine: "rego",
+    executeOn: [],
+    sample: "",
+    rule: "",
+  };
+  const [policyForm, setPolicyForm] = useState<PolicyForm>(defaultFormValues);
 
   const {
     data: policiesData,
@@ -117,25 +125,26 @@ export default function AuditPolicyDataTable({ tenantID }: { tenantID: string })
       policiesRefetch();
       toast.success("Policy deleted successfully")
     },
-  })
+  });
 
   const performCreate = (payload: CreatePolicyPayload) => {
     payload.tenantID = tenantID;
     createPolicy(payload)
-  }
+  };
 
   const performDelete = (policyID: string) => {
     deletePolicy({ id: policyID });
-  }
+  };
 
   useEffect(() => {
     if (!(policiesError || isRefetchErrorPolicies)) return;
 
     handleDefaultApiHttpError(policiesError, "Error while fetching listener Audit data")
-  }, [policiesError, isErrorPolicies, isRefetchErrorPolicies])
+  }, [policiesError, isErrorPolicies, isRefetchErrorPolicies]);
 
   const handleAddPolicyDialogOpenChange = (isOpen: boolean) => {
     setIsAddPolicyDialogOpen(isOpen);
+    if (!isOpen) setPolicyForm(defaultFormValues);
   };
 
   return (
@@ -155,6 +164,7 @@ export default function AuditPolicyDataTable({ tenantID }: { tenantID: string })
             </Button>
           </DialogTrigger>
           <AddPolicyDialogForm
+            policyForm={policyForm}
             onSubmit={(payload: CreatePolicyPayload) => {
               performCreate(payload)
               handleAddPolicyDialogOpenChange(false)

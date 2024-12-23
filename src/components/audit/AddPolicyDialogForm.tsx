@@ -27,23 +27,18 @@ const baseSchema = z.object({
 const executeOnArray = ["Read", "UpdatePreHash", "UpdatePostHash", "Create", "Delete", "RBACCreate", "RBACUpdate", "RBACDelete"];
 const executeOnOptions = executeOnArray.map(x => ({ label: x, value: x }));
 
-const AddPolicyDialogForm = ({ onSubmit, onCancel }: {
-  onSubmit: (payload: CreatePolicyPayload) => void; onCancel: () => void;
+const AddPolicyDialogForm = ({ policyForm, onSubmit, onCancel }: {
+  policyForm: PolicyForm; onSubmit: (payload: CreatePolicyPayload) => void; onCancel: () => void;
 }) => {
-  const defaultValues = {
-    name: "",
-    engine: "rego",
-    executeOn: [],
-    sample: "",
-    rule: "",
-  };
-
-  const form = useForm({ resolver: zodResolver(baseSchema), defaultValues });
-
   const [isValid, setIsValid] = useState<null | boolean>(null);
+  const form = useForm({ resolver: zodResolver(baseSchema), defaultValues: policyForm });
+
+  useEffect(() => {
+    form.reset(policyForm);
+  }, [policyForm, form]);
 
   const resetForm = () => {
-    form.reset(defaultValues);
+    form.reset(policyForm);
   }
 
   const handleCancel = () => {
@@ -72,16 +67,13 @@ const AddPolicyDialogForm = ({ onSubmit, onCancel }: {
 
   const { mutateAsync: validateRule } = usePostValidateRule({
     onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to validate rule"),
-    onSuccess: (res) => {
-      setIsValid(res.valid);
-    }
+    onSuccess: (res) => setIsValid(res.valid)
   });
 
   const rule = form.watch("rule");
   const sample = form.watch("sample");
   const performValidateRule = async () => {
     const validationPayload = { regoCode: btoa(rule), policySample: JSON.parse(sample), executeOn };
-
     await validateRule(validationPayload);
   };
 
