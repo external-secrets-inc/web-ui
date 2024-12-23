@@ -22,12 +22,15 @@ interface DataProviderContextValue<TData> {
 const DataProviderContext = React.createContext<DataProviderContextValue<any>>({} as any) // eslint-disable-line @typescript-eslint/no-explicit-any
 
 interface DataWithId {
-  id: string | number;
+  id: string | number;  // Make id optional since table handles it
 }
 
 /**
- * DataProvider requires data with unique IDs for proper functioning.
- * Each item in the data array must have a unique 'id' property.
+ * DataProvider requires data with unique IDs to act as keys for rendering. Each
+ * item in the data array must have a unique 'id' property.
+ *
+ * react-table will use the `index` property as a fallback key if 'id' is not
+ * present, but try to avoid this.
  */
 interface DataProviderProps<TData extends DataWithId> {
   data: TData[];
@@ -39,7 +42,7 @@ interface DataProviderProps<TData extends DataWithId> {
 }
 
 function DataProvider<TData extends DataWithId>({
-  data,
+  data = [],
   columns,
   children,
   initialSort = { id: 'id', desc: false },
@@ -49,8 +52,16 @@ function DataProvider<TData extends DataWithId>({
   const [sorting, setSorting] = React.useState<SortingState>([initialSort])
   const [globalFilter, setGlobalFilter] = React.useState("")
 
+  const safeData = React.useMemo(() => {
+    if (!Array.isArray(data)) {
+      console.error('DataProvider: data prop must be an array');
+      return [];
+    }
+    return data;
+  }, [data]);
+
   const table = useReactTable({
-    data,
+    data: safeData,
     columns,
     state: {
       sorting,
@@ -219,7 +230,7 @@ const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
                 </TableCell>
               </TableRow>
 
-            : table.getRowModel().rows.length === 0 ?
+            : table?.getRowModel()?.rows?.length === 0 ?
               <TableRow>
                 <TableCell colSpan={table.getAllColumns().length} className="text-center">
                   <p className="text-sm text-muted-foreground">No data available</p>
@@ -227,7 +238,7 @@ const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
               </TableRow>
 
             : <>
-                {table.getRowModel().rows.map((row) => (
+                {table?.getRowModel()?.rows?.map((row) => (
                   <TableRow key={row.id} onClick={() => onRowClick?.(row.original)} className="cursor-pointer">
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
