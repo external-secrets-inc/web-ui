@@ -5,6 +5,7 @@ import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
 import { mockNetworkResponseDelay } from "../mocks/mockData";
 import { AuditListener } from "@/components/audit/Audit.interfaces";
+import { useAuditMock } from '@/services/audit/context/AuditMockContext';
 
 // TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/115
 const getAuditListener = async (
@@ -22,8 +23,8 @@ const getAuditListener = async (
   }
 
   const headers = await getAuthHeaders();
-  const response = await axiosInstance.get(`/api/listeners/${listener_id}`, { 
-    headers, 
+  const response = await axiosInstance.get(`/api/listeners/${listener_id}`, {
+    headers,
     signal,
     backend: 'AUDIT_POC'
   });
@@ -35,10 +36,12 @@ const useGetAuditListener = <T = AuditListener>(
   listener_id: string,
   options?: Omit<UseQueryOptions<AuditListener, AxiosError<ApiHttpError>, T>, 'queryKey' | 'queryFn'>
 ) => {
+  const { isMocked } = useAuditMock(mock);
+
   return useQuery({
-    queryKey: ["useGetAuditListeners", mock, listener_id],
+    queryKey: ["useGetAuditListeners", isMocked, listener_id],
     queryFn: ({ signal }) => {
-      return getAuditListener(mock, signal, listener_id)
+      return getAuditListener(isMocked, signal, listener_id)
     },
     ...options,
   });

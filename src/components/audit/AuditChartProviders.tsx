@@ -16,7 +16,7 @@ interface Props {
 }
 
 function AuditChartProviders({ listenerID }: Props) {
-  const { data, error, isLoading } = useGetAuditProviderStats(listenerID || '', {enabled: !!listenerID})
+  const { data, error, isLoading } = useGetAuditProviderStats(false, listenerID || '', {enabled: !!listenerID})
   const total = data?.reduce((acc, { amount }) => acc + amount, 0) ?? 0
 
   return (

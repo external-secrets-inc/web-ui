@@ -4,6 +4,7 @@ import axiosInstance from "@/services/axiosConfig";
 import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
 import { CreateAuditListenerPayload } from "@/components/audit/Audit.interfaces";
+import { useAuditMock } from '@/services/audit/context/AuditMockContext';
 
 // TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/119
 const createAuditListener = async (
@@ -23,19 +24,15 @@ const createAuditListener = async (
 const useCreateAuditListener = (
   mock: boolean,
   options?: Omit<
-    UseMutationOptions<
-      string,
-      AxiosError<ApiHttpError>,
-      CreateAuditListenerPayload
-    >,
+    UseMutationOptions<string, AxiosError<ApiHttpError>, CreateAuditListenerPayload>,
     "mutationKey" | "mutationFn"
   >
 ) => {
+  const { isMocked } = useAuditMock(mock);
+
   return useMutation({
-    mutationKey: ["useCreateAuditListener"],
-    mutationFn: (variables: CreateAuditListenerPayload) => {
-      return createAuditListener(mock, variables);
-    },
+    mutationKey: ["useCreateAuditListener", isMocked],
+    mutationFn: (variables: CreateAuditListenerPayload) => createAuditListener(isMocked, variables),
     ...options,
   });
 };
