@@ -85,25 +85,25 @@ export const mockAuditTableData = {
       name: "Solid Serpent",
       provider: "550e8400-e29b-41d4-a716-446655440001",
       providerName: "aws",
-      lastRotation: null, // "2024-06-03",
+      lastRotation: "2024-06-03",
       policiesAmount: "3/4",
       fullCompliant: false, // 3/4 policies are compliant
       policies: [
-        // { name: "rotation-policy", status: "compliant" },
-        // { name: "encryption-policy", status: "compliant" },
-        // { name: "access-policy", status: "compliant" },
-        // { name: "naming-policy", status: "nonCompliant" }
+        { name: "rotation-policy", status: "compliant" },
+        { name: "encryption-policy", status: "compliant" },
+        { name: "access-policy", status: "compliant" },
+        { name: "naming-policy", status: "nonCompliant" }
       ],
       duplicatesAmount: 2,
       duplicates: [
-        // { provider: "aws", id: "arn:aws:secretsmanager:us-east-1:123456789012:secret:solid-serpent-1" },
-        // { provider: "gcp", id: "projects/123456789012/secrets/solid-serpent" }
+        { provider: "aws", id: "arn:aws:secretsmanager:us-east-1:123456789012:secret:solid-serpent-1" },
+        { provider: "gcp", id: "projects/123456789012/secrets/solid-serpent" }
       ],
-      lastAccess: null, // "2024-06-29",
+      lastAccess: "2024-06-29",
       accessorsAmount: 2,
       accessors: [
-        // { name: "service-a", lastAccess: "2024-06-29" },
-        // { name: "service-b", lastAccess: "2024-06-28" }
+        { name: "service-a", lastAccess: "2024-06-29" },
+        { name: "service-b", lastAccess: "2024-06-28" }
       ]
     },
     {
