@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { CreatePolicyPayload, PolicyForm, PolicyTableData } from "./Audit.interfaces";
 import { createColumnHelper } from "@tanstack/react-table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
-import { LucideMoreVertical, LucidePlus, LucideTrash2, LucideUsers, LucideAlertCircle } from "lucide-react";
+import { LucideMoreVertical, LucidePlus, LucideTrash2, LucideUsers, LucideAlertCircle, LucideEdit } from "lucide-react";
 import { FeatureItemDeleteAction } from "../FeatureCollection";
 import { Button } from "../ui/button";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
@@ -22,6 +22,7 @@ import { AssignProvidersDialog } from "./AssignProvidersDialog";
 import useAssignProviderPolicy from "@/services/audit/mutations/useAssignProviderPolicy";
 import useUnassignProviderPolicy from "@/services/audit/mutations/useUnassignProviderPolicy";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import useEditPolicy, { EditPolicyVariables } from "@/services/audit/mutations/useEditPolicy";
 
 interface PolicyTableMeta {
   renderRowActions?: (row: PolicyTableData) => React.ReactNode;
@@ -87,6 +88,17 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
             onClick={(event) => event.stopPropagation()}
             onCloseAutoFocus={(event) => event.preventDefault()}
           >
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault();
+                setSelectedPolicyId(row.policyID);
+                setPolicyForm({ name: row.name, engine: row.engine, executeOn: row.executeOn, sample: "", rule: atob(row.rule) });
+                setIsAddPolicyDialogOpen(true);
+              }}
+            >
+              <LucideEdit className="mr-2" />
+              Edit Policy
+            </DropdownMenuItem>
             <FeatureItemDeleteAction
               featureType={"Audit Policy"}
               featureID={row.policyID}
@@ -165,7 +177,15 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
     onSuccess: () => {
       policiesRefetch();
       toast.success("Policy created successfully")
-    }
+    },
+  });
+
+  const { mutate: editPolicy } = useEditPolicy({
+    onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to edit Policy"),
+    onSuccess: () => {
+      policiesRefetch();
+      toast.success("Policy edited successfully")
+    },
   });
 
   const { mutate: deletePolicy } = useDeletePolicy({
@@ -187,6 +207,10 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
   const performCreate = (payload: CreatePolicyPayload) => {
     payload.tenantID = tenantID;
     createPolicy(payload)
+  };
+
+  const performEdit = (editPayload: EditPolicyVariables) => {
+    editPolicy(editPayload);
   };
 
   const performDelete = (policyID: string) => {
@@ -264,10 +288,17 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
             </Button>
           </DialogTrigger>
           <AddPolicyDialogForm
+            selectedPolicyId={selectedPolicyId}
             policyForm={policyForm}
             onSubmit={(payload: CreatePolicyPayload) => {
-              performCreate(payload)
-              handleAddPolicyDialogOpenChange(false)
+              if (selectedPolicyId) {
+                const { name, executeOn, engine, rule } = { ...payload };
+                const editPayload = { policyID: selectedPolicyId, payload: { name, executeOn, engine, rule } };
+                performEdit(editPayload);
+              } else {
+                performCreate(payload);
+              }
+              handleAddPolicyDialogOpenChange(false);
             }}
             onCancel={() => { handleAddPolicyDialogOpenChange(false) }}
           />

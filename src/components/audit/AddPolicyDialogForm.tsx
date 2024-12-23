@@ -27,8 +27,8 @@ const baseSchema = z.object({
 const executeOnArray = ["Read", "UpdatePreHash", "UpdatePostHash", "Create", "Delete", "RBACCreate", "RBACUpdate", "RBACDelete"];
 const executeOnOptions = executeOnArray.map(x => ({ label: x, value: x }));
 
-const AddPolicyDialogForm = ({ policyForm, onSubmit, onCancel }: {
-  policyForm: PolicyForm; onSubmit: (payload: CreatePolicyPayload) => void; onCancel: () => void;
+const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel }: {
+  selectedPolicyId: string; policyForm: PolicyForm; onSubmit: (payload: CreatePolicyPayload) => void; onCancel: () => void;
 }) => {
   const [isValid, setIsValid] = useState<null | boolean>(null);
   const form = useForm({ resolver: zodResolver(baseSchema), defaultValues: policyForm });
@@ -99,7 +99,7 @@ const AddPolicyDialogForm = ({ policyForm, onSubmit, onCancel }: {
       className="w-[max(50%,640px)] max-w-[calc(100%-theme(spacing.12))] max-h-[calc(100%-theme(spacing.12))] overflow-auto grid-rows-[auto_minmax(100px,1fr)_auto] grid-cols-[minmax(100%,1fr)]"
     >
       <DialogHeader>
-        <DialogTitle>Add Policy</DialogTitle>
+        <DialogTitle>{selectedPolicyId? "Edit" : "Add"} Policy</DialogTitle>
         <DialogDescription />
       </DialogHeader>
       <Form {...form}>

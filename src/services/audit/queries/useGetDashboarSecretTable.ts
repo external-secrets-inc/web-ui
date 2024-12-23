@@ -19,7 +19,6 @@ const getDashboardSecretTable = async (
 
   const headers = await getAuthHeaders();
   const response = await axiosInstance.get(`/api/dashboard/${listener_id}/secrets-table`, { headers, signal, backend: 'AUDIT_POC' });
-  console.log(response.data);
   return response.data;
 }
 

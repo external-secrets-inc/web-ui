@@ -101,6 +101,8 @@ export interface CreatePolicyPayload {
   rule: string;
 }
 
+export type EditPolicyPayload = Omit<CreatePolicyPayload, "tenantID">
+
 export interface PolicyForm {
   name: string;
   engine: string;
