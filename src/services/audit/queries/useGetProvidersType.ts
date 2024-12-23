@@ -23,6 +23,9 @@ const getProvidersTypes = async (
         "projectID": { "type": "string", "required": true },
         "topic": { "type": "string", "required": true },
         "subscription": { "type": "string", "required": true }
+      },
+      "vault": {
+        "port": { "type": "number", "required": true }
       }
     } as AddProviderFormSchema;
   }
