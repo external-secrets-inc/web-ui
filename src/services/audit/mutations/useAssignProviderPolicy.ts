@@ -21,7 +21,10 @@ const assignProviderPolicy = async (mock: boolean, payload: AssignProviderPolicy
   const response = await axiosInstance.post(
     `/api/providers/${payload.providerId}/assign-policy/${payload.policyId}`,
     {},
-    { headers }
+    {
+      headers,
+      backend: 'AUDIT_POC',
+    }
   );
   return response.data;
 };
