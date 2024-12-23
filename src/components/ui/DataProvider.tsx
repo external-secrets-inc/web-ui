@@ -22,7 +22,7 @@ interface DataProviderContextValue<TData> {
 const DataProviderContext = React.createContext<DataProviderContextValue<any>>({} as any) // eslint-disable-line @typescript-eslint/no-explicit-any
 
 interface DataWithId {
-  id: string | number;  // Make id optional since table handles it
+  id: string | number;
 }
 
 /**
