@@ -3,7 +3,7 @@ import { PolicyTableData } from "./Audit.interfaces";
 import { createColumnHelper } from "@tanstack/react-table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { LucideMoreVertical, LucidePlus, LucideTrash2, LucideUsers, LucideAlertCircle } from "lucide-react";
-import { FeatureItemDeleteAction } from "../FeatureCollection";
+import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction" // TODO: We should not import components from non generic stuff! This should be a generic component, or re-implemented here.
 import { Button } from "../ui/button";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";

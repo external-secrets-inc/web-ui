@@ -15,7 +15,7 @@ import useCreateAuditProvider from "@/services/audit/mutations/useCreateAuditPro
 import useDeleteAuditProvider from "@/services/audit/mutations/useDeleteAuditProvider";
 import useGetAuditProviders from "@/services/audit/queries/useGetAuditProviders";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
-import { FeatureItemDeleteAction } from "../FeatureCollection";
+import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction" // TODO: We should not import components from non generic stuff! This should be a generic component, or re-implemented here.
 
 interface ProviderTableMeta {
   renderRowActions?: (row: ProviderTableData) => React.ReactNode;
@@ -79,12 +79,12 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
 
   const [isAddProviderDialogOpen, setIsAddProviderDialogOpen] = useState(false);
 
-  const { 
-    data: providersData, 
-    refetch: providersRefetch, 
-    isLoading: isLoadingProviders, 
-    isError: isErrorProviders, 
-    isRefetchError: isRefetchErrorProviders, 
+  const {
+    data: providersData,
+    refetch: providersRefetch,
+    isLoading: isLoadingProviders,
+    isError: isErrorProviders,
+    isRefetchError: isRefetchErrorProviders,
     error: providersError } = useGetAuditProviders(false, listenerID, {
       refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
       refetchIntervalInBackground: true,
