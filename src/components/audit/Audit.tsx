@@ -44,7 +44,7 @@ import useCreateTenantListener from "@/services/audit/mutations/useCreateTenantL
 import AuditPolicyDataTable from "./AuditPolicyDataTable";
 import useCreateAuditListener from "@/services/audit/mutations/useCreateAuditListener";
 import useAuthUser from "react-auth-kit/hooks/useAuthUser";
-import { IUserData } from "@/types";  
+import { IUserData } from "@/types";
 
 const toYYYYMMDD = (date: Date) => {
   return date.toISOString().slice(0, 10); // YYYY-MM-DD in UTC
@@ -275,9 +275,9 @@ export default function Audit() {
     },
     onError: (error: AxiosError<ApiHttpError>) => {
       handleDefaultApiHttpError(error, "Error while creating audit listener");
-      setCreateAuditListenerError(error); 
+      setCreateAuditListenerError(error);
     },
-  });  
+  });
 
   // Effect to handle audit listener creation
   useEffect(() => {
@@ -561,17 +561,19 @@ export default function Audit() {
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(416px,100%),1fr))] gap-4 mt-6">
         {currentToggledTimeRange === 0 ? (
           <>
-            <AuditChartProviders />
-            <AuditChartProblems />
+            <AuditChartProviders listenerID={tenantListener.id} />
+            <AuditChartProblems listenerID={tenantListener.id} />
           </>
         ) : chartsStartDate && chartsEndDate ? (
           <>
             <AuditTimelineProviders
+              listenerID={tenantListener.id}
               timeRange={getTimeRangeFromDays(currentToggledTimeRange)}
               startDate={chartsStartDate}
               endDate={chartsEndDate}
-            />
+              />
             <AuditTimelineProblems
+              listenerID={tenantListener.id}
               timeRange={getTimeRangeFromDays(currentToggledTimeRange)}
               startDate={chartsStartDate}
               endDate={chartsEndDate}
@@ -582,6 +584,7 @@ export default function Audit() {
 
       <AuditPolicyDataTable
         tenantID={authUser?.tenantId ?? ""}
+        listenerID={auditListener.listenerID}
       />
 
       <AuditProviderDataTable

@@ -10,8 +10,14 @@ const BASE_CHART_CONFIG = {
   },
 } satisfies ChartConfig
 
-function AuditChartProblems() {
-  const { data, error, isLoading } = useGetAuditProblemStats(true)
+
+interface Props {
+  listenerID?: string;
+}
+
+
+function AuditChartProblems({ listenerID } : Props) {
+  const { data, error, isLoading } = useGetAuditProblemStats(listenerID || '', false, {enabled: !!listenerID})
   const total = data?.reduce((acc, { amount }) => acc + amount, 0) ?? 0
 
   return (
@@ -31,7 +37,7 @@ function AuditChartProblems() {
       data={data}
       baseConfig={BASE_CHART_CONFIG}
       error={!!error}
-      isLoading={isLoading}
+      isLoading={isLoading || !listenerID}
     />
   )
 }

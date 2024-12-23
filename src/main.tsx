@@ -22,8 +22,9 @@ import './index.css';
 import { DOCS_DOMAIN } from "@/constants";
 import ListRotators from "@/components/rotators/ListRotators";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Audit from "@/components/audit/Audit"
+import AuditWrapper from "@/components/audit/AuditWrapper";
 import OrgRedirector from "./components/OrgRedirector";
+import { Loader } from "@/components/ui/Loader";
 
 const queryClient = new QueryClient()
 
@@ -122,7 +123,9 @@ const router = createBrowserRouter([
                 </>
               }
             />
-            <Audit />
+            <React.Suspense fallback={<Loader/>}>
+              <AuditWrapper />
+            </React.Suspense>
           </>
         )
       } : {},

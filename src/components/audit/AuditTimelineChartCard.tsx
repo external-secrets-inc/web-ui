@@ -57,21 +57,28 @@ export function AuditTimelineChartCard({
 }: TimelineChartCardProps) {
   const { data, config } = useMemo(() => {
     if (!rawData || !Array.isArray(rawData)) return { data: undefined, config: baseConfig }
+    const uniqueKindsMap = new Map<string, {kind: string, label: string; tooltipLabel: string | undefined }>();
 
-    const allKinds = Array.from(
-      new Set(rawData.flatMap(d => d.stats.map(s => s.kind)))
-    )
-
+    for (const item of rawData) {
+      for (const stat of item.stats) {
+        if (!uniqueKindsMap.has(stat.kind)) {
+          uniqueKindsMap.set(stat.kind, {
+            kind: stat.kind,
+            label: stat.label,
+            tooltipLabel: stat.tooltipLabel,
+          });
+        }
+      }
+    }
     const chartConfig = {
       ...baseConfig,
       ...Object.fromEntries(
-        allKinds.map((kind, index) => {
-          const statItem = rawData[0].stats.find(s => s.kind === kind)
+        Array.from(uniqueKindsMap.values()).map((kind, index) => {
           return [
-            kind,
+            kind.kind,
             {
-              label: statItem?.label,
-              tooltipLabel: statItem?.tooltipLabel,
+              label: kind.label,
+              tooltipLabel: kind.tooltipLabel,
               color: CHART_COLORS[index % CHART_COLORS.length],
             }
           ]
@@ -96,7 +103,6 @@ export function AuditTimelineChartCard({
         )
       }
     })
-
     return { data: chartData, config: chartConfig }
   }, [rawData, baseConfig])
 

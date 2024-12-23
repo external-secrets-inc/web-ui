@@ -75,9 +75,22 @@ export interface TimeRangeOption {
 
 export interface PolicyTableData {
   id: string;
+  policyID: string;
+  tenantID: string;
   name: string;
   executeOn: string[];
-  providers: string[];
+  executeOnAmount: number;
+  providers: {
+    amount: number;
+    items: Array<{
+      providerID: string;
+      additionalProp1?: string;
+      additionalProp2?: string;
+      additionalProp3?: string;
+    }>;
+  };
+  engine: string;
+  rule: string;
 }
 
 export interface CreatePolicyPayload {
@@ -97,10 +110,21 @@ export interface PolicyForm {
 }
 
 export interface ProviderTableData {
-  id: string;
+  _id: string;
   providerID: string;
+  listenerID: string;
+  tenantID: string;
   name: string;
+  backendIdentifier: string;
   backendType: string;
+  config: {
+    projectID?: string;
+    topic?: string;
+    subscription?: string;
+    [key: string]: string | undefined;
+  };
+  policies: string[];
+  deleted_at?: string;
 }
 
 export interface CreateProviderPayload {

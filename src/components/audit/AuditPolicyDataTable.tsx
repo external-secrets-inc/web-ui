@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { CreatePolicyPayload, PolicyForm, PolicyTableData } from "./Audit.interfaces";
 import { createColumnHelper } from "@tanstack/react-table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
-import { LucideMoreVertical, LucidePlus, LucideTrash2 } from "lucide-react";
+import { LucideMoreVertical, LucidePlus, LucideTrash2, LucideUsers, LucideAlertCircle } from "lucide-react";
 import { FeatureItemDeleteAction } from "../FeatureCollection";
 import { Button } from "../ui/button";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
@@ -13,15 +13,21 @@ import { toast } from "sonner";
 import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import { DataProvider, DataTable } from "../ui/DataProvider";
 import useGetPolicies from "@/services/audit/queries/useGetPolicies";
+import useGetAuditProviders from "@/services/audit/queries/useGetAuditProviders";
+import useGetPolicy from "@/services/audit/queries/useGetPolicy";
 import useCreatePolicy from "@/services/audit/mutations/useCreatePolicy";
 import useDeletePolicy from "@/services/audit/mutations/useDeletePolicy";
 import AddPolicyDialogForm from "./AddPolicyDialogForm";
+import { AssignProvidersDialog } from "./AssignProvidersDialog";
+import useAssignProviderPolicy from "@/services/audit/mutations/useAssignProviderPolicy";
+import useUnassignProviderPolicy from "@/services/audit/mutations/useUnassignProviderPolicy";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface PolicyTableMeta {
   renderRowActions?: (row: PolicyTableData) => React.ReactNode;
 }
 
-export default function AuditPolicyDataTable({ tenantID }: { tenantID: string }) {
+export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantID: string; listenerID: string }) {
   const columnHelper = createColumnHelper<PolicyTableData>();
 
   // Adjust PolicyTableData Later
@@ -35,8 +41,24 @@ export default function AuditPolicyDataTable({ tenantID }: { tenantID: string })
       cell: info => info.getValue()?.join(" / ") || ""
     }),
     columnHelper.accessor('providers', {
-      header: 'Providers',
-      cell: info => info.getValue()?.length || 0
+      header: 'Providers Assigned',
+      cell: info => (
+        <div className="flex items-center gap-2">
+          <span>{info.getValue()?.amount || 0}</span>
+          {(!info.getValue()?.amount) && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <LucideAlertCircle className="h-4 w-4 text-orange-500" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>You must assign a provider for this policy to take effect</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </div>
+      )
     }),
     columnHelper.display({
       id: 'actions',
@@ -48,7 +70,6 @@ export default function AuditPolicyDataTable({ tenantID }: { tenantID: string })
     })
   ], [columnHelper]);
 
-  // Include EditPolicy/AssignProvider Buttons
   const policyTableMeta: PolicyTableMeta = {
     renderRowActions: (row) => (
       <div className="flex items-center gap-2">
@@ -68,15 +89,25 @@ export default function AuditPolicyDataTable({ tenantID }: { tenantID: string })
           >
             <FeatureItemDeleteAction
               featureType={"Audit Policy"}
-              featureID={row.id}
+              featureID={row.policyID}
               featureName={row.name}
-              onDelete={() => { performDelete(row.id) }}
+              onDelete={() => { performDelete(row.policyID) }}
             >
               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                 <LucideTrash2 className="mr-2" />
                 Delete Policy
               </DropdownMenuItem>
             </FeatureItemDeleteAction>
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault();
+                setSelectedPolicyId(row.policyID);
+                setIsAssignProvidersDialogOpen(true);
+              }}
+            >
+              <LucideUsers className="mr-2" />
+              Assign Providers
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -92,6 +123,8 @@ export default function AuditPolicyDataTable({ tenantID }: { tenantID: string })
     rule: "",
   };
   const [policyForm, setPolicyForm] = useState<PolicyForm>(defaultFormValues);
+  const [isAssignProvidersDialogOpen, setIsAssignProvidersDialogOpen] = useState(false);
+  const [selectedPolicyId, setSelectedPolicyId] = useState<string>("");
 
   const {
     data: policiesData,
@@ -100,15 +133,31 @@ export default function AuditPolicyDataTable({ tenantID }: { tenantID: string })
     isError: isErrorPolicies,
     isRefetchError: isRefetchErrorPolicies,
     error: policiesError
-  } = useGetPolicies(true, tenantID, {
+  } = useGetPolicies(false, tenantID, {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
+  });
+
+  const {
+    data: providersData,
+    isLoading: isLoadingProviders,
+  } = useGetAuditProviders(false, listenerID, {
+    refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
+    refetchIntervalInBackground: true,
+  });
+
+  const { data: selectedPolicy } = useGetPolicy(false, selectedPolicyId, {
+    enabled: isAssignProvidersDialogOpen,
   });
 
   const policies = useMemo(() => {
     if (!policiesData) return []
 
-    return policiesData;
+    // Transform the API response to include the required id dataProvider field
+    return policiesData.map(policy => ({
+      ...policy,
+      id: policy.policyID,
+    }));
   }, [policiesData]);
 
   const { mutate: createPolicy } = useCreatePolicy({
@@ -127,6 +176,14 @@ export default function AuditPolicyDataTable({ tenantID }: { tenantID: string })
     },
   });
 
+  const { mutateAsync: assignProvider } = useAssignProviderPolicy(false, {
+    onError: (error) => handleDefaultApiHttpError(error, "Failed to assign provider"),
+  });
+
+  const { mutateAsync: unassignProvider } = useUnassignProviderPolicy(false, {
+    onError: (error) => handleDefaultApiHttpError(error, "Failed to unassign provider"),
+  });
+
   const performCreate = (payload: CreatePolicyPayload) => {
     payload.tenantID = tenantID;
     createPolicy(payload)
@@ -136,10 +193,53 @@ export default function AuditPolicyDataTable({ tenantID }: { tenantID: string })
     deletePolicy({ id: policyID });
   };
 
+  const handleAssignProviders = async (providerIds: string[]) => {
+    const currentPolicy = policies.find(p => p.id === selectedPolicyId);
+    if (!currentPolicy) return;
+
+    const currentProviderIds = currentPolicy.providers.items.map(p => p.providerID);
+
+    const providersToUnassign = currentProviderIds.filter(
+      providerId => !providerIds.includes(providerId)
+    );
+
+    const providersToAssign = providerIds.filter(
+      providerId => !currentProviderIds.includes(providerId)
+    );
+
+    try {
+      // Basically run all assign and unassign mutations in parallel and wait for them to finish
+      const mutations = [
+        ...providersToUnassign.map(providerId =>
+          unassignProvider({ providerId, policyId: selectedPolicyId })
+        ),
+        ...providersToAssign.map(providerId =>
+          assignProvider({ providerId, policyId: selectedPolicyId })
+        )
+      ];
+      await Promise.all(mutations);
+      await policiesRefetch();
+      setIsAssignProvidersDialogOpen(false);
+
+      // Only show success message if we had changes to make
+      if (providersToAssign.length > 0 || providersToUnassign.length > 0) {
+        const messages: string[] = [];
+        if (providersToAssign.length > 0) {
+          messages.push(`${providersToAssign.length} provider${providersToAssign.length !== 1 ? 's' : ''} assigned`);
+        }
+        if (providersToUnassign.length > 0) {
+          messages.push(`${providersToUnassign.length} provider${providersToUnassign.length !== 1 ? 's' : ''} unassigned`);
+        }
+        toast.success(messages.join(' and '));
+      }
+    } catch (error) {
+      handleDefaultApiHttpError(error as AxiosError<ApiHttpError>, "Failed to update provider assignments");
+    }
+  };
+
   useEffect(() => {
     if (!(policiesError || isRefetchErrorPolicies)) return;
-
-    handleDefaultApiHttpError(policiesError, "Error while fetching listener Audit data")
+    handleDefaultApiHttpError(policiesError, "Error while fetching listener Audit data");
   }, [policiesError, isErrorPolicies, isRefetchErrorPolicies]);
 
   const handleAddPolicyDialogOpenChange = (isOpen: boolean) => {
@@ -184,6 +284,20 @@ export default function AuditPolicyDataTable({ tenantID }: { tenantID: string })
           meta={policyTableMeta}
         />
       </DataProvider>
+
+      {/* TODO: The multi-select providers value is only visually shown after you open the dialog twice wtf */}
+      <Dialog
+        open={isAssignProvidersDialogOpen}
+        onOpenChange={setIsAssignProvidersDialogOpen}
+      >
+        <AssignProvidersDialog
+          currentAssignedProviders={selectedPolicy?.providers.items.map(p => p.providerID) || []}
+          providers={providersData || []}
+          isLoadingProviders={isLoadingProviders}
+          onAssign={handleAssignProviders}
+          onCancel={() => setIsAssignProvidersDialogOpen(false)}
+        />
+      </Dialog>
     </>
   )
 }
