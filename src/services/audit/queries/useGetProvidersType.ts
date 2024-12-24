@@ -21,12 +21,16 @@ const getProvidersTypes = async (
         "field5": { "type": "boolean", "required": true },
       },
       "gcp": {
-        "projectID": { "type": "string", "required": true },
+        "project-id": { "type": "string", "required": true },
         "topic": { "type": "string", "required": true },
         "subscription": { "type": "string", "required": true }
       },
       "vault": {
-        "port": { "type": "number", "required": true }
+        "vaultAddress": { "type": "string", "required": true },
+        "vaultBasePath": { "type": "string", "required": false, "default": "secret" },
+        "vaultVersion": { "type": "string", "required": false, "default": "v2" },
+        "socketHost": { "type": "string", "required": false, "default": "0.0.0.0" },
+        "socketPort": { "type": "number", "required": false, "default": 8000}
       }
     } as AddProviderFormSchema;
   }

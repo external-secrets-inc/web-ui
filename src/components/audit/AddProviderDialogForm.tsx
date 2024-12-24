@@ -48,7 +48,7 @@ const fieldHandlers: Record<
         : z.string().max(schema.maxLength || Infinity).optional(),
     render: (schema, field, fieldProps) => (
       <Input
-        placeholder={`Enter ${field}`}
+        placeholder={schema.default? schema.default : `Enter ${field}`}
         maxLength={schema.maxLength}
         {...fieldProps}
       />
@@ -80,7 +80,7 @@ const fieldHandlers: Record<
       schema.required
         ? z.number({ invalid_type_error: `${key} must be a number.` })
         : z.number().optional(),
-    render: (_, field, fieldProps) => (
+    render: (_schema, field, fieldProps) => (
       <Input
         type="number"
         placeholder={`Enter ${field}`}
