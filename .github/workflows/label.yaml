@@ -97,6 +97,7 @@ jobs:
               labels: [label],
             });
       - name: login to github app
+        if: ${{ steps.size.outputs.label == 'size/XXS' }}
         uses: actions/create-github-app-token@v1
         id: app-token
         with:
