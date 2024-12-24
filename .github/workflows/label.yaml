@@ -97,14 +97,14 @@ jobs:
               labels: [label],
             });
       - name: login to github app
-        if: ${{ steps.size.outputs.label == 'size/XXS' }}
+        if: ${{ steps.size.outputs.label == 'size/XXS' && github.actor != 'external-secrets-bot[bot]'  }}
         uses: actions/create-github-app-token@v1
         id: app-token
         with:
           app-id: ${{ vars.ESI_BOT_APP_ID }}
           private-key: ${{ secrets.ESI_BOT_PRIVATE_KEY }}
       - name: Approve PR if Small
-        if: ${{ steps.size.outputs.label == 'size/XXS' }}
+        if: ${{ steps.size.outputs.label == 'size/XXS' && github.actor != 'external-secrets-bot[bot]'  }}
         uses: actions/github-script@v6
         with:
           github-token: ${{ steps.app-token.outputs.token }}
