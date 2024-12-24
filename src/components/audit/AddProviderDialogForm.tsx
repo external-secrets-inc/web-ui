@@ -80,7 +80,7 @@ const fieldHandlers: Record<
       schema.required
         ? z.number({ invalid_type_error: `${key} must be a number.` })
         : z.number().optional(),
-    render: (schema, field, fieldProps) => (
+    render: (_schema, field, fieldProps) => (
       <Input
         type="number"
         placeholder={`Enter ${field}`}
