@@ -16,7 +16,7 @@ export const filterSchema = z.object({
 export type FilterSchema = z.infer<typeof filterSchema>;
 
 export interface AuditResponseData {
-  secretData: AuditTableData[];
+  secretsData: AuditTableData[];
   secretsNames: {
     label: string;
     value: string;

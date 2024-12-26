@@ -79,7 +79,7 @@ export const mockLastUpdate = new Date().toLocaleString('en-US', {
 })
 
 export const mockAuditTableData = {
-  secretData: [
+  secretsData: [
     {
       id: "550e8400-e29b-41d4-a716-446655440000",
       secret: "Solid Serpent",
