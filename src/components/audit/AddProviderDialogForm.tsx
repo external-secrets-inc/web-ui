@@ -149,11 +149,11 @@ const renderInputField = (
 const AddProviderDialogForm = ({
   onSubmit,
   onCancel,
-  open,  // Add this prop
+  open,
 }: {
   onSubmit: (payload: CreateProviderPayload) => void;
   onCancel: () => void;
-  open: boolean;  // Add this prop definition
+  open: boolean;
 }) => {
   const [formSchemaData, setFormSchema] = useState<AddProviderFormSchema>({});
   const [selectedFormType, setSelectedFormType] = useState<string>('');
