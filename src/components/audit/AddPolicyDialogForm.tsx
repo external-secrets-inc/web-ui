@@ -49,10 +49,10 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
   const executeOn = form.watch("executeOn");
   const {
     data: sampleData,
-    // isLoading: isLoadingSample,
+    // isLoading: isLoadingSample, TODO: Implement loading components
     isError: isErrorSample,
     error: errorSample,
-  } = useGetValidateRule(executeOn);
+  } = useGetValidateRule(false, executeOn);
 
   useEffect(() => {
     const sample = sampleData ?? {};
@@ -65,7 +65,7 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
     handleDefaultApiHttpError(errorSample, "Error while fetching sample data")
   }, [errorSample, isErrorSample, executeOn.length])
 
-  const { mutateAsync: validateRule } = usePostValidateRule({
+  const { mutateAsync: validateRule } = usePostValidateRule(false, {
     onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to validate rule"),
     onSuccess: (res) => setIsValid(res.valid)
   });

@@ -31,7 +31,6 @@ interface PolicyTableMeta {
 export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantID: string; listenerID: string }) {
   const columnHelper = createColumnHelper<PolicyTableData>();
 
-  // Adjust PolicyTableData Later
   const columns = useMemo(() => [
     columnHelper.accessor('name', {
       header: 'Name',
@@ -172,7 +171,7 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
     }));
   }, [policiesData]);
 
-  const { mutate: createPolicy } = useCreatePolicy({
+  const { mutate: createPolicy } = useCreatePolicy(false, {
     onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to create Policy"),
     onSuccess: () => {
       policiesRefetch();
@@ -180,7 +179,7 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
     },
   });
 
-  const { mutate: editPolicy } = useEditPolicy({
+  const { mutate: editPolicy } = useEditPolicy(false, {
     onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to edit Policy"),
     onSuccess: () => {
       policiesRefetch();
@@ -188,7 +187,7 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
     },
   });
 
-  const { mutate: deletePolicy } = useDeletePolicy({
+  const { mutate: deletePolicy } = useDeletePolicy(false, {
     onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to delete Policy"),
     onSuccess: () => {
       policiesRefetch();

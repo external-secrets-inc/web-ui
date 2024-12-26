@@ -4,12 +4,27 @@ import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError, } from "@/types";
 import { AxiosError } from "axios";
 import { ProviderTableData } from "@/components/audit/Audit.interfaces";
+import { mockNetworkResponseDelay } from "../mocks/mockData";
 
 const getValidateRule = async (
+  mock: boolean,
   executeOn: string[],
   signal: AbortSignal,
 ) => {
   if (executeOn.length > 0) {
+    if (mock) {
+      await mockNetworkResponseDelay();
+      return {
+        "secret_name": "foobar",
+        "providerID": "<uuid>",
+        "time": "2024-12-29T00:00Z",
+        "metadata": {},
+        "actor": {
+          "identifier": "email-or-token-name"
+        }
+      };
+    }
+
     const executeOnQuery = executeOn.map(x => `executeOn=${x}`).join("&");
     const headers = await getAuthHeaders();
     const response = await axiosInstance.get(`/api/validate-rule?${executeOnQuery}`, { headers, signal, backend: 'AUDIT_POC' });
@@ -18,13 +33,14 @@ const getValidateRule = async (
 }
 
 const useGetValidateRule = (
+  mock: boolean,
   executeOn: string[],
   options?: Omit<UseQueryOptions<ProviderTableData[], AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
 ) => {
   return useQuery({
     queryKey: ["useGetProviders", executeOn],
     queryFn: ({ signal }) => {
-      return getValidateRule(executeOn, signal)
+      return getValidateRule(mock, executeOn, signal)
     },
     ...options,
   });
