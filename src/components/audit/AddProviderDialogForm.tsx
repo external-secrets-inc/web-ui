@@ -27,6 +27,7 @@ import { Switch } from '../ui/switch';
 
 const baseSchema = z.object({
   providerName: z.string().min(1, { message: "Name is required." }),
+  backendIdentifier: z.string().min(1, { message: "Identifier is required." }),
   providerType: z.string().min(1, { message: "Type is required." }),
 });
 
@@ -178,10 +179,11 @@ const AddProviderDialogForm = ({
     }
   });
 
-  const resetForm = (options?: { providerName?: string; providerType?: string }) => {
-    const { providerName, providerType } = {
+  const resetForm = (options?: { providerName?: string; providerType?: string, backendIdentifier?: string }) => {
+    const { providerName, providerType, backendIdentifier } = {
       providerName: options?.providerName ?? "",
       providerType: options?.providerType ?? "",
+      backendIdentifier: options?.backendIdentifier ?? "",
     };
 
     const resetValues = selectedFormType ? Object.keys(formSchemaData[selectedFormType]).reduce<Record<string, string>>((acc, key) => {
@@ -193,18 +195,19 @@ const AddProviderDialogForm = ({
       ...resetValues,
       providerType: providerType,
       providerName: providerName,
+      backendIdentifier: backendIdentifier,
     });
     setSelectedFormType(providerType);
   }
 
   const handleFormTypeChange = (value: string) => {
     setSelectedFormType(value);
-    const formValues = form.getValues(["providerName", "providerType"])
-    resetForm({ providerName: formValues[0], providerType: formValues[1] })
+    const formValues = form.getValues(["providerName", "providerType", "backendIdentifier"])
+    resetForm({ providerName: formValues[0], providerType: formValues[1], backendIdentifier: formValues[2] })
   };
 
   const handleSubmit = (formValues: Record<string, string | boolean | File | number>) => {
-    const { providerName, providerType, ...customFields } = formValues;
+    const { providerName, providerType, backendIdentifier, ...customFields } = formValues;
 
     const config = Object.entries(customFields).reduce<Record<string, string>>((acc, [key, value]) => {
       if (typeof value === "boolean") {
@@ -223,7 +226,7 @@ const AddProviderDialogForm = ({
       listenerID: "",
       tenantID: "",
       name: String(providerName),
-      backendIdentifier: String(providerName),
+      backendIdentifier: String(backendIdentifier),
       backendType: String(providerType).toUpperCase(),
       config: config,
     });
@@ -257,6 +260,19 @@ const AddProviderDialogForm = ({
                 <FormLabel>Name</FormLabel>
                 <FormControl>
                   <Input placeholder="Enter Name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="backendIdentifier"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Identifier</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter Identifier" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
