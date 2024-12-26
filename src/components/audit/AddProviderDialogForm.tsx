@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ControllerRenderProps, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -149,9 +149,11 @@ const renderInputField = (
 const AddProviderDialogForm = ({
   onSubmit,
   onCancel,
+  open,  // Add this prop
 }: {
   onSubmit: (payload: CreateProviderPayload) => void;
   onCancel: () => void;
+  open: boolean;  // Add this prop definition
 }) => {
   const [formSchemaData, setFormSchema] = useState<AddProviderFormSchema>({});
   const [selectedFormType, setSelectedFormType] = useState<string>('');
@@ -187,7 +189,7 @@ const AddProviderDialogForm = ({
     return baseSchema.merge(z.object(dynamicSchema));
   };
 
-  const getDefaultValues = (providerType: string): AddProviderFormValues => {
+  const getDefaultValues = useCallback((providerType: string): AddProviderFormValues => {
     const baseDefaults = {
       providerName: "",
       providerType: providerType,
@@ -217,7 +219,7 @@ const AddProviderDialogForm = ({
       ...baseDefaults,
       ...schemaDefaults,
     };
-  };
+  }, [formSchemaData]);
 
   const formSchema = selectedFormType ? generateZodSchema(selectedFormType) : baseSchema;
 
@@ -226,19 +228,19 @@ const AddProviderDialogForm = ({
     defaultValues: getDefaultValues(selectedFormType),
   });
 
-  const resetForm = (options?: { providerName?: string; providerType?: string }) => {
+  const resetForm = useCallback((options?: { providerName?: string; providerType?: string }) => {
     const newProviderType = options?.providerType ?? "";
     form.reset(getDefaultValues(newProviderType));
     setSelectedFormType(newProviderType);
-  };
+  }, [form, getDefaultValues]);
 
-  const handleFormTypeChange = (value: string) => {
+  const handleFormTypeChange = useCallback((value: string) => {
     const formValues = form.getValues();
     resetForm({
       providerName: formValues.providerName,
       providerType: value
     });
-  };
+  }, [form, resetForm]);
 
   const handleSubmit = (formValues: Record<string, string | boolean | File | number>) => {
     const { providerName, providerType, ...customFields } = formValues;
@@ -267,10 +269,16 @@ const AddProviderDialogForm = ({
     resetForm()
   }
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     onCancel();
-    resetForm()
-  }
+    resetForm();
+  }, [onCancel, resetForm]);
+
+  useEffect(() => {
+    if (!open) {
+      resetForm();
+    }
+  }, [open, resetForm]);
 
   if (isLoadingProvidersTypes) {
     return <div>Loading...</div>;
