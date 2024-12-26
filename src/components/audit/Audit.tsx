@@ -308,7 +308,7 @@ export default function Audit() {
   const listenerSecretTableData = useMemo(() => {
     if (!secretTableData)
       return {
-        secretData: [],
+        secretsData: [],
         secretsNames: [],
         policiesNames: [],
         providers: [],
@@ -623,7 +623,7 @@ export default function Audit() {
       </div>
 
       <DataProvider
-        data={listenerSecretTableData.secretData}
+        data={listenerSecretTableData.secretsData}
         columns={columns}
         initialSort={{ id: "lastRotation", desc: true }}
         isLoading={isLoadingSecretTableData}
