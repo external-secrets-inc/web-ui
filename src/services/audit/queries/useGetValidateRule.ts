@@ -5,6 +5,7 @@ import { ApiHttpError, } from "@/types";
 import { AxiosError } from "axios";
 import { ProviderTableData } from "@/components/audit/Audit.interfaces";
 import { mockNetworkResponseDelay } from "../mocks/mockData";
+import { useAuditMock } from "../context/AuditMockContext";
 
 const getValidateRule = async (
   mock: boolean,
@@ -37,10 +38,12 @@ const useGetValidateRule = (
   executeOn: string[],
   options?: Omit<UseQueryOptions<ProviderTableData[], AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
 ) => {
+  const { isMocked } = useAuditMock(mock);
+
   return useQuery({
-    queryKey: ["useGetProviders", executeOn],
+    queryKey: ["useGetProviders", executeOn, isMocked],
     queryFn: ({ signal }) => {
-      return getValidateRule(mock, executeOn, signal)
+      return getValidateRule(isMocked, executeOn, signal)
     },
     ...options,
   });

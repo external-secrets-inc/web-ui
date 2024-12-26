@@ -4,6 +4,7 @@ import axiosInstance from "@/services/axiosConfig";
 import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
 import { mockNetworkResponseDelay } from "../mocks/mockData";
+import { useAuditMock } from '@/services/audit/context/AuditMockContext';
 
 const deletePolicy = async (mock: boolean, policyID: string) => {
   if (mock) {
@@ -20,10 +21,12 @@ const useDeletePolicy = (
   mock: boolean,
   options?: Omit<UseMutationOptions<string, AxiosError<ApiHttpError>, { id: string }>, 'mutationKey' | 'mutationFn'>
 ) => {
+  const { isMocked } = useAuditMock(mock);
+
   return useMutation({
-    mutationKey: ["useDeletePolicy"],
+    mutationKey: ["useDeletePolicy", isMocked],
     mutationFn: (variables: { id: string }) => {
-      return deletePolicy(mock, variables.id)
+      return deletePolicy(isMocked, variables.id)
     },
     ...options,
   });

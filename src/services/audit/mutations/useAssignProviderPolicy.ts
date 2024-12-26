@@ -4,6 +4,7 @@ import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
 import { mockNetworkResponseDelay } from "../mocks/mockData";
+import { useAuditMock } from '@/services/audit/context/AuditMockContext';
 
 interface AssignProviderPolicyPayload {
   providerId: string;
@@ -18,9 +19,12 @@ const assignProviderPolicy = async (mock: boolean, payload: AssignProviderPolicy
 
   const headers = await getAuthHeaders();
   const response = await axiosInstance.post(
-    `/api/providers/${payload.providerId}/assign-policy/${payload.policyId}`,
+    `/api/providers/${payload.providerId}/policy-assignments/${payload.policyId}`,
     {},
-    { headers }
+    {
+      headers,
+      backend: 'AUDIT_POC',
+    }
   );
   return response.data;
 };
@@ -32,8 +36,11 @@ const useAssignProviderPolicy = (
     "mutationFn"
   >
 ) => {
+  const { isMocked } = useAuditMock(mock);
+
   return useMutation({
-    mutationFn: (payload) => assignProviderPolicy(mock, payload),
+    mutationKey: ["useAssignProviderPolicy", isMocked],
+    mutationFn: (payload) => assignProviderPolicy(isMocked, payload),
     ...options,
   });
 };

@@ -4,6 +4,7 @@ import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
 import { mockNetworkResponseDelay } from "../mocks/mockData";
+import { useAuditMock } from '@/services/audit/context/AuditMockContext';
 
 interface UnassignProviderPolicyPayload {
   providerId: string;
@@ -18,8 +19,11 @@ const unassignProviderPolicy = async (mock: boolean, payload: UnassignProviderPo
 
   const headers = await getAuthHeaders();
   const response = await axiosInstance.delete(
-    `/api/providers/${payload.providerId}/unassign-policy/${payload.policyId}`,
-    { headers }
+    `/api/providers/${payload.providerId}/policy-assignments/${payload.policyId}`,
+    {
+      headers,
+      backend: 'AUDIT_POC',
+    }
   );
   return response.data;
 };
@@ -31,8 +35,11 @@ const useUnassignProviderPolicy = (
     "mutationFn"
   >
 ) => {
+  const { isMocked } = useAuditMock(mock);
+
   return useMutation({
-    mutationFn: (payload) => unassignProviderPolicy(mock, payload),
+    mutationKey: ["useUnassignProviderPolicy", isMocked],
+    mutationFn: (payload) => unassignProviderPolicy(isMocked, payload),
     ...options,
   });
 };

@@ -5,6 +5,7 @@ import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
 import { CreatePolicyPayload } from "@/components/audit/Audit.interfaces";
 import { mockNetworkResponseDelay } from "../mocks/mockData";
+import { useAuditMock } from '@/services/audit/context/AuditMockContext';
 
 const createPolicy = async (mock: boolean, payload: CreatePolicyPayload) => {
   if (mock) {
@@ -21,10 +22,12 @@ const useCreatePolicy = (
   mock: boolean,
   options?: Omit<UseMutationOptions<string, AxiosError<ApiHttpError>, CreatePolicyPayload>, 'mutationKey' | 'mutationFn'>
 ) => {
+  const { isMocked } = useAuditMock(mock);
+
   return useMutation({
-    mutationKey: ["useCreatePolicy"],
+    mutationKey: ["useCreatePolicy", isMocked],
     mutationFn: (variables: CreatePolicyPayload) => {
-      return createPolicy(mock, variables)
+      return createPolicy(isMocked, variables)
     },
     ...options,
   });

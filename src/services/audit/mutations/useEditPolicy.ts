@@ -5,6 +5,7 @@ import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
 import { EditPolicyPayload } from "@/components/audit/Audit.interfaces";
 import { mockNetworkResponseDelay } from "../mocks/mockData";
+import { useAuditMock } from "../context/AuditMockContext";
 
 export interface EditPolicyVariables {
   policyID: string;
@@ -33,13 +34,15 @@ const editPolicy = async (mock: boolean, { policyID, payload }: EditPolicyVariab
 }
 
 const useEditPolicy = (
-  mock:boolean,
+  mock: boolean,
   options?: Omit<UseMutationOptions<string, AxiosError<ApiHttpError>, EditPolicyVariables>, 'mutationKey' | 'mutationFn'>
 ) => {
+  const { isMocked } = useAuditMock(mock);
+
   return useMutation({
-    mutationKey: ["useEditPolicy"],
+    mutationKey: ["useEditPolicy", isMocked],
     mutationFn: (variables: EditPolicyVariables) => {
-      return editPolicy(mock, variables);
+      return editPolicy(isMocked, variables);
     },
     ...options,
   });

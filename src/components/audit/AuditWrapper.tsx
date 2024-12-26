@@ -1,11 +1,36 @@
 import { useState, useEffect } from 'react';
 import { getSubscriptions } from '@/services/subscriptions/subscriptionsService';
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import Audit from './Audit';
 import { Subscription, Feature } from '@/types';
 import { LucideGem } from 'lucide-react';
+import { AuditMockProvider, useAuditMock } from '@/services/audit/context/AuditMockContext';
 
-export default function AuditWrapper() {
+const MockControls = () => {
+  const { mockSource, setMockSource } = useAuditMock();
+
+  return (
+    <div className="flex items-center gap-2 mb-4">
+      <span className="text-sm font-medium">Data Source:</span>
+      <Select
+        value={mockSource}
+        onValueChange={setMockSource}
+      >
+        <SelectTrigger className="w-[180px]">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="hooks">Use Hook Parameter</SelectItem>
+          <SelectItem value="mock">Use Mock Data</SelectItem>
+          <SelectItem value="api">Use Real API</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  );
+};
+
+const AuditWrapper = () => {
   const [hasAccess, setHasAccess] = useState(false);
 
   useEffect(() => {
@@ -38,5 +63,14 @@ export default function AuditWrapper() {
     );
   }
 
-  return <Audit />;
-}
+  return (
+    <AuditMockProvider>
+      <div className="space-y-4">
+        <MockControls />
+        <Audit />
+      </div>
+    </AuditMockProvider>
+  );
+};
+
+export default AuditWrapper;

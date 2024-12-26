@@ -5,6 +5,7 @@ import { ApiHttpError, } from "@/types";
 import { AxiosError } from "axios";
 import { mockNetworkResponseDelay, mockPoliciesData } from "../mocks/mockData";
 import { PolicyTableData } from "@/components/audit/Audit.interfaces";
+import { useAuditMock } from '@/services/audit/context/AuditMockContext';
 
 // TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/119
 const getPolicies = async (
@@ -24,14 +25,14 @@ const getPolicies = async (
 
 const useGetPolicies = (
   mock: boolean,
-  tenandID: string,
+  tenantID: string,
   options?: Omit<UseQueryOptions<PolicyTableData[], AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
 ) => {
+  const { isMocked } = useAuditMock(mock);
+
   return useQuery({
-    queryKey: ["useGetPolicies", mock],
-    queryFn: ({ signal }) => {
-      return getPolicies(mock, tenandID, signal)
-    },
+    queryKey: ["useGetPolicies", isMocked],
+    queryFn: ({ signal }) => getPolicies(isMocked, tenantID, signal),
     ...options,
   });
 };

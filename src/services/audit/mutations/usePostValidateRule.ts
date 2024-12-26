@@ -4,6 +4,7 @@ import axiosInstance from "@/services/axiosConfig";
 import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
 import { mockNetworkResponseDelay } from "../mocks/mockData";
+import { useAuditMock } from "../context/AuditMockContext";
 
 interface ValidateRulePayload {
   regoCode: string;
@@ -34,9 +35,11 @@ const usePostValidateRule = (
   mock: boolean,
   options?: Omit<UseMutationOptions<ValidateRuleResponse, AxiosError<ApiHttpError>, ValidateRulePayload>, 'mutationKey' | 'mutationFn'>
 ) => {
+  const { isMocked } = useAuditMock(mock);
+
   return useMutation({
-    mutationKey: ["usePostValidateRule"],
-    mutationFn: (variables: ValidateRulePayload) => postValidateRule(mock, variables),
+    mutationKey: ["usePostValidateRule", isMocked],
+    mutationFn: (variables: ValidateRulePayload) => postValidateRule(isMocked, variables),
     ...options,
   });
 };
