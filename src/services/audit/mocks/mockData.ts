@@ -240,7 +240,7 @@ export const mockPoliciesData = [
       ]
     },
     engine: "rego",
-    rule: "base64encoded",
+    rule: "cGFja2FnZSBtYWluCmFsbG93IHsgaW5wdXQudXNlciA9PSAiYWRtaW4iIH0=",
   },
   {
     policyID: "policy-id-2",
@@ -261,7 +261,7 @@ export const mockPoliciesData = [
       ]
     },
     engine: "rego",
-    rule: "base64encoded",
+    rule: "cGFja2FnZSBtYWluCmFsbG93IHsgaW5wdXQudXNlciA9PSAiYWRtaW4iIH0=",
   },
   {
     policyID: "policy-id-3",
@@ -284,7 +284,7 @@ export const mockPoliciesData = [
       ]
     },
     engine: "rego",
-    rule: "base64encoded",
+    rule: "cGFja2FnZSBtYWluCmFsbG93IHsgaW5wdXQudXNlciA9PSAiYWRtaW4iIH0=",
   },
   {
     policyID: "policy-id-4",
@@ -300,7 +300,7 @@ export const mockPoliciesData = [
       items: []
     },
     engine: "rego",
-    rule: "base64encoded",
+    rule: "cGFja2FnZSBtYWluCmFsbG93IHsgaW5wdXQudXNlciA9PSAiYWRtaW4iIH0=",
   },
 ] as const
 
