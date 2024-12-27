@@ -65,11 +65,16 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
     handleDefaultApiHttpError(errorSample, "Error while fetching sample data")
   }, [errorSample, isErrorSample, executeOn.length])
 
+  const [isValidateError, setIsValidateError] = useState(false);
   const { mutateAsync: validateRule } = usePostValidateRule(false, {
-    onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to validate rule"),
+    onError: (error: AxiosError<ApiHttpError>) => {
+      handleDefaultApiHttpError(error, "Error while trying to validate rule");
+      setIsValidateError(true);
+    },
     onSuccess: (res) => setIsValid(res.valid)
   });
 
+  const name = form.watch("name");
   const rule = form.watch("rule");
   const sample = form.watch("sample");
   const performValidateRule = async () => {
@@ -79,6 +84,7 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
 
   useEffect(() => {
     setIsValid(null);
+    setIsValidateError(false);
   }, [executeOn, sample, rule])
 
   const handleSubmit = async (formValues: PolicyForm) => {
@@ -99,7 +105,7 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
       className="w-[max(50%,640px)] max-w-[calc(100%-theme(spacing.12))] max-h-[calc(100%-theme(spacing.12))] overflow-auto grid-rows-[auto_minmax(100px,1fr)_auto] grid-cols-[minmax(100%,1fr)]"
     >
       <DialogHeader>
-        <DialogTitle>{selectedPolicyId? "Edit" : "Add"} Policy</DialogTitle>
+        <DialogTitle>{selectedPolicyId ? "Edit" : "Add"} Policy</DialogTitle>
         <DialogDescription />
       </DialogHeader>
       <Form {...form}>
@@ -184,14 +190,7 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
               </FormItem>
             )}
           />
-          <DialogFooter className="flex justify-end gap-4 items-center pt-4">
-            <Alert
-              className={`w-full text-center text-sm ${isValid === null ? "hidden" : isValid ? "border-emerald-500" : ""}`}
-              variant={isValid ? "default" : "destructive"}
-              style={{ margin: 0, padding: 6 }}
-            >
-              <AlertDescription>{isValid ? "Your rule is valid!" : "Your rule is not valid!"}</AlertDescription>
-            </Alert>
+          <DialogFooter className="flex items-center justify-between gap-4 pt-4">
             <Button
               type="button"
               aria-keyshortcuts="Escape"
@@ -200,7 +199,22 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
             >
               Cancel
             </Button>
-            {!isValid ?
+
+            <Alert
+              className={`w-full text-center text-sm mx-4 ${isValid ? "border-emerald-500" : (isValid === null && !isValidateError) ? "invisible" : ""}`}
+              variant={isValid ? "default" : isValidateError ? "destructive" : "warning"}
+              style={{ margin: 0, padding: 6 }}
+            >
+              <AlertDescription>
+                {isValid
+                  ? "Your rule is valid!"
+                  : isValidateError
+                    ? "An error occurred while validating the rule."
+                    : "Your rule is not valid!"}
+              </AlertDescription>
+            </Alert>
+
+            <div className="flex gap-4">
               <Button
                 type="button"
                 onClick={performValidateRule}
@@ -208,11 +222,13 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
               >
                 Validate Rule
               </Button>
-              :
-              <Button type="submit">
+              <Button
+                type="submit"
+                disabled={name === "" || executeOn.length === 0 || sample === "" || rule === "" || isValid === null}
+              >
                 Submit
               </Button>
-            }
+            </div>
           </DialogFooter>
         </form>
       </Form>
