@@ -85,9 +85,10 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
     isLoading: isLoadingProviders,
     isError: isErrorProviders,
     isRefetchError: isRefetchErrorProviders,
-    error: providersError } = useGetAuditProviders(false, listenerID, {
+    error: providersError } = useGetAuditProviders(false, listenerID || '', {
       refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
       refetchIntervalInBackground: true,
+      enabled: !!listenerID
     }
   );
 
@@ -150,6 +151,7 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
             </Button>
           </DialogTrigger>
           <AddProviderDialogForm
+            open={isAddProviderDialogOpen}
             onSubmit={(payload: CreateProviderPayload) => {
               performCreate(payload)
               handleAddProviderDialogOpenChange(false)
@@ -161,7 +163,7 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
       <DataProvider
         data={providers}
         columns={columns}
-        initialSort={{ id: 'lastRotation', desc: true }}
+        initialSort={{ id: 'name', desc: false }}
         isLoading={isLoadingProviders}
       >
         <DataTable

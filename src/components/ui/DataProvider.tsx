@@ -1,3 +1,5 @@
+// TODO[cfviotti]: Find a better pattern to abstract into multiple files (unlike our ui/shadcn's pattern), because it's getting unwieldy
+
 import { cn } from "@/lib/utils"
 import { type ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, type SortingState, useReactTable, type TableOptions } from "@tanstack/react-table"
 import { LucideArrowDown, LucideArrowDownNarrowWide, LucideArrowUp, LucideArrowUpNarrowWide, LucideChevronsUpDown, LucideSearch } from "lucide-react"
@@ -8,81 +10,210 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./table"
 import { Loader } from "@/components/ui/Loader"
 
-interface DataProviderContextValue<TData> {
+/**
+ * Base requirement for all data items in the table.
+ * Each item must have a unique identifier for React's key prop and sorting
+ * functionality. react-table will automatically use the index if no id is
+ * provided, but providing one was decided to be safer.
+ */
+type DataWithId = { id: string | number }
+
+/**
+ * Configuration for table sorting.
+ * @property id - Column identifier to sort by
+ * @property desc - Sort direction (true for descending, false for ascending)
+ */
+type SortConfig = { id: string; desc: boolean }
+
+/**
+ * Internal table state that represents the current view.
+ * Combines data, display configuration and filtering/sorting state.
+ * @template TData - Type of data items being displayed
+ */
+type TableState<TData> = {
   data: TData[]
   columns: ColumnDef<TData, any>[] // eslint-disable-line @typescript-eslint/no-explicit-any
   sorting: SortingState
-  setSorting: (sorting: SortingState) => void
   globalFilter: string
-  setGlobalFilter: (value: string) => void
-  table: ReturnType<typeof useReactTable>
   isLoading?: boolean
 }
 
-const DataProviderContext = React.createContext<DataProviderContextValue<any>>({} as any) // eslint-disable-line @typescript-eslint/no-explicit-any
-
-interface DataWithId {
-  id: string | number;
+/**
+ * Actions available to modify table state.
+ * These are separated from state to make the interface more explicit.
+ */
+type TableActions = {
+  setSorting: (sorting: SortingState) => void
+  setGlobalFilter: (value: string) => void
 }
 
 /**
- * DataProvider requires data with unique IDs to act as keys for rendering. Each
- * item in the data array must have a unique 'id' property.
- *
- * react-table will use the `index` property as a fallback key if 'id' is not
- * present, but try to avoid this.
+ * Configuration options for the DataProvider.
+ * @template TData - Type of data items being displayed
  */
-interface DataProviderProps<TData extends DataWithId> {
-  data: TData[];
-  columns: ColumnDef<TData, any>[]; // eslint-disable-line @typescript-eslint/no-explicit-any
-  children: React.ReactNode;
-  initialSort?: { id: string; desc: boolean };
-  reactTableExtraOptions?: Partial<TableOptions<TData>>;
-  isLoading?: boolean;
+type ProviderConfig<TData extends DataWithId> = {
+  /**
+   * Array of data items to display
+   * @see {@link https://tanstack.com/table/v8/docs/api/core/table#data Data API}
+   * */
+  data: TData[]
+
+  /**
+   * Column definitions for the table. Memoizing this array is super recommended.
+   * @see {@link https://tanstack.com/table/v8/docs/api/core/table#columns Column API}
+   * */
+  columns: ColumnDef<TData, any>[] // eslint-disable-line @typescript-eslint/no-explicit-any
+
+  /**
+   * Initial sort configuration
+   * @default{ id: 'id', desc: false }
+   * */
+  initialSort?: SortConfig
+
+  /**
+   * Configuration options from `@tanstack/react-table`
+   * @see {@link https://tanstack.com/table/v8/docs/api/core/table#options Table Options API}
+   */
+  tableOptions?: Omit<TableOptions<TData>,
+    // Omit explicit user table options we already defined as props
+    | 'data'
+    | 'columns'
+    | 'getCoreRowModel'
+    | 'getSortedRowModel'
+    | 'getFilteredRowModel'
+    | 'state'
+    | 'onSortingChange'
+    | 'onGlobalFilterChange'
+  >
+  /** Loading state that shows an inner spinner when true */
+  isLoading?: boolean
 }
 
-function DataProvider<TData extends DataWithId>({
-  data = [],
-  columns,
-  children,
-  initialSort = { id: 'id', desc: false },
-  reactTableExtraOptions = {},
-  isLoading = false
-}: DataProviderProps<TData>) {
-  const [sorting, setSorting] = React.useState<SortingState>([initialSort])
-  const [globalFilter, setGlobalFilter] = React.useState("")
+/**
+ * Combined type for all values provided by the DataProvider context.
+ * Merges state, actions and the table instance for full control.
+ */
+type ProviderContextValue<TData> = TableState<TData> &
+  TableActions & {
+    table: ReturnType<typeof useReactTable>
+  }
 
-  const safeData = React.useMemo(() => {
-    if (!Array.isArray(data)) {
-      console.error('DataProvider: data prop must be an array');
-      return [];
+/**
+ * Stable default values to help prevent unnecessary re-renders and provide
+ * consistent fallbacks.
+ */
+const DEFAULTS = {
+  /** Empty array used as fallback when data is invalid */
+  empty: [] as never[],
+
+  /** Default sort configuration targeting required 'id' column */
+  sort: { id: 'id', desc: false } as const,
+
+  /** Initial empty filter string */
+  filter: ''
+} as const;
+
+// Context
+const DataProviderContext = React.createContext<ProviderContextValue<any>>({} as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+
+/**
+ * Custom hook that manages table state and configuration from a single source.
+ * Handles data validation, sorting, filtering, and table instance creation.
+ *
+ * @template TData - Type of data items being displayed
+ * @param config - Configuration options for the table
+ * @returns Memoized context value with state, actions and table instance
+ */
+function useDataProvider<TData extends DataWithId>({
+  data,
+  columns,
+  initialSort = DEFAULTS.sort,
+  tableOptions = {},
+  isLoading = false
+}: ProviderConfig<TData>) {
+  // State
+  const [sorting, setSorting] = React.useState<SortingState>([initialSort])
+  const [globalFilter, setGlobalFilter] = React.useState(DEFAULTS.filter)
+
+  /**
+   * Safe data with error reporting
+   * Memoized to prevent unnecessary re-renders and potential infinite loops
+   * @see https://github.com/TanStack/table/issues/4240
+   */
+  const safeData = React.useMemo((): TData[] => {
+    if (data === undefined || data === null) {
+      console.error(
+        '[DataProvider] Data is required but received:',
+        data,
+      );
+      return DEFAULTS.empty as TData[];
     }
+
+    if (!Array.isArray(data)) {
+      console.error(
+        '[DataProvider] Expected data to be an array but received:',
+        data,
+        `(Type: ${typeof data})`
+      );
+      return DEFAULTS.empty as TData[];
+    }
+
     return data;
   }, [data]);
 
+  // Table instance
   const table = useReactTable({
     data: safeData,
     columns,
-    state: {
-      sorting,
-      globalFilter,
-    },
+    state: { sorting, globalFilter },
     enableSortingRemoval: false,
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    ...reactTableExtraOptions
+    ...tableOptions
   })
 
+  // Memoized to prevent unnecessary re-renders and potential infinite loops
+  return React.useMemo(() => ({
+    // State
+    data: safeData,
+    columns,
+    sorting,
+    globalFilter,
+    isLoading,
+    // Actions
+    setSorting,
+    setGlobalFilter,
+    // Table
+    table
+  }), [safeData, columns, sorting, globalFilter, table, isLoading]) // Only add State and Table as dependencies
+}
+
+/**
+ * Provider component that makes react-table functionality available to
+ * children.
+ * Can be used to create custom data grids, tables, and other data-driven
+ * components as its children.
+ */
+function DataProvider<TData extends DataWithId>({
+  children,
+  ...config
+}: ProviderConfig<TData> & { children: React.ReactNode }) {
   return (
-    <DataProviderContext.Provider value={{ data, columns, sorting, setSorting, globalFilter, setGlobalFilter, table, isLoading }}>
+    <DataProviderContext.Provider
+      value={useDataProvider(config) as ProviderContextValue<TData>} // TODO[cfviotti]: Fix type assertion (and every other `any` that's here. PS: It's harder than it looks)
+    >
       {children}
     </DataProviderContext.Provider>
   )
 }
 
+/**
+ * Search component that provides global text filtering functionality.
+ * Renders an input field with search icon that filters across all table data.
+ */
 const DataSearch = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => {
     const { globalFilter, setGlobalFilter } = React.useContext(DataProviderContext)
@@ -101,6 +232,11 @@ const DataSearch = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
 })
 DataSearch.displayName = "DataSearch"
 
+/**
+ * Sort control component that provides column sorting functionality.
+ * Renders a select dropdown with sortable columns and a direction toggle button.
+ * Allows users to choose which column to sort by and toggle ascending/descending.
+ */
 const DataSort = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => {
     const { table, sorting, setSorting } = React.useContext(DataProviderContext)
@@ -147,12 +283,22 @@ const DataSort = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEl
 })
 DataSort.displayName = "DataSort"
 
+/**
+ * Props for the DataGrid component
+ */
 interface DataGridProps {
+  /** Function to render each individual item in the grid */
   renderItem: (item: any) => React.ReactNode // eslint-disable-line @typescript-eslint/no-explicit-any
+  /** Optional content that will render before the grid items */
   children?: React.ReactNode
+  /** Optional className for styling */
   className?: string
 }
 
+/**
+ * Grid layout component that renders table data in a responsive grid format.
+ * It is agnostic in how the data is rendered, using a custom renderItem function.
+ */
 const DataGrid = React.forwardRef<HTMLDivElement, DataGridProps>(
   ({ renderItem, children, className, ...props }, ref) => {
     const { table } = React.useContext(DataProviderContext)
@@ -163,6 +309,7 @@ const DataGrid = React.forwardRef<HTMLDivElement, DataGridProps>(
         className={cn("grid grid-cols-[repeat(auto-fill,minmax(min(350px,100%),1fr))] auto-rows-[minmax(216px,auto)] gap-4", className)}
         {...props}
       >
+        {/* Render any additional content before the items using children*/}
         {children}
         {table.getRowModel().rows.map((row) => renderItem(row.original))}
       </div>
@@ -170,16 +317,29 @@ const DataGrid = React.forwardRef<HTMLDivElement, DataGridProps>(
 })
 DataGrid.displayName = "DataGrid"
 
+/**
+ * Props for the DataTable component
+ */
 interface DataTableProps<TMeta = any> extends React.HTMLAttributes<HTMLDivElement> { // eslint-disable-line @typescript-eslint/no-explicit-any
+  /** Optional click handler for table rows */
   onRowClick?: (row: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
+  /** Optional content to append after the table rows */
   rowsAppend?: React.ReactNode;
+  /** Optional metadata to pass to the table */
   meta?: TMeta;
 }
 
+/**
+ * Table component that renders data in a traditional table format.
+ * Provides sorting, loading states, and empty states handling.
+ * Supports row click handlers and additional metadata configuration for things
+ * like custom actions within cells.
+ */
 const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
   ({ className, onRowClick, rowsAppend, meta, ...props }, ref) => {
     const { table, isLoading } = React.useContext(DataProviderContext)
 
+    // Memoized to prevent unnecessary re-renders and potential infinite loops
     const tableOptions = React.useMemo(() => ({
       ...table.options,
       meta: meta ?? {}
@@ -257,4 +417,4 @@ const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
 })
 DataTable.displayName = "DataTable"
 
-export { DataGrid, DataProvider, DataSearch, DataSort, DataTable }
+export { DataGrid, DataProvider, DataSearch, DataSort, DataTable, useDataProvider }

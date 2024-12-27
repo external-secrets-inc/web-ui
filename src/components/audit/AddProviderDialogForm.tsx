@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ControllerRenderProps, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Form,
   FormField,
@@ -11,7 +11,7 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
-} from "../ui/form";
+} from "@/components/ui/form";
 import {
   DialogContent,
   DialogDescription,
@@ -19,11 +19,24 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { AddProviderFieldSchema, AddProviderFieldType, AddProviderFormSchema, CreateProviderPayload } from './Audit.interfaces';
+import {
+  Select,
+  SelectContent,
+  SelectItem, SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
+import {
+  AddProviderFieldSchema,
+  AddProviderFieldType,
+  AddProviderFormSchema,
+  CreateProviderPayload,
+  AddProviderFormValues,
+  AddProviderFieldValue,
+  AddProviderFieldProps
+} from './Audit.interfaces';
 import useGetProvidersTypes from '@/services/audit/queries/useGetProvidersType';
 import { handleDefaultApiHttpError } from '@/services/servicesHelpers';
-import { Switch } from '../ui/switch';
+import { Switch } from '@/components/ui/switch';
 
 const baseSchema = z.object({
   providerName: z.string().min(1, { message: "Name is required." }),
@@ -37,7 +50,7 @@ const fieldHandlers: Record<
     render: (
       schema: AddProviderFieldSchema,
       field: string,
-      fieldProps: ControllerRenderProps<Record<string, string>, string>
+      fieldProps: AddProviderFieldProps
     ) => JSX.Element | null;
   }
 > = {
@@ -48,50 +61,61 @@ const fieldHandlers: Record<
         : z.string().max(schema.maxLength || Infinity).optional(),
     render: (schema, field, fieldProps) => (
       <Input
-        placeholder={`Enter ${field}`}
+        placeholder={schema.default ? schema.default : `Enter ${field}`}
         maxLength={schema.maxLength}
-        {...fieldProps}
+        value={String(fieldProps.value)}
+        onChange={(e) => fieldProps.onChange(e.target.value)}
       />
     ),
   },
   date: {
-    generateSchema: (_, schema) =>
+    generateSchema: (_fieldName, schema) =>
       schema.required ? z.string().min(1) : z.string().optional(),
-    render: (_, __, fieldProps) => <Input type="date" {...fieldProps} />,
+    render: (_schema, _fieldName, fieldProps) => (
+      <Input
+        type="date"
+        value={String(fieldProps.value)}
+        onChange={(e) => fieldProps.onChange(e.target.value)}
+      />
+    ),
   },
   file: {
-    generateSchema: (_, schema) =>
+    generateSchema: (_fieldName, schema) =>
       schema.required
         ? z
             .instanceof(File)
             .refine((file) => file.size > 0, { message: `File must not be empty.` })
         : z.instanceof(File).optional(),
-    render: (_, __, fieldProps) => (
+    render: (_schema, _fieldName, fieldProps) => (
       <Input
         type="file"
-        onChange={(e) =>
-          fieldProps.onChange((e.target as HTMLInputElement).files?.[0])
-        }
+        onChange={(e) => {
+          const file = (e.target as HTMLInputElement).files?.[0];
+          if (file) {
+            fieldProps.onChange(file);
+          }
+        }}
       />
     ),
   },
   number: {
-    generateSchema: (key, schema) =>
+    generateSchema: (_fieldName, schema) =>
       schema.required
-        ? z.number({ invalid_type_error: `${key} must be a number.` })
+        ? z.number({ invalid_type_error: `${_fieldName} must be a number.` })
         : z.number().optional(),
-    render: (_, field, fieldProps) => (
+    render: (_schema, fieldName, fieldProps) => (
       <Input
         type="number"
-        placeholder={`Enter ${field}`}
+        placeholder={`Enter ${fieldName}`}
+        value={fieldProps.value?.toString() ?? ''}
         onChange={(e) => fieldProps.onChange(parseFloat(e.target.value))}
       />
     ),
   },
   boolean: {
-    generateSchema: (_, schema) =>
+    generateSchema: (_fieldName, schema) =>
       schema.required ? z.boolean() : z.boolean().optional(),
-    render: (_, __, fieldProps) => (
+    render: (_schema, _fieldName, fieldProps) => (
       <div>
         <Switch
           checked={
@@ -112,18 +136,24 @@ const fieldHandlers: Record<
 const renderInputField = (
   schema: AddProviderFieldSchema,
   field: string,
-  fieldProps: ControllerRenderProps<Record<string, string>, string>
+  fieldProps: ControllerRenderProps<AddProviderFormValues, string>
 ): JSX.Element | null => {
   const handler = fieldHandlers[schema.type];
-  return handler ? handler.render(schema, field, fieldProps) : null;
+  return handler ? handler.render(schema, field, {
+    onChange: fieldProps.onChange,
+    value: fieldProps.value,
+    name: fieldProps.name,
+  }) : null;
 };
 
 const AddProviderDialogForm = ({
   onSubmit,
   onCancel,
+  open,
 }: {
   onSubmit: (payload: CreateProviderPayload) => void;
   onCancel: () => void;
+  open: boolean;
 }) => {
   const [formSchemaData, setFormSchema] = useState<AddProviderFormSchema>({});
   const [selectedFormType, setSelectedFormType] = useState<string>('');
@@ -159,49 +189,58 @@ const AddProviderDialogForm = ({
     return baseSchema.merge(z.object(dynamicSchema));
   };
 
+  const getDefaultValues = useCallback((providerType: string): AddProviderFormValues => {
+    const baseDefaults = {
+      providerName: "",
+      providerType: providerType,
+    } as AddProviderFormValues;
+
+    if (!providerType || !formSchemaData[providerType]) {
+      return baseDefaults;
+    }
+
+    const schemaDefaults = Object.entries(formSchemaData[providerType]).reduce<Record<string, AddProviderFieldValue>>(
+      (acc, [key, schema]) => {
+        if (schema.default !== undefined) {
+          if (schema.type === 'number') {
+            acc[key] = Number(schema.default);
+          } else {
+            acc[key] = schema.default;
+          }
+        } else {
+          acc[key] = schema.type === 'number' ? 0 : '';
+        }
+        return acc;
+      },
+      {}
+    );
+
+    return {
+      ...baseDefaults,
+      ...schemaDefaults,
+    };
+  }, [formSchemaData]);
+
   const formSchema = selectedFormType ? generateZodSchema(selectedFormType) : baseSchema;
 
-  const form = useForm<
-    Record<"providerName" | "providerType" | string, string>
-  >({
+  const form = useForm<AddProviderFormValues>({
     resolver: formSchema ? zodResolver(formSchema) : undefined,
-    defaultValues: {
-      providerName: "",
-      providerType: "",
-      ...(selectedFormType
-        ? Object.keys(formSchemaData[selectedFormType]).reduce<Record<string, string>>((acc, key) => {
-          acc[key] = "";
-          return acc;
-        }, {})
-        : {}
-      ),
-    }
+    defaultValues: getDefaultValues(selectedFormType),
   });
 
-  const resetForm = (options?: { providerName?: string; providerType?: string }) => {
-    const { providerName, providerType } = {
-      providerName: options?.providerName ?? "",
-      providerType: options?.providerType ?? "",
-    };
+  const resetForm = useCallback((options?: { providerName?: string; providerType?: string }) => {
+    const newProviderType = options?.providerType ?? "";
+    form.reset(getDefaultValues(newProviderType));
+    setSelectedFormType(newProviderType);
+  }, [form, getDefaultValues]);
 
-    const resetValues = selectedFormType ? Object.keys(formSchemaData[selectedFormType]).reduce<Record<string, string>>((acc, key) => {
-      acc[key] = "";
-      return acc;
-    }, {}) : {};
-
-    form.reset({
-      ...resetValues,
-      providerType: providerType,
-      providerName: providerName,
+  const handleFormTypeChange = useCallback((value: string) => {
+    const formValues = form.getValues();
+    resetForm({
+      providerName: formValues.providerName,
+      providerType: value
     });
-    setSelectedFormType(providerType);
-  }
-
-  const handleFormTypeChange = (value: string) => {
-    setSelectedFormType(value);
-    const formValues = form.getValues(["providerName", "providerType"])
-    resetForm({ providerName: formValues[0], providerType: formValues[1] })
-  };
+  }, [form, resetForm]);
 
   const handleSubmit = (formValues: Record<string, string | boolean | File | number>) => {
     const { providerName, providerType, ...customFields } = formValues;
@@ -230,10 +269,16 @@ const AddProviderDialogForm = ({
     resetForm()
   }
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     onCancel();
-    resetForm()
-  }
+    resetForm();
+  }, [onCancel, resetForm]);
+
+  useEffect(() => {
+    if (!open) {
+      resetForm();
+    }
+  }, [open, resetForm]);
 
   if (isLoadingProvidersTypes) {
     return <div>Loading...</div>;
