@@ -79,12 +79,12 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
 
   const [isAddProviderDialogOpen, setIsAddProviderDialogOpen] = useState(false);
 
-  const { 
-    data: providersData, 
-    refetch: providersRefetch, 
-    isLoading: isLoadingProviders, 
-    isError: isErrorProviders, 
-    isRefetchError: isRefetchErrorProviders, 
+  const {
+    data: providersData,
+    refetch: providersRefetch,
+    isLoading: isLoadingProviders,
+    isError: isErrorProviders,
+    isRefetchError: isRefetchErrorProviders,
     error: providersError } = useGetAuditProviders(false, listenerID || '', {
       refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
       refetchIntervalInBackground: true,
@@ -151,6 +151,7 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
             </Button>
           </DialogTrigger>
           <AddProviderDialogForm
+            open={isAddProviderDialogOpen}
             onSubmit={(payload: CreateProviderPayload) => {
               performCreate(payload)
               handleAddProviderDialogOpenChange(false)
