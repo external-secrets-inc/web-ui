@@ -110,9 +110,18 @@ export interface PolicyTableData {
 export interface CreatePolicyPayload {
   tenantID: string;
   name: string;
-  executeOn: string[];
-  targets: { id: string; type: string; }[];
   engine: string;
+  executeOn: string[];
+  rule: string;
+}
+
+export type EditPolicyPayload = Omit<CreatePolicyPayload, "tenantID">
+
+export interface PolicyForm {
+  name: string;
+  engine: string;
+  executeOn: string[];
+  sample: string;
   rule: string;
 }
 
@@ -162,18 +171,31 @@ export type AddProviderFieldType =
 export interface AddProviderFieldSchema {
   type: AddProviderFieldType;
   required: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  default?: any;
+  default?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   maxLength?: number;
   accept?: string;
 }
 
-interface AddProviderType {
+export interface AddProviderFormValues {
+  providerName: string;
+  providerType: string;
+  [key: string]: AddProviderFieldValue;
+}
+
+export type AddProviderFieldValue = string | boolean | File | number;
+
+export interface AddProviderFieldProps {
+  onChange: (value: AddProviderFieldValue) => void;
+  value: AddProviderFieldValue;
+  name: string;
+}
+
+interface AddProviderTypeSchema {
   [key: string]: AddProviderFieldSchema;
 }
 
 export interface AddProviderFormSchema {
-  [formType: string]: AddProviderType;
+  [formType: string]: AddProviderTypeSchema;
 }
 
 export interface AuditMetric {
