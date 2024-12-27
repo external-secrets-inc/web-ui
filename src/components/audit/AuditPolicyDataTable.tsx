@@ -267,7 +267,10 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
 
   const handleAddPolicyDialogOpenChange = (isOpen: boolean) => {
     setIsAddPolicyDialogOpen(isOpen);
-    if (!isOpen) setPolicyForm(defaultFormValues);
+    if (!isOpen) {
+      setPolicyForm(defaultFormValues);
+      setSelectedPolicyId("");
+    }  
   };
 
   return (

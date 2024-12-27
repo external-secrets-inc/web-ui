@@ -113,6 +113,7 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
           <FormField
             control={form.control}
             name="name"
+            disabled={selectedPolicyId ? true : false}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Name</FormLabel>
@@ -132,7 +133,8 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
                 <FormControl>
                   <Select
                     value={field.value}
-                    onValueChange={field.onChange}
+                    onValueChange={selectedPolicyId ? undefined : field.onChange}
+                    disabled={selectedPolicyId ? true : false}
                   >
                     <SelectTrigger >
                       <SelectValue placeholder="Select the rule engine" />
@@ -202,7 +204,7 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
 
             <Alert
               className={`w-full text-center text-sm mx-4 ${(isValid === null && !isValidateError) ? "invisible" : "border-emerald-500"}`}
-              variant={ isValidateError ? "destructive" : "default"}
+              variant={isValidateError ? "destructive" : "default"}
               style={{ margin: 0, padding: 7 }}
             >
               <AlertDescription>
