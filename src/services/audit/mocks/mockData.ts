@@ -240,7 +240,7 @@ export const mockPoliciesData = [
       ]
     },
     engine: "rego",
-    rule: "cGFja2FnZSBtYWluCmFsbG93IHsgaW5wdXQudXNlciA9PSAiYWRtaW4iIH0=",
+    rule: "cGFja2FnZSBtYWluCgppbXBvcnQgcmVnby52MQoKYWxsb3cgaWYgewoJaW5wdXQudXNlciA9PSAiYWRtaW4iCn0=",
   },
   {
     policyID: "policy-id-2",
@@ -261,7 +261,7 @@ export const mockPoliciesData = [
       ]
     },
     engine: "rego",
-    rule: "cGFja2FnZSBtYWluCmFsbG93IHsgaW5wdXQudXNlciA9PSAiYWRtaW4iIH0=",
+    rule: "cGFja2FnZSBtYWluCgppbXBvcnQgcmVnby52MQoKYWxsb3cgaWYgewoJaW5wdXQudXNlciA9PSAiYWRtaW4iCn0=",
   },
   {
     policyID: "policy-id-3",
@@ -284,7 +284,7 @@ export const mockPoliciesData = [
       ]
     },
     engine: "rego",
-    rule: "cGFja2FnZSBtYWluCmFsbG93IHsgaW5wdXQudXNlciA9PSAiYWRtaW4iIH0=",
+    rule: "cGFja2FnZSBtYWluCgppbXBvcnQgcmVnby52MQoKYWxsb3cgaWYgewoJdHJ1ZSA9PSB0cnVlCn0=",
   },
   {
     policyID: "policy-id-4",
@@ -300,7 +300,7 @@ export const mockPoliciesData = [
       items: []
     },
     engine: "rego",
-    rule: "cGFja2FnZSBtYWluCmFsbG93IHsgaW5wdXQudXNlciA9PSAiYWRtaW4iIH0=",
+    rule: "cGFja2FnZSBtYWluCgppbXBvcnQgcmVnby52MQoKYWxsb3cgaWYgewoJdHJ1ZSA9PSB0cnVlCn0=",
   },
 ] as const
 
