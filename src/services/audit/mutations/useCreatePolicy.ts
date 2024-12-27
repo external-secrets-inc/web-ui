@@ -4,14 +4,17 @@ import axiosInstance from "@/services/axiosConfig";
 import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
 import { CreatePolicyPayload } from "@/components/audit/Audit.interfaces";
+import { mockNetworkResponseDelay } from "../mocks/mockData";
 import { useAuditMock } from '@/services/audit/context/AuditMockContext';
 
-// TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/119
 const createPolicy = async (mock: boolean, payload: CreatePolicyPayload) => {
-  if (mock) return 'mockedPolicyID'
+  if (mock) {
+    await mockNetworkResponseDelay();
+    return "policyID";
+  }
 
   const headers = await getAuthHeaders();
-  const response = await axiosInstance.post(`/api/policies`, payload, { headers });
+  const response = await axiosInstance.post(`/api/policies`, payload, { headers, backend: 'AUDIT_POC' });
   return response.data.policyID;
 }
 

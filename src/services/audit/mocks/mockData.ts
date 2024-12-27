@@ -240,7 +240,7 @@ export const mockPoliciesData = [
       ]
     },
     engine: "rego",
-    rule: "base64encoded",
+    rule: "cGFja2FnZSBtYWluCmFsbG93IHsgaW5wdXQudXNlciA9PSAiYWRtaW4iIH0=",
   },
   {
     policyID: "policy-id-2",
@@ -261,7 +261,7 @@ export const mockPoliciesData = [
       ]
     },
     engine: "rego",
-    rule: "base64encoded",
+    rule: "cGFja2FnZSBtYWluCmFsbG93IHsgaW5wdXQudXNlciA9PSAiYWRtaW4iIH0=",
   },
   {
     policyID: "policy-id-3",
@@ -284,7 +284,7 @@ export const mockPoliciesData = [
       ]
     },
     engine: "rego",
-    rule: "base64encoded",
+    rule: "cGFja2FnZSBtYWluCmFsbG93IHsgaW5wdXQudXNlciA9PSAiYWRtaW4iIH0=",
   },
   {
     policyID: "policy-id-4",
@@ -300,25 +300,28 @@ export const mockPoliciesData = [
       items: []
     },
     engine: "rego",
-    rule: "base64encoded",
+    rule: "cGFja2FnZSBtYWluCmFsbG93IHsgaW5wdXQudXNlciA9PSAiYWRtaW4iIH0=",
   },
 ] as const
 
 export const mockProvidersData = [
   {
-    id: "provider-id-1",
+    id: "id-1",
+    providerID: "provider-id-1",
     name: "Provider 1",
-    type: "GCP",
+    backendType: "GCP",
   },
   {
-    id: "provider-id-2",
+    id: "id-2",
+    providerID: "provider-id-2",
     name: "Provider 2",
-    type: "Azure",
+    backendType: "Azure",
   },
   {
-    id: "provider-id-3",
+    id: "id-3",
+    providerID: "provider-id-3",
     name: "Provider 3",
-    type: "AWS",
+    backendType: "AWS",
   },
 ] as const
 
