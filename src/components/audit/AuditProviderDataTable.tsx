@@ -165,6 +165,7 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
         columns={columns}
         initialSort={{ id: 'name', desc: false }}
         isLoading={isLoadingProviders}
+        getRowId={row => row.providerID}
       >
         <DataTable
           meta={providerTableMeta}
