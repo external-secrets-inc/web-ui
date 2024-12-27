@@ -201,16 +201,16 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
             </Button>
 
             <Alert
-              className={`w-full text-center text-sm mx-4 ${isValid ? "border-emerald-500" : (isValid === null && !isValidateError) ? "invisible" : ""}`}
-              variant={isValid ? "default" : isValidateError ? "destructive" : "warning"}
-              style={{ margin: 0, padding: 6 }}
+              className={`w-full text-center text-sm mx-4 ${(isValid === null && !isValidateError) ? "invisible" : "border-emerald-500"}`}
+              variant={ isValidateError ? "destructive" : "default"}
+              style={{ margin: 0, padding: 7 }}
             >
               <AlertDescription>
                 {isValid
-                  ? "Your rule is valid!"
+                  ? "This sample would be compliant!"
                   : isValidateError
                     ? "An error occurred while validating the rule."
-                    : "Your rule is not valid!"}
+                    : "This sample would NOT be compliant!"}
               </AlertDescription>
             </Alert>
 
