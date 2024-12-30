@@ -46,6 +46,7 @@ import AuditTimelineProblems from "./AuditTimelineProblems";
 import AuditTimelineProviders from "./AuditTimelineProviders";
 import FilterDialogForm from "./FilterDialogForm";
 import ListenerInstallDialogContent from "./ListenerInstallDialogContent";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const toYYYYMMDD = (date: Date) => {
   return date.toISOString().slice(0, 10); // YYYY-MM-DD in UTC
@@ -120,11 +121,21 @@ export default function Audit() {
       columnHelper.accessor("policiesAmount", {
         header: "Policy compliance",
         cell: (info) => {
+          const nonCompliantPolicies = info.row.original.policies.filter(policy => policy.status !== "compliant").length;
           return (
-            <div className="flex gap-2 w-full items-center justify-between">
+            <div className="flex gap-2 w-full items-center">
               {info.getValue() !== null ? info.getValue() : "Unknown"}{" "}
               {!info.row.original.fullCompliant && (
-                <LucideAlertCircle className="text-orange-500" />
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <LucideAlertCircle className="text-orange-500" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Needs attention for {nonCompliantPolicies} {nonCompliantPolicies === 1 ? "policy" : "policies"}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
             </div>
           );
