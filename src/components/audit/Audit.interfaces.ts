@@ -20,17 +20,17 @@ export interface AuditResponseData {
   secretsNames: {
     label: string;
     value: string;
-    icon?: React.ComponentType<{ className?: string }> | null;
+    icon?: React.ComponentType<{ className?: string }> | undefined;
   }[];
   policiesNames: {
     label: string;
     value: string;
-    icon?: React.ComponentType<{ className?: string }> | null;
+    icon?: React.ComponentType<{ className?: string }> | undefined;
   }[];
   providers: {
     label: string;
     value: string;
-    icon?: React.ComponentType<{ className?: string }> | null;
+    icon?: React.ComponentType<{ className?: string }> | undefined;
   }[];
 }
 

@@ -237,24 +237,24 @@ export const mockAuditTableData: AuditResponseData = {
     }
   ],
   secretsNames: [
-    { value: "9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d4c", label: "Solid Serpent", icon: null },
-    { value: "1a2b3c4d-5e6f-7g8h-9i0j-k1l2m3n4o5p6", label: "Liquid Cobra", icon: null },
-    { value: "4d5e6f7g-8h9i-0j1k-2l3m-4n5o6p7q8r9s", label: "Crying Wolf", icon: null },
-    { value: "7h8i9j0k-1l2m-3n4o-5p6q-7r8s9t0u1v2w", label: "Raging Raven", icon: null },
-    { value: "a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6", label: "Screaming Mantis", icon: null },
+    { value: "9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d4c", label: "Solid Serpent", icon: undefined },
+    { value: "1a2b3c4d-5e6f-7g8h-9i0j-k1l2m3n4o5p6", label: "Liquid Cobra", icon: undefined },
+    { value: "4d5e6f7g-8h9i-0j1k-2l3m-4n5o6p7q8r9s", label: "Crying Wolf", icon: undefined },
+    { value: "7h8i9j0k-1l2m-3n4o-5p6q-7r8s9t0u1v2w", label: "Raging Raven", icon: undefined },
+    { value: "a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6", label: "Screaming Mantis", icon: undefined },
   ],
   policiesNames: [
-    { value: "rotation-policy", label: "rotation-policy", icon: null },
-    { value: "encryption-policy", label: "encryption-policy", icon: null },
-    { value: "access-policy", label: "access-policy", icon: null },
-    { value: "naming-policy", label: "naming-policy", icon: null },
+    { value: "rotation-policy", label: "rotation-policy", icon: undefined },
+    { value: "encryption-policy", label: "encryption-policy", icon: undefined },
+    { value: "access-policy", label: "access-policy", icon: undefined },
+    { value: "naming-policy", label: "naming-policy", icon: undefined },
   ],
   providers: [
-    { value: "e45c3621-5e2f-4996-91c8-9dec1a15f5fb", label: "AWS Secrets Manager", icon: null },
-    { value: "2a7b4de8-31c9-45d2-b656-92c8f6947f9d", label: "GCP Secret Manager", icon: null },
-    { value: "7f9e8d23-6c5b-4a3e-9f72-14d5a8b67c91", label: "Kubernetes Secrets", icon: null },
-    { value: "b3c2d1a4-8f7e-4d6c-9b5a-3e2f1c8d7b6a", label: "Azure Key Vault", icon: null },
-    { value: "a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6", label: "HashiCorp Vault", icon: null },
+    { value: "e45c3621-5e2f-4996-91c8-9dec1a15f5fb", label: "AWS Secrets Manager", icon: undefined },
+    { value: "2a7b4de8-31c9-45d2-b656-92c8f6947f9d", label: "GCP Secret Manager", icon: undefined },
+    { value: "7f9e8d23-6c5b-4a3e-9f72-14d5a8b67c91", label: "Kubernetes Secrets", icon: undefined },
+    { value: "b3c2d1a4-8f7e-4d6c-9b5a-3e2f1c8d7b6a", label: "Azure Key Vault", icon: undefined },
+    { value: "a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6", label: "HashiCorp Vault", icon: undefined },
   ],
 } as const;
 
