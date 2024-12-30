@@ -3,8 +3,8 @@ import { z } from "zod";
 export type ListenerStatus = "PENDING" | "OFFLINE" | "ACTIVE";
 
 export const filterSchema = z.object({
-  provider: z.array(z.string()),
-  policy: z.string().optional(),
+  providers: z.array(z.string()),
+  policyName: z.string().optional(),
   secretName: z.string().optional(),
   policyStatus: z.string().optional(),
   duplicates: z.string().optional(),

@@ -12,7 +12,7 @@ const getDashboardSecretTable = async (
   mock: boolean,
   signal: AbortSignal,
   listener_id: string,
-  params: FilterSchema,
+  params: URLSearchParams,
 ) => {
   if (mock) {
     await mockNetworkResponseDelay();
@@ -32,16 +32,15 @@ const useGetDashboarSecretTable = (
 ) => {
   const { isMocked } = useAuditMock(mock);
 
-  let filteredParams: FilterSchema = {} as FilterSchema;
+  let filteredParams: URLSearchParams = new URLSearchParams();
 
   Object.keys(filterSchema.shape).forEach((key) => {
     const paramValue = params.getAll(key);
-
     if (paramValue.length > 0) {
-      if (key === 'provider') {
-        filteredParams.provider = paramValue;
+      if (key === 'providers') {
+        paramValue.forEach((value) => filteredParams.append(key, value));
       } else {
-        filteredParams[key as keyof FilterSchema] = paramValue[0];
+        filteredParams.set(key as keyof Omit<FilterSchema, 'providers'>, paramValue[0]);
       }
     }
   });

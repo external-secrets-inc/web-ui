@@ -40,7 +40,7 @@ const ComboboxFilter = ({
   options,
 }: {
   formControl: Control<FilterSchema>;
-  name: keyof Omit<FilterSchema, 'provider'>;
+  name: keyof Omit<FilterSchema, 'providers'>;
   label: string;
   placeholder: string;
   emptyText: string;
@@ -193,8 +193,8 @@ const FilterDialogForm = ({
 
   const handleClear = () => {
     form.reset({
-      provider: [],
-      policy: "",
+      providers: [],
+      policyName: "",
       secretName: "",
       policyStatus: "",
       duplicates: "",
@@ -223,7 +223,7 @@ const FilterDialogForm = ({
               <FormField
                 key={"provider" + resetKey}
                 control={form.control}
-                name="provider"
+                name="providers"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Providers</FormLabel>
@@ -254,7 +254,7 @@ const FilterDialogForm = ({
               <ComboboxFilter
                 key={"policy" + resetKey}
                 formControl={form.control}
-                name="policy"
+                name="policyName"
                 label="Policy"
                 placeholder="Enter policy"
                 emptyText="No policy found"

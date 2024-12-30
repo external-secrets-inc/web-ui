@@ -92,6 +92,7 @@ export default function Audit() {
               month: "2-digit",
               day: "2-digit",
               year: "numeric",
+              timeZone: "UTC",
             }) || "Unknown last rotation"}
           </span>
         ),
@@ -104,6 +105,7 @@ export default function Audit() {
               month: "2-digit",
               day: "2-digit",
               year: "numeric",
+              timeZone: "UTC",
             }) || "Unknown last access"}
           </span>
         ),
@@ -162,8 +164,8 @@ export default function Audit() {
 
   const initialFilters = useMemo(() => {
     return {
-      provider: searchParams.getAll("provider"),
-      policy: searchParams.get("policy") ?? undefined,
+      providers: searchParams.getAll("providers"),
+      policyName: searchParams.get("policyName") ?? undefined,
       secretName: searchParams.get("secretName") ?? undefined,
       policyStatus: searchParams.get("policyStatus") ?? undefined,
       duplicates: searchParams.get("duplicates") ?? undefined,
@@ -419,8 +421,11 @@ export default function Audit() {
     });
 
     handleFiltersDialogOpenChange(false);
-    listenerDataRefetch();
   };
+
+  useEffect(() => {
+    listenerDataRefetch();
+  }, [searchParams]);
 
   useEffect(() => {
     if (!isTenantListenerCreated) return;
