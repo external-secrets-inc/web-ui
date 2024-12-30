@@ -33,6 +33,7 @@ type TimelineData = {
     amount: number
     label: string
     tooltipLabel?: string
+    providerType?: string
   }[]
 }
 
@@ -65,7 +66,7 @@ export function AuditTimelineChartCard({
           uniqueKindsMap.set(stat.kind, {
             kind: stat.kind,
             label: stat.label,
-            tooltipLabel: stat.tooltipLabel,
+            tooltipLabel: stat.tooltipLabel ? stat.tooltipLabel.concat(stat.providerType ? ` (${stat.providerType})` : '') : ''
           });
         }
       }
