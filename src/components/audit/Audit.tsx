@@ -1,5 +1,5 @@
 import { trackListenerInstallDialogOpened } from "@/analytics";
-import SecretDetailsDialog from "@/components/audit/SecretDetailsDialog";
+import AuditSecretDetailsDialog from "@/components/audit/AuditSecretDetailsDialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
@@ -93,7 +93,7 @@ export default function Audit() {
               month: "2-digit",
               day: "2-digit",
               year: "numeric",
-            }) : "Unknown"}
+            }) : "Never rotated"}
           </span>
         ),
       }),
@@ -105,7 +105,7 @@ export default function Audit() {
               month: "2-digit",
               day: "2-digit",
               year: "numeric",
-            }) : "Unknown"}
+            }) : "Never accessed"}
           </span>
         ),
       }),
@@ -633,7 +633,7 @@ export default function Audit() {
         <DataTable onRowClick={(row) => setSelectedSecret(row)} />
       </DataProvider>
 
-      <SecretDetailsDialog
+      <AuditSecretDetailsDialog
         secret={selectedSecret}
         onOpenChange={(open) => !open && setSelectedSecret(null)}
       />

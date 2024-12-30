@@ -16,12 +16,12 @@ import {
 } from "lucide-react";
 import { SecretDetails } from "./Audit.interfaces";
 
-interface SecretDetailsDialogProps {
+interface AuditSecretDetailsDialogProps {
   secret: SecretDetails | null;
   onOpenChange: (open: boolean) => void;
 }
 
-export default function SecretDetailsDialog({ secret, onOpenChange }: SecretDetailsDialogProps) {
+export default function AuditSecretDetailsDialog({ secret, onOpenChange }: AuditSecretDetailsDialogProps) {
   if (!secret) return null;
 
   const formatDate = (dateString: string) => {
