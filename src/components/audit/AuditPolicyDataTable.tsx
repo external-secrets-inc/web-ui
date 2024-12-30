@@ -14,7 +14,6 @@ import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import { DataProvider, DataTable } from "../ui/DataProvider";
 import useGetPolicies from "@/services/audit/queries/useGetPolicies";
 import useGetAuditProviders from "@/services/audit/queries/useGetAuditProviders";
-import useGetPolicy from "@/services/audit/queries/useGetPolicy";
 import useCreatePolicy from "@/services/audit/mutations/useCreatePolicy";
 import useDeletePolicy from "@/services/audit/mutations/useDeletePolicy";
 import AddPolicyDialogForm from "./AddPolicyDialogForm";
@@ -113,6 +112,7 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
               onSelect={(e) => {
                 e.preventDefault();
                 setSelectedPolicyId(row.policyID);
+                setSelectedProviders(row.providers.items.map(p => p.providerID));
                 setIsAssignProvidersDialogOpen(true);
               }}
             >
@@ -136,6 +136,7 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
   const [policyForm, setPolicyForm] = useState<PolicyForm>(defaultFormValues);
   const [isAssignProvidersDialogOpen, setIsAssignProvidersDialogOpen] = useState(false);
   const [selectedPolicyId, setSelectedPolicyId] = useState<string>("");
+  const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
 
   const {
     data: policiesData,
@@ -155,10 +156,6 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
   } = useGetAuditProviders(false, listenerID, {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
-  });
-
-  const { data: selectedPolicy } = useGetPolicy(false, selectedPolicyId, {
-    enabled: isAssignProvidersDialogOpen,
   });
 
   const policies = useMemo(() => {
@@ -273,6 +270,14 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
     }  
   };
 
+  const handleAssignProvidersOpenChange = (isOpen: boolean) => {
+    setIsAssignProvidersDialogOpen(isOpen);
+    if (!isOpen) {
+      setSelectedPolicyId("");
+      setSelectedProviders([]);
+    }
+  };
+
   return (
     <>
       <div className="flex items-center justify-between pt-4">
@@ -318,17 +323,16 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
         />
       </DataProvider>
 
-      {/* TODO: The multi-select providers value is only visually shown after you open the dialog twice wtf */}
       <Dialog
         open={isAssignProvidersDialogOpen}
-        onOpenChange={setIsAssignProvidersDialogOpen}
+        onOpenChange={handleAssignProvidersOpenChange}
       >
         <AssignProvidersDialog
-          currentAssignedProviders={selectedPolicy?.providers.items.map(p => p.providerID) || []}
+          currentAssignedProviders={selectedProviders || []}
           providers={providersData || []}
           isLoadingProviders={isLoadingProviders}
           onAssign={handleAssignProviders}
-          onCancel={() => setIsAssignProvidersDialogOpen(false)}
+          onCancel={() => handleAssignProvidersOpenChange(false)}
         />
       </Dialog>
     </>
