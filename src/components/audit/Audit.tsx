@@ -300,7 +300,8 @@ export default function Audit() {
     isError: isErrorSecretTableData,
     isRefetchError: isRefetchErrorSecretTableData,
     error: secretTableDataError,
-  } = useGetDashboarSecretTable(false, auditListener?.listenerID || '', {
+  } = useGetDashboarSecretTable(false, auditListener?.listenerID || '',
+    searchParams, {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
     enabled: !!auditListener?.listenerID
