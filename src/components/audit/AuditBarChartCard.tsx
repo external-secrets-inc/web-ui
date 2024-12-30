@@ -28,6 +28,7 @@ type ChartData = {
   kind: string
   amount: number
   label: string
+  providerType?: string
   tooltipLabel?: string
 }
 
@@ -66,7 +67,7 @@ export function AuditBarChartCard({
           item.kind,
           {
             label: item.label,
-            tooltipLabel: item.tooltipLabel,
+            tooltipLabel: item.tooltipLabel ? item.tooltipLabel.concat(item.providerType ? ` (${item.providerType})` : '') : '',
             color: CHART_COLORS[index % CHART_COLORS.length],
           }
         ])
