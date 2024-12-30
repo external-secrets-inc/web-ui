@@ -630,8 +630,13 @@ export default function Audit() {
         initialSort={{ id: "lastRotation", desc: true }}
         isLoading={isLoadingSecretTableData}
       >
-        <DataTable />
+        <DataTable onRowClick={(row) => setSelectedSecret(row)} />
       </DataProvider>
+
+      <SecretDetailsDialog
+        secret={selectedSecret}
+        onOpenChange={(open) => !open && setSelectedSecret(null)}
+      />
     </div>
   );
 }
