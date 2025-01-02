@@ -20,17 +20,17 @@ export interface AuditResponseData {
   secretsNames: {
     label: string;
     value: string;
-    icon?: React.ComponentType<{ className?: string }>;
+    icon?: React.ComponentType<{ className?: string }> | undefined;
   }[];
   policiesNames: {
     label: string;
     value: string;
-    icon?: React.ComponentType<{ className?: string }>;
+    icon?: React.ComponentType<{ className?: string }> | undefined;
   }[];
   providers: {
     label: string;
     value: string;
-    icon?: React.ComponentType<{ className?: string }>;
+    icon?: React.ComponentType<{ className?: string }> | undefined;
   }[];
 }
 
@@ -39,25 +39,28 @@ export interface AuditTableData {
   name: string;
   provider: string;
   providerName: string;
-  lastRotation: string;
+  lastRotation: string | null;
   policiesAmount: string;
   fullCompliant: boolean;
   duplicatesAmount: number;
-  lastAccess: string;
+  lastAccess: string | null;
   accessorsAmount: number;
   duplicates: {
     id: string;
     provider: string;
+    name: string;
+    providerName: string;
   }[];
   accessors: {
     id: string;
     access_time: string;
+    name: string;
   }[];
   policies: {
-      id: string;
-      name: string;
-      status: string;
-  }[]
+    id: string;
+    name: string;
+    status: "compliant" | "non_compliant" | "error";
+  }[];
 }
 
 export interface AuditListener {
@@ -209,3 +212,5 @@ export interface AuditTimelineEntry {
   date: string;
   stats: AuditMetric[];
 }
+
+export type SecretDetails = AuditTableData;
