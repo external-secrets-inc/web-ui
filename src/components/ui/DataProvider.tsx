@@ -422,7 +422,11 @@ const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
 
             : <>
                 {table?.getRowModel()?.rows?.map((row) => (
-                  <TableRow key={row.id} onClick={() => onRowClick?.(row.original)} className="cursor-pointer">
+                  <TableRow
+                    key={row.id}
+                    onClick={() => onRowClick?.(row.original)}
+                    className={onRowClick && "cursor-pointer hover:bg-muted/50"}
+                  >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}

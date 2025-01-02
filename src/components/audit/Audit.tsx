@@ -1,4 +1,5 @@
 import { trackListenerInstallDialogOpened } from "@/analytics";
+import AuditSecretDetailsDialog from "@/components/audit/AuditSecretDetailsDialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
@@ -6,45 +7,46 @@ import {
   ONE_MINUTE_IN_SECONDS,
   ONE_SECOND_IN_MILLISECONDS,
 } from "@/constants";
+import useCreateAuditListener from "@/services/audit/mutations/useCreateAuditListener";
 import useCreateTenantInstallationToken from "@/services/audit/mutations/useCreateTenantInstallationToken";
-import useGetTenantBashFile from "@/services/audit/queries/useGetTenantBashFile";
-import useGetTenantListeners from "@/services/audit/queries/useGetTenantListeners";
+import useCreateTenantListener from "@/services/audit/mutations/useCreateTenantListener";
 import useGetAuditListener from "@/services/audit/queries/useGetAuditListener";
 import useGetDashboarSecretTable from "@/services/audit/queries/useGetDashboarSecretTable";
+import useGetTenantBashFile from "@/services/audit/queries/useGetTenantBashFile";
+import useGetTenantListeners from "@/services/audit/queries/useGetTenantListeners";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
-import { ApiHttpError } from "@/types";
+import { ApiHttpError, IUserData } from "@/types";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
 import { createColumnHelper } from "@tanstack/react-table";
 import { AxiosError } from "axios";
 import { LucideAlertCircle, LucideFilter } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "../ui/button";
 import { DataProvider, DataTable } from "../ui/DataProvider";
 import { LISTENER_STATUS, TIME_RANGES } from "./Audit.constants";
 import {
+  AuditListener,
   AuditTableData,
+  CreateAuditListenerPayload,
   CreateTenantListenerPayload,
   FilterSchema,
-  AuditListener,
+  ListenerStatus,
+  SecretDetails,
   TenantListener,
   TimeRange,
-  ListenerStatus,
   filterSchema,
-  CreateAuditListenerPayload,
 } from "./Audit.interfaces";
 import AuditChartProblems from "./AuditChartProblems";
 import AuditChartProviders from "./AuditChartProviders";
+import AuditPolicyDataTable from "./AuditPolicyDataTable";
 import AuditProviderDataTable from "./AuditProviderDataTable";
 import AuditTimelineProblems from "./AuditTimelineProblems";
 import AuditTimelineProviders from "./AuditTimelineProviders";
 import FilterDialogForm from "./FilterDialogForm";
 import ListenerInstallDialogContent from "./ListenerInstallDialogContent";
-import useCreateTenantListener from "@/services/audit/mutations/useCreateTenantListener";
-import AuditPolicyDataTable from "./AuditPolicyDataTable";
-import useCreateAuditListener from "@/services/audit/mutations/useCreateAuditListener";
-import useAuthUser from "react-auth-kit/hooks/useAuthUser";
-import { IUserData } from "@/types";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const toYYYYMMDD = (date: Date) => {
   return date.toISOString().slice(0, 10); // YYYY-MM-DD in UTC
@@ -88,11 +90,11 @@ export default function Audit() {
         header: "Last Rotation",
         cell: (info) => (
           <span className="font-mono">
-            {new Date(info.getValue()).toLocaleDateString("en-US", {
+            {info.getValue() ? new Date(info.getValue()!).toLocaleDateString("en-US", {
               month: "2-digit",
               day: "2-digit",
               year: "numeric",
-            }) || "Unknown last rotation"}
+            }) : "Never rotated"}
           </span>
         ),
       }),
@@ -100,30 +102,40 @@ export default function Audit() {
         header: "Last Access",
         cell: (info) => (
           <span className="font-mono">
-            {new Date(info.getValue()).toLocaleDateString("en-US", {
+            {info.getValue() ? new Date(info.getValue()!).toLocaleDateString("en-US", {
               month: "2-digit",
               day: "2-digit",
               year: "numeric",
-            }) || "Unknown last access"}
+            }) : "Never accessed"}
           </span>
         ),
       }),
       columnHelper.accessor("duplicatesAmount", {
         header: "Duplicates",
-        cell: (info) => info.getValue() || "Unknown duplicates amount",
+        cell: (info) => info.getValue() !== null ? info.getValue() : "Unknown duplicates amount",
       }),
       columnHelper.accessor("accessorsAmount", {
         header: "Accessors",
-        cell: (info) => info.getValue() || "Unknown accessors amount",
+        cell: (info) => info.getValue() !== null ? info.getValue() : "Unknown accessors amount",
       }),
       columnHelper.accessor("policiesAmount", {
         header: "Policy compliance",
         cell: (info) => {
+          const nonCompliantPolicies = info.row.original.policies.filter(policy => policy.status !== "compliant").length;
           return (
-            <div className="flex gap-2 w-full items-center justify-between">
-              {info.getValue() || "Unknown policies amount" }{" "}
+            <div className="flex gap-2 w-full items-center">
+              {info.getValue() !== null ? info.getValue() : "Unknown"}{" "}
               {!info.row.original.fullCompliant && (
-                <LucideAlertCircle className="text-orange-500" />
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <LucideAlertCircle className="text-orange-500" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Needs attention for {nonCompliantPolicies} {nonCompliantPolicies === 1 ? "policy" : "policies"}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
             </div>
           );
@@ -137,6 +149,7 @@ export default function Audit() {
   const [manifestCommand, setManifestCommand] = useState("");
   const [isListenerInstallDialogOpen, setIsListenerInstallDialogOpen] = useState(false);
   const [isFiltersDialogOpen, setIsFiltersDialogOpen] = useState(false);
+  const [selectedSecret, setSelectedSecret] = useState<SecretDetails | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const [isTenantListenerCreated, setIsTenantListenerCreated] = useState(false);
   const [createTenantListenerError, setCreateTenantListenerError] = useState<AxiosError<ApiHttpError> | null>(null);
@@ -628,8 +641,13 @@ export default function Audit() {
         initialSort={{ id: "lastRotation", desc: true }}
         isLoading={isLoadingSecretTableData}
       >
-        <DataTable />
+        <DataTable onRowClick={(row) => setSelectedSecret(row)} />
       </DataProvider>
+
+      <AuditSecretDetailsDialog
+        secret={selectedSecret}
+        onOpenChange={(open) => !open && setSelectedSecret(null)}
+      />
     </div>
   );
 }
