@@ -94,6 +94,7 @@ export default function Audit() {
               month: "2-digit",
               day: "2-digit",
               year: "numeric",
+              timeZone: "UTC",
             }) : "Never rotated"}
           </span>
         ),
@@ -106,6 +107,7 @@ export default function Audit() {
               month: "2-digit",
               day: "2-digit",
               year: "numeric",
+              timeZone: "UTC",
             }) : "Never accessed"}
           </span>
         ),
@@ -175,8 +177,8 @@ export default function Audit() {
 
   const initialFilters = useMemo(() => {
     return {
-      provider: searchParams.getAll("provider"),
-      policy: searchParams.get("policy") ?? undefined,
+      providers: searchParams.getAll("providers"),
+      policyName: searchParams.get("policyName") ?? undefined,
       secretName: searchParams.get("secretName") ?? undefined,
       policyStatus: searchParams.get("policyStatus") ?? undefined,
       duplicates: searchParams.get("duplicates") ?? undefined,
@@ -313,7 +315,8 @@ export default function Audit() {
     isError: isErrorSecretTableData,
     isRefetchError: isRefetchErrorSecretTableData,
     error: secretTableDataError,
-  } = useGetDashboarSecretTable(false, auditListener?.listenerID || '', {
+  } = useGetDashboarSecretTable(false, auditListener?.listenerID || '',
+    searchParams, {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
     enabled: !!auditListener?.listenerID
@@ -431,8 +434,13 @@ export default function Audit() {
     });
 
     handleFiltersDialogOpenChange(false);
-    listenerDataRefetch();
   };
+
+  useEffect(() => {
+    if(!auditListener?.listenerID) return
+    
+    listenerDataRefetch();
+  }, [searchParams, auditListener?.listenerID, listenerDataRefetch]);
 
   useEffect(() => {
     if (!isTenantListenerCreated) return;

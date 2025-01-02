@@ -40,7 +40,7 @@ const ComboboxFilter = ({
   options,
 }: {
   formControl: Control<FilterSchema>;
-  name: keyof Omit<FilterSchema, 'provider'>;
+  name: keyof Omit<FilterSchema, 'providers'>;
   label: string;
   placeholder: string;
   emptyText: string;
@@ -193,8 +193,8 @@ const FilterDialogForm = ({
 
   const handleClear = () => {
     form.reset({
-      provider: [],
-      policy: "",
+      providers: [],
+      policyName: "",
       secretName: "",
       policyStatus: "",
       duplicates: "",
@@ -205,6 +205,9 @@ const FilterDialogForm = ({
 
     setResetKey((prev) => prev + 1);
   };
+
+  const filterMinDate = new Date(new Date().setDate(new Date().getDate() - 90)).toISOString().split("T")[0] // 90 days ago
+  const filterMaxDate = new Date().toISOString().split("T")[0]  // Current date
 
   return (
     <DialogContent
@@ -223,7 +226,7 @@ const FilterDialogForm = ({
               <FormField
                 key={"provider" + resetKey}
                 control={form.control}
-                name="provider"
+                name="providers"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Providers</FormLabel>
@@ -254,7 +257,7 @@ const FilterDialogForm = ({
               <ComboboxFilter
                 key={"policy" + resetKey}
                 formControl={form.control}
-                name="policy"
+                name="policyName"
                 label="Policy"
                 placeholder="Enter policy"
                 emptyText="No policy found"
@@ -298,18 +301,16 @@ const FilterDialogForm = ({
               form={form}
               name="lastAccess"
               label="Last Access"
-              minDate=""
-              maxDate={new Date().toISOString().split("T")[0]} // Current date
+              minDate={filterMinDate}
+              maxDate={filterMaxDate}
             />
 
             <DateFilter
               form={form}
               name="lastRotation"
               label="Last Rotation"
-              minDate={new Date(new Date().setDate(new Date().getDate() - 90))
-                .toISOString()
-                .split("T")[0]} // 90 days ago
-              maxDate={new Date().toISOString().split("T")[0]} // Current date
+              minDate={filterMinDate}
+              maxDate={filterMaxDate}
             />
           </div>
 
