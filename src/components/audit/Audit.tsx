@@ -424,7 +424,8 @@ export default function Audit() {
   };
 
   useEffect(() => {
-    listenerDataRefetch();
+    if(!!auditListener?.listenerID)
+      listenerDataRefetch();
   }, [searchParams]);
 
   useEffect(() => {

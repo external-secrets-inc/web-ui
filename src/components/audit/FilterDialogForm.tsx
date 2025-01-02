@@ -206,6 +206,9 @@ const FilterDialogForm = ({
     setResetKey((prev) => prev + 1);
   };
 
+  const filterMinDate = new Date(new Date().setDate(new Date().getDate() - 90)).toISOString().split("T")[0] // 90 days ago
+  const filterMaxDate = new Date().toISOString().split("T")[0]  // Current date
+
   return (
     <DialogContent
       className="w-[max(50%,640px)] max-w-[calc(100%-theme(spacing.12))] max-h-[calc(100%-theme(spacing.12))] overflow-auto grid-rows-[auto_minmax(100px,1fr)_auto] grid-cols-[minmax(100%,1fr)]"
@@ -298,18 +301,16 @@ const FilterDialogForm = ({
               form={form}
               name="lastAccess"
               label="Last Access"
-              minDate=""
-              maxDate={new Date().toISOString().split("T")[0]} // Current date
+              minDate={filterMinDate}
+              maxDate={filterMaxDate}
             />
 
             <DateFilter
               form={form}
               name="lastRotation"
               label="Last Rotation"
-              minDate={new Date(new Date().setDate(new Date().getDate() - 90))
-                .toISOString()
-                .split("T")[0]} // 90 days ago
-              maxDate={new Date().toISOString().split("T")[0]} // Current date
+              minDate={filterMinDate}
+              maxDate={filterMaxDate}
             />
           </div>
 
