@@ -440,7 +440,7 @@ export default function Audit() {
     if(!auditListener?.listenerID) return
     
     listenerDataRefetch();
-  }, [searchParams, auditListener?.listenerID]);
+  }, [searchParams, auditListener?.listenerID, listenerDataRefetch]);
 
   useEffect(() => {
     if (!isTenantListenerCreated) return;
