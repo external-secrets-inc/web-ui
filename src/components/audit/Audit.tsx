@@ -328,7 +328,7 @@ export default function Audit() {
         secretsData: [],
         secretsNames: [],
         policiesNames: [],
-        providers: [],
+        providersNames: [],
       };
 
     return secretTableData;
@@ -638,7 +638,7 @@ export default function Audit() {
             }}
             secretsNames={listenerSecretTableData.secretsNames}
             policiesNames={listenerSecretTableData.policiesNames}
-            providers={listenerSecretTableData.providers}
+            providersNames={listenerSecretTableData.providersNames}
           />
         </Dialog>
       </div>

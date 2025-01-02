@@ -153,7 +153,7 @@ export default function AuditSecretDetailsDialog({ secret, onOpenChange }: Audit
                       <AlertDescription className="flex items-center gap-2">
                         <Badge variant="secondary">{access.name || access.id || "Unknown Accessor"}</Badge>
                         <Badge variant="outline" className="ml-auto">
-                          {formatDate(access.access_time)}
+                          {formatDate(access.accessTime)}
                         </Badge>
                       </AlertDescription>
                     </Alert>

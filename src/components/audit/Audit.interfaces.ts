@@ -27,7 +27,7 @@ export interface AuditResponseData {
     value: string;
     icon?: React.ComponentType<{ className?: string }> | undefined;
   }[];
-  providers: {
+  providersNames: {
     label: string;
     value: string;
     icon?: React.ComponentType<{ className?: string }> | undefined;
@@ -53,7 +53,7 @@ export interface AuditTableData {
   }[];
   accessors: {
     id: string;
-    access_time: string;
+    accessTime: string;
     name: string;
   }[];
   policies: {
