@@ -424,9 +424,10 @@ export default function Audit() {
   };
 
   useEffect(() => {
-    if(!!auditListener?.listenerID)
-      listenerDataRefetch();
-  }, [searchParams]);
+    if(!auditListener?.listenerID) return
+    
+    listenerDataRefetch();
+  }, [searchParams, auditListener?.listenerID]);
 
   useEffect(() => {
     if (!isTenantListenerCreated) return;

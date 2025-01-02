@@ -32,7 +32,7 @@ const useGetDashboarSecretTable = (
 ) => {
   const { isMocked } = useAuditMock(mock);
 
-  let filteredParams: URLSearchParams = new URLSearchParams();
+  const filteredParams: URLSearchParams = new URLSearchParams();
 
   Object.keys(filterSchema.shape).forEach((key) => {
     const paramValue = params.getAll(key);
