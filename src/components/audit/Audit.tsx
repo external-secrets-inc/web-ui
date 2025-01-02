@@ -98,6 +98,11 @@ export default function Audit() {
             }) : "Never rotated"}
           </span>
         ),
+        sortingFn: (rowA, rowB) => {
+        const dateA = rowA.original.lastRotation ? new Date(rowA.original.lastRotation) : new Date(0);
+        const dateB = rowB.original.lastRotation ? new Date(rowB.original.lastRotation) : new Date(0);
+        return dateA.getTime() - dateB.getTime();
+        },
       }),
       columnHelper.accessor("lastAccess", {
         header: "Last Access",
@@ -111,6 +116,12 @@ export default function Audit() {
             }) : "Never accessed"}
           </span>
         ),
+        // TODO: Understand why this sortingFn is necessary for proper sorting instead of the default behavior
+        sortingFn: (rowA, rowB) => {
+          const dateA = rowA.original.lastAccess ? new Date(rowA.original.lastAccess) : new Date(0);
+          const dateB = rowB.original.lastAccess ? new Date(rowB.original.lastAccess) : new Date(0);
+          return dateA.getTime() - dateB.getTime();
+        },
       }),
       columnHelper.accessor("duplicatesAmount", {
         header: "Duplicates",
@@ -308,6 +319,7 @@ export default function Audit() {
     }
   }, [tenantListener.id, auditListener.listenerID, createAuditListener, defaultAuditListenerPayload, isSuccessAuditListener, tenantListenersData, fetchAuditListenerError]);
 
+  // TODO: the data fetching is comming in a different way, and in each refresh the data is being fetched again causing the "glich" in the UI
   const {
     data: secretTableData,
     refetch: listenerDataRefetch,
@@ -319,7 +331,7 @@ export default function Audit() {
     searchParams, {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
-    enabled: !!auditListener?.listenerID
+    enabled: !!auditListener?.listenerID,
   });
 
   const listenerSecretTableData = useMemo(() => {
