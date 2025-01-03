@@ -121,7 +121,7 @@ const FilterDialogForm = ({
   onSubmit,
   secretsNames,
   policiesNames,
-  providers,
+  providersNames,
 }: {
   initialValues: FilterSchema;
   onSubmit: (data: FilterSchema) => void;
@@ -135,7 +135,7 @@ const FilterDialogForm = ({
     value: string;
     icon?: React.ComponentType<{ className?: string }>;
   }[];
-  providers: {
+  providersNames: {
     label: string;
     value: string;
     icon?: ComponentType<{ className?: string | undefined; }> | undefined;
@@ -188,7 +188,7 @@ const FilterDialogForm = ({
                   <FormItem>
                     <FormLabel>Providers</FormLabel>
                     <MultiSelect
-                      options={providers}
+                      options={providersNames}
                       onValueChange={function (value: string[]): void { field.onChange(value) }}
                       defaultValue={field.value}
                       placeholder="Select providers"

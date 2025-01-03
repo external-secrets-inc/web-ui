@@ -114,8 +114,8 @@ export const mockAuditTableData: AuditResponseData = {
       lastAccess: "2024-06-29T12:00:00Z",
       accessorsAmount: 2,
       accessors: [
-        { id: "17f77a29-9492-4123-8af3-13accf58a003", access_time: "2024-06-29T12:00:00Z", name: "service-account-1" },
-        { id: "89058f3c-8032-4585-94bd-c1473b11ae76", access_time: "2024-06-28T12:00:00Z", name: "service-account-2" }
+        { id: "17f77a29-9492-4123-8af3-13accf58a003", accessTime: "2024-06-29T12:00:00Z", name: "service-account-1" },
+        { id: "89058f3c-8032-4585-94bd-c1473b11ae76", accessTime: "2024-06-28T12:00:00Z", name: "service-account-2" }
       ]
     } as AuditTableData,
     {
@@ -136,8 +136,8 @@ export const mockAuditTableData: AuditResponseData = {
       lastAccess: "2023-11-30T12:00:00Z",
       accessorsAmount: 2,
       accessors: [
-        { id: "b702dbf9-8176-4011-9f90-07b26f5eaab3", access_time: "2023-11-30T12:00:00Z", name: "app-service-3" },
-        { id: "c813ecfa-9287-5122-af01-18c37f6fbbcc", access_time: "2023-11-29T12:00:00Z", name: "app-service-4" }
+        { id: "b702dbf9-8176-4011-9f90-07b26f5eaab3", accessTime: "2023-11-30T12:00:00Z", name: "app-service-3" },
+        { id: "c813ecfa-9287-5122-af01-18c37f6fbbcc", accessTime: "2023-11-29T12:00:00Z", name: "app-service-4" }
       ]
     },
     {
@@ -161,7 +161,7 @@ export const mockAuditTableData: AuditResponseData = {
       lastAccess: "2024-02-01T12:00:00Z",
       accessorsAmount: 1,
       accessors: [
-        { id: "d924fdeb-9398-4233-bc12-89d23e456f78", access_time: "2024-02-01T12:00:00Z", name: "pod-service-1" }
+        { id: "d924fdeb-9398-4233-bc12-89d23e456f78", accessTime: "2024-02-01T12:00:00Z", name: "pod-service-1" }
       ]
     },
     {
@@ -196,8 +196,8 @@ export const mockAuditTableData: AuditResponseData = {
       lastAccess: "2024-09-11T12:00:00Z",
       accessorsAmount: 2,
       accessors: [
-        { id: "e035gfec-0409-5344-cd23-90e34f567g89", access_time: "2024-09-11T12:00:00Z", name: "service-account-a" },
-        { id: "f146hgfd-1510-6455-de34-01f45g678h90", access_time: "2024-09-10T12:00:00Z", name: "service-account-b" }
+        { id: "e035gfec-0409-5344-cd23-90e34f567g89", accessTime: "2024-09-11T12:00:00Z", name: "service-account-a" },
+        { id: "f146hgfd-1510-6455-de34-01f45g678h90", accessTime: "2024-09-10T12:00:00Z", name: "service-account-b" }
       ]
     },
     {
@@ -231,8 +231,8 @@ export const mockAuditTableData: AuditResponseData = {
       lastAccess: "2024-01-15T12:00:00Z",
       accessorsAmount: 2,
       accessors: [
-        { id: "g257igfe-2621-7566-ef45-12g56h789i01", access_time: "2024-01-15T12:00:00Z", name: "app-service-1" },
-        { id: "h368jgff-3732-8677-fg56-23h67i890j12", access_time: "2024-01-14T12:00:00Z", name: "app-service-2" }
+        { id: "g257igfe-2621-7566-ef45-12g56h789i01", accessTime: "2024-01-15T12:00:00Z", name: "app-service-1" },
+        { id: "h368jgff-3732-8677-fg56-23h67i890j12", accessTime: "2024-01-14T12:00:00Z", name: "app-service-2" }
       ]
     }
   ],
@@ -249,7 +249,7 @@ export const mockAuditTableData: AuditResponseData = {
     { value: "access-policy", label: "access-policy", icon: undefined },
     { value: "naming-policy", label: "naming-policy", icon: undefined },
   ],
-  providers: [
+  providersNames: [
     { value: "e45c3621-5e2f-4996-91c8-9dec1a15f5fb", label: "AWS Secrets Manager", icon: undefined },
     { value: "2a7b4de8-31c9-45d2-b656-92c8f6947f9d", label: "GCP Secret Manager", icon: undefined },
     { value: "7f9e8d23-6c5b-4a3e-9f72-14d5a8b67c91", label: "Kubernetes Secrets", icon: undefined },
