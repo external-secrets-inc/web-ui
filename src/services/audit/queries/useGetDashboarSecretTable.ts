@@ -46,9 +46,9 @@ const useGetDashboarSecretTable = (
   });
 
   return useQuery({
-    queryKey: ["useGetDashboarSecretTable", isMocked, listener_id],
+    queryKey: ["useGetDashboarSecretTable", isMocked, listener_id, filteredParams.toString()],
     queryFn: ({ signal }) => {
-      return getDashboardSecretTable(isMocked, signal, listener_id, filteredParams)
+      return getDashboardSecretTable(isMocked, signal, listener_id, filteredParams);
     },
     ...options,
   });

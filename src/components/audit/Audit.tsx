@@ -1,5 +1,4 @@
 import { trackListenerInstallDialogOpened } from "@/analytics";
-import AuditSecretDetailsDialog from "@/components/audit/AuditSecretDetailsDialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
@@ -11,32 +10,25 @@ import useCreateAuditListener from "@/services/audit/mutations/useCreateAuditLis
 import useCreateTenantInstallationToken from "@/services/audit/mutations/useCreateTenantInstallationToken";
 import useCreateTenantListener from "@/services/audit/mutations/useCreateTenantListener";
 import useGetAuditListener from "@/services/audit/queries/useGetAuditListener";
-import useGetDashboarSecretTable from "@/services/audit/queries/useGetDashboarSecretTable";
 import useGetTenantBashFile from "@/services/audit/queries/useGetTenantBashFile";
 import useGetTenantListeners from "@/services/audit/queries/useGetTenantListeners";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { ApiHttpError, IUserData } from "@/types";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
-import { createColumnHelper } from "@tanstack/react-table";
 import { AxiosError } from "axios";
-import { LucideAlertCircle, LucideFilter } from "lucide-react";
+import { LucideAlertCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "../ui/button";
-import { DataProvider, DataTable } from "../ui/DataProvider";
 import { LISTENER_STATUS, TIME_RANGES } from "./Audit.constants";
 import {
   AuditListener,
-  AuditTableData,
   CreateAuditListenerPayload,
   CreateTenantListenerPayload,
-  FilterSchema,
   ListenerStatus,
-  SecretDetails,
   TenantListener,
   TimeRange,
-  filterSchema,
 } from "./Audit.interfaces";
 import AuditChartProblems from "./AuditChartProblems";
 import AuditChartProviders from "./AuditChartProviders";
@@ -44,9 +36,8 @@ import AuditPolicyDataTable from "./AuditPolicyDataTable";
 import AuditProviderDataTable from "./AuditProviderDataTable";
 import AuditTimelineProblems from "./AuditTimelineProblems";
 import AuditTimelineProviders from "./AuditTimelineProviders";
-import FilterDialogForm from "./FilterDialogForm";
 import ListenerInstallDialogContent from "./ListenerInstallDialogContent";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { AuditSecretTable } from "./AuditSecretTable";
 
 const toYYYYMMDD = (date: Date) => {
   return date.toISOString().slice(0, 10); // YYYY-MM-DD in UTC
@@ -74,95 +65,9 @@ const getTimeRangeFromDays = (days: number | null): TimeRange => {
 };
 
 export default function Audit() {
-  const columnHelper = createColumnHelper<AuditTableData>();
-
-  const columns = useMemo(
-    () => [
-      columnHelper.accessor("name", {
-        header: "Secret",
-        cell: (info) => <strong>{info.getValue() || "Unknown Secret Name"}</strong>,
-      }),
-      columnHelper.accessor("providerName", {
-        header: "Provider",
-        cell: (info) => info.getValue() || "Unknown Provider Name",
-      }),
-      columnHelper.accessor("lastRotation", {
-        header: "Last Rotation",
-        cell: (info) => (
-          <span className="font-mono">
-            {info.getValue() ? new Date(info.getValue()!).toLocaleDateString("en-US", {
-              month: "2-digit",
-              day: "2-digit",
-              year: "numeric",
-              timeZone: "UTC",
-            }) : "Never rotated"}
-          </span>
-        ),
-        sortingFn: (rowA, rowB) => {
-        const dateA = rowA.original.lastRotation ? new Date(rowA.original.lastRotation) : new Date(0);
-        const dateB = rowB.original.lastRotation ? new Date(rowB.original.lastRotation) : new Date(0);
-        return dateA.getTime() - dateB.getTime();
-        },
-      }),
-      columnHelper.accessor("lastAccess", {
-        header: "Last Access",
-        cell: (info) => (
-          <span className="font-mono">
-            {info.getValue() ? new Date(info.getValue()!).toLocaleDateString("en-US", {
-              month: "2-digit",
-              day: "2-digit",
-              year: "numeric",
-              timeZone: "UTC",
-            }) : "Never accessed"}
-          </span>
-        ),
-        // TODO: Understand why this sortingFn is necessary for proper sorting instead of the default behavior
-        sortingFn: (rowA, rowB) => {
-          const dateA = rowA.original.lastAccess ? new Date(rowA.original.lastAccess) : new Date(0);
-          const dateB = rowB.original.lastAccess ? new Date(rowB.original.lastAccess) : new Date(0);
-          return dateA.getTime() - dateB.getTime();
-        },
-      }),
-      columnHelper.accessor("duplicatesAmount", {
-        header: "Duplicates",
-        cell: (info) => info.getValue() !== null ? info.getValue() : "Unknown duplicates amount",
-      }),
-      columnHelper.accessor("accessorsAmount", {
-        header: "Accessors",
-        cell: (info) => info.getValue() !== null ? info.getValue() : "Unknown accessors amount",
-      }),
-      columnHelper.accessor("policiesAmount", {
-        header: "Policy compliance",
-        cell: (info) => {
-          const nonCompliantPolicies = info.row.original.policies.filter(policy => policy.status !== "compliant").length;
-          return (
-            <div className="flex gap-2 w-full items-center">
-              {info.getValue() !== null ? info.getValue() : "Unknown"}{" "}
-              {!info.row.original.fullCompliant && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <LucideAlertCircle className="text-orange-500" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      Needs attention for {nonCompliantPolicies} {nonCompliantPolicies === 1 ? "policy" : "policies"}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-            </div>
-          );
-        },
-      }),
-    ],
-    [columnHelper]
-  );
-
   const [bashCommand, setBashCommand] = useState("");
   const [manifestCommand, setManifestCommand] = useState("");
   const [isListenerInstallDialogOpen, setIsListenerInstallDialogOpen] = useState(false);
-  const [isFiltersDialogOpen, setIsFiltersDialogOpen] = useState(false);
-  const [selectedSecret, setSelectedSecret] = useState<SecretDetails | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const [isTenantListenerCreated, setIsTenantListenerCreated] = useState(false);
   const [createTenantListenerError, setCreateTenantListenerError] = useState<AxiosError<ApiHttpError> | null>(null);
@@ -185,19 +90,6 @@ export default function Audit() {
     // Only return a value if it matches one of our predefined ranges
     return TIME_RANGES.find((r) => r.days === diffDays)?.days ?? null;
   });
-
-  const initialFilters = useMemo(() => {
-    return {
-      providers: searchParams.getAll("providers"),
-      policyName: searchParams.get("policyName") ?? undefined,
-      secretName: searchParams.get("secretName") ?? undefined,
-      policyStatus: searchParams.get("policyStatus") ?? undefined,
-      duplicates: searchParams.get("duplicates") ?? undefined,
-      lastAccess: searchParams.get("lastAccess") ?? undefined,
-      lastRotation: searchParams.get("lastRotation") ?? undefined,
-      accessors: searchParams.get("accessors") ?? undefined,
-    } as FilterSchema;
-  }, [searchParams]);
 
   // TODO remove mock https://github.com/external-secrets-inc/web-ui/issues/115
   const { data: tenantListenersData } = useGetTenantListeners(false, {
@@ -319,42 +211,6 @@ export default function Audit() {
     }
   }, [tenantListener.id, auditListener.listenerID, createAuditListener, defaultAuditListenerPayload, isSuccessAuditListener, tenantListenersData, fetchAuditListenerError]);
 
-  // TODO: the data fetching is comming in a different way, and in each refresh the data is being fetched again causing the "glich" in the UI
-  const {
-    data: secretTableData,
-    refetch: listenerDataRefetch,
-    isLoading: isLoadingSecretTableData,
-    isError: isErrorSecretTableData,
-    isRefetchError: isRefetchErrorSecretTableData,
-    error: secretTableDataError,
-  } = useGetDashboarSecretTable(false, auditListener?.listenerID || '',
-    searchParams, {
-    refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
-    refetchIntervalInBackground: true,
-    enabled: !!auditListener?.listenerID,
-  });
-
-  const listenerSecretTableData = useMemo(() => {
-    if (!secretTableData)
-      return {
-        secretsData: [],
-        secretsNames: [],
-        policiesNames: [],
-        providers: [],
-      };
-
-    return secretTableData;
-  }, [secretTableData]);
-
-  useEffect(() => {
-    if (!(secretTableDataError || isRefetchErrorSecretTableData)) return;
-
-    handleDefaultApiHttpError(
-      secretTableDataError,
-      "Error while fetching audit listener data"
-    );
-  }, [secretTableDataError, isErrorSecretTableData, isRefetchErrorSecretTableData]);
-
   const { mutate: createTenantInstallationToken, data: tenantInstallationToken } = useCreateTenantInstallationToken(
     false,
     {
@@ -416,43 +272,6 @@ export default function Audit() {
   const handleListenerInstallDialogOpenChange = (isOpen: boolean) => {
     setIsListenerInstallDialogOpen(isOpen);
   };
-
-  const handleFiltersDialogOpenChange = (isOpen: boolean) => {
-    setIsFiltersDialogOpen(isOpen);
-  };
-
-  const handleFilterChange = (selectedFilters: FilterSchema) => {
-    setSearchParams((prevParams) => {
-      // First, remove all existing filter parameters specifically to avoid stale values
-      filterSchema.keyof().options.forEach((key) => prevParams.delete(key));
-
-      // Then add new filter values if they exist
-      for (const [key, value] of Object.entries(selectedFilters)) {
-        if (!value) continue; // Skip unset values
-
-        if (Array.isArray(value)) {
-          // For array values (like providers), set each value as a separate entry
-          // TODO: Consider if we should use a single key with delimiters for each value instead
-          if (value.length) {
-            value.forEach((value) => prevParams.append(key, value));
-          }
-        } else {
-          // For single values, just set them directly
-          prevParams.set(key, value);
-        }
-      }
-
-      return prevParams;
-    });
-
-    handleFiltersDialogOpenChange(false);
-  };
-
-  useEffect(() => {
-    if(!auditListener?.listenerID) return
-    
-    listenerDataRefetch();
-  }, [searchParams, auditListener?.listenerID, listenerDataRefetch]);
 
   useEffect(() => {
     if (!isTenantListenerCreated) return;
@@ -625,48 +444,8 @@ export default function Audit() {
         listenerID={auditListener.listenerID}
       />
 
-      <div className="flex items-center justify-between pt-4">
-        <h2 className="font-bold">All Secrets</h2>
-        <Dialog
-          open={isFiltersDialogOpen}
-          onOpenChange={handleFiltersDialogOpenChange}
-        >
-          <DialogTrigger asChild>
-            <Button
-              size="icon"
-              variant="outline"
-              className="self-center min-[260px]:self-end"
-              aria-label="Filters"
-              title="Filters"
-            >
-              <LucideFilter />
-            </Button>
-          </DialogTrigger>
-          <FilterDialogForm
-            initialValues={initialFilters}
-            onSubmit={(data) => {
-              handleFilterChange(data);
-              handleFiltersDialogOpenChange(false);
-            }}
-            secretsNames={listenerSecretTableData.secretsNames}
-            policiesNames={listenerSecretTableData.policiesNames}
-            providers={listenerSecretTableData.providers}
-          />
-        </Dialog>
-      </div>
-
-      <DataProvider
-        data={listenerSecretTableData.secretsData}
-        columns={columns}
-        initialSort={{ id: "lastRotation", desc: true }}
-        isLoading={isLoadingSecretTableData}
-      >
-        <DataTable onRowClick={(row) => setSelectedSecret(row)} />
-      </DataProvider>
-
-      <AuditSecretDetailsDialog
-        secret={selectedSecret}
-        onOpenChange={(open) => !open && setSelectedSecret(null)}
+      <AuditSecretTable
+        listenerID={auditListener.listenerID}
       />
     </div>
   );
