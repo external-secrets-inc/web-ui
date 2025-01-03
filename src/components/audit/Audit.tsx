@@ -38,7 +38,6 @@ import AuditTimelineProblems from "./AuditTimelineProblems";
 import AuditTimelineProviders from "./AuditTimelineProviders";
 import ListenerInstallDialogContent from "./ListenerInstallDialogContent";
 import { AuditSecretTable } from "./AuditSecretTable";
-import { AuditFilterProvider } from "./AuditFilterProvider";
 
 const toYYYYMMDD = (date: Date) => {
   return date.toISOString().slice(0, 10); // YYYY-MM-DD in UTC
@@ -311,145 +310,143 @@ export default function Audit() {
 
   return (
     <div className="space-y-4">
-      <AuditFilterProvider>
-        {createTenantListenerError && (
-          <Alert
-            className="flex gap-2 items-center justify-between flex-wrap"
-            variant="destructive"
-          >
-            <div>
-              <AlertTitle className="flex gap-3 items-center">
-                <LucideAlertCircle className="text-destructive" /> Failed to create or fetch tenant listener
-              </AlertTitle>
-              <AlertDescription className="flex items-center justify-between">
-                Retry in order to make it available for installation, or contact support if the issue persists
-              </AlertDescription>
-            </div>
-            <Button variant="outline" onClick={() => createTenantListener(defaultTenantListenerPayload)}>Retry</Button>
-          </Alert>
-        )}
-
-        {createAuditListenerError && (
-          <Alert
-            className="flex gap-2 items-center justify-between flex-wrap"
-            variant="destructive"
-          >
-            <div>
-              <AlertTitle className="flex gap-3 items-center">
-                <LucideAlertCircle className="text-destructive" /> Failed to create or fetch audit listener
-              </AlertTitle>
-              <AlertDescription className="flex items-center justify-between">
-                Retry in order to make it available for installation, or contact support if the issue persists
-              </AlertDescription>
-            </div>
-            <Button variant="outline" onClick={() => createAuditListener(defaultAuditListenerPayload)}>Retry</Button>
-          </Alert>
-        )}
-
-        {isTenantListenerCreated && isAuditListenerCreated && !isLoadingAuditListener &&
-          auditListener.status === LISTENER_STATUS.PENDING_INSTALLATION && (
-            <Alert
-              className="flex gap-2 items-center justify-between flex-wrap"
-              variant="warning"
-            >
-              <div>
-                <AlertTitle className="flex gap-3 items-center">
-                  <LucideAlertCircle className="text-orange-500" /> Listener not
-                  installed
-                </AlertTitle>
-                <AlertDescription className="flex items-center justify-between">
-                  To start receiving audit data, you need to install our listener
-                  in your cluster
-                </AlertDescription>
-              </div>
-              <Dialog
-                open={isListenerInstallDialogOpen}
-                onOpenChange={handleListenerInstallDialogOpenChange}
-              >
-                <DialogTrigger asChild>
-                  <Button variant="outline">Install listener</Button>
-                </DialogTrigger>
-                <ListenerInstallDialogContent
-                  id={auditListener.listenerID}
-                  bashFileContent={getTenantBashFileContent()}
-                  isLoadingBashFile={isLoadingTenantBashFile}
-                  bashCommand={bashCommand}
-                  manifestCommand={manifestCommand}
-                />
-              </Dialog>
-            </Alert>
-          )}
-
-        {isTenantListenerCreated && isAuditListenerCreated && !isLoadingAuditListener && auditListener.status === LISTENER_STATUS.OFFLINE && (
-          <Alert
-            className="flex gap-2 items-center justify-between flex-wrap"
-            variant="destructive"
-          >
-            <AlertTitle className="flex gap-2 items-center">
-              <LucideAlertCircle className="text-destructive" /> Listener Offline
-              or Unreachable
+      {createTenantListenerError && (
+        <Alert
+          className="flex gap-2 items-center justify-between flex-wrap"
+          variant="destructive"
+        >
+          <div>
+            <AlertTitle className="flex gap-3 items-center">
+              <LucideAlertCircle className="text-destructive" /> Failed to create or fetch tenant listener
             </AlertTitle>
-            <AlertDescription>
-              The listener is currently offline or cannot be accessed. Please
-              check the cluster configuration on your end.
+            <AlertDescription className="flex items-center justify-between">
+              Retry in order to make it available for installation, or contact support if the issue persists
             </AlertDescription>
+          </div>
+          <Button variant="outline" onClick={() => createTenantListener(defaultTenantListenerPayload)}>Retry</Button>
+        </Alert>
+      )}
+
+      {createAuditListenerError && (
+        <Alert
+          className="flex gap-2 items-center justify-between flex-wrap"
+          variant="destructive"
+        >
+          <div>
+            <AlertTitle className="flex gap-3 items-center">
+              <LucideAlertCircle className="text-destructive" /> Failed to create or fetch audit listener
+            </AlertTitle>
+            <AlertDescription className="flex items-center justify-between">
+              Retry in order to make it available for installation, or contact support if the issue persists
+            </AlertDescription>
+          </div>
+          <Button variant="outline" onClick={() => createAuditListener(defaultAuditListenerPayload)}>Retry</Button>
+        </Alert>
+      )}
+
+      {isTenantListenerCreated && isAuditListenerCreated && !isLoadingAuditListener &&
+        auditListener.status === LISTENER_STATUS.PENDING_INSTALLATION && (
+          <Alert
+            className="flex gap-2 items-center justify-between flex-wrap"
+            variant="warning"
+          >
+            <div>
+              <AlertTitle className="flex gap-3 items-center">
+                <LucideAlertCircle className="text-orange-500" /> Listener not
+                installed
+              </AlertTitle>
+              <AlertDescription className="flex items-center justify-between">
+                To start receiving audit data, you need to install our listener
+                in your cluster
+              </AlertDescription>
+            </div>
+            <Dialog
+              open={isListenerInstallDialogOpen}
+              onOpenChange={handleListenerInstallDialogOpenChange}
+            >
+              <DialogTrigger asChild>
+                <Button variant="outline">Install listener</Button>
+              </DialogTrigger>
+              <ListenerInstallDialogContent
+                id={auditListener.listenerID}
+                bashFileContent={getTenantBashFileContent()}
+                isLoadingBashFile={isLoadingTenantBashFile}
+                bashCommand={bashCommand}
+                manifestCommand={manifestCommand}
+              />
+            </Dialog>
           </Alert>
         )}
 
-        <div className="flex items-center justify-between pt-4">
-          <h2 className="font-bold">Analytics</h2>
-          <ToggleGroup
-            variant="outline"
-            type="single"
-            value={String(currentToggledTimeRange)}
-            onValueChange={(value) => handleTimeRangeChange(Number(value))}
-          >
-            {TIME_RANGES.map(({ days, label }) => (
-              <ToggleGroupItem key={days} className="w-12" value={String(days)}>
-                {label}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
-        </div>
+      {isTenantListenerCreated && isAuditListenerCreated && !isLoadingAuditListener && auditListener.status === LISTENER_STATUS.OFFLINE && (
+        <Alert
+          className="flex gap-2 items-center justify-between flex-wrap"
+          variant="destructive"
+        >
+          <AlertTitle className="flex gap-2 items-center">
+            <LucideAlertCircle className="text-destructive" /> Listener Offline
+            or Unreachable
+          </AlertTitle>
+          <AlertDescription>
+            The listener is currently offline or cannot be accessed. Please
+            check the cluster configuration on your end.
+          </AlertDescription>
+        </Alert>
+      )}
 
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(416px,100%),1fr))] gap-4 mt-6">
-          {currentToggledTimeRange === 0 ? (
-            <>
-              <AuditChartProviders listenerID={tenantListener.id} />
-              <AuditChartProblems listenerID={tenantListener.id} />
-            </>
-          ) : chartsStartDate && chartsEndDate ? (
-            <>
-              <AuditTimelineProviders
-                listenerID={tenantListener.id}
-                timeRange={getTimeRangeFromDays(currentToggledTimeRange)}
-                startDate={chartsStartDate}
-                endDate={chartsEndDate}
-                />
-              <AuditTimelineProblems
-                listenerID={tenantListener.id}
-                timeRange={getTimeRangeFromDays(currentToggledTimeRange)}
-                startDate={chartsStartDate}
-                endDate={chartsEndDate}
+      <div className="flex items-center justify-between pt-4">
+        <h2 className="font-bold">Analytics</h2>
+        <ToggleGroup
+          variant="outline"
+          type="single"
+          value={String(currentToggledTimeRange)}
+          onValueChange={(value) => handleTimeRangeChange(Number(value))}
+        >
+          {TIME_RANGES.map(({ days, label }) => (
+            <ToggleGroupItem key={days} className="w-12" value={String(days)}>
+              {label}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+      </div>
+
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(416px,100%),1fr))] gap-4 mt-6">
+        {currentToggledTimeRange === 0 ? (
+          <>
+            <AuditChartProviders listenerID={tenantListener.id} />
+            <AuditChartProblems listenerID={tenantListener.id} />
+          </>
+        ) : chartsStartDate && chartsEndDate ? (
+          <>
+            <AuditTimelineProviders
+              listenerID={tenantListener.id}
+              timeRange={getTimeRangeFromDays(currentToggledTimeRange)}
+              startDate={chartsStartDate}
+              endDate={chartsEndDate}
               />
-            </>
-          ) : null}
-        </div>
+            <AuditTimelineProblems
+              listenerID={tenantListener.id}
+              timeRange={getTimeRangeFromDays(currentToggledTimeRange)}
+              startDate={chartsStartDate}
+              endDate={chartsEndDate}
+            />
+          </>
+        ) : null}
+      </div>
 
-        <AuditPolicyDataTable
-          tenantID={authUser?.tenantId ?? ""}
-          listenerID={auditListener.listenerID}
-        />
+      <AuditPolicyDataTable
+        tenantID={authUser?.tenantId ?? ""}
+        listenerID={auditListener.listenerID}
+      />
 
-        <AuditProviderDataTable
-          tenantID={auditListener.tenantID}
-          listenerID={auditListener.listenerID}
-        />
+      <AuditProviderDataTable
+        tenantID={auditListener.tenantID}
+        listenerID={auditListener.listenerID}
+      />
 
-        <AuditSecretTable
-          listenerID={auditListener.listenerID}
-        />
-      </AuditFilterProvider>
+      <AuditSecretTable
+        listenerID={auditListener.listenerID}
+      />
     </div>
   );
 }
