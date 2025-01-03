@@ -169,9 +169,9 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
           <FilterDialogForm
             initialValues={currentFilters}
             onSubmit={handleFilterChange}
-            secretsNames={listenerSecretTableData.secretsNames}
-            policiesNames={listenerSecretTableData.policiesNames}
-            providers={listenerSecretTableData.providers}
+            secretsNames={listenerSecretTableData?.secretsNames?? []}
+            policiesNames={listenerSecretTableData?.policiesNames?? []}
+            providers={listenerSecretTableData?.providers?? []}
           />
         </Dialog>
       </div>

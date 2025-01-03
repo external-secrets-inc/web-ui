@@ -4,8 +4,8 @@ export type ListenerStatus = "PENDING" | "OFFLINE" | "ACTIVE";
 
 export const filterSchema = z.object({
   providers: z.array(z.string()),
-  policyName: z.string().optional(),
-  secretName: z.string().optional(),
+  policyIDs: z.array(z.string()),
+  secretIDs: z.array(z.string()),
   policyStatus: z.string().optional(),
   duplicates: z.string().optional(),
   lastAccess: z.string().optional(),

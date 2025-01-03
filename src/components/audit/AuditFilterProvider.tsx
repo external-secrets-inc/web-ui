@@ -22,8 +22,8 @@ export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
   const currentFilters = useMemo((): FilterSchema => {
     return {
       providers: searchParams.getAll("providers"),
-      policyName: searchParams.get("policyName") ?? undefined,
-      secretName: searchParams.get("secretName") ?? undefined,
+      policyIDs: searchParams.getAll("policyIDs"),
+      secretIDs: searchParams.getAll("secretIDs"),
       policyStatus: searchParams.get("policyStatus") ?? undefined,
       duplicates: searchParams.get("duplicates") ?? undefined,
       lastAccess: searchParams.get("lastAccess") ?? undefined,
