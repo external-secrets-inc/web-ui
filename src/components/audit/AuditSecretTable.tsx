@@ -28,13 +28,14 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
     currentFilters
   } = useAuditFilter();
 
+  // TODO: the data fetching is comming in a different way, and in each refresh the data is being fetched again causing the "glich" in the UI
   const {
     data: secretTableData,
     isLoading: isLoadingSecretTableData,
     isError: isErrorSecretTableData,
     isRefetchError: isRefetchErrorSecretTableData,
     error: secretTableDataError,
-  } = useGetDashboarSecretTable(false, listenerID, searchParams, {
+  } = useGetDashboarSecretTable(false, listenerID || '', searchParams, {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
     enabled: !!listenerID
@@ -85,6 +86,12 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
             }) : "Never rotated"}
           </span>
         ),
+        // TODO: Understand why this sortingFn is necessary for proper sorting instead of the default behavior
+        sortingFn: (rowA, rowB) => {
+          const dateA = rowA.original.lastRotation ? new Date(rowA.original.lastRotation) : new Date(0);
+          const dateB = rowB.original.lastRotation ? new Date(rowB.original.lastRotation) : new Date(0);
+          return dateA.getTime() - dateB.getTime();
+        },
       }),
       columnHelper.accessor("lastAccess", {
         header: "Last Access",
@@ -98,6 +105,12 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
             }) : "Never accessed"}
           </span>
         ),
+        // TODO: Understand why this sortingFn is necessary for proper sorting instead of the default behavior
+        sortingFn: (rowA, rowB) => {
+          const dateA = rowA.original.lastAccess ? new Date(rowA.original.lastAccess) : new Date(0);
+          const dateB = rowB.original.lastAccess ? new Date(rowB.original.lastAccess) : new Date(0);
+          return dateA.getTime() - dateB.getTime();
+        },
       }),
       columnHelper.accessor("duplicatesAmount", {
         header: "Duplicates",
