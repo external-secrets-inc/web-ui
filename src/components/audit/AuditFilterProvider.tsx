@@ -6,6 +6,7 @@ interface AuditFilterContextValue {
   isFiltersDialogOpen: boolean;
   setIsFiltersDialogOpen: (open: boolean) => void;
   handleFilterChange: (selectedFilters: FilterSchema) => void;
+  handleFilterNameChange: (name: string) => void;
   currentFilters: FilterSchema;
 }
 
@@ -24,6 +25,7 @@ export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
       providers: searchParams.getAll("providers"),
       policyIDs: searchParams.getAll("policyIDs"),
       secretIDs: searchParams.getAll("secretIDs"),
+      name: searchParams.get("name") ?? undefined,
       policyStatus: searchParams.get("policyStatus") ?? undefined,
       duplicates: searchParams.get("duplicates") ?? undefined,
       lastAccess: searchParams.get("lastAccess") ?? undefined,
@@ -59,12 +61,25 @@ export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
     setIsFiltersDialogOpen(false);
   }, [setSearchParams]);
 
+  const handleFilterNameChange = useCallback((name: string) => {
+    setSearchParams((prevParams) => {
+      if (!name) {
+        prevParams.delete("name");
+        return prevParams;
+      }
+
+      prevParams.set("name", name);
+      return prevParams;
+    })
+  }, [setSearchParams]);
+
   const value = useMemo(() => ({
     isFiltersDialogOpen,
     setIsFiltersDialogOpen,
     handleFilterChange,
+    handleFilterNameChange,
     currentFilters,
-  }), [isFiltersDialogOpen, handleFilterChange, currentFilters]);
+  }), [isFiltersDialogOpen, handleFilterChange, handleFilterNameChange, currentFilters]);
 
   return (
     <AuditFilterContext.Provider value={value}>

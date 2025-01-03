@@ -6,6 +6,7 @@ export const filterSchema = z.object({
   providers: z.array(z.string()),
   policyIDs: z.array(z.string()),
   secretIDs: z.array(z.string()),
+  name: z.string().optional(),
   policyStatus: z.string().optional(),
   duplicates: z.string().optional(),
   lastAccess: z.string().optional(),
