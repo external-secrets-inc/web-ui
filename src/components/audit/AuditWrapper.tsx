@@ -33,6 +33,7 @@ const MockControls = () => {
 
 const AuditWrapper = () => {
   const [hasAccess, setHasAccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // TODO: Temporary solution to check if the user has access to the feature. Tenant Manager should be responsible for this, not the client. #172
@@ -46,11 +47,17 @@ const AuditWrapper = () => {
       } catch (error) {
         console.error('Failed to check feature availability:', error);
         setHasAccess(false);
+      } finally {
+        setIsLoading(false);
       }
     }
 
     checkFeature();
   }, []);
+
+  if (isLoading) {
+    return null;
+  }
 
   if (!hasAccess) {
     return (
