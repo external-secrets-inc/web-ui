@@ -6,6 +6,7 @@ import Audit from './Audit';
 import { Subscription, Feature } from '@/types';
 import { LucideGem } from 'lucide-react';
 import { AuditMockProvider, useAuditMock } from '@/services/audit/context/AuditMockContext';
+import { AuditFilterProvider } from "./AuditFilterProvider";
 
 const MockControls = () => {
   const { mockSource, setMockSource } = useAuditMock();
@@ -65,10 +66,12 @@ const AuditWrapper = () => {
 
   return (
     <AuditMockProvider>
-      <div className="space-y-4">
-        <MockControls />
-        <Audit />
-      </div>
+        <div className="space-y-4">
+          <MockControls />
+          <AuditFilterProvider>
+            <Audit />
+          </AuditFilterProvider>
+        </div>
     </AuditMockProvider>
   );
 };
