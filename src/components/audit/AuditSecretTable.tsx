@@ -49,7 +49,7 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
         secretsData: [],
         secretsNames: [],
         policiesNames: [],
-        providers: [],
+        providersNames: [],
       };
 
     return secretTableData;
@@ -185,7 +185,7 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
               onSubmit={handleFilterChange}
               secretsNames={listenerSecretTableData?.secretsNames?? []}
               policiesNames={listenerSecretTableData?.policiesNames?? []}
-              providers={listenerSecretTableData?.providers?? []}
+              providersNames={listenerSecretTableData?.providersNames?? []}
             />
           </Dialog>
         </div>
