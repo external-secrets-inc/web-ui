@@ -85,6 +85,8 @@ export interface TenantListener {
 
 export type TimeRange = "Now" | "7D" | "30D" | "90D" | null;
 
+export type TimeUnit = "day" | "hour" | "week" | "month";
+
 export interface TimeRangeOption {
   days: number;
   label: TimeRange;
