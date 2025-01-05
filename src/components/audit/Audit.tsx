@@ -29,6 +29,7 @@ import {
   ListenerStatus,
   TenantListener,
   TimeRange,
+  TimeUnit,
 } from "./Audit.interfaces";
 import AuditChartProblems from "./AuditChartProblems";
 import AuditChartProviders from "./AuditChartProviders";
@@ -73,6 +74,7 @@ export default function Audit() {
   const [createTenantListenerError, setCreateTenantListenerError] = useState<AxiosError<ApiHttpError> | null>(null);
   const [isAuditListenerCreated, setIsAuditListenerCreated] = useState(false);
   const [createAuditListenerError, setCreateAuditListenerError] = useState<AxiosError<ApiHttpError> | null>(null);
+  const [timeUnit, setTimeUnit] = useState<TimeUnit>("day")
   const [currentToggledTimeRange, setCurrentToggledTimeRange] = useState<number | null>(() => {
     const startDate = searchParams.get("chartsStartDate");
     const endDate = searchParams.get("chartsEndDate");
@@ -300,6 +302,27 @@ export default function Audit() {
     });
   };
 
+  useEffect(() => {
+    if (!currentToggledTimeRange) return;
+    if (currentToggledTimeRange <= 7) {
+      setTimeUnit("hour")
+      return
+    }
+
+    if (currentToggledTimeRange <= 30) {
+      setTimeUnit("day")
+      return
+    }
+
+
+    if (currentToggledTimeRange <= 90) {
+      setTimeUnit("week")
+      return
+    }
+
+    setTimeUnit("month")
+  }, [currentToggledTimeRange])
+  
   const chartsStartDate = searchParams.get("chartsStartDate");
   const chartsEndDate = searchParams.get("chartsEndDate");
 
@@ -423,12 +446,14 @@ export default function Audit() {
               timeRange={getTimeRangeFromDays(currentToggledTimeRange)}
               startDate={chartsStartDate}
               endDate={chartsEndDate}
+              timeUnit={timeUnit}
               />
             <AuditTimelineProblems
               listenerID={tenantListener.id}
               timeRange={getTimeRangeFromDays(currentToggledTimeRange)}
               startDate={chartsStartDate}
               endDate={chartsEndDate}
+              timeUnit={timeUnit}
             />
           </>
         ) : null}
