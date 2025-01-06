@@ -185,7 +185,7 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
               <FormItem>
                 <FormLabel>Rule</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Enter Rule" {...field} />
+                  <Textarea placeholder="Enter Rule" className="[field-sizing:content]" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
