@@ -1,6 +1,7 @@
-import { createContext, useContext, useCallback, ReactNode, useMemo, useState } from "react";
+import { createContext, useContext, useCallback, ReactNode, useMemo, useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { FilterSchema, filterSchema } from "./Audit.interfaces";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface AuditFilterContextValue {
   isFiltersDialogOpen: boolean;
@@ -19,6 +20,9 @@ interface AuditFilterProviderProps {
 export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isFiltersDialogOpen, setIsFiltersDialogOpen] = useState(false);
+  const [searchNameParam, setSearchNameParam] = useState("");
+  const debouncedSearchNameParam = useDebounce(searchNameParam, 300);
+
 
   const currentFilters = useMemo((): FilterSchema => {
     return {
@@ -61,17 +65,24 @@ export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
     setIsFiltersDialogOpen(false);
   }, [setSearchParams]);
 
+  
   const handleFilterNameChange = useCallback((name: string) => {
-    setSearchParams((prevParams) => {
-      if (!name) {
-        prevParams.delete("name");
-        return prevParams;
-      }
+    setSearchNameParam(name);
+  }, [setSearchNameParam]);
 
-      prevParams.set("name", name);
-      return prevParams;
-    })
-  }, [setSearchParams]);
+  useEffect(() => {
+    if(debouncedSearchNameParam != null) {
+      setSearchParams((prevParams) => {
+        if (!searchNameParam) {
+          prevParams.delete("name");
+          return prevParams;
+        }
+
+        prevParams.set("name", searchNameParam);
+        return prevParams;
+      })
+    }
+  }, [debouncedSearchNameParam])
 
   const value = useMemo(() => ({
     isFiltersDialogOpen,

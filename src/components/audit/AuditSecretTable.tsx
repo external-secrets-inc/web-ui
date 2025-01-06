@@ -8,7 +8,7 @@ import { DataProvider, DataTable } from "@/components/ui/DataProvider";
 import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import useGetDashboarSecretTable from "@/services/audit/queries/useGetDashboarSecretTable";
-import { AuditTableData, FilterSchema, SecretDetails } from "./Audit.interfaces";
+import { AuditTableData, SecretDetails } from "./Audit.interfaces";
 import FilterDialogForm from "./FilterDialogForm";
 import AuditSecretDetailsDialog from "./AuditSecretDetailsDialog";
 import { useAuditFilter } from "./AuditFilterProvider";
@@ -158,7 +158,7 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
           <div className="relative flex items-center">
             <Input
               placeholder="Search..."
-              value={currentFilters.name?? ""}
+              // value={currentFilters.name?? ""}
               onChange={(e) => handleFilterNameChange(e.target.value)}
               className="max-w-48 pr-8"
             />
