@@ -1,12 +1,11 @@
-import { useState, useEffect } from 'react';
-import { getSubscriptions } from '@/services/subscriptions/subscriptionsService';
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import Audit from './Audit';
-import { Subscription, Feature } from '@/types';
 import { LucideGem } from 'lucide-react';
+import Audit from './Audit';
 import { AuditMockProvider, useAuditMock } from '@/services/audit/context/AuditMockContext';
 import { AuditFilterProvider } from "./AuditFilterProvider";
+import { useSubscription } from "@/context/SubscriptionContext";
+import { Loader } from "@/components/ui/Loader";
 
 const MockControls = () => {
   const { mockSource, setMockSource } = useAuditMock();
@@ -32,31 +31,11 @@ const MockControls = () => {
 };
 
 const AuditWrapper = () => {
-  const [hasAccess, setHasAccess] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const { hasFeature, isLoading: isLoadingSubscriptions } = useSubscription();
+  const hasAccess = hasFeature('Listener Component');
 
-  useEffect(() => {
-    // TODO: Temporary solution to check if the user has access to the feature. Tenant Manager should be responsible for this, not the client. #172
-    async function checkFeature() {
-      try {
-        const subscriptions = await getSubscriptions();
-        const hasFeature = subscriptions.some((subscription: Subscription) =>
-          subscription.features.some((feature: Feature) => feature.name === 'Listener Component')
-        );
-        setHasAccess(hasFeature);
-      } catch (error) {
-        console.error('Failed to check feature availability:', error);
-        setHasAccess(false);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    checkFeature();
-  }, []);
-
-  if (isLoading) {
-    return null;
+  if (isLoadingSubscriptions) {
+    return <Loader size="lg" className="flex-1 self-center" />
   }
 
   if (!hasAccess) {
@@ -73,12 +52,12 @@ const AuditWrapper = () => {
 
   return (
     <AuditMockProvider>
-        <div className="space-y-4">
-          <MockControls />
-          <AuditFilterProvider>
-            <Audit />
-          </AuditFilterProvider>
-        </div>
+      <div className="space-y-4">
+        <MockControls />
+        <AuditFilterProvider>
+          <Audit />
+        </AuditFilterProvider>
+      </div>
     </AuditMockProvider>
   );
 };

@@ -1,8 +1,8 @@
-import { getSubscriptions } from "@/services/subscriptions/subscriptionsService";
 import { useEffect, useState } from "react";
 import { Alert, AlertDescription } from "./ui/alert";
 import { LucideCalendarClock, LucideX } from "lucide-react";
 import { Button } from "./ui/button";
+import { useSubscription } from "@/context/SubscriptionContext";
 
 function calculateDiffDays(endDate: string, startDate: string = new Date().toISOString()): number {
 	const endDateObj = new Date(endDate);
@@ -15,35 +15,29 @@ const SHOW_BANNER_THRESHOLDS = [1, 3, 7, 15];
 export default function ExpirySubscriptionBanner() {
 	const [subData, setSubData] = useState({ id: "", expiryDate: "" });
 	const [showBanner, setShowBanner] = useState(false);
+	const { subscriptions } = useSubscription();
 
 	useEffect(() => {
-		const getSubs = async () => {
-			try {
-				const response = await getSubscriptions();
-				const { expiryDate, id } = { ...response[0] };
+		if (subscriptions && subscriptions.length > 0) {
+			const { expiryDate, id } = subscriptions[0];
 
-				const storedData = localStorage.getItem(`banner_${id}`);
-				if (!storedData || JSON.parse(storedData).expiryDate !== expiryDate) {
-					const newData = { expiryDate, lastDismissedAtThreshold: null };
-					localStorage.setItem(`banner_${id}`, JSON.stringify(newData));
-				}
-
-				const updatedData = JSON.parse(localStorage.getItem(`banner_${id}`) || "{}");
-				setSubData({ id, expiryDate: updatedData.expiryDate });
-
-				const diffDays = calculateDiffDays(expiryDate);
-				const lastDismissedAtThreshold = updatedData.lastDismissedAtThreshold;
-				const thresholdDay = [0, ...SHOW_BANNER_THRESHOLDS].find(threshold => diffDays <= threshold);
-				if (thresholdDay !== undefined && lastDismissedAtThreshold !== thresholdDay) {
-					setShowBanner(true);
-				}
-			} catch (error) {
-				console.error('Failed to load subscriptions', error);
+			const storedData = localStorage.getItem(`banner_${id}`);
+			if (!storedData || JSON.parse(storedData).expiryDate !== expiryDate) {
+				const newData = { expiryDate, lastDismissedAtThreshold: null };
+				localStorage.setItem(`banner_${id}`, JSON.stringify(newData));
 			}
-		};
 
-		getSubs();
-	}, []);
+			const updatedData = JSON.parse(localStorage.getItem(`banner_${id}`) || "{}");
+			setSubData({ id, expiryDate: updatedData.expiryDate });
+
+			const diffDays = calculateDiffDays(expiryDate);
+			const lastDismissedAtThreshold = updatedData.lastDismissedAtThreshold;
+			const thresholdDay = [0, ...SHOW_BANNER_THRESHOLDS].find(threshold => diffDays <= threshold);
+			if (thresholdDay !== undefined && lastDismissedAtThreshold !== thresholdDay) {
+				setShowBanner(true);
+			}
+		}
+	}, [subscriptions]);
 
 	const diffDays = calculateDiffDays(subData.expiryDate);
 
