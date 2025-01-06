@@ -74,7 +74,11 @@ export default function Audit() {
   const [createTenantListenerError, setCreateTenantListenerError] = useState<AxiosError<ApiHttpError> | null>(null);
   const [isAuditListenerCreated, setIsAuditListenerCreated] = useState(false);
   const [createAuditListenerError, setCreateAuditListenerError] = useState<AxiosError<ApiHttpError> | null>(null);
-  const [timeUnit, setTimeUnit] = useState<TimeUnit>("day")
+  const [timeUnit, setTimeUnit] = useState<TimeUnit>(() => {
+    const initialTimeUnit = searchParams.get("timeUnit")
+    if (!initialTimeUnit) return "day";
+    return initialTimeUnit as TimeUnit;
+  })
   const [currentToggledTimeRange, setCurrentToggledTimeRange] = useState<number | null>(() => {
     const startDate = searchParams.get("chartsStartDate");
     const endDate = searchParams.get("chartsEndDate");
@@ -294,12 +298,14 @@ export default function Audit() {
 
   const handleTimeRangeChange = (days: number | null) => {
     setCurrentToggledTimeRange(days);
-    setTimeUnit(calculateTimeUnit(days))
+    const currentTimeUnit = calculateTimeUnit(days);
+    setTimeUnit(currentTimeUnit);
 
     setSearchParams((prevParams) => {
       if (!days) {
         prevParams.delete("chartsStartDate");
         prevParams.delete("chartsEndDate");
+        prevParams.delete("timeUnit");
       } else {
         const end = new Date();
         const start = new Date(end);
@@ -307,6 +313,7 @@ export default function Audit() {
 
         prevParams.set("chartsStartDate", toYYYYMMDD(start));
         prevParams.set("chartsEndDate", toYYYYMMDD(end));
+        prevParams.set("timeUnit", currentTimeUnit);
       }
       return prevParams;
     });
