@@ -29,6 +29,7 @@ import {
   ListenerStatus,
   TenantListener,
   TimeRange,
+  TimeUnit,
 } from "./Audit.interfaces";
 import AuditChartProblems from "./AuditChartProblems";
 import AuditChartProviders from "./AuditChartProviders";
@@ -73,6 +74,11 @@ export default function Audit() {
   const [createTenantListenerError, setCreateTenantListenerError] = useState<AxiosError<ApiHttpError> | null>(null);
   const [isAuditListenerCreated, setIsAuditListenerCreated] = useState(false);
   const [createAuditListenerError, setCreateAuditListenerError] = useState<AxiosError<ApiHttpError> | null>(null);
+  const [timeUnit, setTimeUnit] = useState<TimeUnit>(() => {
+    const initialTimeUnit = searchParams.get("chartsTimeUnit")
+    if (!initialTimeUnit) return "day";
+    return initialTimeUnit as TimeUnit;
+  })
   const [currentToggledTimeRange, setCurrentToggledTimeRange] = useState<number | null>(() => {
     const startDate = searchParams.get("chartsStartDate");
     const endDate = searchParams.get("chartsEndDate");
@@ -281,13 +287,25 @@ export default function Audit() {
     }
   }, [isListenerInstallDialogOpen, auditListener.listenerID, isTenantListenerCreated]);
 
+  const calculateTimeUnit = (days: number | null) => {
+    if (!days) return "day";
+    if (days <= 7) return "hour"
+    if (days <= 30) return "day"
+    if (days <= 90) return "week"
+
+    return "month"
+  }
+
   const handleTimeRangeChange = (days: number | null) => {
     setCurrentToggledTimeRange(days);
+    const chartsTimeUnit = calculateTimeUnit(days);
+    setTimeUnit(chartsTimeUnit);
 
     setSearchParams((prevParams) => {
       if (!days) {
         prevParams.delete("chartsStartDate");
         prevParams.delete("chartsEndDate");
+        prevParams.delete("chartsTimeUnit");
       } else {
         const end = new Date();
         const start = new Date(end);
@@ -295,6 +313,7 @@ export default function Audit() {
 
         prevParams.set("chartsStartDate", toYYYYMMDD(start));
         prevParams.set("chartsEndDate", toYYYYMMDD(end));
+        prevParams.set("chartsTimeUnit", chartsTimeUnit);
       }
       return prevParams;
     });
@@ -423,12 +442,14 @@ export default function Audit() {
               timeRange={getTimeRangeFromDays(currentToggledTimeRange)}
               startDate={chartsStartDate}
               endDate={chartsEndDate}
+              timeUnit={timeUnit}
               />
             <AuditTimelineProblems
               listenerID={tenantListener.id}
               timeRange={getTimeRangeFromDays(currentToggledTimeRange)}
               startDate={chartsStartDate}
               endDate={chartsEndDate}
+              timeUnit={timeUnit}
             />
           </>
         ) : null}
