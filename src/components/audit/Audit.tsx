@@ -283,8 +283,18 @@ export default function Audit() {
     }
   }, [isListenerInstallDialogOpen, auditListener.listenerID, isTenantListenerCreated]);
 
+  const calculateTimeUnit = (days: number | null) => {
+    if (!days) return "day";
+    if (days <= 7) return "hour"
+    if (days <= 30) return "day"
+    if (days <= 90) return "week"
+
+    return "month"
+  }
+
   const handleTimeRangeChange = (days: number | null) => {
     setCurrentToggledTimeRange(days);
+    setTimeUnit(calculateTimeUnit(days))
 
     setSearchParams((prevParams) => {
       if (!days) {
@@ -302,27 +312,6 @@ export default function Audit() {
     });
   };
 
-  useEffect(() => {
-    if (!currentToggledTimeRange) return;
-    if (currentToggledTimeRange <= 7) {
-      setTimeUnit("hour")
-      return
-    }
-
-    if (currentToggledTimeRange <= 30) {
-      setTimeUnit("day")
-      return
-    }
-
-
-    if (currentToggledTimeRange <= 90) {
-      setTimeUnit("week")
-      return
-    }
-
-    setTimeUnit("month")
-  }, [currentToggledTimeRange])
-  
   const chartsStartDate = searchParams.get("chartsStartDate");
   const chartsEndDate = searchParams.get("chartsEndDate");
 
