@@ -3,8 +3,8 @@ import { z } from "zod";
 export type ListenerStatus = "PENDING" | "OFFLINE" | "ACTIVE";
 
 export const filterSchema = z.object({
-  provider: z.array(z.string()),
-  policy: z.string().optional(),
+  providers: z.array(z.string()),
+  policyName: z.string().optional(),
   secretName: z.string().optional(),
   policyStatus: z.string().optional(),
   duplicates: z.string().optional(),
@@ -20,17 +20,17 @@ export interface AuditResponseData {
   secretsNames: {
     label: string;
     value: string;
-    icon?: React.ComponentType<{ className?: string }>;
+    icon?: React.ComponentType<{ className?: string }> | undefined;
   }[];
   policiesNames: {
     label: string;
     value: string;
-    icon?: React.ComponentType<{ className?: string }>;
+    icon?: React.ComponentType<{ className?: string }> | undefined;
   }[];
-  providers: {
+  providersNames: {
     label: string;
     value: string;
-    icon?: React.ComponentType<{ className?: string }>;
+    icon?: React.ComponentType<{ className?: string }> | undefined;
   }[];
 }
 
@@ -39,25 +39,28 @@ export interface AuditTableData {
   name: string;
   provider: string;
   providerName: string;
-  lastRotation: string;
+  lastRotation: string | null;
   policiesAmount: string;
   fullCompliant: boolean;
   duplicatesAmount: number;
-  lastAccess: string;
+  lastAccess: string | null;
   accessorsAmount: number;
   duplicates: {
     id: string;
     provider: string;
+    name: string;
+    providerName: string;
   }[];
   accessors: {
     id: string;
-    access_time: string;
+    accessTime: string;
+    name: string;
   }[];
   policies: {
-      id: string;
-      name: string;
-      status: string;
-  }[]
+    id: string;
+    name: string;
+    status: "compliant" | "non_compliant" | "error";
+  }[];
 }
 
 export interface AuditListener {
@@ -209,3 +212,5 @@ export interface AuditTimelineEntry {
   date: string;
   stats: AuditMetric[];
 }
+
+export type SecretDetails = AuditTableData;

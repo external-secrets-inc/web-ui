@@ -3,9 +3,16 @@ import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError, } from "@/types";
 import { AxiosError } from "axios";
-import { ProviderTableData } from "@/components/audit/Audit.interfaces";
 import { mockNetworkResponseDelay } from "../mocks/mockData";
 import { useAuditMock } from "../context/AuditMockContext";
+
+interface ValidateRuleResponse {
+  "secret_name": string;
+  "providerID": string;
+  "time": string;
+  "metadata": object;
+  "actor": object;
+}
 
 const getValidateRule = async (
   mock: boolean,
@@ -36,12 +43,12 @@ const getValidateRule = async (
 const useGetValidateRule = (
   mock: boolean,
   executeOn: string[],
-  options?: Omit<UseQueryOptions<ProviderTableData[], AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<ValidateRuleResponse, AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
 ) => {
   const { isMocked } = useAuditMock(mock);
 
   return useQuery({
-    queryKey: ["useGetProviders", executeOn, isMocked],
+    queryKey: ["useGetValidateRule", executeOn, isMocked],
     queryFn: ({ signal }) => {
       return getValidateRule(isMocked, executeOn, signal)
     },

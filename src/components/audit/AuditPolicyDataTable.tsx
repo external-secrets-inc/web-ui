@@ -161,9 +161,10 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
   const {
     data: providersData,
     isLoading: isLoadingProviders,
-  } = useGetAuditProviders(false, listenerID, {
+  } = useGetAuditProviders(false, listenerID || '', {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
+    enabled: !!listenerID
   });
 
   const policies = useMemo(() => {
