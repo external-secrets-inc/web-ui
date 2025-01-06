@@ -158,7 +158,6 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
           <div className="relative flex items-center">
             <Input
               placeholder="Search..."
-              // value={currentFilters.name?? ""}
               onChange={(e) => handleFilterNameChange(e.target.value)}
               className="max-w-48 pr-8"
             />
