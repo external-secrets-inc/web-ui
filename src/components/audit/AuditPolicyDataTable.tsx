@@ -69,6 +69,14 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
     })
   ], [columnHelper]);
 
+  function isBase64(str: string): boolean {
+    try {
+      return btoa(atob(str)) === str;
+    } catch {
+      return false;
+    }
+  }
+
   const policyTableMeta: PolicyTableMeta = {
     renderRowActions: (row) => (
       <div className="flex items-center gap-2">
@@ -90,7 +98,7 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
               onSelect={(e) => {
                 e.preventDefault();
                 setSelectedPolicyId(row.policyID);
-                setPolicyForm({ name: row.name, engine: row.engine, executeOn: row.executeOn, sample: "", rule: atob(row.rule) });
+                setPolicyForm({ name: row.name, engine: row.engine, executeOn: row.executeOn, sample: "", rule: isBase64(row.rule) ? atob(row.rule) : row.rule });
                 setIsAddPolicyDialogOpen(true);
               }}
             >
@@ -264,18 +272,14 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
 
   const handleAddPolicyDialogOpenChange = (isOpen: boolean) => {
     setIsAddPolicyDialogOpen(isOpen);
-    if (!isOpen) {
-      setPolicyForm(defaultFormValues);
-      setSelectedPolicyId("");
-    }  
+    setPolicyForm(defaultFormValues);
+    setSelectedPolicyId("");
   };
 
   const handleAssignProvidersOpenChange = (isOpen: boolean) => {
     setIsAssignProvidersDialogOpen(isOpen);
-    if (!isOpen) {
-      setSelectedPolicyId("");
-      setSelectedProviders([]);
-    }
+    setSelectedPolicyId("");
+    setSelectedProviders([]);
   };
 
   return (

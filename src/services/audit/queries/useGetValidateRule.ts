@@ -12,7 +12,7 @@ const getValidateRule = async (
   executeOn: string[],
   signal: AbortSignal,
 ) => {
-  if (executeOn.length === 0) return [];
+  if (executeOn.length === 0) return {};
 
   if (mock) {
     await mockNetworkResponseDelay();

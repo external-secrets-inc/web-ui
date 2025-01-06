@@ -113,12 +113,11 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
           <FormField
             control={form.control}
             name="name"
-            disabled={selectedPolicyId ? true : false}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter Name" {...field} />
+                  <Input disabled={Boolean(selectedPolicyId)} placeholder="Enter Name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -134,7 +133,7 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
                   <Select
                     value={field.value}
                     onValueChange={selectedPolicyId ? undefined : field.onChange}
-                    disabled={selectedPolicyId ? true : false}
+                    disabled={Boolean(selectedPolicyId)}
                   >
                     <SelectTrigger >
                       <SelectValue placeholder="Select the rule engine" />
@@ -220,13 +219,13 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
               <Button
                 type="button"
                 onClick={performValidateRule}
-                disabled={executeOn.length === 0 || sample === "" || rule === ""}
+                disabled={!executeOn.length || !sample || !rule}
               >
                 Validate Rule
               </Button>
               <Button
                 type="submit"
-                disabled={name === "" || executeOn.length === 0 || sample === "" || rule === "" || isValid === null}
+                disabled={!name || !executeOn.length || !sample || !rule || isValid === null}
               >
                 Submit
               </Button>
