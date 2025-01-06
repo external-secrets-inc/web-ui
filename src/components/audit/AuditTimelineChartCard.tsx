@@ -97,7 +97,9 @@ export function AuditTimelineChartCard({
         fullDate: date.toLocaleDateString('en-US', {
           month: '2-digit',
           day: '2-digit',
-          year: 'numeric'
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
         }),
         ...Object.fromEntries(
           item.stats.map(stat => [stat.kind, stat.amount])
