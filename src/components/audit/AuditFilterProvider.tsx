@@ -20,8 +20,8 @@ interface AuditFilterProviderProps {
 export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isFiltersDialogOpen, setIsFiltersDialogOpen] = useState(false);
-  const [searchNameParam, setSearchNameParam] = useState<string>();
-  const debouncedSearchNameParam = useDebounce(searchNameParam, 300);
+  const [generalSearchParam, setGeneralSearchParam] = useState<string>();
+  const debouncedGeneralSearchParam = useDebounce(generalSearchParam, 300);
 
 
   const currentFilters = useMemo((): FilterSchema => {
@@ -29,7 +29,7 @@ export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
       providers: searchParams.getAll("providers"),
       policyIDs: searchParams.getAll("policyIDs"),
       secretIDs: searchParams.getAll("secretIDs"),
-      name: searchParams.get("name") ?? undefined,
+      search: searchParams.get("search") ?? undefined,
       policyStatus: searchParams.get("policyStatus") ?? undefined,
       duplicates: searchParams.get("duplicates") ?? undefined,
       lastAccess: searchParams.get("lastAccess") ?? undefined,
@@ -40,7 +40,7 @@ export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
 
   const handleFilterChange = useCallback((selectedFilters: FilterSchema) => {
     setSearchParams((prevParams) => {
-      const searchNameParam = prevParams.get("name");      
+      const generalSearchParam = prevParams.get("search");      
       // First, remove all existing filter parameters specifically to avoid stale values
       filterSchema.keyof().options.forEach((key) => prevParams.delete(key));
 
@@ -61,8 +61,8 @@ export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
       }
       
       // Handle name params that's not assigned at filters form
-      if(searchNameParam)
-        prevParams.set("name", searchNameParam)
+      if(generalSearchParam)
+        prevParams.set("search", generalSearchParam)
       return prevParams;
     });
 
@@ -71,22 +71,22 @@ export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
 
   
   const handleFilterNameChange = useCallback((name: string) => {
-    setSearchNameParam(name);
-  }, [setSearchNameParam]);
+    setGeneralSearchParam(name);
+  }, [setGeneralSearchParam]);
 
   useEffect(() => {
-    if(debouncedSearchNameParam != null) {
+    if(debouncedGeneralSearchParam != null) {
       setSearchParams((prevParams) => {
-        if (!searchNameParam) {
-          prevParams.delete("name");
+        if (!generalSearchParam) {
+          prevParams.delete("search");
           return prevParams;
         }
 
-        prevParams.set("name", searchNameParam);
+        prevParams.set("search", generalSearchParam);
         return prevParams;
       })
     }
-  }, [debouncedSearchNameParam])
+  }, [debouncedGeneralSearchParam])
 
   const value = useMemo(() => ({
     isFiltersDialogOpen,

@@ -151,10 +151,10 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
   );
 
   useEffect(() => {
-    if (currentFilters.name) {
-      setSearchInputValue(currentFilters.name);
+    if (currentFilters.search) {
+      setSearchInputValue(currentFilters.search);
     }
-  }, [currentFilters.name]);
+  }, [currentFilters.search]);
 
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInputValue(e.target.value);
