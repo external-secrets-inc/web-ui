@@ -1,12 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
-import { LucideMoreVertical, LucidePlus, LucideTrash2 } from "lucide-react";
+import { LucideEdit, LucideMoreVertical, LucidePlus, LucideTrash2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { DataProvider, DataTable } from "../ui/DataProvider";
 import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import AddProviderDialogForm from "./AddProviderDialogForm";
-import { CreateProviderPayload, ProviderTableData } from "./Audit.interfaces";
+import { AddProviderFormValues, CreateProviderPayload, ProviderTableData } from "./Audit.interfaces";
 import { createColumnHelper } from "@tanstack/react-table";
 import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
@@ -60,6 +60,17 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
             onClick={(event) => event.stopPropagation()}
             onCloseAutoFocus={(event) => event.preventDefault()}
           >
+            <DropdownMenuItem
+              onSelect={(e) => {
+                e.preventDefault();
+                setSelectedProviderId(row.providerID);
+                setProviderForm({providerName: row.name, backendIdentifier: row.backendIdentifier, providerType: row.backendType.toLowerCase(), ...row.config});
+                setIsAddProviderDialogOpen(true);
+              }}
+            >
+              <LucideEdit className="mr-2" />
+              Edit Provider
+            </DropdownMenuItem>
             <FeatureItemDeleteAction
               featureType={"Audit Provider"}
               featureID={row.providerID}
@@ -78,6 +89,13 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
   };
 
   const [isAddProviderDialogOpen, setIsAddProviderDialogOpen] = useState(false);
+  const defaultFormValues = {
+    providerName: "",
+    backendIdentifier: "",
+    providerType: "",
+  };
+  const [providerForm, setProviderForm] = useState<AddProviderFormValues>(defaultFormValues);
+  const [selectedProviderId, setSelectedProviderId] = useState<string>("");
 
   const {
     data: providersData,
@@ -90,7 +108,7 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
       refetchIntervalInBackground: true,
       enabled: !!listenerID
     }
-  );
+    );
 
   const providers = useMemo(() => {
     if (!providersData) return []
@@ -132,6 +150,8 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
 
   const handleAddProviderDialogOpenChange = (isOpen: boolean) => {
     setIsAddProviderDialogOpen(isOpen);
+    setProviderForm(defaultFormValues);
+    setSelectedProviderId("");
   };
 
   return (
@@ -151,6 +171,8 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
             </Button>
           </DialogTrigger>
           <AddProviderDialogForm
+            selectedProviderId={selectedProviderId}
+            providerForm={providerForm}
             open={isAddProviderDialogOpen}
             onSubmit={(payload: CreateProviderPayload) => {
               performCreate(payload)

@@ -148,16 +148,20 @@ const renderInputField = (
 };
 
 const AddProviderDialogForm = ({
+  selectedProviderId,
+  providerForm,
   onSubmit,
   onCancel,
   open,
 }: {
+  selectedProviderId: string;
+  providerForm: AddProviderFormValues;
   onSubmit: (payload: CreateProviderPayload) => void;
   onCancel: () => void;
   open: boolean;
 }) => {
   const [formSchemaData, setFormSchema] = useState<AddProviderFormSchema>({});
-  const [selectedFormType, setSelectedFormType] = useState<string>('');
+  const [selectedFormType, setSelectedFormType] = useState<string>(providerForm.providerType);
 
   const { data: providersTypeData, isLoading: isLoadingProvidersTypes, isError: isErrorProvidersTypes, error: providersTypesError } = useGetProvidersTypes(true);
 
@@ -203,15 +207,7 @@ const AddProviderDialogForm = ({
 
     const schemaDefaults = Object.entries(formSchemaData[providerType]).reduce<Record<string, AddProviderFieldValue>>(
       (acc, [key, schema]) => {
-        if (schema.default !== undefined) {
-          if (schema.type === 'number') {
-            acc[key] = Number(schema.default);
-          } else {
-            acc[key] = schema.default;
-          }
-        } else {
-          acc[key] = schema.type === 'number' ? 0 : '';
-        }
+        acc[key] = schema.default ?? (schema.type === 'number' ? 0 : '');
         return acc;
       },
       {}
@@ -230,21 +226,28 @@ const AddProviderDialogForm = ({
     defaultValues: getDefaultValues(selectedFormType),
   });
 
-  const resetForm = useCallback((options?: { providerName?: string; providerType?: string, backendIdentifier?: string }) => {
-    const newProviderType = options?.providerType ?? "";
-    const formValues = {...getDefaultValues(newProviderType), ...options}
-    form.reset(formValues);
-    setSelectedFormType(newProviderType);
+  const resetFormWithType = useCallback((providerType: string, initialValues: Partial<AddProviderFormValues> = {}) => {
+    const defaultValues = getDefaultValues(providerType);
+    form.reset({ ...defaultValues, ...initialValues });
+    setSelectedFormType(providerType);
   }, [form, getDefaultValues]);
+  
+  const handleFormTypeChange = (type: string) => {
+    resetFormWithType(type, form.getValues());
+  };
 
-  const handleFormTypeChange = useCallback((value: string) => {
-    const formValues = form.getValues();
-    resetForm({
-      providerName: formValues.providerName,
-      providerType: value,
-      backendIdentifier: formValues.backendIdentifier,
-    });
-  }, [form, resetForm]);
+  useEffect(() => {
+    if (selectedProviderId) {
+      const defaultValues = getDefaultValues(providerForm.providerType);
+      form.reset({
+        ...defaultValues,
+        ...providerForm,
+      });
+      setSelectedFormType(providerForm.providerType);
+    } else {
+      form.reset(getDefaultValues(providerForm.providerType));
+    }
+  }, [selectedProviderId, providerForm, form, getDefaultValues]);
 
   const handleSubmit = (formValues: Record<string, string | boolean | File | number>) => {
     const { providerName, providerType, backendIdentifier, ...customFields } = formValues;
@@ -270,19 +273,19 @@ const AddProviderDialogForm = ({
       backendType: String(providerType).toUpperCase(),
       config: config,
     });
-    resetForm()
+    resetFormWithType(providerForm.providerType, providerForm);
   }
 
   const handleCancel = useCallback(() => {
     onCancel();
-    resetForm();
-  }, [onCancel, resetForm]);
+    resetFormWithType(providerForm.providerType, providerForm);
+  }, [onCancel, providerForm, resetFormWithType]);
 
   useEffect(() => {
     if (!open) {
-      resetForm();
+      resetFormWithType(providerForm.providerType, providerForm);
     }
-  }, [open, resetForm]);
+  }, [open, providerForm, resetFormWithType]);
 
   if (isLoadingProvidersTypes) {
     return <div>Loading...</div>;
@@ -305,7 +308,7 @@ const AddProviderDialogForm = ({
               <FormItem>
                 <FormLabel>Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter Name" {...field} />
+                  <Input disabled={Boolean(selectedProviderId)} placeholder="Enter Name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -318,7 +321,7 @@ const AddProviderDialogForm = ({
               <FormItem>
                 <FormLabel>Identifier</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter Identifier" {...field} />
+                  <Input disabled={Boolean(selectedProviderId)} placeholder="Enter Identifier" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -337,6 +340,7 @@ const AddProviderDialogForm = ({
                       field.onChange(value);
                       handleFormTypeChange(value);
                     }}
+                    disabled={Boolean(selectedProviderId)}
                   >
                     <SelectTrigger >
                       <SelectValue placeholder="Select the provider type" />

@@ -183,6 +183,7 @@ export interface AddProviderFieldSchema {
 
 export interface AddProviderFormValues {
   providerName: string;
+  backendIdentifier: string;
   providerType: string;
   [key: string]: AddProviderFieldValue;
 }
