@@ -40,7 +40,7 @@ export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
 
   const handleFilterChange = useCallback((selectedFilters: FilterSchema) => {
     setSearchParams((prevParams) => {
-      const searchNameParam = prevParams.get("name") || "";      
+      const searchNameParam = prevParams.get("name");      
       // First, remove all existing filter parameters specifically to avoid stale values
       filterSchema.keyof().options.forEach((key) => prevParams.delete(key));
 
@@ -61,7 +61,8 @@ export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
       }
       
       // Handle name params that's not assigned at filters form
-      prevParams.set("name", searchNameParam)
+      if(searchNameParam)
+        prevParams.set("name", searchNameParam)
       return prevParams;
     });
 
