@@ -1,10 +1,10 @@
 import { useState, useMemo, useEffect } from "react";
 import { createColumnHelper } from "@tanstack/react-table";
-import { LucideAlertCircle, LucideFilter, LucideSearch } from "lucide-react";
+import { LucideAlertCircle, LucideFilter } from "lucide-react";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { DataProvider, DataTable } from "@/components/ui/DataProvider";
+import { DataProvider, DataTable, DataSearch } from "@/components/ui/DataProvider";
 import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import useGetDashboarSecretTable from "@/services/audit/queries/useGetDashboarSecretTable";
@@ -13,7 +13,6 @@ import FilterDialogForm from "./FilterDialogForm";
 import AuditSecretDetailsDialog from "./AuditSecretDetailsDialog";
 import { useAuditFilter } from "./AuditFilterProvider";
 import { useSearchParams } from "react-router-dom";
-import { Input } from "../ui/input";
 
 interface AuditSecretTableProps {
   listenerID: string;
@@ -21,7 +20,6 @@ interface AuditSecretTableProps {
 
 export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
   const [selectedSecret, setSelectedSecret] = useState<SecretDetails | null>(null);
-  const [searchInputValue, setSearchInputValue] = useState("");
   const [searchParams] = useSearchParams();
   const {
     isFiltersDialogOpen,
@@ -152,63 +150,50 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
 
   useEffect(() => {
     if (currentFilters.name) {
-      setSearchInputValue(currentFilters.name);
+      handleFilterNameChange(currentFilters.name);
     }
-  }, [currentFilters.name]);
-
-  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchInputValue(e.target.value);
-    handleFilterNameChange(e.target.value);
-  };
+  }, [currentFilters.name, handleFilterNameChange]);
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between pt-4">
-        <h2 className="font-bold w-full min-[400px]:w-auto mb-2 min-[400px]:mb-0">All Secrets</h2>
-        
-        <div className="flex gap-2">
-          <div className="relative flex items-center">
-            <Input
-              placeholder="Search..."
-              value={searchInputValue}
-              onChange={(e) => handleSearchInputChange(e)}
-              className="max-w-48 pr-8"
-            />
-            <LucideSearch className="absolute right-3 text-muted-foreground" />
-          </div>
-
-          <Dialog
-            open={isFiltersDialogOpen}
-            onOpenChange={setIsFiltersDialogOpen}
-          >
-            <DialogTrigger asChild>
-              <Button
-                size="icon"
-                variant="outline"
-                className="self-center"
-                aria-label="Filters"
-                title="Filters"
-              >
-                <LucideFilter />
-              </Button>
-            </DialogTrigger>
-            <FilterDialogForm
-              initialValues={currentFilters}
-              onSubmit={handleFilterChange}
-              secretsNames={listenerSecretTableData?.secretsNames?? []}
-              policiesNames={listenerSecretTableData?.policiesNames?? []}
-              providersNames={listenerSecretTableData?.providersNames?? []}
-            />
-          </Dialog>
-        </div>
-      </div>
-
       <DataProvider
         data={listenerSecretTableData.secretsData}
         columns={columns}
         initialSort={{ id: "lastRotation", desc: true }}
         isLoading={isLoadingSecretTableData}
       >
+        <div className="flex flex-wrap items-center justify-between pt-4">
+          <h2 className="font-bold w-full min-[400px]:w-auto mb-2 min-[400px]:mb-0">All Secrets</h2>
+
+          <div className="flex gap-2">
+            <DataSearch onManualFilter={(value) => handleFilterNameChange(value)}/>
+
+            <Dialog
+              open={isFiltersDialogOpen}
+              onOpenChange={setIsFiltersDialogOpen}
+            >
+              <DialogTrigger asChild>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="self-center"
+                  aria-label="Filters"
+                  title="Filters"
+                >
+                  <LucideFilter />
+                </Button>
+              </DialogTrigger>
+              <FilterDialogForm
+                initialValues={currentFilters}
+                onSubmit={handleFilterChange}
+                secretsNames={listenerSecretTableData?.secretsNames?? []}
+                policiesNames={listenerSecretTableData?.policiesNames?? []}
+                providersNames={listenerSecretTableData?.providersNames?? []}
+              />
+            </Dialog>
+          </div>
+        </div>
+
         <DataTable onRowClick={(row) => setSelectedSecret(row)} />
       </DataProvider>
 
