@@ -35,7 +35,14 @@ const CodeTextarea = forwardRef<HTMLTextAreaElement, CodeTextareaProps>(
         language={language}
         data-color-mode={theme === 'system' ? undefined : theme}
         className={cn(
-          "[&_pre]:bg-transparent [&_.w-tc-editor-text]:!padding-[inherit] [&_.w-tc-editor-preview]:!padding-[inherit] !bg-muted/50 px-3 py-2 rounded-md !text-sm !border !border-input shadow-sm placeholder:text-muted-foreground focus-within:!outline-none focus-within:!ring-1 focus-within:!ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+          // Base container styles mimicking our field styles with !important overrides for the editor inline styles
+          "!bg-muted/50 rounded-md !text-sm !border !border-input shadow-sm px-3 py-2 placeholder:text-muted-foreground focus-within:!outline-none focus-within:!ring-1 focus-within:!ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+          // Editor layout fixes
+          "[&_code]:static", // override from our own index.css
+          "[&_pre]:bg-transparent", // override from our own index.css
+          "[&_.w-tc-editor-text]:!padding-[inherit]", // Force padding to be inherited from the container
+          "[&_.w-tc-editor-preview]:!padding-[inherit]", // Force padding to be inherited from the container
+          // Syntax highlighting custom colors
           "[&_.token.property]:!text-pink-600 dark:[&_.token.property]:!text-pink-400",
           "[&_.token.string]:!text-emerald-600 dark:[&_.token.string]:!text-emerald-400",
           "[&_.token.number]:!text-blue-600 dark:[&_.token.number]:!text-blue-400",
