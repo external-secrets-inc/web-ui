@@ -159,6 +159,8 @@ export interface CreateProviderPayload {
   };
 }
 
+export type EditProviderPayload = Omit<CreateProviderPayload, "listenerID" | "tenantID">;
+
 export interface CreateTenantListenerPayload {
   name: string;
   tags: {

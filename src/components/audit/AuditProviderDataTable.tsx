@@ -16,6 +16,7 @@ import useDeleteAuditProvider from "@/services/audit/mutations/useDeleteAuditPro
 import useGetAuditProviders from "@/services/audit/queries/useGetAuditProviders";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { FeatureItemDeleteAction } from "../FeatureCollection";
+import useEditProvider, { EditProviderVariables } from "@/services/audit/mutations/useEditProvider";
 
 interface ProviderTableMeta {
   renderRowActions?: (row: ProviderTableData) => React.ReactNode;
@@ -64,7 +65,7 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
               onSelect={(e) => {
                 e.preventDefault();
                 setSelectedProviderId(row.providerID);
-                setProviderForm({providerName: row.name, backendIdentifier: row.backendIdentifier, providerType: row.backendType.toLowerCase(), ...row.config});
+                setProviderForm({ providerName: row.name, backendIdentifier: row.backendIdentifier, providerType: row.backendType.toLowerCase(), ...row.config });
                 setIsAddProviderDialogOpen(true);
               }}
             >
@@ -124,6 +125,14 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
     }
   });
 
+  const { mutate: editProvider } = useEditProvider(false, {
+    onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to edit Provider"),
+    onSuccess: () => {
+      providersRefetch();
+      toast.success("Provider edited successfully")
+    },
+  });
+
   const { mutate: deleteProvider } = useDeleteAuditProvider(false, {
     onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to delete Provider"),
     onSuccess: () => {
@@ -136,6 +145,10 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
     payload.tenantID = tenantID;
     payload.listenerID = listenerID;
     createProvider(payload)
+  }
+
+  const performEdit = (editPayload: EditProviderVariables) => {
+    editProvider(editPayload);
   }
 
   const performDelete = (providerId: string) => {
@@ -175,8 +188,14 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
             providerForm={providerForm}
             open={isAddProviderDialogOpen}
             onSubmit={(payload: CreateProviderPayload) => {
-              performCreate(payload)
-              handleAddProviderDialogOpenChange(false)
+              if (selectedProviderId) {
+                const { name, backendIdentifier, backendType, config } = { ...payload };
+                const editPayload = { providerID: selectedProviderId, payload: { name, backendIdentifier, backendType, config } };
+                performEdit(editPayload);
+              } else {
+                performCreate(payload);
+              }
+              handleAddProviderDialogOpenChange(false);
             }}
             onCancel={() => { handleAddProviderDialogOpenChange(false) }}
           />
