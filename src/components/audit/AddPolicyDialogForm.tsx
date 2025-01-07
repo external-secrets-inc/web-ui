@@ -117,7 +117,7 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
               <FormItem>
                 <FormLabel>Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter Name" {...field} />
+                  <Input disabled={Boolean(selectedPolicyId)} placeholder="Enter Name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -132,7 +132,8 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
                 <FormControl>
                   <Select
                     value={field.value}
-                    onValueChange={field.onChange}
+                    onValueChange={selectedPolicyId ? undefined : field.onChange}
+                    disabled={Boolean(selectedPolicyId)}
                   >
                     <SelectTrigger >
                       <SelectValue placeholder="Select the rule engine" />
@@ -184,7 +185,7 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
               <FormItem>
                 <FormLabel>Rule</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Enter Rule" {...field} />
+                  <Textarea placeholder="Enter Rule" className="[field-sizing:content]" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -201,16 +202,16 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
             </Button>
 
             <Alert
-              className={`w-full text-center text-sm mx-4 ${isValid ? "border-emerald-500" : (isValid === null && !isValidateError) ? "invisible" : ""}`}
-              variant={isValid ? "default" : isValidateError ? "destructive" : "warning"}
-              style={{ margin: 0, padding: 6 }}
+              className={`w-full text-center text-sm mx-4 ${(isValid === null && !isValidateError) ? "invisible" : "border-emerald-500"}`}
+              variant={isValidateError ? "destructive" : "default"}
+              style={{ margin: 0, padding: 7 }}
             >
               <AlertDescription>
                 {isValid
-                  ? "Your rule is valid!"
+                  ? "This sample would be compliant!"
                   : isValidateError
                     ? "An error occurred while validating the rule."
-                    : "Your rule is not valid!"}
+                    : "This sample would NOT be compliant!"}
               </AlertDescription>
             </Alert>
 
@@ -218,13 +219,13 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
               <Button
                 type="button"
                 onClick={performValidateRule}
-                disabled={executeOn.length === 0 || sample === "" || rule === ""}
+                disabled={!executeOn.length || !sample || !rule}
               >
                 Validate Rule
               </Button>
               <Button
                 type="submit"
-                disabled={name === "" || executeOn.length === 0 || sample === "" || rule === "" || isValid === null}
+                disabled={!name || !executeOn.length || !sample || !rule || isValid === null}
               >
                 Submit
               </Button>

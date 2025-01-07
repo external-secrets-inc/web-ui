@@ -15,6 +15,7 @@ interface Props {
   timeRange: Exclude<TimeRange, 'now'>;
   startDate: string;
   endDate: string;
+  timeUnit: string;
 }
 
 // TODO: Find a good date library to handle date formatting overall. Turn this into a util only if this process takes too long #151
@@ -29,10 +30,11 @@ function formatUSDateFromISODate(isoDate: string) {
   });
 }
 
-function AuditTimelineProviders({ listenerID, timeRange, startDate, endDate }: Props) {
+function AuditTimelineProviders({ listenerID, timeRange, startDate, endDate, timeUnit }: Props) {
   const { data, error, isLoading } = useGetAuditProviderTimelineStats(false, listenerID || '', {
     startDate,
-    endDate
+    endDate,
+    timeUnit
   }, {
     enabled: !!listenerID
   })

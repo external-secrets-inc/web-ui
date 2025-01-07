@@ -14,7 +14,6 @@ import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import { DataProvider, DataTable } from "../ui/DataProvider";
 import useGetPolicies from "@/services/audit/queries/useGetPolicies";
 import useGetAuditProviders from "@/services/audit/queries/useGetAuditProviders";
-import useGetPolicy from "@/services/audit/queries/useGetPolicy";
 import useCreatePolicy from "@/services/audit/mutations/useCreatePolicy";
 import useDeletePolicy from "@/services/audit/mutations/useDeletePolicy";
 import AddPolicyDialogForm from "./AddPolicyDialogForm";
@@ -70,6 +69,14 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
     })
   ], [columnHelper]);
 
+  function isBase64(str: string): boolean {
+    try {
+      return btoa(atob(str)) === str;
+    } catch {
+      return false;
+    }
+  }
+
   const policyTableMeta: PolicyTableMeta = {
     renderRowActions: (row) => (
       <div className="flex items-center gap-2">
@@ -91,7 +98,7 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
               onSelect={(e) => {
                 e.preventDefault();
                 setSelectedPolicyId(row.policyID);
-                setPolicyForm({ name: row.name, engine: row.engine, executeOn: row.executeOn, sample: "", rule: atob(row.rule) });
+                setPolicyForm({ name: row.name, engine: row.engine, executeOn: row.executeOn, sample: "", rule: isBase64(row.rule) ? atob(row.rule) : row.rule });
                 setIsAddPolicyDialogOpen(true);
               }}
             >
@@ -113,6 +120,7 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
               onSelect={(e) => {
                 e.preventDefault();
                 setSelectedPolicyId(row.policyID);
+                setSelectedProviders(row.providers.items.map(p => p.providerID));
                 setIsAssignProvidersDialogOpen(true);
               }}
             >
@@ -136,6 +144,7 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
   const [policyForm, setPolicyForm] = useState<PolicyForm>(defaultFormValues);
   const [isAssignProvidersDialogOpen, setIsAssignProvidersDialogOpen] = useState(false);
   const [selectedPolicyId, setSelectedPolicyId] = useState<string>("");
+  const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
 
   const {
     data: policiesData,
@@ -156,10 +165,6 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
     enabled: !!listenerID
-  });
-
-  const { data: selectedPolicy } = useGetPolicy(false, selectedPolicyId, {
-    enabled: isAssignProvidersDialogOpen,
   });
 
   const policies = useMemo(() => {
@@ -268,7 +273,14 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
 
   const handleAddPolicyDialogOpenChange = (isOpen: boolean) => {
     setIsAddPolicyDialogOpen(isOpen);
-    if (!isOpen) setPolicyForm(defaultFormValues);
+    setPolicyForm(defaultFormValues);
+    setSelectedPolicyId("");
+  };
+
+  const handleAssignProvidersOpenChange = (isOpen: boolean) => {
+    setIsAssignProvidersDialogOpen(isOpen);
+    setSelectedPolicyId("");
+    setSelectedProviders([]);
   };
 
   return (
@@ -316,17 +328,16 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
         />
       </DataProvider>
 
-      {/* TODO: The multi-select providers value is only visually shown after you open the dialog twice wtf */}
       <Dialog
         open={isAssignProvidersDialogOpen}
-        onOpenChange={setIsAssignProvidersDialogOpen}
+        onOpenChange={handleAssignProvidersOpenChange}
       >
         <AssignProvidersDialog
-          currentAssignedProviders={selectedPolicy?.providers.items.map(p => p.providerID) || []}
+          currentAssignedProviders={selectedProviders || []}
           providers={providersData || []}
           isLoadingProviders={isLoadingProviders}
           onAssign={handleAssignProviders}
-          onCancel={() => setIsAssignProvidersDialogOpen(false)}
+          onCancel={() => handleAssignProvidersOpenChange(false)}
         />
       </Dialog>
     </>
