@@ -1,21 +1,21 @@
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "../ui/form";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CreatePolicyPayload, PolicyForm } from './Audit.interfaces';
-import { MultiSelect } from '../ui/Multi-select';
-import { Textarea } from '../ui/textarea';
+import { MultiSelect } from '@/components/ui/Multi-select';
+import { CodeTextarea } from '@/components/ui/CodeTextarea';
 import useGetValidateRule from '@/services/audit/queries/useGetValidateRule';
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { useEffect, useState } from "react";
 import usePostValidateRule from "@/services/audit/mutations/usePostValidateRule";
 import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
-import { Alert, AlertDescription } from "../ui/alert";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const baseSchema = z.object({
   name: z.string().min(1, { message: "Name is required." }),
@@ -56,7 +56,8 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
 
   useEffect(() => {
     const sample = sampleData ?? {};
-    form.setValue("sample", JSON.stringify(sample));
+    const isEmpty = Object.keys(sample).length === 0;
+    form.setValue("sample", isEmpty ? "" : JSON.stringify(sample, null, 2));
   }, [executeOn, form, sampleData]);
 
   useEffect(() => {
@@ -172,7 +173,12 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
               <FormItem>
                 <FormLabel>Sample</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Enter Sample" readOnly {...field} />
+                  <CodeTextarea
+                    language="json"
+                    placeholder="Enter JSON sample"
+                    className="min-h-52"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -185,7 +191,12 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
               <FormItem>
                 <FormLabel>Rule</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Enter Rule" className="[field-sizing:content]" {...field} />
+                  <CodeTextarea
+                    language="rego"
+                    placeholder="Enter Rego rule"
+                    className="min-h-52"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
