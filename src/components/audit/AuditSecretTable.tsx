@@ -21,6 +21,7 @@ interface AuditSecretTableProps {
 
 export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
   const [selectedSecret, setSelectedSecret] = useState<SecretDetails | null>(null);
+  const [searchInputValue, setSearchInputValue] = useState("");
   const [searchParams] = useSearchParams();
   const {
     isFiltersDialogOpen,
@@ -149,6 +150,17 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
     [columnHelper]
   );
 
+  useEffect(() => {
+    if (currentFilters.name) {
+      setSearchInputValue(currentFilters.name);
+    }
+  }, [currentFilters.name]);
+
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchInputValue(e.target.value);
+    handleFilterNameChange(e.target.value);
+  };
+
   return (
     <>
       <div className="flex flex-wrap items-center justify-between pt-4">
@@ -158,7 +170,8 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
           <div className="relative flex items-center">
             <Input
               placeholder="Search..."
-              onChange={(e) => handleFilterNameChange(e.target.value)}
+              value={searchInputValue}
+              onChange={(e) => handleSearchInputChange(e)}
               className="max-w-48 pr-8"
             />
             <LucideSearch className="absolute right-3 text-muted-foreground" />

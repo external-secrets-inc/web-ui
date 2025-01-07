@@ -20,7 +20,7 @@ interface AuditFilterProviderProps {
 export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isFiltersDialogOpen, setIsFiltersDialogOpen] = useState(false);
-  const [searchNameParam, setSearchNameParam] = useState("");
+  const [searchNameParam, setSearchNameParam] = useState<string>();
   const debouncedSearchNameParam = useDebounce(searchNameParam, 300);
 
 
@@ -40,6 +40,7 @@ export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
 
   const handleFilterChange = useCallback((selectedFilters: FilterSchema) => {
     setSearchParams((prevParams) => {
+      const searchNameParam = prevParams.get("name") || "";      
       // First, remove all existing filter parameters specifically to avoid stale values
       filterSchema.keyof().options.forEach((key) => prevParams.delete(key));
 
@@ -58,7 +59,9 @@ export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
           prevParams.set(key, value);
         }
       }
-
+      
+      // Handle name params that's not assigned at filters form
+      prevParams.set("name", searchNameParam)
       return prevParams;
     });
 
