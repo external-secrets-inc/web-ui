@@ -233,26 +233,69 @@ function DataProvider<TData extends object>({
 }
 
 /**
+ * Hook that enforces DataProvider context requirements for child components.
+ * All data-related components must be children of DataProvider.
+ */
+const useDataProviderContext = (componentName: string): ProviderContextValue<object> => {
+  const context = React.useContext(DataProviderContext);
+
+  if (!context || !Object.keys(context).length) {
+    throw new Error(
+      `${componentName} must be used within a DataProvider component. ` +
+      'Make sure it is wrapped inside the DataProvider tags, not before or after them.'
+    );
+  }
+
+  return context;
+};
+
+/**
  * Search component that provides global text filtering functionality.
  * Renders an input field with search icon that filters across all table data.
  */
-const DataSearch = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => {
-    const { globalFilter, setGlobalFilter } = React.useContext(DataProviderContext)
+const DataSearch = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & {
+    /**
+     * Callback for manual filtering. When provided, bypasses react-table's
+     * native filtering and you're responsible for filtering the data yourself,
+     * like using a search API.
+     */
+    onManualFilter?: (value: string) => void;
 
-    return (
-      <div ref={ref} className={cn("relative", className)} {...props}>
-        <Input
-          placeholder="Search..."
-          value={globalFilter}
-          onChange={(e) => setGlobalFilter(e.target.value)}
-          className="max-w-48 pr-7"
-        />
-        <LucideSearch className="absolute inset-y-0 right-3 self-center text-muted-foreground" />
-      </div>
-    )
-})
-DataSearch.displayName = "DataSearch"
+    /**
+     * Placeholder text for the search input
+     * @default "Search..."
+     */
+    placeholder?: string;
+  }
+>(({ className, onManualFilter, placeholder = "Search...", ...props }, ref) => {
+  const { globalFilter, setGlobalFilter } = useDataProviderContext('DataSearch');
+  const [manualFilterValue, setManualFilterValue] = React.useState("");
+
+  const handleFilterChange = (value: string) => {
+    if (!onManualFilter) {
+      setGlobalFilter(value);
+      return;
+    }
+
+    setManualFilterValue(value);
+    onManualFilter(value);
+  };
+
+  return (
+    <div ref={ref} className={cn("relative", className)} {...props}>
+      <Input
+        placeholder={placeholder}
+        value={onManualFilter ? manualFilterValue : globalFilter ?? ""}
+        onChange={(e) => handleFilterChange(e.target.value)}
+        className="max-w-48 pr-7"
+      />
+      <LucideSearch className="absolute inset-y-0 right-3 self-center text-muted-foreground" />
+    </div>
+  );
+});
+DataSearch.displayName = "DataSearch";
 
 /**
  * Sort control component that provides column sorting functionality.
@@ -261,8 +304,8 @@ DataSearch.displayName = "DataSearch"
  */
 const DataSort = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => {
-    const { table, sorting, setSorting } = React.useContext(DataProviderContext)
-    const currentSort = sorting[0]
+    const { table, sorting, setSorting } = useDataProviderContext('DataSort');
+    const currentSort = sorting[0];
 
     const sortableColumns = table.getAllColumns()
       .filter(col => col.getCanSort())
