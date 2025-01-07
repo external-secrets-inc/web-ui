@@ -140,10 +140,10 @@ export default function AuditSecretDetailsDialog({ secret, onOpenChange }: Audit
 
             <Separator />
 
-            <section aria-label="Recent Access History" className="space-y-2">
+            <section aria-label="Last access records" className="space-y-2">
               <h3 className="font-semibold mb-3 flex items-center gap-2">
                 <LucideUsers />
-                Recent Access History
+                Last Access Records
                 <Badge variant="secondary">{secret.accessorsAmount || "0"}</Badge>
               </h3>
               {secret.accessors?.length > 0 ? (
