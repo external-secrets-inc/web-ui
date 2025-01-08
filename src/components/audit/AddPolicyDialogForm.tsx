@@ -213,8 +213,8 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
             </Button>
 
             <Alert
-              className={`w-full text-center text-sm mx-4 ${(isValid === null && !isValidateError) ? "invisible" : "border-emerald-500"}`}
-              variant={isValidateError ? "destructive" : "default"}
+              className={`w-full text-center text-sm mx-4 ${(isValid === null && !isValidateError) ? "invisible" : ""}`}
+              variant={isValidateError ? "destructive" : "success"}
               style={{ margin: 0, padding: 7 }}
             >
               <AlertDescription>

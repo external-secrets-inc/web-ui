@@ -105,17 +105,6 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
               <LucideEdit className="mr-2" />
               Edit Policy
             </DropdownMenuItem>
-            <FeatureItemDeleteAction
-              featureType={"Audit Policy"}
-              featureID={row.policyID}
-              featureName={row.name}
-              onDelete={() => { performDelete(row.policyID) }}
-            >
-              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                <LucideTrash2 className="mr-2" />
-                Delete Policy
-              </DropdownMenuItem>
-            </FeatureItemDeleteAction>
             <DropdownMenuItem
               onSelect={(e) => {
                 e.preventDefault();
@@ -127,6 +116,17 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
               <LucideUsers className="mr-2" />
               Assign Providers
             </DropdownMenuItem>
+            <FeatureItemDeleteAction
+              featureType={"Audit Policy"}
+              featureID={row.policyID}
+              featureName={row.name}
+              onDelete={() => { performDelete(row.policyID) }}
+            >
+              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                <LucideTrash2 className="mr-2" />
+                Delete Policy
+              </DropdownMenuItem>
+            </FeatureItemDeleteAction>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
