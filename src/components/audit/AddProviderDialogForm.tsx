@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { ControllerRenderProps, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,7 +31,6 @@ import {
   AddProviderFormSchema,
   CreateProviderPayload,
   AddProviderFormValues,
-  AddProviderFieldValue,
   AddProviderFieldProps
 } from './Audit.interfaces';
 import useGetProvidersTypes from '@/services/audit/queries/useGetProvidersType';
@@ -84,8 +83,8 @@ const fieldHandlers: Record<
     generateSchema: (_fieldName, schema) =>
       schema.required
         ? z
-            .instanceof(File)
-            .refine((file) => file.size > 0, { message: `File must not be empty.` })
+          .instanceof(File)
+          .refine((file) => file.size > 0, { message: `File must not be empty.` })
         : z.instanceof(File).optional(),
     render: (_schema, _fieldName, fieldProps) => (
       <Input
@@ -123,8 +122,8 @@ const fieldHandlers: Record<
             fieldProps.value === "true"
               ? true
               : fieldProps.value === "false"
-              ? false
-              : undefined
+                ? false
+                : undefined
           }
           onCheckedChange={(checked) => fieldProps.onChange(checked)}
           aria-readonly
@@ -195,59 +194,60 @@ const AddProviderDialogForm = ({
   };
 
   const getDefaultValues = useCallback((providerType: string): AddProviderFormValues => {
-    const baseDefaults = {
-      providerName: "",
-      providerType: providerType,
-      backendIdentifier: "",
-    } as AddProviderFormValues;
+    const baseDefaults: AddProviderFormValues = {
+      providerName: providerForm.providerName || "",
+      providerType,
+      backendIdentifier: providerForm.backendIdentifier || "",
+    };
 
     if (!providerType || !formSchemaData[providerType]) {
-      return baseDefaults;
+      return selectedProviderId ? { ...providerForm } : baseDefaults;
     }
 
-    const schemaDefaults = Object.entries(formSchemaData[providerType]).reduce<Record<string, AddProviderFieldValue>>(
+    const combinedDefaults = Object.entries(formSchemaData[providerType]).reduce(
       (acc, [key, schema]) => {
-        acc[key] = schema.default ?? (schema.type === 'number' ? 0 : '');
+        const formValue = providerForm[key];
+        if (selectedProviderId && formValue !== undefined) {
+
+          if (schema.type === "number" && typeof formValue === "string" && !isNaN(Number(formValue))) {
+            acc[key] = Number(formValue);
+          } else if (schema.type === "boolean" && typeof formValue === "string") {
+            acc[key] = formValue.toLowerCase() === "true";
+          } else {
+            acc[key] = formValue;
+          }
+        } else {
+          acc[key] = schema.default ?? (schema.type === "number" ? 0 : "");
+        }
         return acc;
       },
-      {}
+      { ...baseDefaults } as AddProviderFormValues
     );
 
-    return {
-      ...baseDefaults,
-      ...schemaDefaults,
-    };
-  }, [formSchemaData]);
+    return combinedDefaults;
+  }, [formSchemaData, providerForm, selectedProviderId]);
 
-  const formSchema = selectedFormType ? generateZodSchema(selectedFormType) : baseSchema;
+  const defaultValues = useMemo(() => getDefaultValues(providerForm.providerType), [providerForm, getDefaultValues]);
 
   const form = useForm<AddProviderFormValues>({
-    resolver: formSchema ? zodResolver(formSchema) : undefined,
-    defaultValues: getDefaultValues(selectedFormType),
+    resolver: zodResolver(selectedFormType ? generateZodSchema(selectedFormType) : baseSchema),
+    defaultValues: defaultValues,
   });
+
+  useEffect(() => {
+    form.reset(defaultValues);
+    setSelectedFormType(providerForm.providerType);
+  }, [providerForm, form, defaultValues]);
 
   const resetFormWithType = useCallback((providerType: string, initialValues: Partial<AddProviderFormValues> = {}) => {
     const defaultValues = getDefaultValues(providerType);
     form.reset({ ...defaultValues, ...initialValues });
     setSelectedFormType(providerType);
   }, [form, getDefaultValues]);
-  
+
   const handleFormTypeChange = (type: string) => {
     resetFormWithType(type, form.getValues());
   };
-
-  useEffect(() => {
-    if (selectedProviderId) {
-      const defaultValues = getDefaultValues(providerForm.providerType);
-      form.reset({
-        ...defaultValues,
-        ...providerForm,
-      });
-      setSelectedFormType(providerForm.providerType);
-    } else {
-      form.reset(getDefaultValues(providerForm.providerType));
-    }
-  }, [selectedProviderId, providerForm, form, getDefaultValues]);
 
   const handleSubmit = (formValues: Record<string, string | boolean | File | number>) => {
     const { providerName, providerType, backendIdentifier, ...customFields } = formValues;
