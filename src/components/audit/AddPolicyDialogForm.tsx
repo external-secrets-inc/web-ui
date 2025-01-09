@@ -30,7 +30,7 @@ const executeOnOptions = executeOnArray.map(x => ({ label: x, value: x }));
 const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel }: {
   selectedPolicyId: string; policyForm: PolicyForm; onSubmit: (payload: CreatePolicyPayload) => void; onCancel: () => void;
 }) => {
-  const [isValid, setIsValid] = useState<null | boolean>(null);
+  const [isCompliant, setIsCompliant] = useState<null | boolean>(null);
   const form = useForm({ resolver: zodResolver(baseSchema), defaultValues: policyForm });
 
   useEffect(() => {
@@ -67,12 +67,18 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
   }, [errorSample, isErrorSample, executeOn.length])
 
   const [isValidateError, setIsValidateError] = useState(false);
+  const [validateErrorMessage, setValidateErrorMessage] = useState("");
   const { mutateAsync: validateRule } = usePostValidateRule(false, {
     onError: (error: AxiosError<ApiHttpError>) => {
-      handleDefaultApiHttpError(error, "Error while trying to validate rule");
       setIsValidateError(true);
+      if(error.status == 400) {
+        setValidateErrorMessage(JSON.parse(error.request.response)?.detail)
+      } else {
+        setValidateErrorMessage("Error while trying to validate rule")
+        handleDefaultApiHttpError(error, "Error while trying to validate rule");
+      }
     },
-    onSuccess: (res) => setIsValid(res.valid)
+    onSuccess: (res) => setIsCompliant(res.compliant)
   });
 
   const name = form.watch("name");
@@ -84,7 +90,7 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
   };
 
   useEffect(() => {
-    setIsValid(null);
+    setIsCompliant(null);
     setIsValidateError(false);
   }, [executeOn, sample, rule])
 
@@ -213,15 +219,15 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
             </Button>
 
             <Alert
-              className={`w-full text-center text-sm mx-4 ${(isValid === null && !isValidateError) ? "invisible" : "border-emerald-500"}`}
-              variant={isValidateError ? "destructive" : "default"}
+              className={`w-full text-center text-sm mx-4 ${(isCompliant === null && !isValidateError) ? "invisible" : ""}`}
+              variant={isValidateError ? "destructive" : isCompliant? "success" : "warning"}
               style={{ margin: 0, padding: 7 }}
             >
               <AlertDescription>
-                {isValid
+                {isCompliant
                   ? "This sample would be compliant!"
                   : isValidateError
-                    ? "An error occurred while validating the rule."
+                    ? validateErrorMessage
                     : "This sample would NOT be compliant!"}
               </AlertDescription>
             </Alert>
@@ -236,7 +242,7 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
               </Button>
               <Button
                 type="submit"
-                disabled={!name || !executeOn.length || !sample || !rule || isValid === null}
+                disabled={!name || !executeOn.length || !sample || !rule || isCompliant === null}
               >
                 Submit
               </Button>
