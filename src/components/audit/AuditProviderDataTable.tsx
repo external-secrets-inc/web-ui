@@ -47,6 +47,26 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
 
   const { data: providersTypeData, isLoading: isLoadingProvidersTypes, isError: isErrorProvidersTypes } = useGetProvidersTypes(true);
 
+  const isValidProviderType: {(row: ProviderTableData): boolean } = (row) => {
+    if (isErrorProvidersTypes) {
+      toast.error("Unable to fetch provider types. Please try again later.");
+      return false;
+    }
+
+    if (isLoadingProvidersTypes) {
+      toast("Provider types are still loading. Please wait.");
+      return false;
+    }
+
+    const isValidType = providersTypeData && providersTypeData[row.backendType] !== undefined;
+    if (!isValidType) {
+      toast.error("Warning: The provider's type is invalid. Please delete this entry and recreate it to avoid potential errors.");
+      return false;
+    }
+
+    return true;
+  };
+
   const providerTableMeta: ProviderTableMeta = {
     renderRowActions: (row) => (
       <div className="flex items-center gap-2">
@@ -67,28 +87,12 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
             <DropdownMenuItem
               onSelect={(e) => {
                 e.preventDefault();
-
-                if (isErrorProvidersTypes) {
-                  toast.error("Unable to fetch provider types. Please try again later.");
-                  return;
-                }
-
-                if (isLoadingProvidersTypes) {
-                  toast("Provider types are still loading. Please wait.");
-                  return;
-                }
-
-                const isValidType = providersTypeData && providersTypeData[row.backendType.toLowerCase()] !== undefined;
-                if (!isValidType) {
-                  toast.error("Warning: The provider's type is invalid. Please delete this entry and recreate it to avoid potential errors.");
-                  return;
-                }
-
+                if (!isValidProviderType(row)) return;
                 setSelectedProviderId(row.providerID);
                 setProviderForm({
                   providerName: row.name,
                   backendIdentifier: row.backendIdentifier,
-                  providerType: row.backendType.toLowerCase(),
+                  providerType: row.backendType,
                   ...row.config
                 });
                 setIsAddProviderDialogOpen(true);

@@ -22,7 +22,7 @@ const editProvider = async (mock: boolean, { providerID, payload }: EditProvider
       "tenantID": "7cd77907-c48e-4a3c-9bea-1abfd40d1214",
       "name": "GCP Secret Manager",
       "backendIdentifier": "GCP",
-      "backendType": "gcp",
+      "backendType": "GCP",
       "config": {
         "projectID": "projectID",
         "topic": 'topic-name',

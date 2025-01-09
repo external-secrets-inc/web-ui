@@ -343,22 +343,49 @@ export const mockPoliciesData = [
 
 export const mockProvidersData = [
   {
-    id: "id-1",
+    _id: "id-1",
     providerID: "provider-id-1",
-    name: "Provider 1",
+    listenerID: "listener-id",
+    tenantID: "tenant-id",
+    name: "GCP",
+    backendIdentifier: "GCP",
     backendType: "GCP",
+    config: {
+      "project-id": "project",
+      "topic": "topic",
+      "subscription": "sub"
+    },
+    policies: ["policy-id-1", "policy-id-2", "policy-id-3"],
   },
   {
     id: "id-2",
     providerID: "provider-id-2",
-    name: "Provider 2",
-    backendType: "Azure",
+    listenerID: "listener-id",
+    tenantID: "tenant-id",
+    name: "VAULT",
+    backendIdentifier: "Vault",
+    backendType: "VAULT",
+    config: {
+      "vaultAddress": "Address",
+      "vaultBasePath": "secret",
+      "vaultVersion": "v3",
+      "socketHost": "0.1.2.3",
+      "socketPort": "8000",
+    },
+    policies: ["policy-id-1", "policy-id-2", "policy-id-3"],
   },
   {
-    id: "id-3",
+    _id: "id-3",
     providerID: "provider-id-3",
-    name: "Provider 3",
-    backendType: "AWS",
+    listenerID: "listener-id",
+    tenantID: "tenant-id",
+    name: "UNKNOWN",
+    backendIdentifier: "Unknown",
+    backendType: "UNKNOWN",
+    config: {
+      "sample": "sample",
+    },
+    policies: ["policy-id-1", "policy-id-2", "policy-id-3"],
   },
 ] as const
 
