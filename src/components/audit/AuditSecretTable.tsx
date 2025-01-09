@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { createColumnHelper } from "@tanstack/react-table";
-import { LucideAlertCircle, LucideDownload, LucideFilter } from "lucide-react";
+import { LucideAlertCircle, LucideDownload, LucideFilter, LucideSearch } from "lucide-react";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import FilterDialogForm from "./FilterDialogForm";
 import AuditSecretDetailsDialog from "./AuditSecretDetailsDialog";
 import { useAuditFilter } from "./AuditFilterProvider";
 import { useSearchParams } from "react-router-dom";
+import { Input } from "../ui/input";
 import saveAs from "file-saver";
 
 interface AuditSecretTableProps {
@@ -21,11 +22,13 @@ interface AuditSecretTableProps {
 
 export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
   const [selectedSecret, setSelectedSecret] = useState<SecretDetails | null>(null);
+  const [searchInputValue, setSearchInputValue] = useState("");
   const [searchParams] = useSearchParams();
   const {
     isFiltersDialogOpen,
     setIsFiltersDialogOpen,
     handleFilterChange,
+    handleFilterNameChange,
     currentFilters
   } = useAuditFilter();
 
@@ -148,6 +151,17 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
     [columnHelper]
   );
 
+  useEffect(() => {
+    if (currentFilters.search) {
+      setSearchInputValue(currentFilters.search);
+    }
+  }, [currentFilters.search]);
+
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchInputValue(e.target.value);
+    handleFilterNameChange(e.target.value);
+  };
+  
   const auditTableDataJsonToCsvFlat = (json: AuditTableData[]): string => {
     if (!json.length) return '';
 
@@ -178,21 +192,32 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
   return (
     <>
       <div className="flex flex-wrap items-center justify-between pt-4">
-        <h2 className="font-bold w-full min-[400px]:w-auto mb-2 min-[400px]:mb-0">All Secrets</h2>
+        <h2 className="font-bold w-auto mb-2">All Secrets</h2>
         
         <div className="flex gap-2">
-          <div className="relative flex items-center">
-            <Button
-              size="icon"
-              variant="outline"
-              className="self-center"
-              aria-label="Download"
-              title="Download"
-              onClick={() => {handleExportSecretsTable(listenerSecretTableData.secretsData)}}
-            >
-              <LucideDownload/>
-            </Button>
+          <div className="relative flex gap-2 items-center">
+            {/* <div className="relative"> */}
+              <Input
+                placeholder="Search..."
+                value={searchInputValue}
+                onChange={(e) => handleSearchInputChange(e)}
+                className="max-w-48 pr-8"
+              />
+              <LucideSearch className="absolute inset-y-0 right-3 self-center text-muted-foreground" />
+            {/* </div> */}
           </div>
+
+          <Button
+            size="icon"
+            variant="outline"
+            className="self-center"
+            aria-label="Download"
+            title="Download"
+            onClick={() => {handleExportSecretsTable(listenerSecretTableData?.secretsData?? [])}}
+          >
+            <LucideDownload/>
+          </Button>
+
           <Dialog
             open={isFiltersDialogOpen}
             onOpenChange={setIsFiltersDialogOpen}
@@ -211,9 +236,9 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
             <FilterDialogForm
               initialValues={currentFilters}
               onSubmit={handleFilterChange}
-              secretsNames={listenerSecretTableData.secretsNames}
-              policiesNames={listenerSecretTableData.policiesNames}
-              providersNames={listenerSecretTableData.providersNames}
+              secretsNames={listenerSecretTableData?.secretsNames?? []}
+              policiesNames={listenerSecretTableData?.policiesNames?? []}
+              providersNames={listenerSecretTableData?.providersNames?? []}
             />
           </Dialog>
         </div>

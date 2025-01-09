@@ -29,49 +29,6 @@ import {
 import { ComponentType, useState } from "react";
 import { MultiSelect } from "../ui/Multi-select";
 import { filterSchema, FilterSchema } from "./Audit.interfaces";
-import { Combobox } from "../ui/Combobox";
-
-const ComboboxFilter = ({
-  formControl,
-  name,
-  label,
-  placeholder,
-  emptyText,
-  options,
-}: {
-  formControl: Control<FilterSchema>;
-  name: keyof Omit<FilterSchema, 'providers'>;
-  label: string;
-  placeholder: string;
-  emptyText: string;
-  options: {
-    label: string;
-    value: string;
-    icon?: React.ComponentType<{ className?: string }>;
-  }[];
-}) => (
-  <FormField
-    control={formControl}
-    name={name}
-    render={({ field }) => (
-      <FormItem>
-        <FormLabel>{label}</FormLabel>
-        <FormControl>
-          <div>
-            <Combobox
-              items={options}
-              value={field.value}
-              onSelect={field.onChange}
-              placeholder={placeholder}
-              emptyText={emptyText}
-            />
-          </div>
-        </FormControl>
-        <FormMessage />
-      </FormItem>
-    )}
-  />
-);
 
 const BooleanFilter = ({
   formControl,
@@ -194,8 +151,8 @@ const FilterDialogForm = ({
   const handleClear = () => {
     form.reset({
       providers: [],
-      policyName: "",
-      secretName: "",
+      policyIDs: [],
+      secretIDs: [],
       policyStatus: "",
       duplicates: "",
       lastAccess: "",
@@ -236,32 +193,50 @@ const FilterDialogForm = ({
                       defaultValue={field.value}
                       placeholder="Select providers"
                       variant="inverted"
-                      maxCount={3}
+                      maxCount={1}
                     />
                   </FormItem>
                 )}
               />
 
               {/* Secret Name Input */}
-              <ComboboxFilter
-                key={"secret_name" + resetKey}
-                formControl={form.control}
-                name="secretName"
-                label="Secret Name"
-                placeholder="Enter secret name"
-                emptyText="No secret name found"
-                options={secretsNames}
+              <FormField
+                key={"secret_id" + resetKey}
+                control={form.control}
+                name="secretIDs"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Secrets</FormLabel>
+                    <MultiSelect
+                      options={secretsNames}
+                      onValueChange={function (value: string[]): void { field.onChange(value) }}
+                      defaultValue={field.value}
+                      placeholder="Select secrets"
+                      variant="inverted"
+                      maxCount={1}
+                    />
+                  </FormItem>
+                )}
               />
 
               {/* Policy Input */}
-              <ComboboxFilter
-                key={"policy" + resetKey}
-                formControl={form.control}
-                name="policyName"
-                label="Policy"
-                placeholder="Enter policy"
-                emptyText="No policy found"
-                options={policiesNames}
+              <FormField
+                key={"policy_id" + resetKey}
+                control={form.control}
+                name="policyIDs"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Policies</FormLabel>
+                    <MultiSelect
+                      options={policiesNames}
+                      onValueChange={function (value: string[]): void { field.onChange(value) }}
+                      defaultValue={field.value}
+                      placeholder="Select policies"
+                      variant="inverted"
+                      maxCount={1}
+                    />
+                  </FormItem>
+                )}
               />
             </div>
 

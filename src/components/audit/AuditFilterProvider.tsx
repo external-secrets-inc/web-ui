@@ -1,11 +1,13 @@
-import { createContext, useContext, useCallback, ReactNode, useMemo, useState } from "react";
+import { createContext, useContext, useCallback, ReactNode, useMemo, useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { FilterSchema, filterSchema } from "./Audit.interfaces";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface AuditFilterContextValue {
   isFiltersDialogOpen: boolean;
   setIsFiltersDialogOpen: (open: boolean) => void;
   handleFilterChange: (selectedFilters: FilterSchema) => void;
+  handleFilterNameChange: (name: string) => void;
   currentFilters: FilterSchema;
 }
 
@@ -18,12 +20,16 @@ interface AuditFilterProviderProps {
 export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isFiltersDialogOpen, setIsFiltersDialogOpen] = useState(false);
+  const [generalSearchParam, setGeneralSearchParam] = useState<string>();
+  const debouncedGeneralSearchParam = useDebounce(generalSearchParam, 300);
+
 
   const currentFilters = useMemo((): FilterSchema => {
     return {
       providers: searchParams.getAll("providers"),
-      policyName: searchParams.get("policyName") ?? undefined,
-      secretName: searchParams.get("secretName") ?? undefined,
+      policyIDs: searchParams.getAll("policyIDs"),
+      secretIDs: searchParams.getAll("secretIDs"),
+      search: searchParams.get("search") ?? undefined,
       policyStatus: searchParams.get("policyStatus") ?? undefined,
       duplicates: searchParams.get("duplicates") ?? undefined,
       lastAccess: searchParams.get("lastAccess") ?? undefined,
@@ -34,6 +40,7 @@ export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
 
   const handleFilterChange = useCallback((selectedFilters: FilterSchema) => {
     setSearchParams((prevParams) => {
+      const generalSearchParam = prevParams.get("search");      
       // First, remove all existing filter parameters specifically to avoid stale values
       filterSchema.keyof().options.forEach((key) => prevParams.delete(key));
 
@@ -52,19 +59,42 @@ export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
           prevParams.set(key, value);
         }
       }
-
+      
+      // Handle name params that's not assigned at filters form
+      if(generalSearchParam)
+        prevParams.set("search", generalSearchParam)
       return prevParams;
     });
 
     setIsFiltersDialogOpen(false);
   }, [setSearchParams]);
 
+  
+  const handleFilterNameChange = useCallback((name: string) => {
+    setGeneralSearchParam(name);
+  }, [setGeneralSearchParam]);
+
+  useEffect(() => {
+    if(debouncedGeneralSearchParam != null) {
+      setSearchParams((prevParams) => {
+        if (!generalSearchParam) {
+          prevParams.delete("search");
+          return prevParams;
+        }
+
+        prevParams.set("search", generalSearchParam);
+        return prevParams;
+      })
+    }
+  }, [debouncedGeneralSearchParam])
+
   const value = useMemo(() => ({
     isFiltersDialogOpen,
     setIsFiltersDialogOpen,
     handleFilterChange,
+    handleFilterNameChange,
     currentFilters,
-  }), [isFiltersDialogOpen, handleFilterChange, currentFilters]);
+  }), [isFiltersDialogOpen, handleFilterChange, handleFilterNameChange, currentFilters]);
 
   return (
     <AuditFilterContext.Provider value={value}>
