@@ -146,7 +146,7 @@ const renderInputField = (
   }) : null;
 };
 
-const AddProviderDialogForm = ({
+const ProviderDialogForm = ({
   selectedProviderId,
   providerForm,
   onSubmit,
@@ -296,7 +296,7 @@ const AddProviderDialogForm = ({
       className="w-[max(50%,640px)] max-w-[calc(100%-theme(spacing.12))] max-h-[calc(100%-theme(spacing.12))] overflow-auto grid-rows-[auto_minmax(100px,1fr)_auto] grid-cols-[minmax(100%,1fr)]"
     >
       <DialogHeader>
-        <DialogTitle>Add Provider</DialogTitle>
+        <DialogTitle>{selectedProviderId ? "Edit" : "Add"} Provider</DialogTitle>
         <DialogDescription />
       </DialogHeader>
       <Form {...form}>
@@ -408,4 +408,4 @@ const AddProviderDialogForm = ({
   );
 };
 
-export default AddProviderDialogForm;
+export default ProviderDialogForm;

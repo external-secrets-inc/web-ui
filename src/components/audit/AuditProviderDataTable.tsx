@@ -5,7 +5,7 @@ import { Button } from "../ui/button";
 import { DataProvider, DataTable } from "../ui/DataProvider";
 import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
-import AddProviderDialogForm from "./AddProviderDialogForm";
+import ProviderDialogForm from "./ProviderDialogForm.tsx";
 import { AddProviderFormValues, CreateProviderPayload, ProviderTableData } from "./Audit.interfaces";
 import { createColumnHelper } from "@tanstack/react-table";
 import { AxiosError } from "axios";
@@ -47,7 +47,7 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
 
   const { data: providersTypeData, isLoading: isLoadingProvidersTypes, isError: isErrorProvidersTypes } = useGetProvidersTypes(true);
 
-  const isValidProviderType: {(row: ProviderTableData): boolean } = (row) => {
+  const isValidProviderType: { (row: ProviderTableData): boolean } = (row) => {
     if (isErrorProvidersTypes) {
       toast.error("Unable to fetch provider types. Please try again later.");
       return false;
@@ -184,6 +184,17 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
     deleteProvider({ id: providerId });
   }
 
+  const handleSubmit = (payload: CreateProviderPayload) => {
+    if (selectedProviderId) {
+      const { name, backendIdentifier, backendType, config } = { ...payload };
+      const editPayload = { providerID: selectedProviderId, payload: { name, backendIdentifier, backendType, config } };
+      performEdit(editPayload);
+    } else {
+      performCreate(payload);
+    }
+    handleAddProviderDialogOpenChange(false);
+  }
+
   useEffect(() => {
     if (!(providersError || isRefetchErrorProviders)) return;
 
@@ -212,20 +223,11 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
               <LucidePlus />
             </Button>
           </DialogTrigger>
-          <AddProviderDialogForm
+          <ProviderDialogForm
             selectedProviderId={selectedProviderId}
             providerForm={providerForm}
             open={isAddProviderDialogOpen}
-            onSubmit={(payload: CreateProviderPayload) => {
-              if (selectedProviderId) {
-                const { name, backendIdentifier, backendType, config } = { ...payload };
-                const editPayload = { providerID: selectedProviderId, payload: { name, backendIdentifier, backendType, config } };
-                performEdit(editPayload);
-              } else {
-                performCreate(payload);
-              }
-              handleAddProviderDialogOpenChange(false);
-            }}
+            onSubmit={handleSubmit}
             onCancel={() => { handleAddProviderDialogOpenChange(false) }}
           />
         </Dialog>
