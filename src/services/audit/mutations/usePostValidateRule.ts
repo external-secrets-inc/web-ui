@@ -13,7 +13,7 @@ interface ValidateRulePayload {
 }
 
 interface ValidateRuleResponse {
-  valid: boolean;
+  compliant: boolean;
   validationResponse: Record<string, unknown>;
 }
 
@@ -21,7 +21,7 @@ const postValidateRule = async (mock: boolean, payload: ValidateRulePayload): Pr
   if (mock) {
     await mockNetworkResponseDelay();
     return {
-      "valid": true,
+      "compliant": true,
       "validationResponse": {}
     };
   }

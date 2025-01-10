@@ -4,6 +4,7 @@ import useSignOut from 'react-auth-kit/hooks/useSignOut';
 import axiosInstance, { BACKEND_DOMAINS } from '@/services/axiosConfig';
 import { trackSignedOut } from '@/analytics';
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface AxiosInterceptorProps {
   children: ReactNode;
@@ -16,7 +17,7 @@ interface AxiosInterceptorProps {
  *
  * 2. AuthGuard (Response): Handles authentication failures (401), manages user
  *    session, and redirects to login when necessary. Also tracks sign-out
- *    events.
+ *    events and clears any react query cache on sign-out.
  *
  * 3. backendErrorNormalizer (Response): Normalizes error responses with a consistent
  *    structure for each backend.
@@ -28,6 +29,7 @@ interface AxiosInterceptorProps {
 const AxiosInterceptor: React.FC<AxiosInterceptorProps> = ({ children }) => {
   const navigate = useNavigate();
   const signOut = useSignOut();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     // MUST BE FIRST: Routes requests to different backend services
@@ -48,6 +50,7 @@ const AxiosInterceptor: React.FC<AxiosInterceptorProps> = ({ children }) => {
       (error: AxiosError) => {
         if (error?.response?.status === 401) {
           signOut();
+          queryClient.clear();
           trackSignedOut(false);
           navigate('/login');
         }
@@ -90,7 +93,7 @@ const AxiosInterceptor: React.FC<AxiosInterceptorProps> = ({ children }) => {
       axiosInstance.interceptors.response.eject(authGuard);
       axiosInstance.interceptors.request.eject(backendRouter);
     };
-  }, [navigate, signOut]);
+  }, [navigate, signOut, queryClient]);
 
   return <>{children}</>;
 };

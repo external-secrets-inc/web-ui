@@ -1,25 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { getSubscriptions } from '@/services/subscriptions/subscriptionsService';
-import { Subscription } from '@/types';
-import { toast } from 'sonner';
+import React from 'react';
 import { LucideCircleAlert } from 'lucide-react';
+import { useSubscription } from '@/context/SubscriptionContext';
 
 const SubscriptionSettings: React.FC = () => {
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-
-  useEffect(() => {
-    const fetchSubscriptions = async () => {
-      try {
-        const subscriptionsData = await getSubscriptions();
-        setSubscriptions(subscriptionsData);
-      } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
-
-        toast.error('Failed to load subscriptions');
-      }
-    };
-
-    fetchSubscriptions();
-  }, []);
+  const { subscriptions } = useSubscription();
 
   return (
     <div>
@@ -29,9 +13,8 @@ const SubscriptionSettings: React.FC = () => {
       </h3>
 
       <div className="space-y-4">
-        {subscriptions.length > 0 ? (
+        {subscriptions && subscriptions.length > 0 ? (
           subscriptions.map((subscription) => {
-
             const formattedExpiryDate = new Date(subscription.expiryDate).toLocaleDateString();
             const hasExpiredSubscription = new Date(subscription.expiryDate) <= new Date();
 

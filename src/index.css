@@ -75,7 +75,7 @@
   }
 
   #root {
-    @apply min-h-dvh
+    @apply min-h-dvh grid grid-rows-[auto_1fr]
   }
 
   /* TODO:
