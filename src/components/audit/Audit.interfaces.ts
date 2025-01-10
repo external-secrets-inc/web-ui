@@ -160,6 +160,8 @@ export interface CreateProviderPayload {
   };
 }
 
+export type EditProviderPayload = Omit<CreateProviderPayload, "listenerID" | "tenantID">;
+
 export interface CreateTenantListenerPayload {
   name: string;
   tags: {
@@ -184,6 +186,7 @@ export interface AddProviderFieldSchema {
 
 export interface AddProviderFormValues {
   providerName: string;
+  backendIdentifier: string;
   providerType: string;
   [key: string]: AddProviderFieldValue;
 }
