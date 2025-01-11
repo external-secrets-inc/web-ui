@@ -32,7 +32,6 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
     currentFilters
   } = useAuditFilter();
 
-  // TODO: the data fetching is comming in a different way, and in each refresh the data is being fetched again causing the "glich" in the UI
   const {
     data: secretTableData,
     isLoading: isLoadingSecretTableData,
@@ -161,7 +160,7 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
     setSearchInputValue(e.target.value);
     handleFilterNameChange(e.target.value);
   };
-  
+
   const auditTableDataJsonToCsvFlat = (json: AuditTableData[]): string => {
     if (!json.length) return '';
 
@@ -193,7 +192,7 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
     <>
       <div className="flex flex-wrap items-center justify-between pt-4">
         <h2 className="font-bold w-auto mb-2">All Secrets</h2>
-        
+
         <div className="flex gap-2">
           <div className="relative flex gap-2 items-center">
             {/* <div className="relative"> */}
@@ -236,9 +235,7 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
             <FilterDialogForm
               initialValues={currentFilters}
               onSubmit={handleFilterChange}
-              secretsNames={listenerSecretTableData?.secretsNames?? []}
-              policiesNames={listenerSecretTableData?.policiesNames?? []}
-              providersNames={listenerSecretTableData?.providersNames?? []}
+              listenerID={listenerID}
             />
           </Dialog>
         </div>
