@@ -4,7 +4,7 @@ import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError, } from "@/types";
 import { AxiosError } from "axios";
 import { mockNetworkResponseDelay, mockAuditTableData } from "../mocks/mockData";
-import { AuditResponseData, filterSchema, FilterSchema } from "@/components/audit/Audit.interfaces";
+import { AuditResponseData, filterSchema } from "@/components/audit/Audit.interfaces";
 import { useAuditMock } from '@/services/audit/context/AuditMockContext';
 
 // TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/115
@@ -37,11 +37,7 @@ const useGetDashboarSecretTable = (
   Object.keys(filterSchema.shape).forEach((key) => {
     const paramValue = params.getAll(key);
     if (paramValue.length > 0) {
-      if (key === 'providers') {
-        paramValue.forEach((value) => filteredParams.append(key, value));
-      } else {
-        filteredParams.set(key as keyof Omit<FilterSchema, 'providers'>, paramValue[0]);
-      }
+      paramValue.forEach((value) => filteredParams.append(key, value));
     }
   });
 

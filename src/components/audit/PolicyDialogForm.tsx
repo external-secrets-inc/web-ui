@@ -27,7 +27,7 @@ const baseSchema = z.object({
 const executeOnArray = ["Read", "UpdatePreHash", "UpdatePostHash", "Create", "Delete", "RBACCreate", "RBACUpdate", "RBACDelete"];
 const executeOnOptions = executeOnArray.map(x => ({ label: x, value: x }));
 
-const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel }: {
+const PolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel }: {
   selectedPolicyId: string; policyForm: PolicyForm; onSubmit: (payload: CreatePolicyPayload) => void; onCancel: () => void;
 }) => {
   const [isCompliant, setIsCompliant] = useState<null | boolean>(null);
@@ -254,4 +254,4 @@ const AddPolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel 
   );
 };
 
-export default AddPolicyDialogForm;
+export default PolicyDialogForm;

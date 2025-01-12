@@ -4,8 +4,9 @@ export type ListenerStatus = "PENDING" | "OFFLINE" | "ACTIVE";
 
 export const filterSchema = z.object({
   providers: z.array(z.string()),
-  policyName: z.string().optional(),
-  secretName: z.string().optional(),
+  policyIDs: z.array(z.string()),
+  secretIDs: z.array(z.string()),
+  search: z.string().optional(),
   policyStatus: z.string().optional(),
   duplicates: z.string().optional(),
   lastAccess: z.string().optional(),
@@ -159,6 +160,8 @@ export interface CreateProviderPayload {
   };
 }
 
+export type EditProviderPayload = Omit<CreateProviderPayload, "listenerID" | "tenantID">;
+
 export interface CreateTenantListenerPayload {
   name: string;
   tags: {
@@ -183,6 +186,7 @@ export interface AddProviderFieldSchema {
 
 export interface AddProviderFormValues {
   providerName: string;
+  backendIdentifier: string;
   providerType: string;
   [key: string]: AddProviderFieldValue;
 }

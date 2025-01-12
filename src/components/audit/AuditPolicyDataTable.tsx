@@ -16,7 +16,7 @@ import useGetPolicies from "@/services/audit/queries/useGetPolicies";
 import useGetAuditProviders from "@/services/audit/queries/useGetAuditProviders";
 import useCreatePolicy from "@/services/audit/mutations/useCreatePolicy";
 import useDeletePolicy from "@/services/audit/mutations/useDeletePolicy";
-import AddPolicyDialogForm from "./AddPolicyDialogForm";
+import PolicyDialogForm from "./PolicyDialogForm";
 import { AssignProvidersDialog } from "./AssignProvidersDialog";
 import useAssignProviderPolicy from "@/services/audit/mutations/useAssignProviderPolicy";
 import useUnassignProviderPolicy from "@/services/audit/mutations/useUnassignProviderPolicy";
@@ -222,6 +222,17 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
     deletePolicy({ id: policyID });
   };
 
+  const handleSubmit = (payload: CreatePolicyPayload) => {
+    if (selectedPolicyId) {
+      const { name, executeOn, engine, rule } = { ...payload };
+      const editPayload = { policyID: selectedPolicyId, payload: { name, executeOn, engine, rule } };
+      performEdit(editPayload);
+    } else {
+      performCreate(payload);
+    }
+    handleAddPolicyDialogOpenChange(false);
+  }
+
   const handleAssignProviders = async (providerIds: string[]) => {
     const currentPolicy = policies.find(p => p.id === selectedPolicyId);
     if (!currentPolicy) return;
@@ -299,19 +310,10 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
               <LucidePlus />
             </Button>
           </DialogTrigger>
-          <AddPolicyDialogForm
+          <PolicyDialogForm
             selectedPolicyId={selectedPolicyId}
             policyForm={policyForm}
-            onSubmit={(payload: CreatePolicyPayload) => {
-              if (selectedPolicyId) {
-                const { name, executeOn, engine, rule } = { ...payload };
-                const editPayload = { policyID: selectedPolicyId, payload: { name, executeOn, engine, rule } };
-                performEdit(editPayload);
-              } else {
-                performCreate(payload);
-              }
-              handleAddPolicyDialogOpenChange(false);
-            }}
+            onSubmit={handleSubmit}
             onCancel={() => { handleAddPolicyDialogOpenChange(false) }}
           />
         </Dialog>
