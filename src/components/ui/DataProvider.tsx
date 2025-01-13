@@ -407,7 +407,7 @@ const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
             { isLoading ?
               <TableRow>
                 <TableCell colSpan={table.getAllColumns().length}>
-                  <div className="flex justify-center">
+                  <div className="flex justify-center items-center h-5">
                     <Loader />
                   </div>
                 </TableCell>
@@ -415,8 +415,10 @@ const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
 
             : table?.getRowModel()?.rows?.length === 0 ?
               <TableRow>
-                <TableCell colSpan={table.getAllColumns().length} className="text-center">
-                  <p className="text-sm text-muted-foreground">No data available</p>
+                <TableCell colSpan={table.getAllColumns().length}>
+                  <div className="flex justify-center items-center h-5">
+                    <p className="text-sm text-muted-foreground">No data available</p>
+                  </div>
                 </TableCell>
               </TableRow>
 
