@@ -9,7 +9,9 @@ env:
   TAG_NAME: ${{ github.event.release.tag_name }}
   TENANT_MANAGER_URL: https://api.prod.externalsecrets.com
   WEB_UI_URL: https://app.externalsecrets.com
+  MOCK_AUDIT_ENABLED: "true"
   WEBSITE_URL: https://externalsecrets.com
+  AUDIT_BACKEND_URL: https://audit.prod.externalsecrets.com
   DOCS_URL: https://app.externalsecrets.com
 jobs:
   build-and-push:
@@ -65,6 +67,8 @@ jobs:
             --build-arg TENANT_MANAGER_URL=${{ env.TENANT_MANAGER_URL}} \
             --build-arg WEB_UI_URL=${{ env.WEB_UI_URL}} \
             --build-arg WEBSITE_URL=${{ env.WEBSITE_URL}} \
+            --build-arg AUDIT_BACKEND_URL=${{ env.AUDIT_BACKEND_URL}} \
+            --build-arg MOCK_AUDIT_ENABLED=${{ env.MOCK_AUDIT_ENABLED}} \
             --build-arg DOCS_URL=${{ env.DOCS_URL}} \
             --push .
       env:
