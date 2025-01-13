@@ -180,6 +180,7 @@ export function AuditTimelineChartCard({
                       const item = data?.find((d) => d.date === label)
                       return item?.fullDate || label
                     }}
+                    sortByConfigOrder
                   />
                 }
               />
@@ -205,7 +206,7 @@ export function AuditTimelineChartCard({
                 className="text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground/50"
               />
               <ChartLegend
-                content={<ChartLegendContent />}
+                content={<ChartLegendContent sortByConfigOrder />}
                 verticalAlign="top"
                 className="pb-10"
               />
