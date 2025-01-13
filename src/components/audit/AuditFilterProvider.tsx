@@ -9,6 +9,8 @@ interface AuditFilterContextValue {
   handleFilterChange: (selectedFilters: FilterSchema) => void;
   handleFilterNameChange: (name: string) => void;
   currentFilters: FilterSchema;
+  hasAppliedFilters: () => boolean;
+  clearFilters: () => void;
 }
 
 const AuditFilterContext = createContext<AuditFilterContextValue | null>(null);
@@ -23,9 +25,9 @@ export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
   const [generalSearchParam, setGeneralSearchParam] = useState<string>();
   const debouncedGeneralSearchParam = useDebounce(generalSearchParam, 300);
 
-
+  // Memoization with schema validation
   const currentFilters = useMemo((): FilterSchema => {
-    return {
+    const filters: FilterSchema = {
       providers: searchParams.getAll("providers"),
       policyIDs: searchParams.getAll("policyIDs"),
       secretIDs: searchParams.getAll("secretIDs"),
@@ -35,12 +37,22 @@ export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
       lastAccess: searchParams.get("lastAccess") ?? undefined,
       lastRotation: searchParams.get("lastRotation") ?? undefined,
       accessors: searchParams.get("accessors") ?? undefined,
-    } as FilterSchema;
+    };
+
+    return filterSchema.parse(filters);
   }, [searchParams]);
+
+  const hasAppliedFilters = useCallback(() => {
+    const filters = { ...currentFilters };
+    delete filters.search;
+    return Object.values(filters).some(value =>
+      Array.isArray(value) ? value.length > 0 : !!value
+    );
+  }, [currentFilters]);
 
   const handleFilterChange = useCallback((selectedFilters: FilterSchema) => {
     setSearchParams((prevParams) => {
-      const generalSearchParam = prevParams.get("search");      
+      const generalSearchParam = prevParams.get("search");
       // First, remove all existing filter parameters specifically to avoid stale values
       filterSchema.keyof().options.forEach((key) => prevParams.delete(key));
 
@@ -59,7 +71,7 @@ export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
           prevParams.set(key, value);
         }
       }
-      
+
       // Handle name params that's not assigned at filters form
       if(generalSearchParam)
         prevParams.set("search", generalSearchParam)
@@ -69,10 +81,9 @@ export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
     setIsFiltersDialogOpen(false);
   }, [setSearchParams]);
 
-  
   const handleFilterNameChange = useCallback((name: string) => {
     setGeneralSearchParam(name);
-  }, [setGeneralSearchParam]);
+  }, []);
 
   useEffect(() => {
     if(debouncedGeneralSearchParam != null) {
@@ -86,7 +97,16 @@ export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
         return prevParams;
       })
     }
-  }, [debouncedGeneralSearchParam])
+  }, [debouncedGeneralSearchParam, generalSearchParam, setSearchParams])
+
+  const clearFilters = useCallback(() => {
+    setSearchParams((prevParams) => {
+      filterSchema.keyof().options.forEach((key) => prevParams.delete(key));
+      prevParams.delete("search");
+      return prevParams;
+    });
+    setGeneralSearchParam(undefined);
+  }, [setSearchParams]);
 
   const value = useMemo(() => ({
     isFiltersDialogOpen,
@@ -94,7 +114,16 @@ export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
     handleFilterChange,
     handleFilterNameChange,
     currentFilters,
-  }), [isFiltersDialogOpen, handleFilterChange, handleFilterNameChange, currentFilters]);
+    hasAppliedFilters,
+    clearFilters,
+  }), [
+    isFiltersDialogOpen,
+    handleFilterChange,
+    handleFilterNameChange,
+    currentFilters,
+    hasAppliedFilters,
+    clearFilters
+  ]);
 
   return (
     <AuditFilterContext.Provider value={value}>

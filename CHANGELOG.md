@@ -1,5 +1,61 @@
 # Changelog
 
+## [0.8.0](https://github.com/external-secrets-inc/web-ui/compare/v0.7.0...v0.8.0) (2025-01-12)
+
+
+### Features
+
+* :sparkles: allow using different keys for row id in dataProvider and fix on audit ([883a9be](https://github.com/external-secrets-inc/web-ui/commit/883a9be3d938baa8dcc8037cb70f7ac66aef9a20))
+* add audit paywall by checking feature name ([#171](https://github.com/external-secrets-inc/web-ui/issues/171)) ([7b2daf5](https://github.com/external-secrets-inc/web-ui/commit/7b2daf584f8b5d382fe4a9212a4c34878712f802))
+* add audit timeline charts ([#135](https://github.com/external-secrets-inc/web-ui/issues/135)) ([276ae12](https://github.com/external-secrets-inc/web-ui/commit/276ae12e1519d0e4a00bb60dbbf6ac795ba279d4))
+* add audit to dev ([#159](https://github.com/external-secrets-inc/web-ui/issues/159)) ([69c1f73](https://github.com/external-secrets-inc/web-ui/commit/69c1f732b4918376cfb6f18549db69319d682a48))
+* add barebones mock toggle for testing audit endpoints ([#179](https://github.com/external-secrets-inc/web-ui/issues/179)) ([a7aa663](https://github.com/external-secrets-inc/web-ui/commit/a7aa663054fa0d01e32c5aec0788fa2707053336))
+* add custom CodeTextarea UI component and use on policy dialog ([#219](https://github.com/external-secrets-inc/web-ui/issues/219)) ([eb862b7](https://github.com/external-secrets-inc/web-ui/commit/eb862b716905a96d932721c99e320f4fdfc08c2d))
+* Add export button for secrets-table ([#230](https://github.com/external-secrets-inc/web-ui/issues/230)) ([30853cb](https://github.com/external-secrets-inc/web-ui/commit/30853cbf3a59eaa65749ba02bd6f44fe8e62667e))
+* Add filter by text ([#214](https://github.com/external-secrets-inc/web-ui/issues/214)) ([9b3afc3](https://github.com/external-secrets-inc/web-ui/commit/9b3afc34f96fe4757aa065c54de5be1f1a4a6c44))
+* add individual secrets details dialog ([#203](https://github.com/external-secrets-inc/web-ui/issues/203)) ([39ba67b](https://github.com/external-secrets-inc/web-ui/commit/39ba67bb80967020da7b09318b3d5de0ce7dd9ab))
+* add provider identifier into form ([#189](https://github.com/external-secrets-inc/web-ui/issues/189)) ([d51d34b](https://github.com/external-secrets-inc/web-ui/commit/d51d34bac7bb956507eefee592309a2bf1ebb509))
+* add vault form ([#176](https://github.com/external-secrets-inc/web-ui/issues/176)) ([f219129](https://github.com/external-secrets-inc/web-ui/commit/f21912994ca81996f1fe266a8aa9160755017f00))
+* allow backend switching from axiosInstance (for poc-audit) ([#154](https://github.com/external-secrets-inc/web-ui/issues/154)) ([00876df](https://github.com/external-secrets-inc/web-ui/commit/00876dfc166f776180509eef0bd6976500cef8ea))
+* allow using different keys for row id in dataProvider ([#191](https://github.com/external-secrets-inc/web-ui/issues/191)) ([883a9be](https://github.com/external-secrets-inc/web-ui/commit/883a9be3d938baa8dcc8037cb70f7ac66aef9a20))
+* audit loading subscription and subscription context ([#212](https://github.com/external-secrets-inc/web-ui/issues/212)) ([d67c462](https://github.com/external-secrets-inc/web-ui/commit/d67c46274a28a87dbb6a17d0722c1af88ecc3bdc))
+* Audit provider table and Add provider dialog ([#144](https://github.com/external-secrets-inc/web-ui/issues/144)) ([5d5a02b](https://github.com/external-secrets-inc/web-ui/commit/5d5a02b10064e570595b501ecb39937a7986c3ae))
+* chart time unit ([#213](https://github.com/external-secrets-inc/web-ui/issues/213)) ([b22c8c3](https://github.com/external-secrets-inc/web-ui/commit/b22c8c3fe97c596bf0fec89f13e338c02bd97c7f))
+* charts integration ([#160](https://github.com/external-secrets-inc/web-ui/issues/160)) ([397032b](https://github.com/external-secrets-inc/web-ui/commit/397032bfa04718effc47d47a87706fa1c425820e))
+* create and integrate policy assignments ([#170](https://github.com/external-secrets-inc/web-ui/issues/170)) ([80c0b08](https://github.com/external-secrets-inc/web-ui/commit/80c0b087b375cbd127140673615e414dfaa398a6))
+* create listener on tenant, getting install methods ([#153](https://github.com/external-secrets-inc/web-ui/issues/153)) ([8c4f4bc](https://github.com/external-secrets-inc/web-ui/commit/8c4f4bccf48afefa8e4e2850925a482f317dacbb))
+* expiry subscription banner ([#147](https://github.com/external-secrets-inc/web-ui/issues/147)) ([18f4f07](https://github.com/external-secrets-inc/web-ui/commit/18f4f0715c342dfd1c93dc793c18cc2afbafd4a8))
+* implement policy screen ([#155](https://github.com/external-secrets-inc/web-ui/issues/155)) ([b7e319a](https://github.com/external-secrets-inc/web-ui/commit/b7e319a1cffcc1c9823d15d41ba16f1ce53591f9))
+* improve copy for last accessors ([#221](https://github.com/external-secrets-inc/web-ui/issues/221)) ([cbcb138](https://github.com/external-secrets-inc/web-ui/commit/cbcb138557da3aac1ffd05a88e29dd8f5edb5261))
+
+
+### Bug Fixes
+
+* :bug: normalized response errors for different backends ([#168](https://github.com/external-secrets-inc/web-ui/issues/168)) ([12241cd](https://github.com/external-secrets-inc/web-ui/commit/12241cdb1697649b2ebb98b27e5fbf02c8578316))
+* :package: fix packages vulnerabilities ([a3c4553](https://github.com/external-secrets-inc/web-ui/commit/a3c4553491b6eae1da9c82b0e1ef26de075d7d47))
+* adds audit backend url ([#166](https://github.com/external-secrets-inc/web-ui/issues/166)) ([2fc5c55](https://github.com/external-secrets-inc/web-ui/commit/2fc5c553dffed1455c4027f9c61896957643a16d))
+* Audit listener creation ([#165](https://github.com/external-secrets-inc/web-ui/issues/165)) ([248d1f1](https://github.com/external-secrets-inc/web-ui/commit/248d1f1090962c4a2dfe78c08a3100a4995571c3))
+* auto approve small prs ([#181](https://github.com/external-secrets-inc/web-ui/issues/181)) ([aa69fa1](https://github.com/external-secrets-inc/web-ui/commit/aa69fa1569d4070190517d04bc7415279df2d6de))
+* auto fill add provider form with default backend values ([#190](https://github.com/external-secrets-inc/web-ui/issues/190)) ([3480b16](https://github.com/external-secrets-inc/web-ui/commit/3480b16aa2c810a8cf1779d9626106cf6230b746))
+* change assing policies endpoints ([#188](https://github.com/external-secrets-inc/web-ui/issues/188)) ([93df39f](https://github.com/external-secrets-inc/web-ui/commit/93df39f9f555e29c0502c2232e3e6971e1a8aa90))
+* dataProvider infinite loop ([#186](https://github.com/external-secrets-inc/web-ui/issues/186)) ([439f306](https://github.com/external-secrets-inc/web-ui/commit/439f3066f957b9a3138e39d50ecaf24a4703aa3a))
+* Fix typo on Audit Secret Table providersNames ([#210](https://github.com/external-secrets-inc/web-ui/issues/210)) ([d5084e8](https://github.com/external-secrets-inc/web-ui/commit/d5084e8a65c3ea880003f05d5c41caa9e6de56b7))
+* flicker audit wrapper ([#211](https://github.com/external-secrets-inc/web-ui/issues/211)) ([2e69084](https://github.com/external-secrets-inc/web-ui/commit/2e690845e373155a8857f3ae8d00dada6ed02777))
+* general url redirect ([#152](https://github.com/external-secrets-inc/web-ui/issues/152)) ([b48e600](https://github.com/external-secrets-inc/web-ui/commit/b48e60061f41085d12cb45ba6659170cb3aae9ee))
+* GetAuditProblemStats call on AuditChartProblems ([#185](https://github.com/external-secrets-inc/web-ui/issues/185)) ([eb9ba12](https://github.com/external-secrets-inc/web-ui/commit/eb9ba127373aeb4f63a0f181509ecdc2d9abc98f))
+* little fix on getValidateRule ([#202](https://github.com/external-secrets-inc/web-ui/issues/202)) ([fd8cdde](https://github.com/external-secrets-inc/web-ui/commit/fd8cdde1f2fc88b6e4f02f1d5f66dbe8cef19555))
+* packages vulnerabilities ([#146](https://github.com/external-secrets-inc/web-ui/issues/146)) ([a3c4553](https://github.com/external-secrets-inc/web-ui/commit/a3c4553491b6eae1da9c82b0e1ef26de075d7d47))
+* Policy validation error displayed message ([#229](https://github.com/external-secrets-inc/web-ui/issues/229)) ([54697dc](https://github.com/external-secrets-inc/web-ui/commit/54697dcb1d2a8a7bb95895d43a8fb1db9c416c4d))
+* providers endpoints ([#167](https://github.com/external-secrets-inc/web-ui/issues/167)) ([f60980f](https://github.com/external-secrets-inc/web-ui/commit/f60980fbce3cad27a1980c7d031eb93260f52696))
+* quickfix assign and unassign policies backend call ([#180](https://github.com/external-secrets-inc/web-ui/issues/180)) ([09caac1](https://github.com/external-secrets-inc/web-ui/commit/09caac1964e795cd5c0e4b3bc3ffd2037bad48fd))
+* re-rendering of other tables when secret table refetches ([#208](https://github.com/external-secrets-inc/web-ui/issues/208)) ([1f187aa](https://github.com/external-secrets-inc/web-ui/commit/1f187aac8ff814ea61dcd2a2342dfc79c8cf73e0))
+* Remove mock secrets table and other minor fix ([#173](https://github.com/external-secrets-inc/web-ui/issues/173)) ([752d760](https://github.com/external-secrets-inc/web-ui/commit/752d760631fb4b4f11b230e5667915c244eb8280))
+* secret table order ([#207](https://github.com/external-secrets-inc/web-ui/issues/207)) ([889b5cf](https://github.com/external-secrets-inc/web-ui/commit/889b5cf48df3631bfe5c1de798f4738c8a3479bc))
+* secrets table filter ([#204](https://github.com/external-secrets-inc/web-ui/issues/204)) ([8141f95](https://github.com/external-secrets-inc/web-ui/commit/8141f955acf9299d24275f7c1ef4cddf4fd5f086))
+* some fixes for policies screen ([#197](https://github.com/external-secrets-inc/web-ui/issues/197)) ([9d5765f](https://github.com/external-secrets-inc/web-ui/commit/9d5765f8eda7aaa5519a4393aa61f9c4d35e37b8))
+* token bash file ([#177](https://github.com/external-secrets-inc/web-ui/issues/177)) ([d9a7a90](https://github.com/external-secrets-inc/web-ui/commit/d9a7a9031526c03ba7e5e784fdd950b1579c7aac))
+* Update secret table interface ([#206](https://github.com/external-secrets-inc/web-ui/issues/206)) ([dd837eb](https://github.com/external-secrets-inc/web-ui/commit/dd837eb5830dd9d57a04254e2e43d1b5b7ea4c79))
+
 ## [0.7.0](https://github.com/external-secrets-inc/web-ui/compare/v0.6.1...v0.7.0) (2024-12-06)
 
 
