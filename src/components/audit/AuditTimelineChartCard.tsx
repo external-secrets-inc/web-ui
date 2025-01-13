@@ -1,4 +1,4 @@
-import { Line, LineChart, XAxis, YAxis } from "recharts"
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { LucideAlertCircle } from "lucide-react"
 import {
   Card,
@@ -116,66 +116,102 @@ export function AuditTimelineChartCard({
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <CardContent>
-        {
-          error ?
-          <div className="flex gap-2 items-center justify-center -mt-12">
+      <CardContent className="p-0">
+        {error ? (
+          <div className="flex gap-2 items-center justify-center -mt-14">
             <LucideAlertCircle className="text-destructive" />
             {errorMessage}
           </div>
-
-        : isLoading ?
-          <Loader size="lg" className="h-72 place-self-center -mt-12"/>
-
-        : !data ?
-          <div className="flex gap-2 items-center justify-center -mt-12">
+        ) : isLoading ? (
+          <Loader size="lg" className="h-80 place-self-center -mt-14"/>
+        ) : !data ? (
+          <div className="flex gap-2 items-center justify-center -mt-14">
             <LucideAlertCircle className="text-destructive" />
             No data available
           </div>
-
-        : <ChartContainer
+        ) : (
+          <ChartContainer
             config={config}
-            className="w-full max-h-60"
+            className="w-full max-h-[264px]"
           >
-            <LineChart
+            <AreaChart
               data={data}
-              margin={{ top: 20, right: 10, bottom: 20, left: -10 }}
+              margin={{ top: 0, right: 0, bottom: 20, left: 0 }}
             >
+              <defs>
+                {Object.keys(config)
+                  .filter(k => k !== 'amount')
+                  .map((kind, index) => (
+                    <linearGradient
+                      key={kind}
+                      id={`gradient-${kind}`}
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="5%"
+                        stopColor={CHART_COLORS[index % CHART_COLORS.length]}
+                        stopOpacity={0.8}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor={CHART_COLORS[index % CHART_COLORS.length]}
+                        stopOpacity={0.1}
+                      />
+                    </linearGradient>
+                  ))}
+              </defs>
+              <CartesianGrid vertical={false} />
               <XAxis
                 dataKey="date"
                 tickLine={false}
                 axisLine={false}
-                dy={10}
-              />
-              <YAxis
-                tickLine={false}
-                axisLine={false}
-                dx={-10}
+                tickMargin={16}
+                className="text-xs"
+                interval="preserveStartEnd"
+                padding={{ left: 0, right: 0 }}
               />
               <ChartTooltip
-                content={<ChartTooltipContent labelFormatter={(label) => {
-                  const item = data?.find(d => d.date === label)
-                  return item?.fullDate || label
-                }} />}
+                content={
+                  <ChartTooltipContent
+                    labelFormatter={(label) => {
+                      const item = data?.find((d) => d.date === label)
+                      return item?.fullDate || label
+                    }}
+                  />
+                }
               />
-              {Object.keys(config).filter(k => k !== 'amount').map((kind, index) => (
-                <Line
-                  key={kind}
-                  type="linear"
-                  dataKey={kind}
-                  stroke={CHART_COLORS[index % CHART_COLORS.length]}
-                  strokeWidth={2}
-                  dot={false}
-                />
-              ))}
-              {/* TODO: when multiple items are shown, legends can overflow outside parent area. Investigate a fix. */}
+              {Object.keys(config)
+                .filter((k) => k !== 'amount')
+                .map((kind, index) => (
+                  <Area
+                    key={kind}
+                    type="monotone"
+                    dataKey={kind}
+                    stackId="1"
+                    stroke={CHART_COLORS[index % CHART_COLORS.length]}
+                    fill={`url(#gradient-${kind})`}
+                    fillOpacity={0.4}
+                  />
+                ))}
+              <YAxis
+                allowDecimals={false}
+                tickLine={false}
+                axisLine={false}
+                mirror={true}
+                tickMargin={8}
+                className="text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground/50"
+              />
               <ChartLegend
                 content={<ChartLegendContent />}
                 verticalAlign="top"
+                className="pb-10"
               />
-            </LineChart>
+            </AreaChart>
           </ChartContainer>
-        }
+        )}
       </CardContent>
     </Card>
   )
