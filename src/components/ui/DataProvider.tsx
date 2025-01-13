@@ -38,7 +38,7 @@ type TableState<TData> = {
   sorting: SortingState
   globalFilter: string
   isLoading?: boolean
-  emptyMessage: string
+  emptyMessage: React.ReactNode
 }
 
 /**
@@ -84,7 +84,7 @@ type ProviderConfig<TData extends object> = {
    * current data type and context
    * @default "No data available"
    */
-  emptyMessage?: string
+  emptyMessage?: React.ReactNode
 
   /**
    * Function to get unique row identifier.
@@ -428,7 +428,7 @@ const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
               <TableRow>
                 <TableCell colSpan={table.getAllColumns().length}>
                   <div className="flex justify-center items-center h-5">
-                    <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+                    <div className="text-sm text-muted-foreground">{emptyMessage}</div>
                   </div>
                 </TableCell>
               </TableRow>

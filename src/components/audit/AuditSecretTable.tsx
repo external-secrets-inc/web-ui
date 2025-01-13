@@ -15,6 +15,7 @@ import { useAuditFilter } from "./AuditFilterProvider";
 import { useSearchParams } from "react-router-dom";
 import { Input } from "../ui/input";
 import saveAs from "file-saver";
+import { Separator } from "@/components/ui/separator";
 
 interface AuditSecretTableProps {
   listenerID: string;
@@ -30,7 +31,8 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
     handleFilterChange,
     handleFilterNameChange,
     currentFilters,
-    hasAppliedFilters
+    hasAppliedFilters,
+    clearFilters
   } = useAuditFilter();
 
   const {
@@ -192,9 +194,28 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
   const getEmptyMessage = () => {
     const { search } = currentFilters;
     if (!search && !hasAppliedFilters()) return "No secrets available";
-    if (search && hasAppliedFilters()) return `No secrets match "${search}" with the applied filters`;
-    if (search) return `No secrets match "${search}"`;
-    return "No secrets match the applied filters";
+
+    const message = search
+      ? `No secrets match "${search}"${hasAppliedFilters() ? " with the applied filters" : ""}`
+      : "No secrets match the applied filters";
+
+    return (
+      <span className="flex items-center gap-2">
+        <span>{message}</span>
+        <Separator orientation="vertical" className="h-[1em]" />
+        <Button
+          variant="link"
+          size="inline"
+          className="h-auto p-0 text-sm"
+          onClick={() => {
+            clearFilters();
+            setSearchInputValue("");
+          }}
+        >
+          Clear filters
+        </Button>
+      </span>
+    );
   };
 
   return (
