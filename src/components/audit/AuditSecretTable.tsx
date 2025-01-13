@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { createColumnHelper } from "@tanstack/react-table";
-import { LucideAlertCircle, LucideDownload, LucideFilter, LucideSearch } from "lucide-react";
+import { LucideAlertCircle, LucideCircle, LucideDownload, LucideFilter, LucideSearch } from "lucide-react";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
@@ -29,7 +29,8 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
     setIsFiltersDialogOpen,
     handleFilterChange,
     handleFilterNameChange,
-    currentFilters
+    currentFilters,
+    hasAppliedFilters
   } = useAuditFilter();
 
   const {
@@ -225,11 +226,12 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
               <Button
                 size="icon"
                 variant="outline"
-                className="self-center min-[260px]:self-end"
+                className="self-center min-[260px]:self-end relative"
                 aria-label="Filters"
                 title="Filters"
               >
                 <LucideFilter />
+                {hasAppliedFilters() && <LucideCircle className="absolute -top-1 -right-1 !size-2.5 stroke-0 fill-orange-500" />}
               </Button>
             </DialogTrigger>
             <FilterDialogForm
