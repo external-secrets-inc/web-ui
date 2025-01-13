@@ -5,7 +5,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { MultiSelect } from "@/components/ui/Multi-select";
+import { MultiSelect } from "@/components/ui/MultiSelect";
 import { useState, useMemo, useEffect } from "react";
 import { Loader } from "@/components/ui/Loader";
 import { ProviderTableData } from "./Audit.interfaces";
