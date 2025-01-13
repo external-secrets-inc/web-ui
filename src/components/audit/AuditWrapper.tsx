@@ -1,7 +1,7 @@
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { LucideGem } from 'lucide-react';
 import Audit from './Audit';
-import { AuditMockProvider, useAuditMock } from '@/services/audit/context/AuditMockContext';
+import { AuditMockProvider } from '@/services/audit/context/AuditMockContext';
 import { AuditFilterProvider } from "./AuditFilterProvider";
 import { useSubscription } from "@/context/SubscriptionContext";
 import { Loader } from "@/components/ui/Loader";
