@@ -7,7 +7,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "
 import { DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CreatePolicyPayload, PolicyForm } from './Audit.interfaces';
-import { MultiSelect } from '@/components/ui/Multi-select';
+import { MultiSelect } from '@/components/ui/MultiSelect';
 import { CodeTextarea } from '@/components/ui/CodeTextarea';
 import useGetValidateRule from '@/services/audit/queries/useGetValidateRule';
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";

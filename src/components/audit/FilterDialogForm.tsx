@@ -26,7 +26,7 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import { MultiSelect } from "../ui/Multi-select";
+import { MultiSelect } from "../ui/MultiSelect";
 import { filterSchema, FilterSchema } from "./Audit.interfaces";
 import useGetDashboarSecretTable from "@/services/audit/queries/useGetDashboarSecretTable";
 import useGetAuditProviders from "@/services/audit/queries/useGetAuditProviders";
