@@ -13,13 +13,6 @@ const getProvidersTypes = async (
 ) => {
   if (mock) {
     return {
-      "EXAMPLE": {
-        "field1": { "type": "string", "required": true, "maxLength": 50 },
-        "field2": { "type": "date", "required": false },
-        "field3": { "type": "file", "required": true, "accept": "image/*" },
-        "field4": { "type": "number", "required": true },
-        "field5": { "type": "boolean", "required": true },
-      },
       "GCP": {
         "project-id": { "type": "string", "required": true },
         "topic": { "type": "string", "required": true },
