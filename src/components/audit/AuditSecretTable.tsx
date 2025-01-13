@@ -15,6 +15,7 @@ import { useAuditFilter } from "./AuditFilterProvider";
 import { useSearchParams } from "react-router-dom";
 import { Input } from "../ui/input";
 import saveAs from "file-saver";
+import { formatDate } from "@/utils/dateUtils";
 
 interface AuditSecretTableProps {
   listenerID: string;
@@ -82,12 +83,7 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
         header: "Last Rotation",
         cell: (info) => (
           <span className="font-mono">
-            {info.getValue() ? new Date(info.getValue()!).toLocaleDateString("en-US", {
-              month: "2-digit",
-              day: "2-digit",
-              year: "numeric",
-              timeZone: "UTC",
-            }) : "Never rotated"}
+            {info.getValue() ? formatDate(info.getValue()!, { format: "americanDate", timeZone: 'local' }) : "Never rotated"}
           </span>
         ),
         // TODO: Understand why this sortingFn is necessary for proper sorting instead of the default behavior
@@ -101,12 +97,7 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
         header: "Last Access",
         cell: (info) => (
           <span className="font-mono">
-            {info.getValue() ? new Date(info.getValue()!).toLocaleDateString("en-US", {
-              month: "2-digit",
-              day: "2-digit",
-              year: "numeric",
-              timeZone: "UTC",
-            }) : "Never accessed"}
+            {info.getValue() ? formatDate(info.getValue()!, { format: "americanDate", timeZone: 'local' }) : "Never accessed"}
           </span>
         ),
         // TODO: Understand why this sortingFn is necessary for proper sorting instead of the default behavior
@@ -161,23 +152,23 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
     setSearchInputValue(e.target.value);
     handleFilterNameChange(e.target.value);
   };
-  
+
   const auditTableDataJsonToCsvFlat = (json: AuditTableData[]): string => {
     if (!json.length) return '';
 
     const isPrimitive = (value: AuditTableData[keyof AuditTableData]): boolean => {
-        return value === null || ['string', 'number', 'boolean'].includes(typeof value);
+      return value === null || ['string', 'number', 'boolean'].includes(typeof value);
     };
 
     const headers = Object.keys(json[0])
-        .filter((key) => isPrimitive(json[0][key as keyof AuditTableData]))
-        .join(',');
+      .filter((key) => isPrimitive(json[0][key as keyof AuditTableData]))
+      .join(',');
 
     const rows = json.map((row) => {
-        return Object.keys(row)
-            .filter((key) => isPrimitive(row[key as keyof AuditTableData]))
-            .map((key) => `"${row[key as keyof AuditTableData] ?? ''}"`)
-            .join(',');
+      return Object.keys(row)
+        .filter((key) => isPrimitive(row[key as keyof AuditTableData]))
+        .map((key) => `"${row[key as keyof AuditTableData] ?? ''}"`)
+        .join(',');
     });
 
     return [headers, ...rows].join('\n');
@@ -193,17 +184,17 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
     <>
       <div className="flex flex-wrap items-center justify-between pt-4">
         <h2 className="font-bold w-auto mb-2">All Secrets</h2>
-        
+
         <div className="flex gap-2">
           <div className="relative flex gap-2 items-center">
             {/* <div className="relative"> */}
-              <Input
-                placeholder="Search..."
-                value={searchInputValue}
-                onChange={(e) => handleSearchInputChange(e)}
-                className="max-w-48 pr-8"
-              />
-              <LucideSearch className="absolute inset-y-0 right-3 self-center text-muted-foreground" />
+            <Input
+              placeholder="Search..."
+              value={searchInputValue}
+              onChange={(e) => handleSearchInputChange(e)}
+              className="max-w-48 pr-8"
+            />
+            <LucideSearch className="absolute inset-y-0 right-3 self-center text-muted-foreground" />
             {/* </div> */}
           </div>
 
@@ -213,9 +204,9 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
             className="self-center"
             aria-label="Download"
             title="Download"
-            onClick={() => {handleExportSecretsTable(listenerSecretTableData?.secretsData?? [])}}
+            onClick={() => { handleExportSecretsTable(listenerSecretTableData?.secretsData ?? []) }}
           >
-            <LucideDownload/>
+            <LucideDownload />
           </Button>
 
           <Dialog
@@ -236,9 +227,9 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
             <FilterDialogForm
               initialValues={currentFilters}
               onSubmit={handleFilterChange}
-              secretsNames={listenerSecretTableData?.secretsNames?? []}
-              policiesNames={listenerSecretTableData?.policiesNames?? []}
-              providersNames={listenerSecretTableData?.providersNames?? []}
+              secretsNames={listenerSecretTableData?.secretsNames ?? []}
+              policiesNames={listenerSecretTableData?.policiesNames ?? []}
+              providersNames={listenerSecretTableData?.providersNames ?? []}
             />
           </Dialog>
         </div>

@@ -1,4 +1,5 @@
 import { AuditResponseData, AuditTableData } from "@/components/audit/Audit.interfaces";
+import { formatDate } from "@/utils/dateUtils";
 
 /**
  * Mock API Response Structures
@@ -72,13 +73,7 @@ export const getMockProviderTimelineStats = (startDate: string, endDate: string)
 export const getMockProblemTimelineStats = (startDate: string, endDate: string) =>
   generateMockTimelineData(new Date(startDate), new Date(endDate), mockProblemStats)
 
-export const mockLastUpdate = new Date().toLocaleString('en-US', {
-  month: '2-digit',
-  day: '2-digit',
-  year: 'numeric',
-  hour: '2-digit',
-  minute: '2-digit',
-})
+export const mockLastUpdate = formatDate(new Date(), { format: 'readableDate', timeZone: 'local' });
 
 export const mockAuditTableData: AuditResponseData = {
   secretsData: [

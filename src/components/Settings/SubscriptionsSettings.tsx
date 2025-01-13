@@ -1,6 +1,7 @@
 import React from 'react';
 import { LucideCircleAlert } from 'lucide-react';
 import { useSubscription } from '@/context/SubscriptionContext';
+import { formatDate } from '@/utils/dateUtils';
 
 const SubscriptionSettings: React.FC = () => {
   const { subscriptions } = useSubscription();
@@ -15,7 +16,7 @@ const SubscriptionSettings: React.FC = () => {
       <div className="space-y-4">
         {subscriptions && subscriptions.length > 0 ? (
           subscriptions.map((subscription) => {
-            const formattedExpiryDate = new Date(subscription.expiryDate).toLocaleDateString();
+            const formattedExpiryDate = formatDate(subscription.expiryDate, { format: 'americanDate', timeZone: 'utc' });
             const hasExpiredSubscription = new Date(subscription.expiryDate) <= new Date();
 
             return (

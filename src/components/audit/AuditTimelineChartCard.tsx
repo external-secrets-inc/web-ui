@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/chart"
 import { useMemo } from "react"
 import { Loader } from "@/components/ui/Loader"
+import { formatDate } from "@/utils/dateUtils"
 
 const CHART_COLORS = [
   "hsl(var(--chart-1))",
@@ -58,7 +59,7 @@ export function AuditTimelineChartCard({
 }: TimelineChartCardProps) {
   const { data, config } = useMemo(() => {
     if (!rawData || !Array.isArray(rawData)) return { data: undefined, config: baseConfig }
-    const uniqueKindsMap = new Map<string, {kind: string, label: string; tooltipLabel: string | undefined }>();
+    const uniqueKindsMap = new Map<string, { kind: string, label: string; tooltipLabel: string | undefined }>();
 
     for (const item of rawData) {
       for (const stat of item.stats) {
@@ -90,17 +91,8 @@ export function AuditTimelineChartCard({
     const chartData = rawData.map(item => {
       const date = new Date(item.date)
       return {
-        date: date.toLocaleString('en-US', {
-          month: 'short',
-          day: '2-digit',
-        }),
-        fullDate: date.toLocaleDateString('en-US', {
-          month: '2-digit',
-          day: '2-digit',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        }),
+        date: formatDate(date, { format: 'shortDate', timeZone: 'local' }),
+        fullDate: formatDate(date, { format: 'readableDate', timeZone: 'local' }),
         ...Object.fromEntries(
           item.stats.map(stat => [stat.kind, stat.amount])
         )
@@ -118,62 +110,62 @@ export function AuditTimelineChartCard({
       <CardContent>
         {
           error ?
-          <div className="flex gap-2 items-center justify-center -mt-12">
-            <LucideAlertCircle className="text-destructive" />
-            {errorMessage}
-          </div>
+            <div className="flex gap-2 items-center justify-center -mt-12">
+              <LucideAlertCircle className="text-destructive" />
+              {errorMessage}
+            </div>
 
-        : isLoading ?
-          <Loader size="lg" className="h-72 place-self-center -mt-12"/>
+            : isLoading ?
+              <Loader size="lg" className="h-72 place-self-center -mt-12" />
 
-        : !data ?
-          <div className="flex gap-2 items-center justify-center -mt-12">
-            <LucideAlertCircle className="text-destructive" />
-            No data available
-          </div>
+              : !data ?
+                <div className="flex gap-2 items-center justify-center -mt-12">
+                  <LucideAlertCircle className="text-destructive" />
+                  No data available
+                </div>
 
-        : <ChartContainer
-            config={config}
-            className="w-full max-h-60"
-          >
-            <LineChart
-              data={data}
-              margin={{ top: 20, right: 10, bottom: 20, left: -10 }}
-            >
-              <XAxis
-                dataKey="date"
-                tickLine={false}
-                axisLine={false}
-                dy={10}
-              />
-              <YAxis
-                tickLine={false}
-                axisLine={false}
-                dx={-10}
-              />
-              <ChartTooltip
-                content={<ChartTooltipContent labelFormatter={(label) => {
-                  const item = data?.find(d => d.date === label)
-                  return item?.fullDate || label
-                }} />}
-              />
-              {Object.keys(config).filter(k => k !== 'amount').map((kind, index) => (
-                <Line
-                  key={kind}
-                  type="linear"
-                  dataKey={kind}
-                  stroke={CHART_COLORS[index % CHART_COLORS.length]}
-                  strokeWidth={2}
-                  dot={false}
-                />
-              ))}
-              {/* TODO: when multiple items are shown, legends can overflow outside parent area. Investigate a fix. */}
-              <ChartLegend
-                content={<ChartLegendContent />}
-                verticalAlign="top"
-              />
-            </LineChart>
-          </ChartContainer>
+                : <ChartContainer
+                  config={config}
+                  className="w-full max-h-60"
+                >
+                  <LineChart
+                    data={data}
+                    margin={{ top: 20, right: 10, bottom: 20, left: -10 }}
+                  >
+                    <XAxis
+                      dataKey="date"
+                      tickLine={false}
+                      axisLine={false}
+                      dy={10}
+                    />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      dx={-10}
+                    />
+                    <ChartTooltip
+                      content={<ChartTooltipContent labelFormatter={(label) => {
+                        const item = data?.find(d => d.date === label)
+                        return item?.fullDate || label
+                      }} />}
+                    />
+                    {Object.keys(config).filter(k => k !== 'amount').map((kind, index) => (
+                      <Line
+                        key={kind}
+                        type="linear"
+                        dataKey={kind}
+                        stroke={CHART_COLORS[index % CHART_COLORS.length]}
+                        strokeWidth={2}
+                        dot={false}
+                      />
+                    ))}
+                    {/* TODO: when multiple items are shown, legends can overflow outside parent area. Investigate a fix. */}
+                    <ChartLegend
+                      content={<ChartLegendContent />}
+                      verticalAlign="top"
+                    />
+                  </LineChart>
+                </ChartContainer>
         }
       </CardContent>
     </Card>

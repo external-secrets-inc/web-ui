@@ -3,6 +3,7 @@ import { AuditTimelineChartCard } from "@/components/audit/AuditTimelineChartCar
 import { ChartConfig } from "@/components/ui/chart"
 import useGetAuditProviderTimelineStats from "@/services/audit/queries/useGetAuditProviderTimelineStats"
 import { TimeRange } from "./Audit.interfaces"
+import { formatDate } from "@/utils/dateUtils"
 
 const BASE_CHART_CONFIG = {
   amount: {
@@ -22,12 +23,7 @@ interface Props {
 function formatUSDateFromISODate(isoDate: string) {
   // Create date as UTC since YYYY-MM-DD is UTC by default
   const date = new Date(isoDate + 'T00:00:00Z');
-  return date.toLocaleDateString('en-US', {
-    month: '2-digit',
-    day: '2-digit',
-    year: 'numeric',
-    timeZone: 'UTC' // Ensure we stay in UTC to avoid showing the wrong date
-  });
+  return formatDate(date, { format: 'americanDate', timeZone: 'utc' });
 }
 
 function AuditTimelineProviders({ listenerID, timeRange, startDate, endDate, timeUnit }: Props) {
