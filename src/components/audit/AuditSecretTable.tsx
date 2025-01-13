@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { createColumnHelper } from "@tanstack/react-table";
-import { LucideAlertCircle, LucideCircle, LucideDownload, LucideFilter, LucideSearch } from "lucide-react";
+import { LucideAlertCircle, LucideCircle, LucideDownload, LucideFilter, LucideSearch, LucideX } from "lucide-react";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
@@ -196,15 +196,28 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
 
         <div className="flex gap-2">
           <div className="relative flex gap-2 items-center">
-            {/* <div className="relative"> */}
-              <Input
-                placeholder="Search..."
-                value={searchInputValue}
-                onChange={(e) => handleSearchInputChange(e)}
-                className="max-w-48 pr-8"
-              />
-              <LucideSearch className="absolute inset-y-0 right-3 self-center text-muted-foreground" />
-            {/* </div> */}
+            <Input
+              placeholder="Search..."
+              value={searchInputValue}
+              onChange={(e) => handleSearchInputChange(e)}
+              className="max-w-48 pr-16"
+            />
+            {searchInputValue && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-7 text-muted-foreground hover:text-foreground hover:bg-transparent"
+                aria-label="Clear"
+                title="Clear"
+                onClick={() => {
+                  setSearchInputValue("");
+                  handleFilterNameChange("");
+                }}
+              >
+                <LucideX />
+              </Button>
+            )}
+            <LucideSearch className="absolute right-3 text-muted-foreground" />
           </div>
 
           <Button
