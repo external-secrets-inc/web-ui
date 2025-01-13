@@ -189,6 +189,14 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
     saveAs(file);
   };
 
+  const getEmptyMessage = () => {
+    const { search } = currentFilters;
+    if (!search && !hasAppliedFilters()) return "No secrets available";
+    if (search && hasAppliedFilters()) return `No secrets match "${search}" with the applied filters`;
+    if (search) return `No secrets match "${search}"`;
+    return "No secrets match the applied filters";
+  };
+
   return (
     <>
       <div className="flex flex-wrap items-center justify-between pt-4">
@@ -261,6 +269,7 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
         columns={columns}
         initialSort={{ id: "lastRotation", desc: true }}
         isLoading={isLoadingSecretTableData}
+        emptyMessage={getEmptyMessage()}
       >
         <DataTable onRowClick={(row) => setSelectedSecret(row)} />
       </DataProvider>

@@ -38,6 +38,7 @@ type TableState<TData> = {
   sorting: SortingState
   globalFilter: string
   isLoading?: boolean
+  emptyMessage: string
 }
 
 /**
@@ -76,6 +77,14 @@ type ProviderConfig<TData extends object> = {
 
   /** Loading state that shows an inner spinner when true */
   isLoading?: boolean
+
+  /**
+   * Custom message to display when there is no data
+   * Useful for providing more user-friendly empty state messages based on
+   * current data type and context
+   * @default "No data available"
+   */
+  emptyMessage?: string
 
   /**
    * Function to get unique row identifier.
@@ -145,7 +154,8 @@ function useDataProvider<TData extends object>({
   initialSort = DEFAULTS.sort,
   getRowId,
   tableOptions = {},
-  isLoading = false
+  isLoading = false,
+  emptyMessage = "No data available"
 }: ProviderConfig<TData>) {
   // State
   const [sorting, setSorting] = React.useState<SortingState>([initialSort])
@@ -205,12 +215,13 @@ function useDataProvider<TData extends object>({
     sorting,
     globalFilter,
     isLoading,
+    emptyMessage,
     // Actions
     setSorting,
     setGlobalFilter,
     // Table
     table
-  }), [safeData, columns, sorting, globalFilter, table, isLoading]) // Only add State and Table as dependencies
+  }), [safeData, columns, sorting, globalFilter, table, isLoading, emptyMessage]) // Only add State and Table as dependencies
 }
 
 /**
@@ -360,7 +371,7 @@ interface DataTableProps<TMeta = any> extends React.HTMLAttributes<HTMLDivElemen
  */
 const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
   ({ className, onRowClick, rowsAppend, meta, ...props }, ref) => {
-    const { table, isLoading } = React.useContext(DataProviderContext)
+    const { table, isLoading, emptyMessage } = React.useContext(DataProviderContext)
 
     // Memoized to prevent unnecessary re-renders and potential infinite loops
     const tableOptions = React.useMemo(() => ({
@@ -417,7 +428,7 @@ const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
               <TableRow>
                 <TableCell colSpan={table.getAllColumns().length}>
                   <div className="flex justify-center items-center h-5">
-                    <p className="text-sm text-muted-foreground">No data available</p>
+                    <p className="text-sm text-muted-foreground">{emptyMessage}</p>
                   </div>
                 </TableCell>
               </TableRow>
