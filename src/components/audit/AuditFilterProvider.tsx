@@ -8,7 +8,6 @@ interface AuditFilterContextValue {
   setIsFiltersDialogOpen: (open: boolean) => void;
   handleFilterChange: (selectedFilters: FilterSchema) => void;
   handleFilterNameChange: (name: string) => void;
-  clearFilters: () => void;
   currentFilters: FilterSchema;
   hasAppliedFilters: () => boolean;
 }
@@ -81,15 +80,6 @@ export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
     setIsFiltersDialogOpen(false);
   }, [setSearchParams]);
 
-  const clearFilters = useCallback(() => {
-    setSearchParams((prevParams) => {
-      filterSchema.keyof().options.forEach((key) => prevParams.delete(key));
-      prevParams.delete("search");
-      return prevParams;
-    });
-    setGeneralSearchParam(undefined);
-  }, [setSearchParams]);
-
   const handleFilterNameChange = useCallback((name: string) => {
     setGeneralSearchParam(name);
   }, []);
@@ -113,14 +103,12 @@ export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
     setIsFiltersDialogOpen,
     handleFilterChange,
     handleFilterNameChange,
-    clearFilters,
     currentFilters,
     hasAppliedFilters,
   }), [
     isFiltersDialogOpen,
     handleFilterChange,
     handleFilterNameChange,
-    clearFilters,
     currentFilters,
     hasAppliedFilters
   ]);
