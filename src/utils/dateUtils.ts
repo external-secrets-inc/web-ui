@@ -3,7 +3,7 @@ import { format, toZonedTime } from 'date-fns-tz';
 /**
  * Formatting options for the date utility.
  */
-type FormatOptions = 'full' | 'dateOnly' | 'timeOnly' | 'americanDate' | 'readableDate' | 'shortDate';
+type FormatOptions = 'full' | 'dateOnly' | 'timeOnly' | 'americanDate' | 'readableDate' | 'shortDate' | 'iso';
 type TimeZoneOptions = 'utc' | 'local';
 
 /**
@@ -14,7 +14,7 @@ type TimeZoneOptions = 'utc' | 'local';
  */
 export const formatDate = (
   dateInput: string | number | Date | null | undefined,
-  options: { format: FormatOptions; timeZone?: TimeZoneOptions } = { format: 'full', timeZone: 'utc' }
+  options: { format: FormatOptions; timeZone?: TimeZoneOptions } = { format: 'iso'  }
 ): string => {
   if (dateInput === null || dateInput === undefined || (typeof dateInput === 'string' && dateInput.trim() === '')) {
     return 'Loading...';  // Empty or null-like inputs return fallback
@@ -25,7 +25,7 @@ export const formatDate = (
     throw new Error('Invalid date input');
   }
 
-  const timeZone = options.timeZone || 'utc';
+  const timeZone = options.timeZone || 'local';
 
   const zonedDate = timeZone === 'local' ? date : toZonedTime(date, 'UTC');
 
@@ -49,6 +49,8 @@ export const formatDate = (
     case 'shortDate':
       formatString = 'MMM dd'; // Example: Dec 28
       break;
+    case 'iso':
+      return zonedDate.toISOString(); // Example: 2025-01-10T12:34:56.000Z
     default:
       throw new Error('Unsupported format option');
   }

@@ -19,13 +19,6 @@ interface Props {
   timeUnit: string;
 }
 
-// TODO: Find a good date library to handle date formatting overall. Turn this into a util only if this process takes too long #151
-function formatUSDateFromISODate(isoDate: string) {
-  // Create date as UTC since YYYY-MM-DD is UTC by default
-  const date = new Date(isoDate + 'T00:00:00Z');
-  return formatDate(date, { format: 'americanDate', timeZone: 'utc' });
-}
-
 function AuditTimelineProviders({ listenerID, timeRange, startDate, endDate, timeUnit }: Props) {
   const { data, error, isLoading } = useGetAuditProviderTimelineStats(false, listenerID || '', {
     startDate,
@@ -37,7 +30,7 @@ function AuditTimelineProviders({ listenerID, timeRange, startDate, endDate, tim
 
   const description = timeRange
     ? `Last ${timeRange}`
-    : `From ${formatUSDateFromISODate(startDate)} to ${formatUSDateFromISODate(endDate)}`
+    : `From ${formatDate(startDate, { format: 'americanDate' })} to ${formatDate(endDate, { format: 'americanDate' })}`
 
   return (
     <AuditTimelineChartCard

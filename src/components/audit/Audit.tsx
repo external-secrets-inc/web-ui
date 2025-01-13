@@ -39,23 +39,20 @@ import AuditTimelineProblems from "./AuditTimelineProblems";
 import AuditTimelineProviders from "./AuditTimelineProviders";
 import ListenerInstallDialogContent from "./ListenerInstallDialogContent";
 import { AuditSecretTable } from "./AuditSecretTable";
-
-const toYYYYMMDD = (date: Date) => {
-  return date.toISOString().slice(0, 10); // YYYY-MM-DD in UTC
-};
+import { formatDate } from "@/utils/dateUtils";
 
 const getDaysBetweenDates = (start: string, end: string) => {
   const ONE_DAY_IN_MILLISECONDS =
     ONE_SECOND_IN_MILLISECONDS * ONE_MINUTE_IN_SECONDS * 60 * 24;
   return Math.round(
     (new Date(end).getTime() - new Date(start).getTime()) /
-      ONE_DAY_IN_MILLISECONDS
+    ONE_DAY_IN_MILLISECONDS
   );
 };
 
 const isDateFromToday = (dateStr: string) => {
-  const today = toYYYYMMDD(new Date());
-  const date = toYYYYMMDD(new Date(dateStr));
+  const today = formatDate(new Date(), { format: 'iso' });
+  const date = formatDate(new Date(dateStr), { format: 'iso' });
   return today === date;
 };
 
@@ -207,7 +204,7 @@ export default function Audit() {
   useEffect(() => {
     if (!tenantListener.id) return;
 
-    if(!isSuccessAuditListener && fetchAuditListenerError?.status != 404) return;
+    if (!isSuccessAuditListener && fetchAuditListenerError?.status != 404) return;
 
     if (!auditListener.listenerID) {
       createAuditListener(defaultAuditListenerPayload);
@@ -311,8 +308,8 @@ export default function Audit() {
         const start = new Date(end);
         start.setDate(end.getDate() - days);
 
-        prevParams.set("chartsStartDate", toYYYYMMDD(start));
-        prevParams.set("chartsEndDate", toYYYYMMDD(end));
+        prevParams.set("chartsStartDate", formatDate(start, { format: 'iso' }));
+        prevParams.set("chartsEndDate", formatDate(end, { format: 'iso' }));
         prevParams.set("chartsTimeUnit", chartsTimeUnit);
       }
       return prevParams;
@@ -443,7 +440,7 @@ export default function Audit() {
               startDate={chartsStartDate}
               endDate={chartsEndDate}
               timeUnit={timeUnit}
-              />
+            />
             <AuditTimelineProblems
               listenerID={tenantListener.id}
               timeRange={getTimeRangeFromDays(currentToggledTimeRange)}

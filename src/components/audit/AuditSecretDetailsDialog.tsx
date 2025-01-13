@@ -44,7 +44,7 @@ export default function AuditSecretDetailsDialog({ secret, onOpenChange }: Audit
                 <div>
                   <p className="text-sm text-muted-foreground">Last Rotation</p>
                   <p className={cn("font-medium", !secret.lastRotation && "text-muted-foreground italic")}>
-                    {secret.lastRotation ? formatDate(secret.lastRotation, { format: 'readableDate', timeZone: 'local' }) : "Never rotated"}
+                    {secret.lastRotation ? formatDate(secret.lastRotation, { format: 'readableDate' }) : "Never rotated"}
                   </p>
                 </div>
               </div>
@@ -53,7 +53,7 @@ export default function AuditSecretDetailsDialog({ secret, onOpenChange }: Audit
                 <div>
                   <p className="text-sm text-muted-foreground">Last Access</p>
                   <p className={cn("font-medium", !secret.lastAccess && "text-muted-foreground italic")}>
-                    {secret.lastAccess ? formatDate(secret.lastAccess, { format: 'readableDate', timeZone: 'local' }) : "Never accessed"}
+                    {secret.lastAccess ? formatDate(secret.lastAccess, { format: 'readableDate' }) : "Never accessed"}
                   </p>
                 </div>
               </div>
@@ -143,7 +143,7 @@ export default function AuditSecretDetailsDialog({ secret, onOpenChange }: Audit
                       <AlertDescription className="flex items-center gap-2">
                         <Badge variant="secondary">{access.name || access.id || "Unknown Accessor"}</Badge>
                         <Badge variant="outline" className="ml-auto">
-                          {formatDate(access.accessTime, { format: 'readableDate', timeZone: 'local' })}
+                          {formatDate(access.accessTime, { format: 'readableDate' })}
                         </Badge>
                       </AlertDescription>
                     </Alert>

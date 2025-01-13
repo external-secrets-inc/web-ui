@@ -91,8 +91,8 @@ export function AuditTimelineChartCard({
     const chartData = rawData.map(item => {
       const date = new Date(item.date)
       return {
-        date: formatDate(date, { format: 'shortDate', timeZone: 'local' }),
-        fullDate: formatDate(date, { format: 'readableDate', timeZone: 'local' }),
+        date: formatDate(date, { format: 'shortDate' }),
+        fullDate: formatDate(date, { format: 'readableDate' }),
         ...Object.fromEntries(
           item.stats.map(stat => [stat.kind, stat.amount])
         )

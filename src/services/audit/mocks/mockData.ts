@@ -73,7 +73,7 @@ export const getMockProviderTimelineStats = (startDate: string, endDate: string)
 export const getMockProblemTimelineStats = (startDate: string, endDate: string) =>
   generateMockTimelineData(new Date(startDate), new Date(endDate), mockProblemStats)
 
-export const mockLastUpdate = formatDate(new Date(), { format: 'readableDate', timeZone: 'local' });
+export const mockLastUpdate = formatDate(new Date(), { format: 'readableDate' });
 
 export const mockAuditTableData: AuditResponseData = {
   secretsData: [

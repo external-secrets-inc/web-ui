@@ -83,7 +83,7 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
         header: "Last Rotation",
         cell: (info) => (
           <span className="font-mono">
-            {info.getValue() ? formatDate(info.getValue()!, { format: "americanDate", timeZone: 'local' }) : "Never rotated"}
+            {info.getValue() ? formatDate(info.getValue()!, { format: "americanDate" }) : "Never rotated"}
           </span>
         ),
         // TODO: Understand why this sortingFn is necessary for proper sorting instead of the default behavior
@@ -97,7 +97,7 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
         header: "Last Access",
         cell: (info) => (
           <span className="font-mono">
-            {info.getValue() ? formatDate(info.getValue()!, { format: "americanDate", timeZone: 'local' }) : "Never accessed"}
+            {info.getValue() ? formatDate(info.getValue()!, { format: "americanDate" }) : "Never accessed"}
           </span>
         ),
         // TODO: Understand why this sortingFn is necessary for proper sorting instead of the default behavior

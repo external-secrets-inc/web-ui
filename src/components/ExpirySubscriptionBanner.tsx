@@ -50,7 +50,6 @@ export default function ExpirySubscriptionBanner() {
 		setShowBanner(false);
 	}
 
-	// const datetimeExpiryDate = 
 	const expiryDateUS = formatDate(subData.expiryDate, { format: 'americanDate', timeZone: 'utc' });
 
 	return (

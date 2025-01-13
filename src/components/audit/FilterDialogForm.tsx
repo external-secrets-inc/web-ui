@@ -29,6 +29,7 @@ import {
 import { ComponentType, useState } from "react";
 import { MultiSelect } from "../ui/Multi-select";
 import { filterSchema, FilterSchema } from "./Audit.interfaces";
+import { formatDate } from "@/utils/dateUtils";
 
 const BooleanFilter = ({
   formControl,
@@ -163,8 +164,8 @@ const FilterDialogForm = ({
     setResetKey((prev) => prev + 1);
   };
 
-  const filterMinDate = new Date(new Date().setDate(new Date().getDate() - 90)).toISOString().split("T")[0] // 90 days ago
-  const filterMaxDate = new Date().toISOString().split("T")[0]  // Current date
+  const filterMinDate = formatDate(new Date(new Date().setDate(new Date().getDate() - 90)), { format: 'dateOnly' }); // 90 days ago
+  const filterMaxDate = formatDate(new Date(), { format: 'dateOnly' }); // Current date
 
   return (
     <DialogContent
