@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { createColumnHelper } from "@tanstack/react-table";
-import { LucideAlertCircle, LucideDownload, LucideFilter, LucideSearch } from "lucide-react";
+import { LucideAlertCircle, LucideCircle, LucideDownload, LucideFilter, LucideSearch, LucideX } from "lucide-react";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
@@ -29,10 +29,10 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
     setIsFiltersDialogOpen,
     handleFilterChange,
     handleFilterNameChange,
-    currentFilters
+    currentFilters,
+    hasAppliedFilters
   } = useAuditFilter();
 
-  // TODO: the data fetching is comming in a different way, and in each refresh the data is being fetched again causing the "glich" in the UI
   const {
     data: secretTableData,
     isLoading: isLoadingSecretTableData,
@@ -161,7 +161,7 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
     setSearchInputValue(e.target.value);
     handleFilterNameChange(e.target.value);
   };
-  
+
   const auditTableDataJsonToCsvFlat = (json: AuditTableData[]): string => {
     if (!json.length) return '';
 
@@ -189,22 +189,43 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
     saveAs(file);
   };
 
+  const getEmptyMessage = () => {
+    const { search } = currentFilters;
+    if (!search && !hasAppliedFilters()) return "No secrets available";
+    if (search && hasAppliedFilters()) return `No secrets match "${search}" with the applied filters`;
+    if (search) return `No secrets match "${search}"`;
+    return "No secrets match the applied filters";
+  };
+
   return (
     <>
       <div className="flex flex-wrap items-center justify-between pt-4">
         <h2 className="font-bold w-auto mb-2">All Secrets</h2>
-        
+
         <div className="flex gap-2">
           <div className="relative flex gap-2 items-center">
-            {/* <div className="relative"> */}
-              <Input
-                placeholder="Search..."
-                value={searchInputValue}
-                onChange={(e) => handleSearchInputChange(e)}
-                className="max-w-48 pr-8"
-              />
-              <LucideSearch className="absolute inset-y-0 right-3 self-center text-muted-foreground" />
-            {/* </div> */}
+            <Input
+              placeholder="Search..."
+              value={searchInputValue}
+              onChange={(e) => handleSearchInputChange(e)}
+              className="max-w-48 pr-16"
+            />
+            {searchInputValue && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-7 text-muted-foreground hover:text-foreground hover:bg-transparent"
+                aria-label="Clear"
+                title="Clear"
+                onClick={() => {
+                  setSearchInputValue("");
+                  handleFilterNameChange("");
+                }}
+              >
+                <LucideX />
+              </Button>
+            )}
+            <LucideSearch className="absolute right-3 text-muted-foreground" />
           </div>
 
           <Button
@@ -226,19 +247,18 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
               <Button
                 size="icon"
                 variant="outline"
-                className="self-center min-[260px]:self-end"
+                className="self-center min-[260px]:self-end relative"
                 aria-label="Filters"
                 title="Filters"
               >
                 <LucideFilter />
+                {hasAppliedFilters() && <LucideCircle className="absolute -top-1 -right-1 !size-2.5 stroke-0 fill-orange-500" />}
               </Button>
             </DialogTrigger>
             <FilterDialogForm
               initialValues={currentFilters}
               onSubmit={handleFilterChange}
-              secretsNames={listenerSecretTableData?.secretsNames?? []}
-              policiesNames={listenerSecretTableData?.policiesNames?? []}
-              providersNames={listenerSecretTableData?.providersNames?? []}
+              listenerID={listenerID}
             />
           </Dialog>
         </div>
@@ -249,6 +269,7 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
         columns={columns}
         initialSort={{ id: "lastRotation", desc: true }}
         isLoading={isLoadingSecretTableData}
+        emptyMessage={getEmptyMessage()}
       >
         <DataTable onRowClick={(row) => setSelectedSecret(row)} />
       </DataProvider>
