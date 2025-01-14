@@ -96,7 +96,7 @@ export function AuditBarChartCard({
       <CardContent className="h-full grid items-center">
         {
           error ?
-          <div className="flex gap-2 items-center justify-center -mt-12">
+          <div className="h-72 flex gap-2 items-center justify-center -mt-12">
             <LucideAlertCircle className="text-destructive"/>
             {errorMessage}
           </div>
@@ -104,8 +104,8 @@ export function AuditBarChartCard({
         : isLoading ?
           <Loader size="lg" className="h-72 place-self-center -mt-12"/>
 
-        : !data ?
-          <div className="flex gap-2 items-center justify-center -mt-12">
+        : (!data || data.length === 0) ?
+          <div className="h-72 flex gap-2 items-center justify-center -mt-12">
             <LucideAlertCircle className="text-destructive"/>
             No data available
           </div>
