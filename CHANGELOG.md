@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.9.0](https://github.com/external-secrets-inc/web-ui/compare/v0.8.0...v0.9.0) (2025-01-14)
+
+
+### Features
+
+* :children_crossing: allow clear secret table filters in empty state ([a02cf67](https://github.com/external-secrets-inc/web-ui/commit/a02cf671f212acde2839525f7f6ad35563bdd6be))
+* allow clear secret table filters in empty state ([#242](https://github.com/external-secrets-inc/web-ui/issues/242)) ([a02cf67](https://github.com/external-secrets-inc/web-ui/commit/a02cf671f212acde2839525f7f6ad35563bdd6be))
+* **date-utils:** add formatDate utility and refactor date formatting… ([#234](https://github.com/external-secrets-inc/web-ui/issues/234)) ([3dcc80a](https://github.com/external-secrets-inc/web-ui/commit/3dcc80aed2c6d6ca60bcc242e36d5c665d284168))
+* use stacked area chart for audit timelines  ([#243](https://github.com/external-secrets-inc/web-ui/issues/243)) ([cc706db](https://github.com/external-secrets-inc/web-ui/commit/cc706dbb9dc0bedb553c37069ce7fa0ff1a74cee))
+
+
+### Bug Fixes
+
+* :bug: fix auto theme switch based on os theme ([b53b351](https://github.com/external-secrets-inc/web-ui/commit/b53b3511ea23f29e72e57e417d63e477caa0f35e))
+* auto theme switch based on OS theme ([#240](https://github.com/external-secrets-inc/web-ui/issues/240)) ([b53b351](https://github.com/external-secrets-inc/web-ui/commit/b53b3511ea23f29e72e57e417d63e477caa0f35e))
+* default scrollbar styles and color theme ([#239](https://github.com/external-secrets-inc/web-ui/issues/239)) ([dcabbf9](https://github.com/external-secrets-inc/web-ui/commit/dcabbf9ba9403397a4d30013fb0dedd6008a9cdb))
+* filter dialog data management ([#237](https://github.com/external-secrets-inc/web-ui/issues/237)) ([47c18d3](https://github.com/external-secrets-inc/web-ui/commit/47c18d3b8fa8cb76437c881c0c5c4b9546caebf2))
+* make multi select consistent with select component ([#241](https://github.com/external-secrets-inc/web-ui/issues/241)) ([11f58be](https://github.com/external-secrets-inc/web-ui/commit/11f58befe9806083a37810ff102bf4b1389850a8))
+
 ## [0.8.0](https://github.com/external-secrets-inc/web-ui/compare/v0.7.0...v0.8.0) (2025-01-12)
 
 
