@@ -252,8 +252,8 @@ const FilterDialogForm = (
     setResetKey((prev) => prev + 1);
   };
 
-  const filterMinDate = formatDate(new Date(new Date().setDate(new Date().getDate() - 90)), { format: 'dateOnly' }); // 90 days ago
-  const filterMaxDate = formatDate(new Date(), { format: 'dateOnly' }); // Current date
+  const filterMinDate = formatDate(new Date(new Date().setDate(new Date().getDate() - 90)), { format: 'isoDateOnlyUTC' }); // 90 days ago
+  const filterMaxDate = formatDate(new Date(), { format: 'isoDateOnlyUTC' }); // Current date
 
   return (
     <DialogContent

@@ -16,7 +16,7 @@ const SubscriptionSettings: React.FC = () => {
       <div className="space-y-4">
         {subscriptions && subscriptions.length > 0 ? (
           subscriptions.map((subscription) => {
-            const formattedExpiryDate = formatDate(subscription.expiryDate, { format: 'americanDate', timeZone: 'utc' });
+            const formattedExpiryDate = formatDate(subscription.expiryDate, { format: 'americanDate' });
             const hasExpiredSubscription = new Date(subscription.expiryDate) <= new Date();
 
             return (

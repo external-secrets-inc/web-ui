@@ -51,8 +51,8 @@ const getDaysBetweenDates = (start: string, end: string) => {
 };
 
 const isDateFromToday = (dateStr: string) => {
-  const today = formatDate(new Date(), { format: 'iso' });
-  const date = formatDate(new Date(dateStr), { format: 'iso' });
+  const today = formatDate(new Date(), { format: 'isoUTC' });
+  const date = formatDate(new Date(dateStr), { format: 'isoUTC' });
   return today === date;
 };
 
@@ -308,8 +308,8 @@ export default function Audit() {
         const start = new Date(end);
         start.setDate(end.getDate() - days);
 
-        prevParams.set("chartsStartDate", formatDate(start, { format: 'iso' }));
-        prevParams.set("chartsEndDate", formatDate(end, { format: 'iso' }));
+        prevParams.set("chartsStartDate", formatDate(start, { format: 'isoDateOnlyUTC' }));
+        prevParams.set("chartsEndDate", formatDate(end, { format: 'isoDateOnlyUTC' }));
         prevParams.set("chartsTimeUnit", chartsTimeUnit);
       }
       return prevParams;
