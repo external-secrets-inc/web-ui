@@ -110,14 +110,16 @@ export function AuditTimelineChartCard({
       </CardHeader>
       <CardContent className="p-0">
         {error ? (
-          <div className="flex gap-2 items-center justify-center -mt-14">
+          <div className="h-80 flex gap-2 items-center justify-center -mt-14">
             <LucideAlertCircle className="text-destructive" />
             {errorMessage}
           </div>
         ) : isLoading ? (
-          <Loader size="lg" className="h-80 place-self-center -mt-14"/>
-        ) : !data ? (
-          <div className="flex gap-2 items-center justify-center -mt-14">
+          <div className="h-80 flex items-center justify-center -mt-14">
+            <Loader size="lg" />
+          </div>
+        ) : (!data || data.length === 0) ? (
+          <div className="h-80 flex gap-2 items-center justify-center -mt-14">
             <LucideAlertCircle className="text-destructive" />
             No data available
           </div>
