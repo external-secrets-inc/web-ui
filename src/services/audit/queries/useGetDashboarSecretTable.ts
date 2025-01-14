@@ -3,8 +3,8 @@ import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError, } from "@/types";
 import { AxiosError } from "axios";
-import { mockNetworkResponseDelay, mockAuditTableData } from "../mocks/mockData";
-import { AuditResponseData, filterSchema } from "@/components/audit/Audit.interfaces";
+import { mockNetworkResponseDelay, mockAuditSecretTableData } from "../mocks/mockData";
+import { AuditSecretTableData, filterSchema } from "@/components/audit/Audit.interfaces";
 import { useAuditMock } from '@/services/audit/context/AuditMockContext';
 
 // TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/115
@@ -16,7 +16,7 @@ const getDashboardSecretTable = async (
 ) => {
   if (mock) {
     await mockNetworkResponseDelay();
-    return mockAuditTableData;
+    return mockAuditSecretTableData;
   }
 
   const headers = await getAuthHeaders();
@@ -28,7 +28,7 @@ const useGetDashboarSecretTable = (
   mock: boolean,
   listener_id: string,
   params: URLSearchParams,
-  options?: Omit<UseQueryOptions<AuditResponseData, AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<AuditSecretTableData[], AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
 ) => {
   const { isMocked } = useAuditMock(mock);
 
