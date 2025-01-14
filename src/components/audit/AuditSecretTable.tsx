@@ -16,6 +16,7 @@ import { useSearchParams } from "react-router-dom";
 import { Input } from "../ui/input";
 import saveAs from "file-saver";
 import { Separator } from "@/components/ui/separator";
+import { formatDate } from "@/utils/dateUtils";
 
 interface AuditSecretTableProps {
   listenerID: string;
@@ -84,12 +85,7 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
         header: "Last Rotation",
         cell: (info) => (
           <span className="font-mono">
-            {info.getValue() ? new Date(info.getValue()!).toLocaleDateString("en-US", {
-              month: "2-digit",
-              day: "2-digit",
-              year: "numeric",
-              timeZone: "UTC",
-            }) : "Never rotated"}
+            {info.getValue() ? formatDate(info.getValue()!, { format: "americanDate" }) : "Never rotated"}
           </span>
         ),
         // TODO: Understand why this sortingFn is necessary for proper sorting instead of the default behavior
@@ -103,12 +99,7 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
         header: "Last Access",
         cell: (info) => (
           <span className="font-mono">
-            {info.getValue() ? new Date(info.getValue()!).toLocaleDateString("en-US", {
-              month: "2-digit",
-              day: "2-digit",
-              year: "numeric",
-              timeZone: "UTC",
-            }) : "Never accessed"}
+            {info.getValue() ? formatDate(info.getValue()!, { format: "americanDate" }) : "Never accessed"}
           </span>
         ),
         // TODO: Understand why this sortingFn is necessary for proper sorting instead of the default behavior
@@ -168,18 +159,18 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
     if (!json.length) return '';
 
     const isPrimitive = (value: AuditTableData[keyof AuditTableData]): boolean => {
-        return value === null || ['string', 'number', 'boolean'].includes(typeof value);
+      return value === null || ['string', 'number', 'boolean'].includes(typeof value);
     };
 
     const headers = Object.keys(json[0])
-        .filter((key) => isPrimitive(json[0][key as keyof AuditTableData]))
-        .join(',');
+      .filter((key) => isPrimitive(json[0][key as keyof AuditTableData]))
+      .join(',');
 
     const rows = json.map((row) => {
-        return Object.keys(row)
-            .filter((key) => isPrimitive(row[key as keyof AuditTableData]))
-            .map((key) => `"${row[key as keyof AuditTableData] ?? ''}"`)
-            .join(',');
+      return Object.keys(row)
+        .filter((key) => isPrimitive(row[key as keyof AuditTableData]))
+        .map((key) => `"${row[key as keyof AuditTableData] ?? ''}"`)
+        .join(',');
     });
 
     return [headers, ...rows].join('\n');
@@ -255,9 +246,9 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
             className="self-center"
             aria-label="Download"
             title="Download"
-            onClick={() => {handleExportSecretsTable(listenerSecretTableData?.secretsData?? [])}}
+            onClick={() => { handleExportSecretsTable(listenerSecretTableData?.secretsData ?? []) }}
           >
-            <LucideDownload/>
+            <LucideDownload />
           </Button>
 
           <Dialog

@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/chart"
 import { useMemo } from "react"
 import { Loader } from "@/components/ui/Loader"
+import { formatDate } from "@/utils/dateUtils"
 
 const CHART_COLORS = [
   "hsl(var(--chart-1))",
@@ -59,7 +60,7 @@ export function AuditTimelineChartCard({
 }: TimelineChartCardProps) {
   const { data, config } = useMemo(() => {
     if (!rawData || !Array.isArray(rawData)) return { data: undefined, config: baseConfig }
-    const uniqueKindsMap = new Map<string, {kind: string, label: string; tooltipLabel: string | undefined }>();
+    const uniqueKindsMap = new Map<string, { kind: string, label: string; tooltipLabel: string | undefined }>();
 
     for (const item of rawData) {
       for (const stat of item.stats) {
@@ -91,17 +92,8 @@ export function AuditTimelineChartCard({
     const chartData = rawData.map(item => {
       const date = new Date(item.date)
       return {
-        date: date.toLocaleString('en-US', {
-          month: 'short',
-          day: '2-digit',
-        }),
-        fullDate: date.toLocaleDateString('en-US', {
-          month: '2-digit',
-          day: '2-digit',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        }),
+        date: formatDate(date, { format: 'shortDate' }),
+        fullDate: formatDate(date, { format: 'readableDate' }),
         ...Object.fromEntries(
           item.stats.map(stat => [stat.kind, stat.amount])
         )

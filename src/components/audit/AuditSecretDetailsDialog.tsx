@@ -15,6 +15,7 @@ import {
   LucideUsers
 } from "lucide-react";
 import { SecretDetails } from "./Audit.interfaces";
+import { formatDate } from "@/utils/dateUtils";
 
 interface AuditSecretDetailsDialogProps {
   secret: SecretDetails | null;
@@ -23,17 +24,6 @@ interface AuditSecretDetailsDialogProps {
 
 export default function AuditSecretDetailsDialog({ secret, onOpenChange }: AuditSecretDetailsDialogProps) {
   if (!secret) return null;
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      timeZone: "UTC",
-    });
-  };
 
   return (
     <Dialog open={!!secret} onOpenChange={onOpenChange}>
@@ -54,7 +44,7 @@ export default function AuditSecretDetailsDialog({ secret, onOpenChange }: Audit
                 <div>
                   <p className="text-sm text-muted-foreground">Last Rotation</p>
                   <p className={cn("font-medium", !secret.lastRotation && "text-muted-foreground italic")}>
-                    {secret.lastRotation ? formatDate(secret.lastRotation) : "Never rotated"}
+                    {secret.lastRotation ? formatDate(secret.lastRotation, { format: 'readableDate' }) : "Never rotated"}
                   </p>
                 </div>
               </div>
@@ -63,7 +53,7 @@ export default function AuditSecretDetailsDialog({ secret, onOpenChange }: Audit
                 <div>
                   <p className="text-sm text-muted-foreground">Last Access</p>
                   <p className={cn("font-medium", !secret.lastAccess && "text-muted-foreground italic")}>
-                    {secret.lastAccess ? formatDate(secret.lastAccess) : "Never accessed"}
+                    {secret.lastAccess ? formatDate(secret.lastAccess, { format: 'readableDate' }) : "Never accessed"}
                   </p>
                 </div>
               </div>
@@ -75,7 +65,7 @@ export default function AuditSecretDetailsDialog({ secret, onOpenChange }: Audit
               <h3 className="font-semibold mb-3 flex items-center gap-2">
                 <LucideShieldCheck />
                 Policies
-                <Badge variant="secondary">{secret.policies?.length || "0" }</Badge>
+                <Badge variant="secondary">{secret.policies?.length || "0"}</Badge>
               </h3>
               {secret.policies?.length > 0 ? (
                 <div className="space-y-2">
@@ -153,7 +143,7 @@ export default function AuditSecretDetailsDialog({ secret, onOpenChange }: Audit
                       <AlertDescription className="flex items-center gap-2">
                         <Badge variant="secondary">{access.name || access.id || "Unknown Accessor"}</Badge>
                         <Badge variant="outline" className="ml-auto">
-                          {formatDate(access.accessTime)}
+                          {formatDate(access.accessTime, { format: 'readableDate' })}
                         </Badge>
                       </AlertDescription>
                     </Alert>

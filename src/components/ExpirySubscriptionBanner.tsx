@@ -3,6 +3,7 @@ import { Alert, AlertDescription } from "./ui/alert";
 import { LucideCalendarClock, LucideX } from "lucide-react";
 import { Button } from "./ui/button";
 import { useSubscription } from "@/context/SubscriptionContext";
+import { formatDate } from "@/utils/dateUtils";
 
 function calculateDiffDays(endDate: string, startDate: string = new Date().toISOString()): number {
 	const endDateObj = new Date(endDate);
@@ -49,8 +50,7 @@ export default function ExpirySubscriptionBanner() {
 		setShowBanner(false);
 	}
 
-	const [year, month, day] = subData.expiryDate.split('-');
-	const expiryDateUS = `${month}/${day}/${year}`;
+	const expiryDateUS = formatDate(subData.expiryDate, { format: 'americanDate' });
 
 	return (
 		<>
