@@ -110,6 +110,18 @@ const ChartTooltipContent = React.forwardRef<
       indicator?: "line" | "dot" | "dashed"
       nameKey?: string
       labelKey?: string
+      /**
+       * Custom prop by: [cfviotti]
+       * Controls whether the tooltip items should be sorted based on the order of keys in the config object.
+       * This is particularly useful for stacked charts (like AreaChart) where you want the tooltip order
+       * to match the visual stacking order of the elements.
+       *
+       * Example: With config keys ["aws", "gcp", "azure"], items will be stacked and shown in tooltip as:
+       * azure (top) → gcp (middle) → aws (bottom)
+       *
+       * @default false
+       */
+      sortByConfigOrder?: boolean
     }
 >(
   (
@@ -127,6 +139,7 @@ const ChartTooltipContent = React.forwardRef<
       color,
       nameKey,
       labelKey,
+      sortByConfigOrder = false,
     },
     ref
   ) => {
@@ -176,6 +189,15 @@ const ChartTooltipContent = React.forwardRef<
 
     const nestLabel = payload.length === 1 && indicator !== "dot"
 
+    const displayPayload = sortByConfigOrder
+      ? [...payload].sort((a, b) => {
+          const configKeys = Object.keys(config).filter(k => k !== 'amount');
+          const aIndex = configKeys.indexOf(a.dataKey as string);
+          const bIndex = configKeys.indexOf(b.dataKey as string);
+          return bIndex - aIndex;
+        })
+      : payload;
+
     return (
       <div
         ref={ref}
@@ -186,7 +208,7 @@ const ChartTooltipContent = React.forwardRef<
       >
         {!nestLabel ? tooltipLabel : null}
         <div className="grid gap-1.5">
-          {payload.map((item, index) => {
+          {displayPayload.map((item, index) => {
             const key = `${nameKey || item.name || item.dataKey || "value"}`
             const itemConfig = getPayloadConfigFromPayload(config, item, key)
             const indicatorColor = color || item.payload.fill || item.color
@@ -265,10 +287,22 @@ const ChartLegendContent = React.forwardRef<
     Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
       hideIcon?: boolean
       nameKey?: string
+      /**
+       * Custom prop by: [cfviotti]
+       * Controls whether the legend items should be sorted based on the order of keys in the config object.
+       * This is particularly useful for stacked charts (like AreaChart) where you want the legend order
+       * to match the visual stacking order of the elements.
+       *
+       * Example: With config keys ["aws", "gcp", "azure"], items will be stacked and shown in legend as:
+       * azure (top) → gcp (middle) → aws (bottom)
+       *
+       * @default false
+       */
+      sortByConfigOrder?: boolean
     }
 >(
   (
-    { className, hideIcon = false, payload, verticalAlign = "bottom", nameKey },
+    { className, hideIcon = false, payload, verticalAlign = "bottom", nameKey, sortByConfigOrder = false },
     ref
   ) => {
     const { config } = useChart()
@@ -276,6 +310,15 @@ const ChartLegendContent = React.forwardRef<
     if (!payload?.length) {
       return null
     }
+
+    const displayPayload = sortByConfigOrder
+      ? [...payload].sort((a, b) => {
+          const configKeys = Object.keys(config).filter(k => k !== 'amount');
+          const aIndex = configKeys.indexOf(a.dataKey as string);
+          const bIndex = configKeys.indexOf(b.dataKey as string);
+          return bIndex - aIndex;
+        })
+      : payload;
 
     return (
       <div
@@ -286,7 +329,7 @@ const ChartLegendContent = React.forwardRef<
           className
         )}
       >
-        {payload.map((item) => {
+        {displayPayload.map((item) => {
           const key = `${nameKey || item.dataKey || "value"}`
           const itemConfig = getPayloadConfigFromPayload(config, item, key)
 
