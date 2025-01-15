@@ -1,4 +1,4 @@
-import { AuditResponseData, AuditTableData } from "@/components/audit/Audit.interfaces";
+import { AuditSecretData, AuditSecretTableData } from "@/components/audit/Audit.interfaces";
 import { formatDate } from "@/utils/dateUtils";
 
 /**
@@ -75,183 +75,246 @@ export const getMockProblemTimelineStats = (startDate: string, endDate: string) 
 
 export const mockLastUpdate = formatDate(new Date(), { format: 'readableDate' });
 
-export const mockAuditTableData: AuditResponseData = {
-  secretsData: [
-    {
-      id: "9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d4c", // Solid Serpent
-      name: "Solid Serpent",
-      provider: "e45c3621-5e2f-4996-91c8-9dec1a15f5fb", // AWS
-      providerName: "AWS Secrets Manager",
-      lastRotation: null,  // Example of null value
-      policiesAmount: "3/4",
-      fullCompliant: false, // 3/4 policies are compliant
-      policies: [
-        { id: "da782198-fdfd-4d35-b6dd-7d8427b43a79", name: "rotation-policy", status: "compliant" },
-        { id: "8d966424-3201-46d8-96aa-0efa1db60d03", name: "encryption-policy", status: "compliant" },
-        { id: "7a966424-3201-46d8-96aa-0efa1db60d04", name: "access-policy", status: "compliant" },
-        { id: "6b966424-3201-46d8-96aa-0efa1db60d05", name: "naming-policy", status: "non_compliant" }
-      ],
-      duplicatesAmount: 2,
-      duplicates: [
-        {
-          id: "1a2b3c4d-5e6f-7g8h-9i0j-k1l2m3n4o5p6", // matches Liquid Cobra's id
-          provider: "2a7b4de8-31c9-45d2-b656-92c8f6947f9d", // matches GCP's provider id
-          name: "Liquid Cobra",
-          providerName: "GCP Secret Manager"
-        },
-        {
-          id: "7h8i9j0k-1l2m-3n4o-5p6q-7r8s9t0u1v2w", // matches Raging Raven's id
-          provider: "b3c2d1a4-8f7e-4d6c-9b5a-3e2f1c8d7b6a", // matches Azure's provider id
-          name: "Raging Raven",
-          providerName: "Azure Key Vault"
-        }
-      ],
-      lastAccess: "2024-06-29T12:00:00Z",
-      accessorsAmount: 2,
-      accessors: [
-        { id: "17f77a29-9492-4123-8af3-13accf58a003", accessTime: "2024-06-29T12:00:00Z", name: "service-account-1" },
-        { id: "89058f3c-8032-4585-94bd-c1473b11ae76", accessTime: "2024-06-28T12:00:00Z", name: "service-account-2" }
-      ]
-    } as AuditTableData,
-    {
-      id: "1a2b3c4d-5e6f-7g8h-9i0j-k1l2m3n4o5p6", // Liquid Cobra
-      name: "Liquid Cobra",
-      provider: "2a7b4de8-31c9-45d2-b656-92c8f6947f9d", // GCP
-      providerName: "GCP Secret Manager",
-      lastRotation: "2024-07-12T12:00:00Z",
-      policiesAmount: "1/3",
-      fullCompliant: false, // 1/3 policies are compliant
-      policies: [
-        { id: "da782198-fdfd-4d35-b6dd-7d8427b43a80", name: "rotation-policy", status: "non_compliant" },
-        { id: "8d966424-3201-46d8-96aa-0efa1db60d06", name: "encryption-policy", status: "error" },
-        { id: "7a966424-3201-46d8-96aa-0efa1db60d07", name: "access-policy", status: "compliant" }
-      ],
-      duplicatesAmount: 0,
-      duplicates: [],
-      lastAccess: "2023-11-30T12:00:00Z",
-      accessorsAmount: 2,
-      accessors: [
-        { id: "b702dbf9-8176-4011-9f90-07b26f5eaab3", accessTime: "2023-11-30T12:00:00Z", name: "app-service-3" },
-        { id: "c813ecfa-9287-5122-af01-18c37f6fbbcc", accessTime: "2023-11-29T12:00:00Z", name: "app-service-4" }
-      ]
-    },
-    {
-      id: "6ba7b814-9dad-11d1-80b4-00c04fd430c8",
-      name: "Crying Wolf",
-      provider: "7f9e8d23-6c5b-4a3e-9f72-14d5a8b67c91", // Kubernetes
-      providerName: "Kubernetes Secrets",
-      lastRotation: "2024-04-20T12:00:00Z",
-      policiesAmount: "0/0",
-      fullCompliant: true, // 0/0 policies (empty array is considered fully compliant)
-      policies: [],
-      duplicatesAmount: 1,
-      duplicates: [
-        {
-          id: "9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d4c", // matches Solid Serpent's id
-          provider: "e45c3621-5e2f-4996-91c8-9dec1a15f5fb", // matches AWS's provider id
-          name: "Solid Serpent",
-          providerName: "AWS Secrets Manager"
-        }
-      ],
-      lastAccess: "2024-02-01T12:00:00Z",
-      accessorsAmount: 1,
-      accessors: [
-        { id: "d924fdeb-9398-4233-bc12-89d23e456f78", accessTime: "2024-02-01T12:00:00Z", name: "pod-service-1" }
-      ]
-    },
-    {
-      id: "7h8i9j0k-1l2m-3n4o-5p6q-7r8s9t0u1v2w", // Raging Raven
-      name: "Raging Raven",
-      provider: "b3c2d1a4-8f7e-4d6c-9b5a-3e2f1c8d7b6a", // Azure
-      providerName: "Azure Key Vault",
-      lastRotation: "2024-03-31T12:00:00Z",
-      policiesAmount: "3/4",
-      fullCompliant: false, // 3/4 policies are compliant
-      policies: [
-        { id: "da782198-fdfd-4d35-b6dd-7d8427b43a81", name: "rotation-policy", status: "compliant" },
-        { id: "8d966424-3201-46d8-96aa-0efa1db60d08", name: "encryption-policy", status: "compliant" },
-        { id: "7a966424-3201-46d8-96aa-0efa1db60d09", name: "access-policy", status: "compliant" },
-        { id: "6b966424-3201-46d8-96aa-0efa1db60d10", name: "naming-policy", status: "non_compliant" }
-      ],
-      duplicatesAmount: 2,
-      duplicates: [
-        {
-          id: "9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d4c", // matches Solid Serpent's id
-          provider: "e45c3621-5e2f-4996-91c8-9dec1a15f5fb", // matches AWS's provider id
-          name: "Solid Serpent",
-          providerName: "AWS Secrets Manager"
-        },
-        {
-          id: "1a2b3c4d-5e6f-7g8h-9i0j-k1l2m3n4o5p6", // matches Liquid Cobra's id
-          provider: "2a7b4de8-31c9-45d2-b656-92c8f6947f9d", // matches GCP's provider id
-          name: "Liquid Cobra",
-          providerName: "GCP Secret Manager"
-        }
-      ],
-      lastAccess: "2024-09-11T12:00:00Z",
-      accessorsAmount: 2,
-      accessors: [
-        { id: "e035gfec-0409-5344-cd23-90e34f567g89", accessTime: "2024-09-11T12:00:00Z", name: "service-account-a" },
-        { id: "f146hgfd-1510-6455-de34-01f45g678h90", accessTime: "2024-09-10T12:00:00Z", name: "service-account-b" }
-      ]
-    },
-    {
-      id: "a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6", // Screaming Mantis
-      name: "Screaming Mantis",
-      provider: "a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6", // Vault
-      providerName: "HashiCorp Vault",
-      lastRotation: "2023-12-25T12:00:00Z",
-      policiesAmount: "3/3",
-      fullCompliant: true, // 3/3 policies are compliant
-      policies: [
-        { id: "da782198-fdfd-4d35-b6dd-7d8427b43a82", name: "rotation-policy", status: "compliant" },
-        { id: "8d966424-3201-46d8-96aa-0efa1db60d11", name: "encryption-policy", status: "compliant" },
-        { id: "7a966424-3201-46d8-96aa-0efa1db60d12", name: "access-policy", status: "compliant" }
-      ],
-      duplicatesAmount: 2,
-      duplicates: [
-        {
-          id: "7h8i9j0k-1l2m-3n4o-5p6q-7r8s9t0u1v2w", // matches Raging Raven's id
-          provider: "b3c2d1a4-8f7e-4d6c-9b5a-3e2f1c8d7b6a", // matches Azure's provider id
-          name: "Raging Raven",
-          providerName: "Azure Key Vault"
-        },
-        {
-          id: "9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d4c", // matches Solid Serpent's id
-          provider: "e45c3621-5e2f-4996-91c8-9dec1a15f5fb", // matches AWS's provider id
-          name: "Solid Serpent",
-          providerName: "AWS Secrets Manager"
-        }
-      ],
-      lastAccess: "2024-01-15T12:00:00Z",
-      accessorsAmount: 2,
-      accessors: [
-        { id: "g257igfe-2621-7566-ef45-12g56h789i01", accessTime: "2024-01-15T12:00:00Z", name: "app-service-1" },
-        { id: "h368jgff-3732-8677-fg56-23h67i890j12", accessTime: "2024-01-14T12:00:00Z", name: "app-service-2" }
-      ]
-    }
-  ],
-  secretsNames: [
-    { value: "9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d4c", label: "Solid Serpent", icon: undefined },
-    { value: "1a2b3c4d-5e6f-7g8h-9i0j-k1l2m3n4o5p6", label: "Liquid Cobra", icon: undefined },
-    { value: "4d5e6f7g-8h9i-0j1k-2l3m-4n5o6p7q8r9s", label: "Crying Wolf", icon: undefined },
-    { value: "7h8i9j0k-1l2m-3n4o-5p6q-7r8s9t0u1v2w", label: "Raging Raven", icon: undefined },
-    { value: "a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6", label: "Screaming Mantis", icon: undefined },
-  ],
-  policiesNames: [
-    { value: "rotation-policy", label: "rotation-policy", icon: undefined },
-    { value: "encryption-policy", label: "encryption-policy", icon: undefined },
-    { value: "access-policy", label: "access-policy", icon: undefined },
-    { value: "naming-policy", label: "naming-policy", icon: undefined },
-  ],
-  providersNames: [
-    { value: "e45c3621-5e2f-4996-91c8-9dec1a15f5fb", label: "AWS Secrets Manager", icon: undefined },
-    { value: "2a7b4de8-31c9-45d2-b656-92c8f6947f9d", label: "GCP Secret Manager", icon: undefined },
-    { value: "7f9e8d23-6c5b-4a3e-9f72-14d5a8b67c91", label: "Kubernetes Secrets", icon: undefined },
-    { value: "b3c2d1a4-8f7e-4d6c-9b5a-3e2f1c8d7b6a", label: "Azure Key Vault", icon: undefined },
-    { value: "a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6", label: "HashiCorp Vault", icon: undefined },
-  ],
-} as const;
+export const mockAuditSecretTableData: AuditSecretTableData[] = [
+  {
+    id: "9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d4c",
+    name: "Solid Serpent",
+    provider: "e45c3621-5e2f-4996-91c8-9dec1a15f5fb",
+    providerName: "AWS Secrets Manager",
+    lastRotation: null,
+    compliantPoliciesAmount: 3,
+    policiesAmount: 4,
+    fullCompliant: false,
+    duplicatesAmount: 2,
+    lastAccess: "2024-06-29T12:00:00Z",
+    accessorsAmount: 2,
+  },
+  {
+    id: "1a2b3c4d-5e6f-7g8h-9i0j-k1l2m3n4o5p6",
+    name: "Liquid Cobra",
+    provider: "2a7b4de8-31c9-45d2-b656-92c8f6947f9d",
+    providerName: "GCP Secret Manager",
+    lastRotation: "2024-07-12T12:00:00Z",
+    compliantPoliciesAmount: 1,
+    policiesAmount: 3,
+    fullCompliant: false,
+    duplicatesAmount: 0,
+    lastAccess: "2023-11-30T12:00:00Z",
+    accessorsAmount: 2,
+  },
+  {
+    id: "6ba7b814-9dad-11d1-80b4-00c04fd430c8",
+    name: "Crying Wolf",
+    provider: "7f9e8d23-6c5b-4a3e-9f72-14d5a8b67c91",
+    providerName: "Kubernetes Secrets",
+    lastRotation: "2024-04-20T12:00:00Z",
+    compliantPoliciesAmount: 0,
+    policiesAmount: 0,
+    fullCompliant: true,
+    duplicatesAmount: 1,
+    lastAccess: "2024-02-01T12:00:00Z",
+    accessorsAmount: 1,
+  },
+  {
+    id: "7h8i9j0k-1l2m-3n4o-5p6q-7r8s9t0u1v2w",
+    name: "Raging Raven",
+    provider: "b3c2d1a4-8f7e-4d6c-9b5a-3e2f1c8d7b6a",
+    providerName: "Azure Key Vault",
+    lastRotation: "2024-03-31T12:00:00Z",
+    compliantPoliciesAmount: 3,
+    policiesAmount: 4,
+    fullCompliant: false,
+    duplicatesAmount: 2,
+    lastAccess: "2024-09-11T12:00:00Z",
+    accessorsAmount: 2,
+  },
+  {
+    id: "a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6",
+    name: "Screaming Mantis",
+    provider: "a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6",
+    providerName: "HashiCorp Vault",
+    lastRotation: "2023-12-25T12:00:00Z",
+    compliantPoliciesAmount: 3,
+    policiesAmount: 3,
+    fullCompliant: true,
+    duplicatesAmount: 2,
+    lastAccess: "2024-01-15T12:00:00Z",
+    accessorsAmount: 2,
+  },
+];
+
+export const mockAuditSecretsData: AuditSecretData[] = [
+  {
+    id: "9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d4c",
+    name: "Solid Serpent",
+    providerID: "e45c3621-5e2f-4996-91c8-9dec1a15f5fb",
+    providerName: "AWS Secrets Manager",
+    duplicates: [
+      {
+        id: "1a2b3c4d-5e6f-7g8h-9i0j-k1l2m3n4o5p6",
+        name: "Liquid Cobra",
+        providerID: "2a7b4de8-31c9-45d2-b656-92c8f6947f9d",
+        providerName: "GCP Secret Manager",
+      },
+      {
+        id: "7h8i9j0k-1l2m-3n4o-5p6q-7r8s9t0u1v2w",
+        name: "Raging Raven",
+        providerID: "b3c2d1a4-8f7e-4d6c-9b5a-3e2f1c8d7b6a",
+        providerName: "Azure Key Vault",
+      },
+    ],
+    accessors: [
+      {
+        id: "17f77a29-9492-4123-8af3-13accf58a003",
+        name: "service-account-1",
+        accessTime: "2024-06-29T12:00:00Z",
+      },
+      {
+        id: "89058f3c-8032-4585-94bd-c1473b11ae76",
+        name: "service-account-2",
+        accessTime: "2024-06-28T12:00:00Z",
+      },
+    ],
+    policies: [
+      { id: "da782198-fdfd-4d35-b6dd-7d8427b43a79", name: "rotation-policy", status: "compliant" },
+      { id: "8d966424-3201-46d8-96aa-0efa1db60d03", name: "encryption-policy", status: "compliant" },
+      { id: "7a966424-3201-46d8-96aa-0efa1db60d04", name: "access-policy", status: "compliant" },
+      { id: "6b966424-3201-46d8-96aa-0efa1db60d05", name: "naming-policy", status: "non_compliant" },
+    ],
+    lastAccess: "2024-06-29T12:00:00Z",
+    lastRotation: null,
+  },
+  {
+    id: "1a2b3c4d-5e6f-7g8h-9i0j-k1l2m3n4o5p6",
+    name: "Liquid Cobra",
+    providerID: "2a7b4de8-31c9-45d2-b656-92c8f6947f9d",
+    providerName: "GCP Secret Manager",
+    duplicates: [],
+    accessors: [
+      {
+        id: "b702dbf9-8176-4011-9f90-07b26f5eaab3",
+        name: "app-service-3",
+        accessTime: "2023-11-30T12:00:00Z",
+      },
+      {
+        id: "c813ecfa-9287-5122-af01-18c37f6fbbcc",
+        name: "app-service-4",
+        accessTime: "2023-11-29T12:00:00Z",
+      },
+    ],
+    policies: [
+      { id: "da782198-fdfd-4d35-b6dd-7d8427b43a80", name: "rotation-policy", status: "non_compliant" },
+      { id: "8d966424-3201-46d8-96aa-0efa1db60d06", name: "encryption-policy", status: "error" },
+      { id: "7a966424-3201-46d8-96aa-0efa1db60d07", name: "access-policy", status: "compliant" },
+    ],
+    lastAccess: "2023-11-30T12:00:00Z",
+    lastRotation: "2024-07-12T12:00:00Z",
+  },
+  {
+    id: "6ba7b814-9dad-11d1-80b4-00c04fd430c8",
+    name: "Crying Wolf",
+    providerID: "7f9e8d23-6c5b-4a3e-9f72-14d5a8b67c91",
+    providerName: "Kubernetes Secrets",
+    duplicates: [
+      {
+        id: "9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d4c",
+        name: "Solid Serpent",
+        providerID: "e45c3621-5e2f-4996-91c8-9dec1a15f5fb",
+        providerName: "AWS Secrets Manager",
+      },
+    ],
+    accessors: [
+      {
+        id: "d924fdeb-9398-4233-bc12-89d23e456f78",
+        name: "pod-service-1",
+        accessTime: "2024-02-01T12:00:00Z",
+      },
+    ],
+    policies: [],
+    lastAccess: "2024-02-01T12:00:00Z",
+    lastRotation: "2024-04-20T12:00:00Z",
+  },
+  {
+    id: "7h8i9j0k-1l2m-3n4o-5p6q-7r8s9t0u1v2w",
+    name: "Raging Raven",
+    providerID: "b3c2d1a4-8f7e-4d6c-9b5a-3e2f1c8d7b6a",
+    providerName: "Azure Key Vault",
+    duplicates: [
+      {
+        id: "9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d4c",
+        name: "Solid Serpent",
+        providerID: "e45c3621-5e2f-4996-91c8-9dec1a15f5fb",
+        providerName: "AWS Secrets Manager",
+      },
+      {
+        id: "1a2b3c4d-5e6f-7g8h-9i0j-k1l2m3n4o5p6",
+        name: "Liquid Cobra",
+        providerID: "2a7b4de8-31c9-45d2-b656-92c8f6947f9d",
+        providerName: "GCP Secret Manager",
+      },
+    ],
+    accessors: [
+      {
+        id: "e035gfec-0409-5344-cd23-90e34f567g89",
+        name: "service-account-a",
+        accessTime: "2024-09-11T12:00:00Z",
+      },
+      {
+        id: "f146hgfd-1510-6455-de34-01f45g678h90",
+        name: "service-account-b",
+        accessTime: "2024-09-10T12:00:00Z",
+      },
+    ],
+    policies: [
+      { id: "da782198-fdfd-4d35-b6dd-7d8427b43a81", name: "rotation-policy", status: "compliant" },
+      { id: "8d966424-3201-46d8-96aa-0efa1db60d08", name: "encryption-policy", status: "compliant" },
+      { id: "7a966424-3201-46d8-96aa-0efa1db60d09", name: "access-policy", status: "compliant" },
+      { id: "6b966424-3201-46d8-96aa-0efa1db60d10", name: "naming-policy", status: "non_compliant" },
+    ],
+    lastAccess: "2024-09-11T12:00:00Z",
+    lastRotation: "2024-03-31T12:00:00Z",
+  },
+  {
+    id: "a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6",
+    name: "Screaming Mantis",
+    providerID: "a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6",
+    providerName: "HashiCorp Vault",
+    duplicates: [
+      {
+        id: "7h8i9j0k-1l2m-3n4o-5p6q-7r8s9t0u1v2w",
+        name: "Raging Raven",
+        providerID: "b3c2d1a4-8f7e-4d6c-9b5a-3e2f1c8d7b6a",
+        providerName: "Azure Key Vault",
+      },
+      {
+        id: "9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d4c",
+        name: "Solid Serpent",
+        providerID: "e45c3621-5e2f-4996-91c8-9dec1a15f5fb",
+        providerName: "AWS Secrets Manager",
+      },
+    ],
+    accessors: [
+      {
+        id: "g257igfe-2621-7566-ef45-12g56h789i01",
+        name: "app-service-1",
+        accessTime: "2024-01-15T12:00:00Z",
+      },
+      {
+        id: "h368jgff-3732-8677-fg56-23h67i890j12",
+        name: "app-service-2",
+        accessTime: "2024-01-14T12:00:00Z",
+      },
+    ],
+    policies: [
+      { id: "da782198-fdfd-4d35-b6dd-7d8427b43a82", name: "rotation-policy", status: "compliant" },
+      { id: "8d966424-3201-46d8-96aa-0efa1db60d11", name: "encryption-policy", status: "compliant" },
+      { id: "7a966424-3201-46d8-96aa-0efa1db60d12", name: "access-policy", status: "compliant" },
+    ],
+    lastAccess: "2024-01-15T12:00:00Z",
+    lastRotation: "2023-12-25T12:00:00Z",
+  },
+];
+
 
 export const mockPoliciesData = [
   {

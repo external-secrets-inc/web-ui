@@ -8,7 +8,7 @@ import { DataProvider, DataTable } from "@/components/ui/DataProvider";
 import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import useGetDashboarSecretTable from "@/services/audit/queries/useGetDashboarSecretTable";
-import { AuditTableData, SecretDetails } from "./Audit.interfaces";
+import { AuditSecretTableData, SecretDetails } from "./Audit.interfaces";
 import FilterDialogForm from "./FilterDialogForm";
 import AuditSecretDetailsDialog from "./AuditSecretDetailsDialog";
 import { useAuditFilter } from "./AuditFilterProvider";
@@ -50,12 +50,7 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
 
   const listenerSecretTableData = useMemo(() => {
     if (!secretTableData)
-      return {
-        secretsData: [],
-        secretsNames: [],
-        policiesNames: [],
-        providersNames: [],
-      };
+      return []
 
     return secretTableData;
   }, [secretTableData]);
@@ -69,7 +64,7 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
     );
   }, [secretTableDataError, isErrorSecretTableData, isRefetchErrorSecretTableData]);
 
-  const columnHelper = createColumnHelper<AuditTableData>();
+  const columnHelper = createColumnHelper<AuditSecretTableData>();
 
   const columns = useMemo(
     () => [
@@ -120,10 +115,12 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
       columnHelper.accessor("policiesAmount", {
         header: "Policy compliance",
         cell: (info) => {
-          const nonCompliantPolicies = info.row.original.policies.filter(policy => policy.status !== "compliant").length;
+          const nonCompliantPolicies = info.row.original.policiesAmount - info.row.original.compliantPoliciesAmount
+          const policiesAmountStr = info.row.original.compliantPoliciesAmount + "/" + info.row.original.policiesAmount
           return (
             <div className="flex gap-2 w-full items-center">
-              {info.getValue() !== null ? info.getValue() : "Unknown"}{" "}
+              {info.getValue() !== null ? policiesAmountStr : "Unknown"
+              }{" "}
               {!info.row.original.fullCompliant && (
                 <TooltipProvider>
                   <Tooltip>
@@ -155,28 +152,28 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
     handleFilterNameChange(e.target.value);
   };
 
-  const auditTableDataJsonToCsvFlat = (json: AuditTableData[]): string => {
+  const auditTableDataJsonToCsvFlat = (json: AuditSecretTableData[]): string => {
     if (!json.length) return '';
 
-    const isPrimitive = (value: AuditTableData[keyof AuditTableData]): boolean => {
+    const isPrimitive = (value: AuditSecretTableData[keyof AuditSecretTableData]): boolean => {
       return value === null || ['string', 'number', 'boolean'].includes(typeof value);
     };
 
     const headers = Object.keys(json[0])
-      .filter((key) => isPrimitive(json[0][key as keyof AuditTableData]))
+      .filter((key) => isPrimitive(json[0][key as keyof AuditSecretTableData]))
       .join(',');
 
     const rows = json.map((row) => {
       return Object.keys(row)
-        .filter((key) => isPrimitive(row[key as keyof AuditTableData]))
-        .map((key) => `"${row[key as keyof AuditTableData] ?? ''}"`)
+        .filter((key) => isPrimitive(row[key as keyof AuditSecretTableData]))
+        .map((key) => `"${row[key as keyof AuditSecretTableData] ?? ''}"`)
         .join(',');
     });
 
     return [headers, ...rows].join('\n');
   };
 
-  const handleExportSecretsTable = (jsonData: AuditTableData[]) => {
+  const handleExportSecretsTable = (jsonData: AuditSecretTableData[]) => {
     const csv = auditTableDataJsonToCsvFlat(jsonData);
     const file = new File([csv], 'data.csv', { type: 'text/csv' });
     saveAs(file);
@@ -246,7 +243,7 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
             className="self-center"
             aria-label="Download"
             title="Download"
-            onClick={() => { handleExportSecretsTable(listenerSecretTableData?.secretsData ?? []) }}
+            onClick={() => {handleExportSecretsTable(listenerSecretTableData?? [])}}
           >
             <LucideDownload />
           </Button>
@@ -277,7 +274,7 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
       </div>
 
       <DataProvider
-        data={listenerSecretTableData.secretsData}
+        data={listenerSecretTableData}
         columns={columns}
         initialSort={{ id: "lastRotation", desc: true }}
         isLoading={isLoadingSecretTableData}
