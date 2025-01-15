@@ -14,7 +14,7 @@ const getAuditSecretData = async (
 ) => {
   if (mock) {
     await mockNetworkResponseDelay();
-    return mockAuditSecretsData;
+    return mockAuditSecretsData[0];
   }
 
   const headers = await getAuthHeaders();
