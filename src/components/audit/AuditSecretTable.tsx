@@ -115,12 +115,12 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
       columnHelper.accessor("policiesAmount", {
         header: "Policy compliance",
         cell: (info) => {
-          const regex = /^(\d+)\/(\d+)$/;
-          const match = info.row.original.policiesAmount.match(regex);
-          const nonCompliantPolicies = match? Math.abs(parseInt(match[2], 10) - parseInt(match[1], 10)) : 0
+          const nonCompliantPolicies = info.row.original.policiesAmount - info.row.original.compliantPoliciesAmount
+          const policiesAmountStr = info.row.original.compliantPoliciesAmount + "/" + info.row.original.policiesAmount
           return (
             <div className="flex gap-2 w-full items-center">
-              {info.getValue() !== null ? info.getValue() : "Unknown"}{" "}
+              {info.getValue() !== null ? policiesAmountStr : "Unknown"
+              }{" "}
               {!info.row.original.fullCompliant && (
                 <TooltipProvider>
                   <Tooltip>

@@ -22,7 +22,8 @@ export interface AuditSecretTableData {
   provider: string;
   providerName: string;
   lastRotation: string | null;
-  policiesAmount: string;
+  compliantPoliciesAmount: number;
+  policiesAmount: number;
   fullCompliant: boolean;
   duplicatesAmount: number;
   lastAccess: string | null;
