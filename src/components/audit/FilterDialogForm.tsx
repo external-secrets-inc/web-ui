@@ -28,7 +28,6 @@ import {
 } from "@/components/ui/form";
 import { MultiSelect } from "../ui/MultiSelect";
 import { filterSchema, FilterSchema } from "./Audit.interfaces";
-import useGetDashboarSecretTable from "@/services/audit/queries/useGetDashboarSecretTable";
 import useGetAuditProviders from "@/services/audit/queries/useGetAuditProviders";
 import useGetPolicies from "@/services/audit/queries/useGetPolicies";
 import useAuthUser from "react-auth-kit/hooks/useAuthUser";
@@ -44,6 +43,7 @@ interface FilterDialogFormProps {
   listenerID: string;
 }
 import { formatDate } from "@/utils/dateUtils";
+import useGetAuditSecrets from "@/services/audit/queries/useGetAuditSecrets";
 
 const BooleanFilter = ({
   formControl,
@@ -189,10 +189,9 @@ const FilterDialogForm = (
     }
   }, [isFiltersDialogOpen, initialValues, form]);
 
-  const { data: unfilteredSecretsData, isLoading: isLoadingSecrets } = useGetDashboarSecretTable(
+  const { data: auditSecrets, isLoading: isLoadingSecrets } = useGetAuditSecrets(
     false,
     listenerID,
-    new URLSearchParams(),
     {
       enabled: isFiltersDialogOpen,
       staleTime: 20 * ONE_SECOND_IN_MILLISECONDS,
@@ -221,7 +220,10 @@ const FilterDialogForm = (
 
   // Transform data for filter options
   const filterOptions = useMemo(() => ({
-    secretsNames: unfilteredSecretsData?.secretsNames || [],
+    secretsNames: auditSecrets?.map(secret => ({
+      label: secret.name,
+      value: secret.id,
+    })) || [],
     providersNames: providers?.map(provider => ({
       label: provider.name,
       value: provider.providerID,
@@ -230,7 +232,7 @@ const FilterDialogForm = (
       label: policy.name,
       value: policy.policyID,
     })) || []
-  }), [unfilteredSecretsData?.secretsNames, providers, policies]);
+  }), [auditSecrets, providers, policies]);
 
   const handleSubmit = (data: FilterSchema) => {
     handleFilterChange(data);

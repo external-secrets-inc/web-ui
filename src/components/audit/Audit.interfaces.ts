@@ -16,52 +16,43 @@ export const filterSchema = z.object({
 
 export type FilterSchema = z.infer<typeof filterSchema>;
 
-export interface AuditResponseData {
-  secretsData: AuditTableData[];
-  secretsNames: {
-    label: string;
-    value: string;
-    icon?: React.ComponentType<{ className?: string }> | undefined;
-  }[];
-  policiesNames: {
-    label: string;
-    value: string;
-    icon?: React.ComponentType<{ className?: string }> | undefined;
-  }[];
-  providersNames: {
-    label: string;
-    value: string;
-    icon?: React.ComponentType<{ className?: string }> | undefined;
-  }[];
-}
-
-export interface AuditTableData {
+export interface AuditSecretTableData {
   id: string;
   name: string;
   provider: string;
   providerName: string;
   lastRotation: string | null;
-  policiesAmount: string;
+  compliantPoliciesAmount: number;
+  policiesAmount: number;
   fullCompliant: boolean;
   duplicatesAmount: number;
   lastAccess: string | null;
   accessorsAmount: number;
+}
+
+export interface AuditSecretData {
+  id: string;
+  name: string;
+  providerID: string;
+  providerName: string;
   duplicates: {
     id: string;
-    provider: string;
     name: string;
+    providerID: string;
     providerName: string;
   }[];
   accessors: {
     id: string;
-    accessTime: string;
     name: string;
+    accessTime: string;
   }[];
   policies: {
     id: string;
     name: string;
     status: "compliant" | "non_compliant" | "error";
   }[];
+  lastAccess: string | null;
+  lastRotation: string | null;
 }
 
 export interface AuditListener {
@@ -219,4 +210,4 @@ export interface AuditTimelineEntry {
   stats: AuditMetric[];
 }
 
-export type SecretDetails = AuditTableData;
+export type SecretDetails = AuditSecretTableData;
