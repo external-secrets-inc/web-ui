@@ -73,8 +73,8 @@ export default function AuditSecretDetailsDialog({ secret, onOpenChange }: Audit
         <DialogHeader>
           <DialogTitle className="flex items-center flex-wrap gap-2">
             <LucideSquareAsterisk className="size-6" />
-            {secret?.name || "Unnamed Secret"}
-            <Badge variant="outline">{secret?.providerName}</Badge>
+            {secret.name || "Unnamed Secret"}
+            <Badge variant="outline">{secret.providerName}</Badge>
           </DialogTitle>
           <DialogDescription />
         </DialogHeader>
