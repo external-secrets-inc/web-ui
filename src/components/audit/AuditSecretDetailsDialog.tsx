@@ -43,10 +43,10 @@ export default function AuditSecretDetailsDialog({ secret, onOpenChange }: Audit
 
     handleDefaultApiHttpError(
       secretDataError,
-      "Error while fetching audit listener data"
+      `Error while fetching ${secret?.name} data`
     );
     onOpenChange(false);
-  }, [secretDataError, isErrorSecretData]);
+  }, [secretDataError, isErrorSecretData, onOpenChange]);
 
   const listenerSecretData = useMemo(() => {
     if (!secretData)
