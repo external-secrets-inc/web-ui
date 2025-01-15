@@ -46,7 +46,7 @@ export default function AuditSecretDetailsDialog({ secret, onOpenChange }: Audit
       `Error while fetching ${secret?.name} data`
     );
     onOpenChange(false);
-  }, [secretDataError, isErrorSecretData, onOpenChange]);
+  }, [secretDataError, isErrorSecretData, onOpenChange, secret?.name]);
 
   const listenerSecretData = useMemo(() => {
     if (!secretData)
