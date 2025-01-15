@@ -49,6 +49,12 @@ type TimelineChartCardProps = {
   isLoading?: boolean
 }
 
+const BackgroundGridWrapper = ({ children }: { children: React.ReactNode }) => (
+  <div className="h-[264px] flex gap-2 items-center justify-center bg-[linear-gradient(hsl(var(--border)/0.5)_1px,transparent_1px),linear-gradient(90deg,hsl(var(--border)/0.5)_1px,transparent_1px)] bg-[size:calc((100%+1px)/7)_calc(100%/7)] bg-[-1px_top]">
+    {children}
+  </div>
+)
+
 export function AuditTimelineChartCard({
   title,
   description,
@@ -109,22 +115,24 @@ export function AuditTimelineChartCard({
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent className="p-0">
-        {error ? (
-          <div className="h-80 flex gap-2 items-center justify-center -mt-14">
-            <LucideAlertCircle className="text-destructive" />
+        {
+          error ?
+          <BackgroundGridWrapper>
+            <LucideAlertCircle className="text-destructive"/>
             {errorMessage}
-          </div>
-        ) : isLoading ? (
-          <div className="h-80 flex items-center justify-center -mt-14">
-            <Loader size="lg" />
-          </div>
-        ) : (!data || data.length === 0) ? (
-          <div className="h-80 flex gap-2 items-center justify-center -mt-14">
-            <LucideAlertCircle className="text-destructive" />
-            No data available
-          </div>
-        ) : (
-          <ChartContainer
+          </BackgroundGridWrapper>
+
+        : isLoading ?
+          <BackgroundGridWrapper>
+            <Loader size="lg"/>
+          </BackgroundGridWrapper>
+
+        : (!data || data.length === 0) ?
+          <BackgroundGridWrapper>
+            No data available for this period
+          </BackgroundGridWrapper>
+
+        : <ChartContainer
             config={config}
             className="w-full max-h-[264px]"
           >
@@ -206,7 +214,7 @@ export function AuditTimelineChartCard({
               />
             </AreaChart>
           </ChartContainer>
-        )}
+        }
       </CardContent>
     </Card>
   )
