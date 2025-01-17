@@ -39,14 +39,14 @@ export async function apiWrapper<T>(
 
 export function handleDefaultApiHttpError(error: AxiosError<ApiHttpError>, defaultMessage: string = "An error occurred") {
   let fastApiError = undefined
-  if(error.request.response) {
+  if (error.request.response) {
     const response = JSON.parse(error.request.response)
-    if(Array.isArray(response.detail)) {
-      fastApiError = response.detail.map((d: {type:string, msg: string, loc:string[]}) => d.msg + ": " + d.loc[1]).join("; ")
+    if (Array.isArray(response.detail)) {
+      fastApiError = response.detail.map((d: { type: string, msg: string, loc: string[] }) => d.msg + ": " + d.loc[1]).join("; ")
     } else {
       fastApiError = response.detail
     }
   }
 
-  return toast.error(fastApiError || error.response?.data?.errors?.body || defaultMessage)
+  return toast.error(defaultMessage || fastApiError || error.response?.data?.errors?.body)
 }
