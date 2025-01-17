@@ -15,7 +15,7 @@ import useCreateAuditProvider from "@/services/audit/mutations/useCreateAuditPro
 import useDeleteAuditProvider from "@/services/audit/mutations/useDeleteAuditProvider";
 import useGetAuditProviders from "@/services/audit/queries/useGetAuditProviders";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
-import { FeatureItemDeleteAction } from "../FeatureCollection";
+import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction" // TODO[cfviotti]: We should not import components from non generic stuff! This should be a generic component, or re-implemented here.
 import useEditProvider, { EditProviderVariables } from "@/services/audit/mutations/useEditProvider";
 import useGetProvidersTypes from "@/services/audit/queries/useGetProvidersType";
 

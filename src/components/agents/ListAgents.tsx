@@ -3,7 +3,6 @@ import { AxiosError } from "axios";
 import { toast } from "sonner";
 
 import FeatureCollection from "@/components/FeatureCollection";
-import { NewAgentForm } from "@/components/agents/NewAgentForm";
 import { API_DOMAIN, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import useCreateAgent from "@/services/agents/mutations/useCreateAgent";
 import useCreateAgentManifestToken from "@/services/agents/mutations/useCreateAgentManifestToken";
@@ -18,6 +17,7 @@ export default function ListAgents() {
 
   const [featureID, setFeatureID] = useState("")
   const [applyCommand, setApplyCommand] = useState("")
+  const [isManifestReady, setIsManifestReady] = useState(false);
 
   const { data: agentsData, refetch: agentsRefetch, isError: agentsIsError, error: agentError, isRefetchError: agentIsRefetchError } = useGetAgents({
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
@@ -54,14 +54,16 @@ export default function ListAgents() {
   }
 
   useEffect(() => {
-    if (featureID === "") return
+    if (featureID === "") {
+      setIsManifestReady(false);
+      return;
+    }
 
-    createToken({ id: featureID })
-  }, [featureID, createToken])
+    createToken({ id: featureID });
+  }, [featureID, createToken]);
 
   useEffect(() => {
-    if (featureID === "") return
-    if (!token) return
+    if (!token || !manifestData) return;
 
     const command = [
       "curl \\",
@@ -70,7 +72,8 @@ export default function ListAgents() {
       "| kubectl apply -f -",
     ].join('\n');
     setApplyCommand(command);
-  }, [token, featureID])
+    setIsManifestReady(true);
+  }, [token, manifestData, featureID]);
 
   useEffect(() => {
     if (!(agentError || agentIsRefetchError)) return;
@@ -91,10 +94,9 @@ export default function ListAgents() {
       featureDescription="Agent used for an External Secrets Operator installation in your Kubernetes cluster"
       onDeleteFeature={performDelete}
       setFeatureID={setFeatureID}
-      applyCommand={applyCommand}
-      manifestData={manifestData?.manifest}
+      applyCommand={isManifestReady ? applyCommand : ''}
+      manifestData={isManifestReady ? manifestData?.manifest : ''}
       performCreate={performCreate}
-      Form={NewAgentForm}
     />
   );
 }
