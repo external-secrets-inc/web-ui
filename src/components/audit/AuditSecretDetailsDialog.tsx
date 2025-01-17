@@ -14,7 +14,7 @@ import {
   LucideSquareStack,
   LucideUsers
 } from "lucide-react";
-import { AuditSecretData, SecretDetails } from "./Audit.interfaces";
+import { AuditSecretData } from "./Audit.interfaces";
 import { formatDate } from "@/utils/dateUtils";
 import useGetAuditSecretData from "@/services/audit/queries/useGetAuditSecretData";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
@@ -24,21 +24,23 @@ import { Loader } from "@/components/ui/Loader"
 import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 
 interface AuditSecretDetailsDialogProps {
-  secret: SecretDetails | null;
+  secretId: string | null;
+  setSecretId: (secret: string) => void;
   onOpenChange: (open: boolean) => void;
 }
 
-export default function AuditSecretDetailsDialog({ secret, onOpenChange }: AuditSecretDetailsDialogProps) {
+export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpenChange }: AuditSecretDetailsDialogProps) {
   const {
     data: secretData,
+    refetch: secretRefetch,
     isLoading: isLoadingSecretData,
     isFetching: isFetchingSecretData,
     isError: isErrorSecretData,
     error: secretDataError,
-  } = useGetAuditSecretData(false, secret?.id || '', {
+  } = useGetAuditSecretData(false, secretId || '', {
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
-    enabled: !!secret
+    enabled: !!secretId
   });
 
   useEffect(() => {
@@ -46,10 +48,10 @@ export default function AuditSecretDetailsDialog({ secret, onOpenChange }: Audit
 
     handleDefaultApiHttpError(
       secretDataError,
-      `Error while fetching ${secret?.name} data`
+      `Error while fetching secret data`
     );
     onOpenChange(false);
-  }, [secretDataError, isErrorSecretData, onOpenChange, secret?.name]);
+  }, [secretDataError, isErrorSecretData, onOpenChange]);
 
   const listenerSecretData = useMemo(() => {
     if (!secretData)
@@ -68,16 +70,22 @@ export default function AuditSecretDetailsDialog({ secret, onOpenChange }: Audit
     return secretData;
   }, [secretData]);
 
-  if (!secret) return null;
+  useEffect(() => {
+    if (secretId) {
+      secretRefetch();
+    }
+  }, [secretId, secretRefetch]);
+
+  if (!secretId) return null;
 
   return (
-    <Dialog open={!!secret} onOpenChange={onOpenChange}>
+    <Dialog open={!!secretId} onOpenChange={onOpenChange}>
       <DialogContent className="w-[max(50%,640px)] max-w-[calc(100%-theme(spacing.12))] max-h-[calc(100%-theme(spacing.12))] overflow-auto grid-rows-[auto_minmax(100px,1fr)_auto] grid-cols-[minmax(100%,1fr)]">
         <DialogHeader>
           <DialogTitle className="flex items-center flex-wrap gap-2">
             <LucideSquareAsterisk className="size-6" />
-            {secret.name || "Unnamed Secret"}
-            <Badge variant="outline">{secret.providerName}</Badge>
+            {listenerSecretData.name || "Unnamed Secret"}
+            <Badge variant="outline">{listenerSecretData.providerName}</Badge>
           </DialogTitle>
           <DialogDescription />
         </DialogHeader>
@@ -161,7 +169,7 @@ export default function AuditSecretDetailsDialog({ secret, onOpenChange }: Audit
                     {listenerSecretData.duplicates.length > 0 ? (
                       <div className="space-y-2">
                         {listenerSecretData.duplicates.map(duplicate => (
-                          <Alert variant="warning" key={duplicate.id} >
+                          <Alert variant="warning" key={duplicate.id} onClick={() => setSecretId(duplicate.id)} className="cursor-pointer">
                             <AlertDescription className="flex items-center gap-2">
                               <LucideAlertCircle className="text-orange-500" />
                               <span className="font-medium">{duplicate.name || duplicate.id || "Unknown Duplicate"}</span>

@@ -8,7 +8,7 @@ import { DataProvider, DataTable } from "@/components/ui/DataProvider";
 import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import useGetDashboarSecretTable from "@/services/audit/queries/useGetDashboarSecretTable";
-import { AuditSecretTableData, SecretDetails } from "./Audit.interfaces";
+import { AuditSecretTableData } from "./Audit.interfaces";
 import FilterDialogForm from "./FilterDialogForm";
 import AuditSecretDetailsDialog from "./AuditSecretDetailsDialog";
 import { useAuditFilter } from "./AuditFilterProvider";
@@ -23,7 +23,7 @@ interface AuditSecretTableProps {
 }
 
 export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
-  const [selectedSecret, setSelectedSecret] = useState<SecretDetails | null>(null);
+  const [selectedSecretId, setSelectedSecretId] = useState<string | null>(null);
   const [searchInputValue, setSearchInputValue] = useState("");
   const [searchParams] = useSearchParams();
   const {
@@ -280,12 +280,13 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
         isLoading={isLoadingSecretTableData}
         emptyMessage={getEmptyMessage()}
       >
-        <DataTable onRowClick={(row) => setSelectedSecret(row)} />
+        <DataTable onRowClick={(row) => setSelectedSecretId(row.id)} />
       </DataProvider>
 
       <AuditSecretDetailsDialog
-        secret={selectedSecret}
-        onOpenChange={(open) => !open && setSelectedSecret(null)}
+        secretId={selectedSecretId}
+        setSecretId={setSelectedSecretId}
+        onOpenChange={(open) => !open && setSelectedSecretId(null)}
       />
     </>
   );
