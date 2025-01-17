@@ -72,10 +72,7 @@ function FeatureItemDialogContent({featureID, featureName, featureType, featureD
       className="contents"
       onClick={(e) => e.stopPropagation()}
     >
-      <DialogContent
-        className="w-[max(50%,640px)] max-w-[calc(100%-theme(spacing.12))] max-h-[calc(100%-theme(spacing.12))] overflow-auto grid-rows-[auto_minmax(100px,1fr)_auto] grid-cols-[minmax(100%,1fr)]"
-        onOpenAutoFocus={(e) => e.preventDefault()}
-      >
+      <DialogContent className="w-[max(50%,640px)] max-w-[calc(100%-theme(spacing.12))] max-h-[calc(100%-theme(spacing.12))] overflow-auto grid-rows-[auto_minmax(100px,1fr)_auto] grid-cols-[minmax(100%,1fr)]">
         <DialogHeader>
           <DialogTitle>{featureName}</DialogTitle>
           <DialogDescription />
