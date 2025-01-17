@@ -59,6 +59,7 @@ const FeatureNewItem = ({
     try {
       performCreate({ featureName: values.name })
       setShowForm(false)
+      form.reset()
       trackFeatureCreated(featureType)
     } catch (error) {
       console.error("Failed to create:", error)
