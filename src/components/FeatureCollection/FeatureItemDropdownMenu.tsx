@@ -28,7 +28,7 @@ function FeatureItemDropdownMenu({
   featureDescription,
   manifest,
   applyCommand,
-}: Omit<FeatureItemDropdownMenuProps, 'setFeatureID'>) {
+}: FeatureItemDropdownMenuProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const { openFeatureItemDialog } = useFeatureItemDialog();
 
