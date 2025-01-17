@@ -13,19 +13,12 @@ const getProvidersTypes = async (
 ) => {
   if (mock) {
     return {
-      "formExample": {
-        "field1": { "type": "string", "required": true, "maxLength": 50 },
-        "field2": { "type": "date", "required": false },
-        "field3": { "type": "file", "required": true, "accept": "image/*" },
-        "field4": { "type": "number", "required": true },
-        "field5": { "type": "boolean", "required": true },
-      },
-      "gcp": {
+      "GCP": {
         "project-id": { "type": "string", "required": true },
         "topic": { "type": "string", "required": true },
         "subscription": { "type": "string", "required": true }
       },
-      "vault": {
+      "VAULT": {
         "vaultAddress": { "type": "string", "required": true },
         "vaultBasePath": { "type": "string", "required": false, "default": "secret" },
         "vaultVersion": { "type": "string", "required": false, "default": "v2" },

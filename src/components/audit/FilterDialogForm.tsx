@@ -26,52 +26,24 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import { ComponentType, useState } from "react";
-import { MultiSelect } from "../ui/Multi-select";
+import { MultiSelect } from "../ui/MultiSelect";
 import { filterSchema, FilterSchema } from "./Audit.interfaces";
-import { Combobox } from "../ui/Combobox";
+import useGetAuditProviders from "@/services/audit/queries/useGetAuditProviders";
+import useGetPolicies from "@/services/audit/queries/useGetPolicies";
+import useAuthUser from "react-auth-kit/hooks/useAuthUser";
+import { IUserData } from "@/types";
+import { useMemo, useState, useEffect } from "react";
+import { useAuditFilter } from "./AuditFilterProvider";
+import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
+import { Loader } from "@/components/ui/Loader";
 
-const ComboboxFilter = ({
-  formControl,
-  name,
-  label,
-  placeholder,
-  emptyText,
-  options,
-}: {
-  formControl: Control<FilterSchema>;
-  name: keyof Omit<FilterSchema, 'provider'>;
-  label: string;
-  placeholder: string;
-  emptyText: string;
-  options: {
-    label: string;
-    value: string;
-    icon?: React.ComponentType<{ className?: string }>;
-  }[];
-}) => (
-  <FormField
-    control={formControl}
-    name={name}
-    render={({ field }) => (
-      <FormItem>
-        <FormLabel>{label}</FormLabel>
-        <FormControl>
-          <div>
-            <Combobox
-              items={options}
-              value={field.value}
-              onSelect={field.onChange}
-              placeholder={placeholder}
-              emptyText={emptyText}
-            />
-          </div>
-        </FormControl>
-        <FormMessage />
-      </FormItem>
-    )}
-  />
-);
+interface FilterDialogFormProps {
+  initialValues: FilterSchema;
+  onSubmit: (data: FilterSchema) => void;
+  listenerID: string;
+}
+import { formatDate } from "@/utils/dateUtils";
+import useGetAuditSecrets from "@/services/audit/queries/useGetAuditSecrets";
 
 const BooleanFilter = ({
   formControl,
@@ -158,44 +130,120 @@ const DateFilter = ({
   );
 };
 
-
-const FilterDialogForm = ({
-  initialValues,
-  onSubmit,
-  secretsNames,
-  policiesNames,
-  providers,
+const MultiSelectFilter = ({
+  formControl,
+  name,
+  label,
+  options,
+  placeholder,
 }: {
-  initialValues: FilterSchema;
-  onSubmit: (data: FilterSchema) => void;
-  secretsNames: {
+  formControl: Control<FilterSchema>;
+  name: Extract<keyof FilterSchema, "providers" | "secretIDs" | "policyIDs">;
+  label: string;
+  options: {
     label: string;
     value: string;
-    icon?: React.ComponentType<{ className?: string }>;
   }[];
-  policiesNames: {
-    label: string;
-    value: string;
-    icon?: React.ComponentType<{ className?: string }>;
-  }[];
-  providers: {
-    label: string;
-    value: string;
-    icon?: ComponentType<{ className?: string | undefined; }> | undefined;
-  }[];
-}) => {
+  placeholder: string;
+}) => (
+  <FormField
+    control={formControl}
+    name={name}
+    render={({ field }) => (
+      <FormItem>
+        <FormLabel>{label}</FormLabel>
+        <MultiSelect
+          options={options}
+          onValueChange={field.onChange}
+          value={field.value}
+          defaultValue={field.value}
+          placeholder={placeholder}
+          variant="inverted"
+          maxCount={1}
+        />
+      </FormItem>
+    )}
+  />
+);
+
+const FilterDialogForm = (
+  {
+    initialValues,
+    onSubmit,
+    listenerID,
+  }: FilterDialogFormProps
+) => {
   const [resetKey, setResetKey] = useState(0);
+  const authUser = useAuthUser<IUserData>();
+  const { handleFilterChange, isFiltersDialogOpen } = useAuditFilter();
 
   const form = useForm<FilterSchema>({
     resolver: zodResolver(filterSchema),
     defaultValues: initialValues,
   });
 
+  // Sync form with APPLIED filters when dialog opens/closes
+  useEffect(() => {
+    if (isFiltersDialogOpen) {
+      form.reset(initialValues);
+    }
+  }, [isFiltersDialogOpen, initialValues, form]);
+
+  const { data: auditSecrets, isLoading: isLoadingSecrets } = useGetAuditSecrets(
+    false,
+    listenerID,
+    {
+      enabled: isFiltersDialogOpen,
+      staleTime: 20 * ONE_SECOND_IN_MILLISECONDS,
+    }
+  );
+
+  const { data: providers, isLoading: isLoadingProviders } = useGetAuditProviders(
+    false,
+    listenerID,
+    {
+      enabled: isFiltersDialogOpen,
+      staleTime: 20 * ONE_SECOND_IN_MILLISECONDS,
+    }
+  );
+
+  const { data: policies, isLoading: isLoadingPolicies } = useGetPolicies(
+    false,
+    authUser?.tenantId || '',
+    {
+      enabled: isFiltersDialogOpen,
+      staleTime: 20 * ONE_SECOND_IN_MILLISECONDS,
+    }
+  );
+
+  const isLoadingFilters = isLoadingSecrets || isLoadingProviders || isLoadingPolicies;
+
+  // Transform data for filter options
+  const filterOptions = useMemo(() => ({
+    secretsNames: auditSecrets?.map(secret => ({
+      label: secret.name,
+      value: secret.id,
+    })) || [],
+    providersNames: providers?.map(provider => ({
+      label: provider.name,
+      value: provider.providerID,
+    })) || [],
+    policiesNames: policies?.map(policy => ({
+      label: policy.name,
+      value: policy.policyID,
+    })) || []
+  }), [auditSecrets, providers, policies]);
+
+  const handleSubmit = (data: FilterSchema) => {
+    handleFilterChange(data);
+    onSubmit(data);
+  };
+
   const handleClear = () => {
     form.reset({
-      provider: [],
-      policy: "",
-      secretName: "",
+      providers: [],
+      policyIDs: [],
+      secretIDs: [],
       policyStatus: "",
       duplicates: "",
       lastAccess: "",
@@ -206,6 +254,9 @@ const FilterDialogForm = ({
     setResetKey((prev) => prev + 1);
   };
 
+  const filterMinDate = formatDate(new Date(new Date().setDate(new Date().getDate() - 90)), { format: 'isoDateOnlyUTC' }); // 90 days ago
+  const filterMaxDate = formatDate(new Date(), { format: 'isoDateOnlyUTC' }); // Current date
+
   return (
     <DialogContent
       className="w-[max(50%,640px)] max-w-[calc(100%-theme(spacing.12))] max-h-[calc(100%-theme(spacing.12))] overflow-auto grid-rows-[auto_minmax(100px,1fr)_auto] grid-cols-[minmax(100%,1fr)]"
@@ -215,112 +266,102 @@ const FilterDialogForm = ({
         <DialogTitle>Filters</DialogTitle>
         <DialogDescription />
       </DialogHeader>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="grid gap-4">
-              {/* Provider Filter */}
-              <FormField
-                key={"provider" + resetKey}
-                control={form.control}
-                name="provider"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Providers</FormLabel>
-                    <MultiSelect
-                      options={providers}
-                      onValueChange={function (value: string[]): void { field.onChange(value) }}
-                      defaultValue={field.value}
-                      placeholder="Select providers"
-                      variant="inverted"
-                      maxCount={3}
-                    />
-                  </FormItem>
-                )}
+      {isLoadingFilters ? (
+        <Loader size="lg" className="h-96 m-auto" />
+      ) : (
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="grid gap-4">
+                {/* Provider Filter */}
+                <MultiSelectFilter
+                  key={"provider" + resetKey}
+                  formControl={form.control}
+                  name="providers"
+                  label="Providers"
+                  options={filterOptions.providersNames}
+                  placeholder="Select providers"
+                />
+
+                {/* Secret Name Input */}
+                <MultiSelectFilter
+                  key={"secret_id" + resetKey}
+                  formControl={form.control}
+                  name="secretIDs"
+                  label="Secrets"
+                  options={filterOptions.secretsNames}
+                  placeholder="Select secrets"
+                />
+
+                {/* Policy Input */}
+                <MultiSelectFilter
+                  key={"policy_id" + resetKey}
+                  formControl={form.control}
+                  name="policyIDs"
+                  label="Policies"
+                  options={filterOptions.policiesNames}
+                  placeholder="Select policies"
+                />
+              </div>
+
+              <div className="grid gap-4">
+                {/* Policy Status */}
+                <BooleanFilter
+                  formControl={form.control}
+                  name="policyStatus"
+                  label="Policy Status"
+                  placeholder="Select policy status"
+                  trueItem="Compliant"
+                  falseItem="Non-Compliant"
+                />
+
+                {/* Duplicates */}
+                <BooleanFilter
+                  formControl={form.control}
+                  name="duplicates"
+                  label="Duplicates"
+                  placeholder="Select duplicates"
+                  trueItem="Contains"
+                  falseItem="Does not Contain"
+                />
+
+                {/* Accessors */}
+                <BooleanFilter
+                  formControl={form.control}
+                  name="accessors"
+                  label="Accessors"
+                  placeholder="Select accessors"
+                  trueItem="Contains"
+                  falseItem="Does not Contain"
+                />
+              </div>
+
+              <DateFilter
+                form={form}
+                name="lastAccess"
+                label="Last Access"
+                minDate={filterMinDate}
+                maxDate={filterMaxDate}
               />
 
-              {/* Secret Name Input */}
-              <ComboboxFilter
-                key={"secret_name" + resetKey}
-                formControl={form.control}
-                name="secretName"
-                label="Secret Name"
-                placeholder="Enter secret name"
-                emptyText="No secret name found"
-                options={secretsNames}
-              />
-
-              {/* Policy Input */}
-              <ComboboxFilter
-                key={"policy" + resetKey}
-                formControl={form.control}
-                name="policy"
-                label="Policy"
-                placeholder="Enter policy"
-                emptyText="No policy found"
-                options={policiesNames}
+              <DateFilter
+                form={form}
+                name="lastRotation"
+                label="Last Rotation"
+                minDate={filterMinDate}
+                maxDate={filterMaxDate}
               />
             </div>
 
-            <div className="grid gap-4">
-              {/* Policy Status */}
-              <BooleanFilter
-                formControl={form.control}
-                name="policyStatus"
-                label="Policy Status"
-                placeholder="Select policy status"
-                trueItem="Compliant"
-                falseItem="Non-Compliant"
-              />
-
-              {/* Duplicates  */}
-              <BooleanFilter
-                formControl={form.control}
-                name="duplicates"
-                label="Duplicates"
-                placeholder="Select duplicates"
-                trueItem="Contains"
-                falseItem="Does not Contain"
-              />
-
-              {/* Accessors  */}
-              <BooleanFilter
-                formControl={form.control}
-                name="accessors"
-                label="Accessors"
-                placeholder="Select accessors"
-                trueItem="Contains"
-                falseItem="Does not Contain"
-              />
-            </div>
-
-            <DateFilter
-              form={form}
-              name="lastAccess"
-              label="Last Access"
-              minDate=""
-              maxDate={new Date().toISOString().split("T")[0]} // Current date
-            />
-
-            <DateFilter
-              form={form}
-              name="lastRotation"
-              label="Last Rotation"
-              minDate={new Date(new Date().setDate(new Date().getDate() - 90))
-                .toISOString()
-                .split("T")[0]} // 90 days ago
-              maxDate={new Date().toISOString().split("T")[0]} // Current date
-            />
-          </div>
-
-          <DialogFooter className="flex justify-end gap-4">
-            <Button type="button" variant="secondary" onClick={handleClear}>
-              Clear
-            </Button>
-            <Button type="submit">Apply</Button>
-          </DialogFooter>
-        </form>
-      </Form>
+            <DialogFooter className="flex justify-end gap-4">
+              <Button type="button" variant="secondary" onClick={handleClear}>
+                Clear
+              </Button>
+              <Button type="submit">Apply</Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      )}
     </DialogContent>
   );
 };

@@ -6,62 +6,53 @@ import {
   ONE_MINUTE_IN_SECONDS,
   ONE_SECOND_IN_MILLISECONDS,
 } from "@/constants";
+import useCreateAuditListener from "@/services/audit/mutations/useCreateAuditListener";
 import useCreateTenantInstallationToken from "@/services/audit/mutations/useCreateTenantInstallationToken";
+import useCreateTenantListener from "@/services/audit/mutations/useCreateTenantListener";
+import useGetAuditListener from "@/services/audit/queries/useGetAuditListener";
 import useGetTenantBashFile from "@/services/audit/queries/useGetTenantBashFile";
 import useGetTenantListeners from "@/services/audit/queries/useGetTenantListeners";
-import useGetAuditListener from "@/services/audit/queries/useGetAuditListener";
-import useGetDashboarSecretTable from "@/services/audit/queries/useGetDashboarSecretTable";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
-import { ApiHttpError } from "@/types";
+import { ApiHttpError, IUserData } from "@/types";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
-import { createColumnHelper } from "@tanstack/react-table";
 import { AxiosError } from "axios";
-import { LucideAlertCircle, LucideFilter } from "lucide-react";
+import { LucideAlertCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "../ui/button";
-import { DataProvider, DataTable } from "../ui/DataProvider";
 import { LISTENER_STATUS, TIME_RANGES } from "./Audit.constants";
 import {
-  AuditTableData,
-  CreateTenantListenerPayload,
-  FilterSchema,
   AuditListener,
+  CreateAuditListenerPayload,
+  CreateTenantListenerPayload,
+  ListenerStatus,
   TenantListener,
   TimeRange,
-  ListenerStatus,
-  filterSchema,
-  CreateAuditListenerPayload,
+  TimeUnit,
 } from "./Audit.interfaces";
 import AuditChartProblems from "./AuditChartProblems";
 import AuditChartProviders from "./AuditChartProviders";
+import AuditPolicyDataTable from "./AuditPolicyDataTable";
 import AuditProviderDataTable from "./AuditProviderDataTable";
 import AuditTimelineProblems from "./AuditTimelineProblems";
 import AuditTimelineProviders from "./AuditTimelineProviders";
-import FilterDialogForm from "./FilterDialogForm";
 import ListenerInstallDialogContent from "./ListenerInstallDialogContent";
-import useCreateTenantListener from "@/services/audit/mutations/useCreateTenantListener";
-import AuditPolicyDataTable from "./AuditPolicyDataTable";
-import useCreateAuditListener from "@/services/audit/mutations/useCreateAuditListener";
-import useAuthUser from "react-auth-kit/hooks/useAuthUser";
-import { IUserData } from "@/types";
-
-const toYYYYMMDD = (date: Date) => {
-  return date.toISOString().slice(0, 10); // YYYY-MM-DD in UTC
-};
+import { AuditSecretTable } from "./AuditSecretTable";
+import { formatDate } from "@/utils/dateUtils";
 
 const getDaysBetweenDates = (start: string, end: string) => {
   const ONE_DAY_IN_MILLISECONDS =
     ONE_SECOND_IN_MILLISECONDS * ONE_MINUTE_IN_SECONDS * 60 * 24;
   return Math.round(
     (new Date(end).getTime() - new Date(start).getTime()) /
-      ONE_DAY_IN_MILLISECONDS
+    ONE_DAY_IN_MILLISECONDS
   );
 };
 
 const isDateFromToday = (dateStr: string) => {
-  const today = toYYYYMMDD(new Date());
-  const date = toYYYYMMDD(new Date(dateStr));
+  const today = formatDate(new Date(), { format: 'isoUTC' });
+  const date = formatDate(new Date(dateStr), { format: 'isoUTC' });
   return today === date;
 };
 
@@ -72,76 +63,19 @@ const getTimeRangeFromDays = (days: number | null): TimeRange => {
 };
 
 export default function Audit() {
-  const columnHelper = createColumnHelper<AuditTableData>();
-
-  const columns = useMemo(
-    () => [
-      columnHelper.accessor("name", {
-        header: "Secret",
-        cell: (info) => <strong>{info.getValue() || "Unknown Secret Name"}</strong>,
-      }),
-      columnHelper.accessor("providerName", {
-        header: "Provider",
-        cell: (info) => info.getValue() || "Unknown Provider Name",
-      }),
-      columnHelper.accessor("lastRotation", {
-        header: "Last Rotation",
-        cell: (info) => (
-          <span className="font-mono">
-            {new Date(info.getValue()).toLocaleDateString("en-US", {
-              month: "2-digit",
-              day: "2-digit",
-              year: "numeric",
-            }) || "Unknown last rotation"}
-          </span>
-        ),
-      }),
-      columnHelper.accessor("lastAccess", {
-        header: "Last Access",
-        cell: (info) => (
-          <span className="font-mono">
-            {new Date(info.getValue()).toLocaleDateString("en-US", {
-              month: "2-digit",
-              day: "2-digit",
-              year: "numeric",
-            }) || "Unknown last access"}
-          </span>
-        ),
-      }),
-      columnHelper.accessor("duplicatesAmount", {
-        header: "Duplicates",
-        cell: (info) => info.getValue() || "Unknown duplicates amount",
-      }),
-      columnHelper.accessor("accessorsAmount", {
-        header: "Accessors",
-        cell: (info) => info.getValue() || "Unknown accessors amount",
-      }),
-      columnHelper.accessor("policiesAmount", {
-        header: "Policy compliance",
-        cell: (info) => {
-          return (
-            <div className="flex gap-2 w-full items-center justify-between">
-              {info.getValue() || "Unknown policies amount" }{" "}
-              {!info.row.original.fullCompliant && (
-                <LucideAlertCircle className="text-orange-500" />
-              )}
-            </div>
-          );
-        },
-      }),
-    ],
-    [columnHelper]
-  );
-
   const [bashCommand, setBashCommand] = useState("");
   const [manifestCommand, setManifestCommand] = useState("");
   const [isListenerInstallDialogOpen, setIsListenerInstallDialogOpen] = useState(false);
-  const [isFiltersDialogOpen, setIsFiltersDialogOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const [isTenantListenerCreated, setIsTenantListenerCreated] = useState(false);
   const [createTenantListenerError, setCreateTenantListenerError] = useState<AxiosError<ApiHttpError> | null>(null);
   const [isAuditListenerCreated, setIsAuditListenerCreated] = useState(false);
   const [createAuditListenerError, setCreateAuditListenerError] = useState<AxiosError<ApiHttpError> | null>(null);
+  const [timeUnit, setTimeUnit] = useState<TimeUnit>(() => {
+    const initialTimeUnit = searchParams.get("chartsTimeUnit")
+    if (!initialTimeUnit) return "day";
+    return initialTimeUnit as TimeUnit;
+  })
   const [currentToggledTimeRange, setCurrentToggledTimeRange] = useState<number | null>(() => {
     const startDate = searchParams.get("chartsStartDate");
     const endDate = searchParams.get("chartsEndDate");
@@ -159,19 +93,6 @@ export default function Audit() {
     // Only return a value if it matches one of our predefined ranges
     return TIME_RANGES.find((r) => r.days === diffDays)?.days ?? null;
   });
-
-  const initialFilters = useMemo(() => {
-    return {
-      provider: searchParams.getAll("provider"),
-      policy: searchParams.get("policy") ?? undefined,
-      secretName: searchParams.get("secretName") ?? undefined,
-      policyStatus: searchParams.get("policyStatus") ?? undefined,
-      duplicates: searchParams.get("duplicates") ?? undefined,
-      lastAccess: searchParams.get("lastAccess") ?? undefined,
-      lastRotation: searchParams.get("lastRotation") ?? undefined,
-      accessors: searchParams.get("accessors") ?? undefined,
-    } as FilterSchema;
-  }, [searchParams]);
 
   // TODO remove mock https://github.com/external-secrets-inc/web-ui/issues/115
   const { data: tenantListenersData } = useGetTenantListeners(false, {
@@ -283,7 +204,7 @@ export default function Audit() {
   useEffect(() => {
     if (!tenantListener.id) return;
 
-    if(!isSuccessAuditListener && fetchAuditListenerError?.status != 404) return;
+    if (!isSuccessAuditListener && fetchAuditListenerError?.status != 404) return;
 
     if (!auditListener.listenerID) {
       createAuditListener(defaultAuditListenerPayload);
@@ -292,40 +213,6 @@ export default function Audit() {
       setCreateAuditListenerError(null);
     }
   }, [tenantListener.id, auditListener.listenerID, createAuditListener, defaultAuditListenerPayload, isSuccessAuditListener, tenantListenersData, fetchAuditListenerError]);
-
-  const {
-    data: secretTableData,
-    refetch: listenerDataRefetch,
-    isLoading: isLoadingSecretTableData,
-    isError: isErrorSecretTableData,
-    isRefetchError: isRefetchErrorSecretTableData,
-    error: secretTableDataError,
-  } = useGetDashboarSecretTable(false, auditListener?.listenerID || '', {
-    refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
-    refetchIntervalInBackground: true,
-    enabled: !!auditListener?.listenerID
-  });
-
-  const listenerSecretTableData = useMemo(() => {
-    if (!secretTableData)
-      return {
-        secretsData: [],
-        secretsNames: [],
-        policiesNames: [],
-        providers: [],
-      };
-
-    return secretTableData;
-  }, [secretTableData]);
-
-  useEffect(() => {
-    if (!(secretTableDataError || isRefetchErrorSecretTableData)) return;
-
-    handleDefaultApiHttpError(
-      secretTableDataError,
-      "Error while fetching audit listener data"
-    );
-  }, [secretTableDataError, isErrorSecretTableData, isRefetchErrorSecretTableData]);
 
   const { mutate: createTenantInstallationToken, data: tenantInstallationToken } = useCreateTenantInstallationToken(
     false,
@@ -389,38 +276,6 @@ export default function Audit() {
     setIsListenerInstallDialogOpen(isOpen);
   };
 
-  const handleFiltersDialogOpenChange = (isOpen: boolean) => {
-    setIsFiltersDialogOpen(isOpen);
-  };
-
-  const handleFilterChange = (selectedFilters: FilterSchema) => {
-    setSearchParams((prevParams) => {
-      // First, remove all existing filter parameters specifically to avoid stale values
-      filterSchema.keyof().options.forEach((key) => prevParams.delete(key));
-
-      // Then add new filter values if they exist
-      for (const [key, value] of Object.entries(selectedFilters)) {
-        if (!value) continue; // Skip unset values
-
-        if (Array.isArray(value)) {
-          // For array values (like providers), set each value as a separate entry
-          // TODO: Consider if we should use a single key with delimiters for each value instead
-          if (value.length) {
-            value.forEach((value) => prevParams.append(key, value));
-          }
-        } else {
-          // For single values, just set them directly
-          prevParams.set(key, value);
-        }
-      }
-
-      return prevParams;
-    });
-
-    handleFiltersDialogOpenChange(false);
-    listenerDataRefetch();
-  };
-
   useEffect(() => {
     if (!isTenantListenerCreated) return;
 
@@ -429,20 +284,33 @@ export default function Audit() {
     }
   }, [isListenerInstallDialogOpen, auditListener.listenerID, isTenantListenerCreated]);
 
+  const calculateTimeUnit = (days: number | null) => {
+    if (!days) return "day";
+    if (days <= 7) return "hour"
+    if (days <= 30) return "day"
+    if (days <= 90) return "week"
+
+    return "month"
+  }
+
   const handleTimeRangeChange = (days: number | null) => {
     setCurrentToggledTimeRange(days);
+    const chartsTimeUnit = calculateTimeUnit(days);
+    setTimeUnit(chartsTimeUnit);
 
     setSearchParams((prevParams) => {
       if (!days) {
         prevParams.delete("chartsStartDate");
         prevParams.delete("chartsEndDate");
+        prevParams.delete("chartsTimeUnit");
       } else {
         const end = new Date();
         const start = new Date(end);
         start.setDate(end.getDate() - days);
 
-        prevParams.set("chartsStartDate", toYYYYMMDD(start));
-        prevParams.set("chartsEndDate", toYYYYMMDD(end));
+        prevParams.set("chartsStartDate", formatDate(start, { format: 'isoDateOnlyUTC' }));
+        prevParams.set("chartsEndDate", formatDate(end, { format: 'isoDateOnlyUTC' }));
+        prevParams.set("chartsTimeUnit", chartsTimeUnit);
       }
       return prevParams;
     });
@@ -571,12 +439,14 @@ export default function Audit() {
               timeRange={getTimeRangeFromDays(currentToggledTimeRange)}
               startDate={chartsStartDate}
               endDate={chartsEndDate}
-              />
+              timeUnit={timeUnit}
+            />
             <AuditTimelineProblems
               listenerID={tenantListener.id}
               timeRange={getTimeRangeFromDays(currentToggledTimeRange)}
               startDate={chartsStartDate}
               endDate={chartsEndDate}
+              timeUnit={timeUnit}
             />
           </>
         ) : null}
@@ -592,44 +462,9 @@ export default function Audit() {
         listenerID={auditListener.listenerID}
       />
 
-      <div className="flex items-center justify-between pt-4">
-        <h2 className="font-bold">All Secrets</h2>
-        <Dialog
-          open={isFiltersDialogOpen}
-          onOpenChange={handleFiltersDialogOpenChange}
-        >
-          <DialogTrigger asChild>
-            <Button
-              size="icon"
-              variant="outline"
-              className="self-center min-[260px]:self-end"
-              aria-label="Filters"
-              title="Filters"
-            >
-              <LucideFilter />
-            </Button>
-          </DialogTrigger>
-          <FilterDialogForm
-            initialValues={initialFilters}
-            onSubmit={(data) => {
-              handleFilterChange(data);
-              handleFiltersDialogOpenChange(false);
-            }}
-            secretsNames={listenerSecretTableData.secretsNames}
-            policiesNames={listenerSecretTableData.policiesNames}
-            providers={listenerSecretTableData.providers}
-          />
-        </Dialog>
-      </div>
-
-      <DataProvider
-        data={listenerSecretTableData.secretsData}
-        columns={columns}
-        initialSort={{ id: "lastRotation", desc: true }}
-        isLoading={isLoadingSecretTableData}
-      >
-        <DataTable />
-      </DataProvider>
+      <AuditSecretTable
+        listenerID={auditListener.listenerID}
+      />
     </div>
   );
 }

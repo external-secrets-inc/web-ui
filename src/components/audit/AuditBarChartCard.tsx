@@ -1,4 +1,4 @@
-import { Bar, BarChart, XAxis, YAxis, LabelList } from "recharts"
+import { Bar, BarChart, XAxis, YAxis, LabelList, CartesianGrid } from "recharts"
 import { LucideAlertCircle } from "lucide-react"
 import {
   Card,
@@ -22,12 +22,14 @@ const CHART_COLORS = [
   "hsl(var(--chart-3))",
   "hsl(var(--chart-4))",
   "hsl(var(--chart-5))",
+  "hsl(var(--chart-6))",
 ]
 
 type ChartData = {
   kind: string
   amount: number
   label: string
+  providerType?: string
   tooltipLabel?: string
 }
 
@@ -41,6 +43,12 @@ type BarChartCardProps = {
   isLoading?: boolean
   sortData?: boolean
 }
+
+const BackgroundGridWrapper = ({ children }: { children: React.ReactNode }) => (
+  <div className="h-[264px] flex gap-2 items-center justify-center bg-[linear-gradient(hsl(var(--border)/0.5)_1px,transparent_1px),linear-gradient(90deg,hsl(var(--border)/0.5)_1px,transparent_1px)] bg-[size:calc((100%+1px)/7)_calc(100%/7)] bg-[-1px_top]">
+    {children}
+  </div>
+)
 
 export function AuditBarChartCard({
   title,
@@ -66,7 +74,7 @@ export function AuditBarChartCard({
           item.kind,
           {
             label: item.label,
-            tooltipLabel: item.tooltipLabel,
+            tooltipLabel: item.tooltipLabel ? item.tooltipLabel.concat(item.providerType ? ` (${item.providerType})` : '') : '',
             color: CHART_COLORS[index % CHART_COLORS.length],
           }
         ])
@@ -91,47 +99,49 @@ export function AuditBarChartCard({
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-      <CardContent className="h-full grid items-center">
+      <CardContent className="p-0">
         {
           error ?
-          <div className="flex gap-2 items-center justify-center -mt-12">
+          <BackgroundGridWrapper>
             <LucideAlertCircle className="text-destructive"/>
             {errorMessage}
-          </div>
-
+          </BackgroundGridWrapper>
         : isLoading ?
-          <Loader size="lg" className="h-72 place-self-center -mt-12"/>
-
-        : !data ?
-          <div className="flex gap-2 items-center justify-center -mt-12">
-            <LucideAlertCircle className="text-destructive"/>
+          <BackgroundGridWrapper>
+            <Loader size="lg"/>
+          </BackgroundGridWrapper>
+        : (!data || data.length === 0) ?
+          <BackgroundGridWrapper>
             No data available
-          </div>
-
+          </BackgroundGridWrapper>
         : <ChartContainer
             config={config}
-            className="w-full max-h-60"
+            className="w-full max-h-[264px]"
           >
             <BarChart
               accessibilityLayer
               data={data}
               layout="vertical"
-              margin={{
-                left: 40,
-                right: 40,
-              }}
+              margin={{ top: 0, right: 48, bottom: 6, left: 32 }}
             >
               <YAxis
                 dataKey="kind"
                 type="category"
                 tickLine={false}
-                tickMargin={10}
+
                 axisLine={false}
                 tickFormatter={(value) =>
                   (config[value as keyof typeof config]?.label ?? '').toString()
                 }
               />
-              <XAxis dataKey="amount" type="number" />
+              <CartesianGrid horizontal={false} />
+              <XAxis
+                dataKey="amount"
+                type="number"
+                axisLine={false}
+                tickLine={false}
+
+              />
               <ChartTooltip
                 cursor={false}
                 content={

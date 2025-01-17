@@ -9,6 +9,7 @@ import { useAuditMock } from '@/services/audit/context/AuditMockContext';
 interface QueryOptions {
   startDate: string;
   endDate: string;
+  timeUnit: string;
 }
 
 const getAuditProviderTimelineStats = async (mock: boolean, listenerID: string, options: QueryOptions, signal: AbortSignal) => {

@@ -1,0 +1,65 @@
+import { format, toZonedTime } from 'date-fns-tz';
+
+/**
+ * Formatting options for the date utility.
+ */
+type FormatOptions = 'isoUTC' | 'isoDateOnlyUTC' | 'full' | 'timeOnly' | 'americanDate' | 'readableDate' | 'shortDate';
+type TimeZoneOptions = string;
+
+/**
+ * Formats a date/time to UTC or local format.
+ * @param dateInput - The date input (ISO string, number, or Date object).
+ * @param options - Formatting options.
+ * @returns The formatted date string.
+ */
+export const formatDate = (
+  dateInput: string | number | Date | null | undefined,
+  options: { format: FormatOptions; timeZone?: TimeZoneOptions } = { format: 'isoUTC' }
+): string => {
+  if (dateInput === null || dateInput === undefined || (typeof dateInput === 'string' && dateInput.trim() === '')) {
+    return 'Loading...';  // Empty or null-like inputs return fallback
+  }
+
+  const date = new Date(dateInput);
+  if (isNaN(date.getTime())) {
+    console.error('Invalid date input');
+    return 'Invalid date';
+  }
+
+  // Always use UTC for `isoUTC` and `isoDateOnlyUTC` formats
+  const useUTC = options.format === 'isoUTC' || options.format === 'isoDateOnlyUTC';
+
+  const timeZone = options.timeZone || 'local';
+  const zonedDate = useUTC ? toZonedTime(date, 'UTC') : timeZone === 'local' ? date : toZonedTime(date, timeZone);
+
+  let formatString: string;
+  switch (options.format) {
+    case 'full':
+      formatString = 'MMM/dd/yyyy HH:mm'; // Example: Jan/10/2025 12:34
+      break;
+    case 'timeOnly':
+      formatString = 'HH:mm:ss'; // Example: 12:34:56
+      break;
+    case 'americanDate':
+      formatString = 'MM/dd/yyyy'; // Example: 01/10/2025
+      break;
+    case 'readableDate':
+      formatString = 'MMM dd, yyyy, hh:mm a'; // Example: Dec 28, 2024, 02:09 AM
+      break;
+    case 'shortDate':
+      formatString = 'MMM dd'; // Example: Dec 28
+      break;
+    case 'isoUTC':
+      formatString = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"; // Example: 2025-01-10T12:34:56.000Z (always UTC)
+      break;
+    case 'isoDateOnlyUTC':
+      formatString = 'yyyy-MM-dd'; // Example: 2025-01-10 (always UTC)
+      break;
+    default:
+      console.error('Unsupported format option');
+      return 'Invalid format';
+  }
+
+  const formattedDate = format(zonedDate, formatString);
+  return formattedDate;
+};

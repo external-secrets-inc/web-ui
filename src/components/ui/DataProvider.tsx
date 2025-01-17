@@ -14,9 +14,11 @@ import { Loader } from "@/components/ui/Loader"
  * Base requirement for all data items in the table.
  * Each item must have a unique identifier for React's key prop and sorting
  * functionality. react-table will automatically use the index if no id is
- * provided, but providing one was decided to be safer.
+ * provided, but we decided to enforce it for safety.
+ *
+ * You can use `getRowId` to customize to another identifier if needed.
  */
-type DataWithId = { id: string | number }
+type WithId = { id: string | number }
 
 /**
  * Configuration for table sorting.
@@ -36,6 +38,7 @@ type TableState<TData> = {
   sorting: SortingState
   globalFilter: string
   isLoading?: boolean
+  emptyMessage: React.ReactNode
 }
 
 /**
@@ -51,24 +54,44 @@ type TableActions = {
  * Configuration options for the DataProvider.
  * @template TData - Type of data items being displayed
  */
-type ProviderConfig<TData extends DataWithId> = {
+type ProviderConfig<TData extends object> = {
   /**
    * Array of data items to display
    * @see {@link https://tanstack.com/table/v8/docs/api/core/table#data Data API}
-   * */
+   */
   data: TData[]
 
   /**
-   * Column definitions for the table. Memoizing this array is super recommended.
-   * @see {@link https://tanstack.com/table/v8/docs/api/core/table#columns Column API}
-   * */
+   * Column definitions for the table. Memoizing this array is recomended by
+   * react-table.
+   * @see
+   * {@link https://tanstack.com/table/v8/docs/api/core/table#columns Column API}
+   */
   columns: ColumnDef<TData, any>[] // eslint-disable-line @typescript-eslint/no-explicit-any
 
   /**
    * Initial sort configuration
    * @default{ id: 'id', desc: false }
-   * */
+   */
   initialSort?: SortConfig
+
+  /** Loading state that shows an inner spinner when true */
+  isLoading?: boolean
+
+  /**
+   * Custom message to display when there is no data
+   * Useful for providing more user-friendly empty state messages based on
+   * current data type and context
+   * @default "No data available"
+   */
+  emptyMessage?: React.ReactNode
+
+  /**
+   * Function to get unique row identifier.
+   * If not provided, data items must have an 'id' property.
+   * @see {@link https://tanstack.com/table/v8/docs/api/core/table#getrowid GetRowId API}
+   */
+  getRowId?: ((row: TData) => string) | undefined
 
   /**
    * Configuration options from `@tanstack/react-table`
@@ -81,21 +104,22 @@ type ProviderConfig<TData extends DataWithId> = {
     | 'getCoreRowModel'
     | 'getSortedRowModel'
     | 'getFilteredRowModel'
+    | 'getRowId'
     | 'state'
     | 'onSortingChange'
     | 'onGlobalFilterChange'
   >
-  /** Loading state that shows an inner spinner when true */
-  isLoading?: boolean
-}
-
+} & (
+  | { getRowId: (row: TData) => string }
+  | { data: Array<TData & WithId> }
+)
 /**
  * Combined type for all values provided by the DataProvider context.
  * Merges state, actions and the table instance for full control.
  */
-type ProviderContextValue<TData> = TableState<TData> &
+type ProviderContextValue<TData extends object> = TableState<TData> &
   TableActions & {
-    table: ReturnType<typeof useReactTable>
+    table: ReturnType<typeof useReactTable<TData>>
   }
 
 /**
@@ -114,7 +138,7 @@ const DEFAULTS = {
 } as const;
 
 // Context
-const DataProviderContext = React.createContext<ProviderContextValue<any>>({} as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+const DataProviderContext = React.createContext<ProviderContextValue<object>>({} as ProviderContextValue<object>)
 
 /**
  * Custom hook that manages table state and configuration from a single source.
@@ -124,12 +148,14 @@ const DataProviderContext = React.createContext<ProviderContextValue<any>>({} as
  * @param config - Configuration options for the table
  * @returns Memoized context value with state, actions and table instance
  */
-function useDataProvider<TData extends DataWithId>({
+function useDataProvider<TData extends object>({
   data,
   columns,
   initialSort = DEFAULTS.sort,
+  getRowId,
   tableOptions = {},
-  isLoading = false
+  isLoading = false,
+  emptyMessage = "No data available"
 }: ProviderConfig<TData>) {
   // State
   const [sorting, setSorting] = React.useState<SortingState>([initialSort])
@@ -158,11 +184,16 @@ function useDataProvider<TData extends DataWithId>({
       return DEFAULTS.empty as TData[];
     }
 
+    // Validate if row id exists when getRowId is not provided
+    if (!getRowId && data.length > 0 && !('id' in data[0])) {
+      console.error('[DataProvider] Data items must have an "id" property, or provide a getRowId function passing an existing unique property. eg: getRowId={(row) => row.myUniqueExistingId}');
+    }
+
     return data;
-  }, [data]);
+  }, [data, getRowId]);
 
   // Table instance
-  const table = useReactTable({
+  const table = useReactTable<TData>({
     data: safeData,
     columns,
     state: { sorting, globalFilter },
@@ -172,6 +203,7 @@ function useDataProvider<TData extends DataWithId>({
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    ...(getRowId ? { getRowId } : {}),
     ...tableOptions
   })
 
@@ -183,12 +215,13 @@ function useDataProvider<TData extends DataWithId>({
     sorting,
     globalFilter,
     isLoading,
+    emptyMessage,
     // Actions
     setSorting,
     setGlobalFilter,
     // Table
     table
-  }), [safeData, columns, sorting, globalFilter, table, isLoading]) // Only add State and Table as dependencies
+  }), [safeData, columns, sorting, globalFilter, table, isLoading, emptyMessage]) // Only add State and Table as dependencies
 }
 
 /**
@@ -197,13 +230,13 @@ function useDataProvider<TData extends DataWithId>({
  * Can be used to create custom data grids, tables, and other data-driven
  * components as its children.
  */
-function DataProvider<TData extends DataWithId>({
+function DataProvider<TData extends object>({
   children,
   ...config
 }: ProviderConfig<TData> & { children: React.ReactNode }) {
   return (
     <DataProviderContext.Provider
-      value={useDataProvider(config) as ProviderContextValue<TData>} // TODO[cfviotti]: Fix type assertion (and every other `any` that's here. PS: It's harder than it looks)
+      value={useDataProvider(config) as unknown as ProviderContextValue<object>} // TODO[cfviotti]: Fix type assertion (and every other `any` that's here. PS: It's harder than it looks)
     >
       {children}
     </DataProviderContext.Provider>
@@ -280,7 +313,8 @@ const DataSort = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEl
         </Button>
       </div>
     )
-})
+  }
+)
 DataSort.displayName = "DataSort"
 
 /**
@@ -337,7 +371,7 @@ interface DataTableProps<TMeta = any> extends React.HTMLAttributes<HTMLDivElemen
  */
 const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
   ({ className, onRowClick, rowsAppend, meta, ...props }, ref) => {
-    const { table, isLoading } = React.useContext(DataProviderContext)
+    const { table, isLoading, emptyMessage } = React.useContext(DataProviderContext)
 
     // Memoized to prevent unnecessary re-renders and potential infinite loops
     const tableOptions = React.useMemo(() => ({
@@ -384,7 +418,7 @@ const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
             { isLoading ?
               <TableRow>
                 <TableCell colSpan={table.getAllColumns().length}>
-                  <div className="flex justify-center">
+                  <div className="flex justify-center items-center h-5">
                     <Loader />
                   </div>
                 </TableCell>
@@ -392,14 +426,20 @@ const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
 
             : table?.getRowModel()?.rows?.length === 0 ?
               <TableRow>
-                <TableCell colSpan={table.getAllColumns().length} className="text-center">
-                  <p className="text-sm text-muted-foreground">No data available</p>
+                <TableCell colSpan={table.getAllColumns().length}>
+                  <div className="flex justify-center items-center h-5">
+                    <div className="text-sm text-muted-foreground">{emptyMessage}</div>
+                  </div>
                 </TableCell>
               </TableRow>
 
             : <>
                 {table?.getRowModel()?.rows?.map((row) => (
-                  <TableRow key={row.id} onClick={() => onRowClick?.(row.original)} className="cursor-pointer">
+                  <TableRow
+                    key={row.id}
+                    onClick={() => onRowClick?.(row.original)}
+                    className={onRowClick && "cursor-pointer hover:bg-muted/50"}
+                  >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}

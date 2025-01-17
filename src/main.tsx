@@ -25,6 +25,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import AuditWrapper from "@/components/audit/AuditWrapper";
 import OrgRedirector from "./components/OrgRedirector";
 import { Loader } from "@/components/ui/Loader";
+import { SubscriptionProvider } from '@/context/SubscriptionContext';
 
 const queryClient = new QueryClient()
 
@@ -65,7 +66,9 @@ const router = createBrowserRouter([
       <AxiosInterceptor>
         <RequireActiveUser loginFallbackPath="/login" inactiveFallbackPath="/verify">
           <OrgRedirector>
-            <App />
+            <SubscriptionProvider>
+              <App />
+            </SubscriptionProvider>
           </OrgRedirector>
         </RequireActiveUser>
       </AxiosInterceptor>

@@ -3,9 +3,10 @@ import { z } from "zod";
 export type ListenerStatus = "PENDING" | "OFFLINE" | "ACTIVE";
 
 export const filterSchema = z.object({
-  provider: z.array(z.string()),
-  policy: z.string().optional(),
-  secretName: z.string().optional(),
+  providers: z.array(z.string()),
+  policyIDs: z.array(z.string()),
+  secretIDs: z.array(z.string()),
+  search: z.string().optional(),
   policyStatus: z.string().optional(),
   duplicates: z.string().optional(),
   lastAccess: z.string().optional(),
@@ -15,49 +16,43 @@ export const filterSchema = z.object({
 
 export type FilterSchema = z.infer<typeof filterSchema>;
 
-export interface AuditResponseData {
-  secretsData: AuditTableData[];
-  secretsNames: {
-    label: string;
-    value: string;
-    icon?: React.ComponentType<{ className?: string }>;
-  }[];
-  policiesNames: {
-    label: string;
-    value: string;
-    icon?: React.ComponentType<{ className?: string }>;
-  }[];
-  providers: {
-    label: string;
-    value: string;
-    icon?: React.ComponentType<{ className?: string }>;
-  }[];
-}
-
-export interface AuditTableData {
+export interface AuditSecretTableData {
   id: string;
   name: string;
   provider: string;
   providerName: string;
-  lastRotation: string;
-  policiesAmount: string;
+  lastRotation: string | null;
+  compliantPoliciesAmount: number;
+  policiesAmount: number;
   fullCompliant: boolean;
   duplicatesAmount: number;
-  lastAccess: string;
+  lastAccess: string | null;
   accessorsAmount: number;
+}
+
+export interface AuditSecretData {
+  id: string;
+  name: string;
+  providerID: string;
+  providerName: string;
   duplicates: {
     id: string;
-    provider: string;
+    name: string;
+    providerID: string;
+    providerName: string;
   }[];
   accessors: {
     id: string;
-    access_time: string;
+    name: string;
+    accessTime: string;
   }[];
   policies: {
-      id: string;
-      name: string;
-      status: string;
-  }[]
+    id: string;
+    name: string;
+    status: "compliant" | "non_compliant" | "error";
+  }[];
+  lastAccess: string | null;
+  lastRotation: string | null;
 }
 
 export interface AuditListener {
@@ -81,6 +76,8 @@ export interface TenantListener {
 }
 
 export type TimeRange = "Now" | "7D" | "30D" | "90D" | null;
+
+export type TimeUnit = "hour" | "day" | "week" | "month";
 
 export interface TimeRangeOption {
   days: number;
@@ -154,6 +151,8 @@ export interface CreateProviderPayload {
   };
 }
 
+export type EditProviderPayload = Omit<CreateProviderPayload, "listenerID" | "tenantID">;
+
 export interface CreateTenantListenerPayload {
   name: string;
   tags: {
@@ -178,6 +177,7 @@ export interface AddProviderFieldSchema {
 
 export interface AddProviderFormValues {
   providerName: string;
+  backendIdentifier: string;
   providerType: string;
   [key: string]: AddProviderFieldValue;
 }
@@ -209,3 +209,5 @@ export interface AuditTimelineEntry {
   date: string;
   stats: AuditMetric[];
 }
+
+export type SecretDetails = AuditSecretTableData;
