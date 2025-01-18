@@ -8,6 +8,7 @@ import {
   LucideAlertCircle,
   LucideCheck,
   LucideClock,
+  LucideNetwork,
   LucideRotateCcw,
   LucideShieldCheck,
   LucideSquareAsterisk,
@@ -18,10 +19,54 @@ import { AuditSecretData } from "./Audit.interfaces";
 import { formatDate } from "@/utils/dateUtils";
 import useGetAuditSecretData from "@/services/audit/queries/useGetAuditSecretData";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { Loader } from "@/components/ui/Loader"
 import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
+import useGetLineagePath from "@/services/lineage/queries/useGetLineagePath";
+
+import { Background, Controls, ReactFlow, useReactFlow,  type Node, type Edge,} from '@xyflow/react';
+
+import '@xyflow/react/dist/style.css';
+import dagre from 'dagre';
+import SecretNode from "@/components/lineage/SecretNode";
+import SecretEdge from "@/components/lineage/SecretEdge";
+
+const nodeWidth = 300;
+const nodeHeight = 125;
+
+const nodeTypes = {
+  secretNode: SecretNode
+}
+
+const edgeTypes = {
+  secretEdge: SecretEdge
+}
+
+const dagreGraph = new dagre.graphlib.Graph();
+dagreGraph.setDefaultEdgeLabel(() => ({}));
+dagreGraph.setGraph({ rankdir: 'TB' }); // TB: Top-Bottom (pode ser 'LR', 'RL', etc.)
+
+const applyLayout = (nodes, edges) => {
+  nodes.forEach((node) => {
+    dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+  });
+
+  edges.forEach((edge) => {
+    dagreGraph.setEdge(edge.source, edge.target);
+  });
+
+  dagre.layout(dagreGraph);
+
+  return nodes.map((node) => {
+    const position = dagreGraph.node(node.id);
+    return {
+      ...node,
+      position: { x: position.x - nodeWidth / 2, y: position.y - nodeHeight / 2 },
+    };
+  });
+};
+
 
 interface AuditSecretDetailsDialogProps {
   secretId: string | null;
@@ -42,6 +87,11 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
     refetchIntervalInBackground: true,
     enabled: !!secretId
   });
+  const { data: lineageData } = useGetLineagePath(false, secretId ? secretId : '', {
+    enabled: !!secretId
+  })
+  const { fitView } = useReactFlow();
+
 
   useEffect(() => {
     if (!(secretDataError)) return;
@@ -76,8 +126,27 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
     }
   }, [secretId, secretRefetch]);
 
-  if (!secretId) return null;
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [edges, setEdges] = useState<Edge[]>([]);
+  
+  useEffect(() => {
+    if (!lineageData) return;
+    
+    const nodes = lineageData.nodes.map((node) => {
+      return {id: node.secretID, type: "secretNode", data: {label: node.secretName, active: node.secretID === secretId, ...node}, position: {x: 0, y: 0}}
+    })
+    const edges = lineageData.links.map((link) => {
+      return {id: `${link.fromSecret}-${link.toSecret}`, source: link.fromSecret, target: link.toSecret, animated: true, label: `duplicated on ${new Date(link.createdAt).toLocaleString()}`}
+    })
+    setNodes(applyLayout(nodes, edges))
+    setEdges(edges)
 
+    fitView()
+    
+  }, [lineageData])
+
+  if (!secretId) return null;
+  console.log("edges", edges)
   return (
     <Dialog open={!!secretId} onOpenChange={onOpenChange}>
       <DialogContent className="w-[max(50%,640px)] max-w-[calc(100%-theme(spacing.12))] max-h-[calc(100%-theme(spacing.12))] overflow-auto grid-rows-[auto_minmax(100px,1fr)_auto] grid-cols-[minmax(100%,1fr)]">
@@ -185,6 +254,35 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
                         </AlertDescription>
                       </Alert>
                     )}
+                  </section>
+
+                  <Separator />
+
+                  <section aria-label="Lineage" className="space-y-2">
+                    <h3 className="font-semibold mb-3 flex items-center gap-2">
+                      <LucideNetwork />
+                      Lineage
+                    </h3>
+                    <div style={{ width: '100%', height: '50vh' }}>
+                      <ReactFlow 
+                        nodes={nodes} 
+                        edges={edges} 
+                        fitView={true}
+                        onNodesChange={fitView}
+                        nodeTypes={nodeTypes}
+                        edgeTypes={edgeTypes}
+                        nodesDraggable={false}        // Desativa movimentação de nós
+                        nodesConnectable={false}      // Desativa conexões entre nós
+                        elementsSelectable={false}    // Desativa seleção de elementos
+                        panOnDrag={true}             // Desativa arrastar o grafo
+                        zoomOnScroll={false}          // Desativa zoom
+                        zoomOnPinch={false}           // Desativa zoom via pinça (touch)
+                        zoomOnDoubleClick={false}     // Desativa zoom via duplo clique
+                      >
+                        <Controls />
+                        <Background gap={12} size={1} />
+                      </ReactFlow>
+                    </div>
                   </section>
 
                   <Separator />
