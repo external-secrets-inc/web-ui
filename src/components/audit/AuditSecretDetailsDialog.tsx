@@ -28,7 +28,7 @@ import useGetLineagePath from "@/services/lineage/queries/useGetLineagePath";
 import { Background, Controls, ReactFlow, useReactFlow,  type Node, type Edge,} from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
-import dagre from 'dagre';
+import dagre from '@dagrejs/dagre';
 import SecretNode from "@/components/lineage/SecretNode";
 import SecretEdge from "@/components/lineage/SecretEdge";
 
