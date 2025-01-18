@@ -48,5 +48,5 @@ export function handleDefaultApiHttpError(error: AxiosError<ApiHttpError>, defau
     }
   }
 
-  return toast.error(fastApiError || error.response?.data?.errors?.body || defaultMessage)
+  return toast.error(defaultMessage || fastApiError || error.response?.data?.errors?.body)
 }
