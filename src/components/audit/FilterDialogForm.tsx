@@ -27,7 +27,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { MultiSelect } from "../ui/MultiSelect";
-import { filterSchema, FilterSchema } from "./Audit.interfaces";
+import { AuditSecretData, filterSchema, FilterSchema } from "./Audit.interfaces";
 import useGetAuditProviders from "@/services/audit/queries/useGetAuditProviders";
 import useGetPolicies from "@/services/audit/queries/useGetPolicies";
 import useAuthUser from "react-auth-kit/hooks/useAuthUser";
@@ -89,47 +89,79 @@ const BooleanFilter = ({
   />
 );
 
-const DateFilter = ({
+type DateKeys = Extract<
+  keyof FilterSchema,
+  "startLastAccess" | "endLastAccess" | "startLastRotation" | "endLastRotation"
+>;
+
+const DateRangeFilter = ({
   form,
-  name,
+  names,
   label,
   minDate,
   maxDate,
 }: {
   form: UseFormReturn<FilterSchema>;
-  name: Extract<keyof FilterSchema, "lastAccess" | "lastRotation">;
+  names: { start: DateKeys; end: DateKeys };
   label: string;
   minDate?: string;
   maxDate?: string;
 }) => {
   return (
-    <FormField
-      control={form.control}
-      name={name}
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>{label}</FormLabel>
-          <FormControl>
-            <Input
-              type="date"
-              min={minDate}
-              max={maxDate}
-              className="mt-2"
-              value={
-                field.value && !isNaN(Date.parse(field.value)) // Pre-fill if the value is a valid date
-                  ? field.value
-                  : ""
-              }
-              onChange={(e) => field.onChange(e.target.value)}
-            />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
+    <FormItem>
+      <FormLabel>{label}</FormLabel>
+      <div className="flex gap-2">
+        {/* Start Date Input */}
+        <FormField
+          control={form.control}
+          name={names.start}
+          render={({ field }) => (
+            <FormControl>
+              <Input
+                type="date"
+                min={minDate}
+                max={maxDate}
+                className="mt-2"
+                value={
+                  field.value && !isNaN(Date.parse(field.value))
+                    ? field.value
+                    : ""
+                }
+                onChange={(e) => field.onChange(e.target.value)}
+                placeholder="Start Date"
+              />
+            </FormControl>
+          )}
+        />
+        {/* End Date Input */}
+        <FormField
+          control={form.control}
+          name={names.end}
+          render={({ field }) => (
+            <FormControl>
+              <Input
+                type="date"
+                min={minDate}
+                max={maxDate}
+                className="mt-2"
+                value={
+                  field.value && !isNaN(Date.parse(field.value))
+                    ? field.value
+                    : ""
+                }
+                onChange={(e) => field.onChange(e.target.value)}
+                placeholder="End Date"
+              />
+            </FormControl>
+          )}
+        />
+      </div>
+      <FormMessage />
+    </FormItem>
   );
 };
 
+type ArrayKeys = Extract<keyof FilterSchema, "providerIDs" | "secretIDs" | "policyIDs" | "duplicateIDs" | "accessorNames">
 const MultiSelectFilter = ({
   formControl,
   name,
@@ -138,7 +170,7 @@ const MultiSelectFilter = ({
   placeholder,
 }: {
   formControl: Control<FilterSchema>;
-  name: Extract<keyof FilterSchema, "providers" | "secretIDs" | "policyIDs">;
+  name: ArrayKeys;
   label: string;
   options: {
     label: string;
@@ -165,6 +197,29 @@ const MultiSelectFilter = ({
     )}
   />
 );
+
+function mapUniqueAccessors(auditSecrets?: AuditSecretData[]): { label: string; value: string }[] {
+  if (!auditSecrets) {
+    return []
+  }
+
+  const accessorSet = new Set<string>(); // To avoid duplicate names
+
+  // Collect all accessors
+  auditSecrets.forEach(secret => {
+    secret.accessors.forEach(accessor => {
+      if (!accessorSet.has(accessor.name)) {
+        accessorSet.add(accessor.name);
+      }
+    });
+  });
+
+  // Convert to desired format
+  return Array.from(accessorSet).map(accessorName => ({
+    label: accessorName,
+    value: accessorName
+  }));
+}
 
 const FilterDialogForm = (
   {
@@ -231,7 +286,8 @@ const FilterDialogForm = (
     policiesNames: policies?.map(policy => ({
       label: policy.name,
       value: policy.policyID,
-    })) || []
+    })) || [],
+    accessorsNames: mapUniqueAccessors(auditSecrets)
   }), [auditSecrets, providers, policies]);
 
   const handleSubmit = (data: FilterSchema) => {
@@ -241,13 +297,17 @@ const FilterDialogForm = (
 
   const handleClear = () => {
     form.reset({
-      providers: [],
+      providerIDs: [],
       policyIDs: [],
       secretIDs: [],
+      duplicateIDs: [],
+      accessorNames: [],
       policyStatus: "",
       duplicates: "",
-      lastAccess: "",
-      lastRotation: "",
+      startLastAccess: "",
+      endLastAccess: "",
+      startLastRotation: "",
+      endLastRotation: "",
       accessors: "",
     });
 
@@ -277,7 +337,7 @@ const FilterDialogForm = (
                 <MultiSelectFilter
                   key={"provider" + resetKey}
                   formControl={form.control}
-                  name="providers"
+                  name="providerIDs"
                   label="Providers"
                   options={filterOptions.providersNames}
                   placeholder="Select providers"
@@ -301,6 +361,26 @@ const FilterDialogForm = (
                   label="Policies"
                   options={filterOptions.policiesNames}
                   placeholder="Select policies"
+                />
+
+                {/* Duplicate Input */}
+                <MultiSelectFilter
+                  key={"duplicate_id" + resetKey}
+                  formControl={form.control}
+                  name="duplicateIDs"
+                  label="Duplicates"
+                  options={filterOptions.secretsNames}
+                  placeholder="Select duplicate"
+                />
+
+                {/* Accessor Input */}
+                <MultiSelectFilter
+                  key={"accessor_id" + resetKey}
+                  formControl={form.control}
+                  name="accessorNames"
+                  label="Accessors"
+                  options={filterOptions.accessorsNames}
+                  placeholder="Select accessor"
                 />
               </div>
 
@@ -334,23 +414,29 @@ const FilterDialogForm = (
                   trueItem="Contains"
                   falseItem="Does not Contain"
                 />
+
+                <DateRangeFilter
+                  form={form}
+                  names={{
+                    start: "startLastAccess",
+                    end: "endLastAccess",
+                  }}
+                  label="Last Access"
+                  minDate={filterMinDate}
+                  maxDate={filterMaxDate}
+                />
+
+                <DateRangeFilter
+                  form={form}
+                  names={{
+                    start: "startLastRotation",
+                    end: "endLastRotation",
+                  }}
+                  label="Last Rotation"
+                  minDate={filterMinDate}
+                  maxDate={filterMaxDate}
+                />
               </div>
-
-              <DateFilter
-                form={form}
-                name="lastAccess"
-                label="Last Access"
-                minDate={filterMinDate}
-                maxDate={filterMaxDate}
-              />
-
-              <DateFilter
-                form={form}
-                name="lastRotation"
-                label="Last Rotation"
-                minDate={filterMinDate}
-                maxDate={filterMaxDate}
-              />
             </div>
 
             <DialogFooter className="flex justify-end gap-4">
