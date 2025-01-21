@@ -121,7 +121,6 @@ const DateRangeFilter = ({
                 type="date"
                 min={minDate}
                 max={maxDate}
-                className="mt-2"
                 value={
                   field.value && !isNaN(Date.parse(field.value))
                     ? field.value
@@ -143,7 +142,6 @@ const DateRangeFilter = ({
                 type="date"
                 min={minDate}
                 max={maxDate}
-                className="mt-2"
                 value={
                   field.value && !isNaN(Date.parse(field.value))
                     ? field.value
@@ -229,6 +227,8 @@ const FilterDialogForm = (
   }: FilterDialogFormProps
 ) => {
   const [resetKey, setResetKey] = useState(0);
+  const [accessorsVisible, setAccessorsVisible] = useState(false);
+  const [duplicatesVisible, setDuplicatesVisible] = useState(false);
   const authUser = useAuthUser<IUserData>();
   const { handleFilterChange, isFiltersDialogOpen } = useAuditFilter();
 
@@ -317,6 +317,16 @@ const FilterDialogForm = (
   const filterMinDate = formatDate(new Date(new Date().setDate(new Date().getDate() - 90)), { format: 'isoDateOnlyUTC' }); // 90 days ago
   const filterMaxDate = formatDate(new Date(), { format: 'isoDateOnlyUTC' }); // Current date
 
+  useEffect(() => {
+    const accessorsValue = form.watch("accessors")
+    setAccessorsVisible(accessorsValue === "true" || accessorsValue === "false");
+  }, [form.watch("accessors")]);
+
+  useEffect(() => {
+    const duplicatesValue = form.watch("duplicates")
+    setDuplicatesVisible(duplicatesValue === "true" || duplicatesValue === "false");
+  }, [form.watch("duplicates")]);
+
   return (
     <DialogContent
       className="w-[max(50%,640px)] max-w-[calc(100%-theme(spacing.12))] max-h-[calc(100%-theme(spacing.12))] overflow-auto grid-rows-[auto_minmax(100px,1fr)_auto] grid-cols-[minmax(100%,1fr)]"
@@ -363,25 +373,17 @@ const FilterDialogForm = (
                   placeholder="Select policies"
                 />
 
-                {/* Duplicate Input */}
-                <MultiSelectFilter
-                  key={"duplicate_id" + resetKey}
-                  formControl={form.control}
-                  name="duplicateIDs"
-                  label="Duplicates"
-                  options={filterOptions.secretsNames}
-                  placeholder="Select duplicate"
-                />
-
                 {/* Accessor Input */}
-                <MultiSelectFilter
-                  key={"accessor_id" + resetKey}
-                  formControl={form.control}
-                  name="accessorNames"
-                  label="Accessors"
-                  options={filterOptions.accessorsNames}
-                  placeholder="Select accessor"
-                />
+                {accessorsVisible && (
+                  <MultiSelectFilter
+                    key={"accessor_id" + resetKey}
+                    formControl={form.control}
+                    name="accessorNames"
+                    label="Accessors"
+                    options={filterOptions.accessorsNames}
+                    placeholder="Select accessor"
+                  />
+                )}
               </div>
 
               <div className="grid gap-4">
@@ -396,14 +398,34 @@ const FilterDialogForm = (
                 />
 
                 {/* Duplicates */}
-                <BooleanFilter
-                  formControl={form.control}
-                  name="duplicates"
-                  label="Duplicates"
-                  placeholder="Select duplicates"
-                  trueItem="Contains"
-                  falseItem="Does not Contain"
-                />
+                <div>
+                  <FormLabel>Duplicates</FormLabel>
+                  <div className="flex gap-x-2 w-full">
+                    <div className="flex-1">
+                    <BooleanFilter
+                      formControl={form.control}
+                      name="duplicates"
+                      label=""
+                      placeholder="Select duplicates"
+                      trueItem="Contains"
+                      falseItem="Does not Contain"
+                    />
+                    </div>
+                    {/* Duplicate Input */}
+                    {duplicatesVisible && (
+                      <div className="flex-1">
+                      <MultiSelectFilter
+                        key={"duplicate_id" + resetKey}
+                        formControl={form.control}
+                        name="duplicateIDs"
+                        label=""
+                        options={filterOptions.secretsNames}
+                        placeholder="Select duplicate"
+                      />
+                      </div>
+                    )}
+                  </div>
+                </div>
 
                 {/* Accessors */}
                 <BooleanFilter
