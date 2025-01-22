@@ -110,7 +110,7 @@ const DateRangeFilter = ({
   return (
     <FormItem>
       <FormLabel>{label}</FormLabel>
-      <div className="flex gap-2 items-center">
+      <div className="flex gap-2 items-center min-w-0">
         {/* Start Date Input */}
         <FormField
           control={form.control}
@@ -118,6 +118,7 @@ const DateRangeFilter = ({
           render={({ field }) => (
             <FormControl>
               <Input
+                className="flex-1 min-w-0 w-auto"
                 type="date"
                 min={minDate}
                 max={maxDate}
@@ -140,6 +141,7 @@ const DateRangeFilter = ({
           render={({ field }) => (
             <FormControl>
               <Input
+                className="flex-1 min-w-0 w-auto"
                 type="date"
                 min={minDate}
                 max={maxDate}
@@ -345,7 +347,7 @@ const FilterDialogForm = (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="grid gap-4">
+              <div className="grid gap-4 grid-cols-1">
                 {/* Provider Filter */}
                 <MultiSelectFilter
                   key={"provider" + resetKey}
@@ -387,7 +389,7 @@ const FilterDialogForm = (
                 />
               </div>
 
-              <div className="grid gap-4">
+              <div className="grid gap-4 grid-cols-1">
                 <div className="grid grid-cols-[repeat(auto-fit,minmax(0,1fr))] gap-2 items-end">
                   {/* Duplicates */}
                   <BooleanFilter
