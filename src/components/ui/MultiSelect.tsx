@@ -276,7 +276,7 @@ export const MultiSelect = React.forwardRef<
               </div>
             ) : (
               <div className="flex items-center justify-between w-full mx-auto">
-                <span className="text-sm text-muted-foreground font-normal">
+                <span className="text-sm text-muted-foreground font-normal truncate">
                   {placeholder}
                 </span>
                 <CaretSortIcon className="h-4 ml-2 cursor-pointer text-muted-foreground opacity-50" />
@@ -285,7 +285,7 @@ export const MultiSelect = React.forwardRef<
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-[--radix-popover-trigger-width] p-0"
+          className="min-w-[--radix-popover-trigger-width] p-0"
           align="start"
           onEscapeKeyDown={() => setIsPopoverOpen(false)}
         >

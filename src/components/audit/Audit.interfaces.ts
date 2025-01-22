@@ -3,15 +3,19 @@ import { z } from "zod";
 export type ListenerStatus = "PENDING" | "OFFLINE" | "ACTIVE";
 
 export const filterSchema = z.object({
-  providers: z.array(z.string()),
+  providerIDs: z.array(z.string()),
   policyIDs: z.array(z.string()),
   secretIDs: z.array(z.string()),
+  duplicateIDs: z.array(z.string()),
+  accessorNames: z.array(z.string()),
   search: z.string().optional(),
   policyStatus: z.string().optional(),
-  duplicates: z.string().optional(),
-  lastAccess: z.string().optional(),
-  lastRotation: z.string().optional(),
   accessors: z.string().optional(),
+  duplicates: z.string().optional(),
+  startLastAccess: z.string().optional(),
+  endLastAccess: z.string().optional(),
+  startLastRotation: z.string().optional(),
+  endLastRotation: z.string().optional(),
 });
 
 export type FilterSchema = z.infer<typeof filterSchema>;
