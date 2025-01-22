@@ -322,12 +322,22 @@ const FilterDialogForm = (
 
   useEffect(() => {
     const accessorsValue = form.watch("accessors")
-    setAccessorsVisible(accessorsValue === "true" || accessorsValue === "false");
+    if (accessorsValue === "true" || accessorsValue === "false")
+      setAccessorsVisible(true);
+    else {
+      setAccessorsVisible(false);
+      form.setValue("accessorNames", [])
+    }
   }, [form.watch("accessors")]);
 
   useEffect(() => {
     const duplicatesValue = form.watch("duplicates")
-    setDuplicatesVisible(duplicatesValue === "true" || duplicatesValue === "false");
+    if (duplicatesValue === "true" || duplicatesValue === "false")
+      setDuplicatesVisible(true);
+    else {
+      setDuplicatesVisible(false);
+      form.setValue("duplicateIDs", [])
+    }
   }, [form.watch("duplicates")]);
 
   return (
