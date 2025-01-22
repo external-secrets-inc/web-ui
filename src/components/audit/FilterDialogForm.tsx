@@ -78,7 +78,7 @@ const BooleanFilter = ({
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="null">All</SelectItem>
+            <SelectItem value="null">Show all</SelectItem>
             <SelectItem value="true">{trueItem}</SelectItem>
             <SelectItem value="false">{falseItem}</SelectItem>
           </SelectContent>
@@ -110,7 +110,7 @@ const DateRangeFilter = ({
   return (
     <FormItem>
       <FormLabel>{label}</FormLabel>
-      <div className="flex gap-2">
+      <div className="flex gap-2 items-center">
         {/* Start Date Input */}
         <FormField
           control={form.control}
@@ -132,6 +132,7 @@ const DateRangeFilter = ({
             </FormControl>
           )}
         />
+        <span className="text-sm text-muted-foreground">to</span>
         {/* End Date Input */}
         <FormField
           control={form.control}
@@ -166,15 +167,17 @@ const MultiSelectFilter = ({
   label,
   options,
   placeholder,
+  maxCount = 1,
 }: {
   formControl: Control<FilterSchema>;
   name: ArrayKeys;
-  label: string;
+  label?: string;
   options: {
     label: string;
     value: string;
   }[];
   placeholder: string;
+  maxCount?: number;
 }) => (
   <FormField
     control={formControl}
@@ -189,7 +192,7 @@ const MultiSelectFilter = ({
           defaultValue={field.value}
           placeholder={placeholder}
           variant="inverted"
-          maxCount={1}
+          maxCount={maxCount}
         />
       </FormItem>
     )}
@@ -373,20 +376,6 @@ const FilterDialogForm = (
                   placeholder="Select policies"
                 />
 
-                {/* Accessor Input */}
-                {accessorsVisible && (
-                  <MultiSelectFilter
-                    key={"accessor_id" + resetKey}
-                    formControl={form.control}
-                    name="accessorNames"
-                    label="Accessors"
-                    options={filterOptions.accessorsNames}
-                    placeholder="Select accessor"
-                  />
-                )}
-              </div>
-
-              <div className="grid gap-4">
                 {/* Policy Status */}
                 <BooleanFilter
                   formControl={form.control}
@@ -396,46 +385,55 @@ const FilterDialogForm = (
                   trueItem="Compliant"
                   falseItem="Non-Compliant"
                 />
+              </div>
 
-                {/* Duplicates */}
-                <div>
-                  <FormLabel>Duplicates</FormLabel>
-                  <div className="flex gap-x-2 w-full">
-                    <div className="flex-1">
-                    <BooleanFilter
+              <div className="grid gap-4">
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(0,1fr))] gap-2 items-end">
+                  {/* Duplicates */}
+                  <BooleanFilter
+                    formControl={form.control}
+                    name="duplicates"
+                    label="Duplicates"
+                    placeholder="Select duplicates"
+                    trueItem="Contains..."
+                    falseItem="Does not contain..."
+                  />
+
+                  {/* Duplicates specific */}
+                  {duplicatesVisible && (
+                    <MultiSelectFilter
+                      key={"duplicate_id" + resetKey}
                       formControl={form.control}
-                      name="duplicates"
-                      label=""
-                      placeholder="Select duplicates"
-                      trueItem="Contains"
-                      falseItem="Does not Contain"
+                      name="duplicateIDs"
+                      options={filterOptions.secretsNames}
+                      placeholder="Any Duplicate"
+                      maxCount={0}
                     />
-                    </div>
-                    {/* Duplicate Input */}
-                    {duplicatesVisible && (
-                      <div className="flex-1">
-                      <MultiSelectFilter
-                        key={"duplicate_id" + resetKey}
-                        formControl={form.control}
-                        name="duplicateIDs"
-                        label=""
-                        options={filterOptions.secretsNames}
-                        placeholder="Select duplicate"
-                      />
-                      </div>
-                    )}
-                  </div>
+                  )}
                 </div>
 
-                {/* Accessors */}
-                <BooleanFilter
-                  formControl={form.control}
-                  name="accessors"
-                  label="Accessors"
-                  placeholder="Select accessors"
-                  trueItem="Contains"
-                  falseItem="Does not Contain"
-                />
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(0,1fr))] gap-2 items-end">
+                  {/* Accessors */}
+                  <BooleanFilter
+                    formControl={form.control}
+                    name="accessors"
+                    label="Accessors"
+                    placeholder="Select accessors"
+                    trueItem="Contains..."
+                    falseItem="Does not contain..."
+                  />
+                  {/* Accessors specific */}
+                  {accessorsVisible && (
+                    <MultiSelectFilter
+                      key={"accessor_id" + resetKey}
+                      formControl={form.control}
+                      name="accessorNames"
+                      options={filterOptions.accessorsNames}
+                      placeholder="Any Accessor"
+                      maxCount={0}
+                    />
+                  )}
+                </div>
 
                 <DateRangeFilter
                   form={form}
