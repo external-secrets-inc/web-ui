@@ -323,8 +323,8 @@ export const mockPoliciesData = [
     name: "Policy 1",
     executeOn: [
       "Read",
-      "UpdatePreHash",
-      "UpdatePostHash",
+      "Update",
+      "Result",
       "*",
     ],
     executeOnAmount: 4,
@@ -343,8 +343,8 @@ export const mockPoliciesData = [
     name: "Policy 2",
     executeOn: [
       "Read",
-      "UpdatePreHash",
-      "UpdatePostHash",
+      "Update",
+      "Result",
       "Create",
     ],
     executeOnAmount: 4,
@@ -387,7 +387,7 @@ export const mockPoliciesData = [
     name: "Policy 4",
     executeOn: [
       "Read",
-      "UpdatePreHash",
+      "Update",
     ],
     executeOnAmount: 2,
     providers: {
