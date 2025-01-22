@@ -110,7 +110,7 @@ const DateRangeFilter = ({
   return (
     <FormItem>
       <FormLabel>{label}</FormLabel>
-      <div className="flex gap-2">
+      <div className="flex gap-2 items-center">
         {/* Start Date Input */}
         <FormField
           control={form.control}
@@ -132,6 +132,7 @@ const DateRangeFilter = ({
             </FormControl>
           )}
         />
+        <span className="text-sm text-muted-foreground">to</span>
         {/* End Date Input */}
         <FormField
           control={form.control}
