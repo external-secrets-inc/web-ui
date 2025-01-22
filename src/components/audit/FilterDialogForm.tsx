@@ -387,7 +387,7 @@ const FilterDialogForm = (
                 />
               </div>
 
-              <div className="grid gap-4">
+              <div className="grid gap-4 grid-cols-1">
                 <div className="grid grid-cols-[repeat(auto-fit,minmax(0,1fr))] gap-2 items-end">
                   {/* Duplicates */}
                   <BooleanFilter
