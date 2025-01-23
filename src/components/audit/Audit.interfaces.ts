@@ -211,3 +211,33 @@ export interface AuditTimelineEntry {
 }
 
 export type SecretDetails = AuditSecretTableData;
+
+export interface LineageNode {
+  secretID: string;
+  secretName: string;
+}
+
+export interface LineageLink {
+  fromSecret: string;
+  toSecret: string;
+  createdAt: string;
+}
+
+export interface LineageData {
+  nodes: LineageNode[];
+  links: LineageLink[];
+}
+
+export interface SecretNode {
+  secretID: string;
+  secretName: string;
+  providerID: string;
+  providerName: string;
+  createdAt: string;
+}
+
+export interface Link {
+  fromSecret: string;
+  toSecret: string;
+  createdAt: string;
+}

@@ -1,9 +1,10 @@
-import { Background, Controls, ReactFlow, useReactFlow, type Node, type Edge } from '@xyflow/react';
+import { Background, Controls, ReactFlow, type Node, type Edge } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import dagre from '@dagrejs/dagre';
 import SecretNode from "@/components/lineage/SecretNode";
 import SecretEdge from "@/components/lineage/SecretEdge";
 import { useEffect, useState } from 'react';
+import { LineageData } from '@/components/audit/Audit.interfaces';
 
 const nodeWidth = 300;
 const nodeHeight = 125;
@@ -19,23 +20,6 @@ const edgeTypes = {
 const dagreGraph = new dagre.graphlib.Graph();
 dagreGraph.setDefaultEdgeLabel(() => ({}));
 dagreGraph.setGraph({ rankdir: 'TB' }); // TB: Top-Bottom (pode ser 'LR', 'RL', etc.)
-
-interface LineageNode {
-  secretID: string;
-  secretName: string;
-}
-
-interface LineageLink {
-  fromSecret: string;
-  toSecret: string;
-  createdAt: string;
-}
-
-interface LineageData {
-  nodes: LineageNode[];
-  links: LineageLink[];
-}
-
 const applyLayout = (nodes: Node[], edges: Edge[]) => {
   nodes.forEach((node) => {
     dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
@@ -56,13 +40,12 @@ const applyLayout = (nodes: Node[], edges: Edge[]) => {
   });
 };
 
-interface AuditSecretLineageProps {
+interface AuditSecretDetailsLineageProps {
   lineageData: LineageData | undefined;
   currentSecretId: string;
 }
 
-export default function AuditSecretLineage({ lineageData, currentSecretId }: AuditSecretLineageProps) {
-  const { fitView } = useReactFlow();
+export default function AuditSecretDetailsLineage({ lineageData, currentSecretId }: AuditSecretDetailsLineageProps) {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
 
@@ -92,9 +75,7 @@ export default function AuditSecretLineage({ lineageData, currentSecretId }: Aud
     })
     setNodes(applyLayout(nodes, edges))
     setEdges(edges)
-
-    fitView()
-  }, [lineageData, currentSecretId, fitView])
+  }, [lineageData, currentSecretId])
 
   return (
     <ReactFlow
@@ -102,18 +83,28 @@ export default function AuditSecretLineage({ lineageData, currentSecretId }: Aud
       nodes={nodes}
       edges={edges}
       fitView
+      fitViewOptions={{
+        minZoom: 0.5,
+        maxZoom: 1,
+      }}
+      minZoom={0.25}
+      maxZoom={1.75}
       nodeTypes={nodeTypes}
       edgeTypes={edgeTypes}
       nodesDraggable={false}
       nodesConnectable={false}
-      elementsSelectable={false}
+      elementsSelectable={true}
       panOnDrag={true}
-      zoomOnScroll={false}
-      zoomOnPinch={false}
-      zoomOnDoubleClick={false}
+      zoomOnScroll={true}
+      zoomOnPinch={true}
+      zoomOnDoubleClick={true}
     >
       <Controls />
-      <Background gap={12} size={1} />
+      <Background
+        patternClassName="!fill-muted-background"
+        gap={32}
+        size={2}
+      />
     </ReactFlow>
   );
 }

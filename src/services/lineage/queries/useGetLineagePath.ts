@@ -4,7 +4,7 @@ import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
 import { useAuditMock } from '@/services/audit/context/AuditMockContext';
-import { LineageData } from "@/components/lineage/Lineage.interfaces";
+import { LineageData } from "@/components/audit/Audit.interfaces";
 
 const getLineagePath = async (
   mock: boolean,
