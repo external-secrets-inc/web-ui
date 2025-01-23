@@ -1,6 +1,5 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import {
@@ -87,155 +86,151 @@ export default function AuditSecretDetails({ secretId, setSecretId, onOpenChange
 
   return (
     <Sheet open={!!secretId} onOpenChange={onOpenChange}>
-      <SheetContent className="min-w-[90vw] flex flex-col h-full p-6 gap-4">
-        <SheetHeader>
-          <SheetTitle className="flex items-center flex-wrap gap-2">
-            <LucideSquareAsterisk className="size-6" />
-            {listenerSecretData.name || "Unnamed Secret"}
-            <Badge variant="outline">{listenerSecretData.providerName}</Badge>
-          </SheetTitle>
-          <SheetDescription />
-        </SheetHeader>
+      <SheetContent className="min-w-[100vw] xl:min-w-[90vw] flex flex-col h-full p-0 gap-6">
         {
           isLoadingSecretData || isFetchingSecretData ?
             <div className="flex justify-center items-center flex-1">
               <Loader />
             </div> :
-            <ScrollArea className="flex-1">
-              <div className="space-y-6">
-                <section aria-label="Secret Metadata" className="grid grid-cols-2 gap-4">
-                  <div className="flex items-center gap-2">
-                    <LucideRotateCcw className="text-muted-foreground" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Last Rotation</p>
-                      <p className={cn("font-medium", !listenerSecretData.lastRotation && "text-muted-foreground italic")}>
-                        {listenerSecretData.lastRotation ? formatDate(listenerSecretData.lastRotation, { format: 'readableDate' }) : "Never rotated"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <LucideClock className="text-muted-foreground" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Last Access</p>
-                      <p className={cn("font-medium", !listenerSecretData.lastAccess && "text-muted-foreground italic")}>
-                        {listenerSecretData.lastAccess ? formatDate(listenerSecretData.lastAccess, { format: 'readableDate' }) : "Never accessed"}
-                      </p>
-                    </div>
-                  </div>
-                </section>
+            <div className="flex-1 flex border-t min-h-0">
+              <section aria-label="Lineage" className="space-y-2 min-h-0 relative overflow-clip flex-1">
+                <h3 className="font-semibold mb-3 flex items-center gap-2 p-3 rounded-md bg-background border absolute top-3 left-3 z-10 w-max">
+                  <LucideNetwork />
+                  Duplicates Lineage
+                </h3>
+                <AuditSecretLineage lineageData={lineageData} currentSecretId={secretId} />
+              </section>
 
-                <Separator />
+              <Separator orientation="vertical" />
 
-                <section aria-label="Policies" className="space-y-2">
-                  <h3 className="font-semibold mb-3 flex items-center gap-2">
-                    <LucideShieldCheck />
-                    Policies
-                    <Badge variant="secondary">{listenerSecretData.policies.length || "0"}</Badge>
-                  </h3>
-                  {listenerSecretData.policies.length > 0 ? (
-                    <div className="space-y-2">
-                      {listenerSecretData.policies.map(policy => (
-                        <Alert
-                          key={policy.id}
-                          variant={policy.status === "compliant" ? "default" : "destructive"}
-                        >
-                          <AlertDescription className="flex items-center gap-2">
-                            {policy.status === "compliant" ? (
-                              <LucideCheck className="text-green-500" />
-                            ) : (
-                              <LucideAlertCircle className="text-destructive" />
-                            )}
-                            <span className="font-medium">{policy.name}</span>
-                            {policy.status !== "compliant" && (
-                              <Badge variant="outline" className="text-destructive border-destructive ml-auto">
-                                {policy.status}
+              <section aria-label="Details" className="min-h-0 grid grid-rows-[auto_1fr] bg-muted/25 relative flex-1 max-w-[640px] min-w-[480px]">
+                <SheetHeader className="space-y-0 p-6 border-b">
+                  <SheetTitle className="flex items-center flex-wrap gap-2">
+                    <LucideSquareAsterisk className="size-6" />
+                    {listenerSecretData.name || "Unnamed Secret"}
+                    <Badge variant="outline">{listenerSecretData.providerName}</Badge>
+                  </SheetTitle>
+                  <SheetDescription />
+                </SheetHeader>
+                <div className="space-y-6 p-6 pb-20 overflow-auto">
+                  <section aria-label="Secret Metadata" className="space-y-2">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex items-center gap-2">
+                        <LucideRotateCcw className="text-muted-foreground" />
+                        <div>
+                          <p className="text-sm text-muted-foreground">Last Rotation</p>
+                          <p className={cn("font-medium", !listenerSecretData.lastRotation && "text-muted-foreground italic")}>
+                            {listenerSecretData.lastRotation ? formatDate(listenerSecretData.lastRotation, { format: 'readableDate' }) : "Never rotated"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <LucideClock className="text-muted-foreground" />
+                        <div>
+                          <p className="text-sm text-muted-foreground">Last Access</p>
+                          <p className={cn("font-medium", !listenerSecretData.lastAccess && "text-muted-foreground italic")}>
+                            {listenerSecretData.lastAccess ? formatDate(listenerSecretData.lastAccess, { format: 'readableDate' }) : "Never accessed"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                  <Separator className="-mx-6 w-[stretch]" />
+                  <section aria-label="Policies" className="space-y-2">
+                    <h3 className="font-semibold mb-3 flex items-center gap-2">
+                      <LucideShieldCheck />
+                      Policies
+                      <Badge variant="secondary">{listenerSecretData.policies.length || "0"}</Badge>
+                    </h3>
+                    {listenerSecretData.policies.length > 0 ? (
+                      <div className="space-y-2">
+                        {listenerSecretData.policies.map(policy => (
+                          <Alert
+                            key={policy.id}
+                            variant={policy.status === "compliant" ? "default" : "destructive"}
+                          >
+                            <AlertDescription className="flex items-center gap-2">
+                              {policy.status === "compliant" ? (
+                                <LucideCheck className="text-green-500" />
+                              ) : (
+                                <LucideAlertCircle className="text-destructive" />
+                              )}
+                              <span className="font-medium">{policy.name}</span>
+                              {policy.status !== "compliant" && (
+                                <Badge variant="outline" className="text-destructive border-destructive ml-auto">
+                                  {policy.status}
+                                </Badge>
+                              )}
+                            </AlertDescription>
+                          </Alert>
+                        ))}
+                      </div>
+                    ) : (
+                      <Alert>
+                        <AlertDescription className="text-muted-foreground">
+                          No policies associated with this secret
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                  </section>
+                  <Separator className="-mx-6 w-[stretch]" />
+                  <section aria-label="Duplicates" className="space-y-2">
+                    <h3 className="font-semibold mb-3 flex items-center gap-2">
+                      <LucideSquareStack />
+                      Duplicates
+                      <Badge variant="secondary">{listenerSecretData.duplicates.length || "0"}</Badge>
+                    </h3>
+                    {listenerSecretData.duplicates.length > 0 ? (
+                      <div className="space-y-2">
+                        {listenerSecretData.duplicates.map(duplicate => (
+                          <Alert variant="warning" key={duplicate.id} onClick={() => setSecretId(duplicate.id)} className="cursor-pointer">
+                            <AlertDescription className="flex items-center gap-2">
+                              <LucideAlertCircle className="text-orange-500" />
+                              <span className="font-medium">{duplicate.name || duplicate.id || "Unknown Duplicate"}</span>
+                              <Badge variant="outline" className="ml-auto">{duplicate.providerName || duplicate.providerID || "Unknown Provider"}</Badge>
+                            </AlertDescription>
+                          </Alert>
+                        ))}
+                      </div>
+                    ) : (
+                      <Alert>
+                        <AlertDescription className="text-muted-foreground">
+                          No duplicates found for this secret
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                  </section>
+                  <Separator className="-mx-6 w-[stretch]" />
+                  <section aria-label="Last access records" className="space-y-2">
+                    <h3 className="font-semibold mb-3 flex items-center gap-2">
+                      <LucideUsers />
+                      Last Access Records
+                      <Badge variant="secondary">{listenerSecretData.accessors.length || "0"}</Badge>
+                    </h3>
+                    {listenerSecretData.accessors.length > 0 ? (
+                      <div className="space-y-2">
+                        {listenerSecretData.accessors.map(access => (
+                          <Alert key={access.id}>
+                            <AlertDescription className="flex items-center gap-2">
+                              <Badge variant="secondary">{access.name || access.id || "Unknown Accessor"}</Badge>
+                              <Badge variant="outline" className="ml-auto">
+                                {formatDate(access.accessTime, { format: 'readableDate' })}
                               </Badge>
-                            )}
-                          </AlertDescription>
-                        </Alert>
-                      ))}
-                    </div>
-                  ) : (
-                    <Alert>
-                      <AlertDescription className="text-muted-foreground">
-                        No policies associated with this secret
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                </section>
-
-                <Separator />
-
-                <section aria-label="Duplicates" className="space-y-2">
-                  <h3 className="font-semibold mb-3 flex items-center gap-2">
-                    <LucideSquareStack />
-                    Duplicates
-                    <Badge variant="secondary">{listenerSecretData.duplicates.length || "0"}</Badge>
-                  </h3>
-                  {listenerSecretData.duplicates.length > 0 ? (
-                    <div className="space-y-2">
-                      {listenerSecretData.duplicates.map(duplicate => (
-                        <Alert variant="warning" key={duplicate.id} onClick={() => setSecretId(duplicate.id)} className="cursor-pointer">
-                          <AlertDescription className="flex items-center gap-2">
-                            <LucideAlertCircle className="text-orange-500" />
-                            <span className="font-medium">{duplicate.name || duplicate.id || "Unknown Duplicate"}</span>
-                            <Badge variant="outline" className="ml-auto">{duplicate.providerName || duplicate.providerID || "Unknown Provider"}</Badge>
-                          </AlertDescription>
-                        </Alert>
-                      ))}
-                    </div>
-                  ) : (
-                    <Alert>
-                      <AlertDescription className="text-muted-foreground">
-                        No duplicates found for this secret
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                </section>
-
-                <Separator />
-
-                <section aria-label="Lineage" className="space-y-2">
-                  <h3 className="font-semibold mb-3 flex items-center gap-2">
-                    <LucideNetwork />
-                    Lineage
-                  </h3>
-                  <div style={{ width: '100%', height: '50vh' }}>
-                    <AuditSecretLineage lineageData={lineageData} currentSecretId={secretId} />
-                  </div>
-                </section>
-
-                <Separator />
-
-                <section aria-label="Last access records" className="space-y-2">
-                  <h3 className="font-semibold mb-3 flex items-center gap-2">
-                    <LucideUsers />
-                    Last Access Records
-                    <Badge variant="secondary">{listenerSecretData.accessors.length || "0"}</Badge>
-                  </h3>
-                  {listenerSecretData.accessors.length > 0 ? (
-                    <div className="space-y-2">
-                      {listenerSecretData.accessors.map(access => (
-                        <Alert key={access.id}>
-                          <AlertDescription className="flex items-center gap-2">
-                            <Badge variant="secondary">{access.name || access.id || "Unknown Accessor"}</Badge>
-                            <Badge variant="outline" className="ml-auto">
-                              {formatDate(access.accessTime, { format: 'readableDate' })}
-                            </Badge>
-                          </AlertDescription>
-                        </Alert>
-                      ))}
-                    </div>
-                  ) : (
-                    <Alert>
-                      <AlertDescription className="text-muted-foreground">
-                        No recent access history available
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                </section>
-              </div>
-            </ScrollArea>
+                            </AlertDescription>
+                          </Alert>
+                        ))}
+                      </div>
+                    ) : (
+                      <Alert>
+                        <AlertDescription className="text-muted-foreground">
+                          No recent access history available
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                  </section>
+                </div>
+              </section>
+            </div>
         }
       </SheetContent>
     </Sheet>
