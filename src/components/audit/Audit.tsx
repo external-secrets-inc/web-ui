@@ -14,7 +14,7 @@ import useGetTenantBashFile from "@/services/audit/queries/useGetTenantBashFile"
 import useGetTenantListeners from "@/services/audit/queries/useGetTenantListeners";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { ApiHttpError, IUserData } from "@/types";
-import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { AxiosError } from "axios";
 import { LucideAlertCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";

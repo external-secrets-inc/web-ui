@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { createColumnHelper } from "@tanstack/react-table";
 import { LucideAlertCircle, LucideCircle, LucideDownload, LucideFilter, LucideSearch, LucideX } from "lucide-react";
-import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { DataProvider, DataTable } from "@/components/ui/DataProvider";
