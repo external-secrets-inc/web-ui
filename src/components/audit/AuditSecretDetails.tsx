@@ -27,13 +27,13 @@ import AuditSecretLineage from "@/components/audit/AuditSecretLineage";
 
 import '@xyflow/react/dist/style.css';
 
-interface AuditSecretDetailsDialogProps {
+interface AuditSecretDetailsProps {
   secretId: string | null;
   setSecretId: (secret: string) => void;
   onOpenChange: (open: boolean) => void;
 }
 
-export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpenChange }: AuditSecretDetailsDialogProps) {
+export default function AuditSecretDetails({ secretId, setSecretId, onOpenChange }: AuditSecretDetailsProps) {
   const {
     data: secretData,
     refetch: secretRefetch,

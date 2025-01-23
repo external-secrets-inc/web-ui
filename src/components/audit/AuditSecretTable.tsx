@@ -10,7 +10,7 @@ import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import useGetDashboarSecretTable from "@/services/audit/queries/useGetDashboarSecretTable";
 import { AuditSecretTableData } from "./Audit.interfaces";
 import FilterDialogForm from "./FilterDialogForm";
-import AuditSecretDetailsDialog from "./AuditSecretDetailsDialog";
+import AuditSecretDetails from "./AuditSecretDetails";
 import { useAuditFilter } from "./AuditFilterProvider";
 import { useSearchParams } from "react-router-dom";
 import { Input } from "../ui/input";
@@ -285,7 +285,7 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
       </DataProvider>
 
       <ReactFlowProvider>
-        <AuditSecretDetailsDialog
+        <AuditSecretDetails
           secretId={selectedSecretId}
           setSecretId={setSelectedSecretId}
           onOpenChange={(open) => !open && setSelectedSecretId(null)}
