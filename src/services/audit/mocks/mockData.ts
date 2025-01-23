@@ -447,4 +447,77 @@ export const mockProvidersData = [
   },
 ] as const
 
+export const mockSecretAccessorsData = {
+  "accessor_3506": [
+    {
+      secretID: "dfc02f1f-eed1-4dcd-9699-0c5cc54f5827",
+      accessorID: "c5381f36-a7f9-4748-9d5c-842198ddab7b",
+      name: "accessor_3506",
+      timestamp: "2025-01-19T18:19:37.411000"
+    },
+    {
+      secretID: "dfc02f1f-eed1-4dcd-9699-0c5cc54f5827",
+      accessorID: "c5381f36-a7f9-4748-9d5c-842198ddab7b",
+      name: "accessor_3506",
+      timestamp: "2025-01-09T09:03:37.411000"
+    }
+  ],
+  "accessor_6000": [
+    {
+      secretID: "dfc02f1f-eed1-4dcd-9699-0c5cc54f5827",
+      accessorID: "eb4e3c5e-5e8b-487b-9d8a-354b26628d2e",
+      name: "accessor_6000",
+      timestamp: "2025-01-19T03:41:29.411000"
+    },
+    {
+      secretID: "dfc02f1f-eed1-4dcd-9699-0c5cc54f5827",
+      accessorID: "eb4e3c5e-5e8b-487b-9d8a-354b26628d2e",
+      name: "accessor_6000",
+      timestamp: "2025-01-05T23:55:35.411000"
+    }
+  ],
+  "accessor_6570": [
+    {
+      secretID: "dfc02f1f-eed1-4dcd-9699-0c5cc54f5827",
+      accessorID: "58dc5d77-dbdd-458a-bfee-62337ba5bda0",
+      name: "accessor_6570",
+      timestamp: "2025-01-20T10:43:21.410000"
+    },
+    {
+      secretID: "dfc02f1f-eed1-4dcd-9699-0c5cc54f5827",
+      accessorID: "58dc5d77-dbdd-458a-bfee-62337ba5bda0",
+      name: "accessor_6570",
+      timestamp: "2025-01-18T11:08:15.410000"
+    }
+  ],
+  "accessor_6678": [
+    {
+      secretID: "dfc02f1f-eed1-4dcd-9699-0c5cc54f5827",
+      accessorID: "c0d70b95-b2a8-4cc7-9a31-5e59bffba60d",
+      name: "accessor_6678",
+      timestamp: "2025-01-02T20:35:03.412000"
+    },
+    {
+      secretID: "dfc02f1f-eed1-4dcd-9699-0c5cc54f5827",
+      accessorID: "c0d70b95-b2a8-4cc7-9a31-5e59bffba60d",
+      name: "accessor_6678",
+      timestamp: "2024-12-25T14:28:16.412000"
+    }
+  ],
+  "accessor_7059": [
+    {
+      secretID: "dfc02f1f-eed1-4dcd-9699-0c5cc54f5827",
+      accessorID: "f9958435-b647-4d7b-9dec-7824b2b2365e",
+      name: "accessor_7059",
+      timestamp: "2025-01-13T13:48:52.411000"
+    },
+    {
+      secretID: "dfc02f1f-eed1-4dcd-9699-0c5cc54f5827",
+      accessorID: "f9958435-b647-4d7b-9dec-7824b2b2365e",
+      name: "accessor_7059",
+      timestamp: "2024-12-30T09:59:31.411000"
+    }
+  ]
+} as const
+
 export const mockNetworkResponseDelay = () => new Promise(resolve => setTimeout(resolve, 2500))

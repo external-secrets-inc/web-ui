@@ -18,10 +18,12 @@ import { AuditSecretData } from "./Audit.interfaces";
 import { formatDate } from "@/utils/dateUtils";
 import useGetAuditSecretData from "@/services/audit/queries/useGetAuditSecretData";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { Loader } from "@/components/ui/Loader"
 import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
+import useGetSecretAccessors from "@/services/audit/queries/useGetSecretAccessors";
 
 interface AuditSecretDetailsDialogProps {
   secretId: string | null;
@@ -30,11 +32,12 @@ interface AuditSecretDetailsDialogProps {
 }
 
 export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpenChange }: AuditSecretDetailsDialogProps) {
+  const [selectedAccessor, setSelectedAccessor] = useState<string | undefined>();
+
   const {
     data: secretData,
     refetch: secretRefetch,
     isLoading: isLoadingSecretData,
-    isFetching: isFetchingSecretData,
     isError: isErrorSecretData,
     error: secretDataError,
   } = useGetAuditSecretData(false, secretId || '', {
@@ -43,15 +46,36 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
     enabled: !!secretId
   });
 
-  useEffect(() => {
-    if (!(secretDataError)) return;
+  const {
+    data: accessorsData,
+    refetch: accessorsRefetch,
+    // isLoading: isLoadingAccessorsData,
+    isError: isErrorAccessorsData,
+    error: accessorsDataError,
+  } = useGetSecretAccessors(false, secretId || '', {
+    refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
+    refetchIntervalInBackground: true,
+    enabled: !!secretId
+  });
 
-    handleDefaultApiHttpError(
-      secretDataError,
-      `Error while fetching secret data`
-    );
-    onOpenChange(false);
+  useEffect(() => {
+    if (secretDataError) {
+      handleDefaultApiHttpError(
+        secretDataError,
+        `Error while fetching secret data`
+      );
+      onOpenChange(false);
+    }
   }, [secretDataError, isErrorSecretData, onOpenChange]);
+
+  useEffect(() => {
+    if (accessorsDataError) {
+      handleDefaultApiHttpError(
+        accessorsDataError,
+        `Error while fetching accessors data`
+      );
+    }
+  }, [accessorsDataError, isErrorAccessorsData]);
 
   const listenerSecretData = useMemo(() => {
     if (!secretData)
@@ -73,8 +97,9 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
   useEffect(() => {
     if (secretId) {
       secretRefetch();
+      accessorsRefetch();
     }
-  }, [secretId, secretRefetch]);
+  }, [accessorsRefetch, secretId, secretRefetch]);
 
   if (!secretId) return null;
 
@@ -90,7 +115,7 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
           <DialogDescription />
         </DialogHeader>
         {
-          isLoadingSecretData || isFetchingSecretData ?
+          isLoadingSecretData ?
             <div className="flex justify-center items-center">
               <Loader />
             </div> :
@@ -196,18 +221,36 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
                       <Badge variant="secondary">{listenerSecretData.accessors.length || "0"}</Badge>
                     </h3>
                     {listenerSecretData.accessors.length > 0 ? (
-                      <div className="space-y-2">
+                      <Accordion type="single" collapsible value={selectedAccessor} onValueChange={setSelectedAccessor}>
                         {listenerSecretData.accessors.map(access => (
-                          <Alert key={access.id}>
-                            <AlertDescription className="flex items-center gap-2">
+                          <AccordionItem key={access.id} value={access.id}>
+                            <AccordionTrigger>
                               <Badge variant="secondary">{access.name || access.id || "Unknown Accessor"}</Badge>
                               <Badge variant="outline" className="ml-auto">
                                 {formatDate(access.accessTime, { format: 'readableDate' })}
                               </Badge>
-                            </AlertDescription>
-                          </Alert>
+                            </AccordionTrigger>
+                            <AccordionContent>
+                              {accessorsData?.[access.name] && accessorsData[access.name].length > 0 ? (
+                                accessorsData[access.name].map(log => (
+                                  <div key={log.accessorID} className="flex justify-between items-center space-y-2">
+                                    <Badge variant="secondary">{log.name}</Badge>
+                                    <Badge variant="outline">
+                                      {formatDate(log.timestamp, { format: 'readableDate' })}
+                                    </Badge>
+                                  </div>
+                                ))
+                              ) : (
+                                <Alert>
+                                  <AlertDescription className="text-muted-foreground">
+                                    No access logs available
+                                  </AlertDescription>
+                                </Alert>
+                              )}
+                            </AccordionContent>
+                          </AccordionItem>
                         ))}
-                      </div>
+                      </Accordion>
                     ) : (
                       <Alert>
                         <AlertDescription className="text-muted-foreground">
