@@ -71,6 +71,15 @@ export default function AuditSecretDetails({ secretId, setSecretId, onOpenChange
   return (
     <Sheet open={!!secretId} onOpenChange={onOpenChange}>
       <SheetContent className="min-w-[100vw] xl:min-w-[90vw] flex flex-col h-full p-0">
+        <SheetHeader className="sr-only">
+          <SheetTitle>
+            {listenerSecretData.name || "Unnamed Secret"}
+          </SheetTitle>
+          <SheetDescription>
+            View and manage secret details
+          </SheetDescription>
+        </SheetHeader>
+
         {isLoadingSecretData ? (
           <div className="flex justify-center items-center flex-1">
             <Loader />
@@ -88,14 +97,13 @@ export default function AuditSecretDetails({ secretId, setSecretId, onOpenChange
               />
             </section>
             <section aria-label="Details" className="min-h-0 grid grid-rows-[auto_1fr] bg-muted/25 relative flex-1 max-w-[640px] min-w-[480px] border-l">
-            <SheetHeader className="space-y-0 p-6 border-b">
-              <SheetTitle className="flex items-center flex-wrap gap-2">
-                <LucideSquareAsterisk className="size-6" />
-                {listenerSecretData.name || "Unnamed Secret"}
-                <Badge variant="outline">{listenerSecretData.providerName}</Badge>
-              </SheetTitle>
-              <SheetDescription />
-            </SheetHeader>
+              <div className="p-6 border-b">
+                <div className="flex items-center flex-wrap gap-2">
+                  <LucideSquareAsterisk className="size-6" />
+                  {listenerSecretData.name || "Unnamed Secret"}
+                  <Badge variant="outline">{listenerSecretData.providerName}</Badge>
+                </div>
+              </div>
               <AuditSecretDetailsData
                 secretData={listenerSecretData}
                 setSecretId={setSecretId}
