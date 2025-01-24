@@ -215,3 +215,13 @@ export interface AuditTimelineEntry {
 }
 
 export type SecretDetails = AuditSecretTableData;
+
+export interface AccessDetails {
+  secretID: string;
+  accessorID: string;
+  name: string;
+  timestamp: string;
+}
+export interface SecretAccessors {
+  [key: string]: AccessDetails[];
+}

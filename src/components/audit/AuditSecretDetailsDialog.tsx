@@ -8,10 +8,12 @@ import {
   LucideAlertCircle,
   LucideCheck,
   LucideClock,
+  LucideHistory,
   LucideRotateCcw,
   LucideShieldCheck,
   LucideSquareAsterisk,
   LucideSquareStack,
+  LucideUser,
   LucideUsers
 } from "lucide-react";
 import { AuditSecretData } from "./Audit.interfaces";
@@ -22,6 +24,8 @@ import { useEffect, useMemo } from "react";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { Loader } from "@/components/ui/Loader"
 import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
+import useGetSecretAccessors from "@/services/audit/queries/useGetSecretAccessors";
 
 interface AuditSecretDetailsDialogProps {
   secretId: string | null;
@@ -34,7 +38,6 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
     data: secretData,
     refetch: secretRefetch,
     isLoading: isLoadingSecretData,
-    isFetching: isFetchingSecretData,
     isError: isErrorSecretData,
     error: secretDataError,
   } = useGetAuditSecretData(false, secretId || '', {
@@ -43,15 +46,33 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
     enabled: !!secretId
   });
 
-  useEffect(() => {
-    if (!(secretDataError)) return;
+  const {
+    data: accessorsData,
+    refetch: accessorsRefetch,
+    isError: isErrorAccessorsData,
+    error: accessorsDataError,
+  } = useGetSecretAccessors(false, secretId || '', {
+    enabled: !!secretId
+  });
 
-    handleDefaultApiHttpError(
-      secretDataError,
-      `Error while fetching secret data`
-    );
-    onOpenChange(false);
+  useEffect(() => {
+    if (secretDataError) {
+      handleDefaultApiHttpError(
+        secretDataError,
+        `Error while fetching secret data`
+      );
+      onOpenChange(false);
+    }
   }, [secretDataError, isErrorSecretData, onOpenChange]);
+
+  useEffect(() => {
+    if (accessorsDataError) {
+      handleDefaultApiHttpError(
+        accessorsDataError,
+        `Error while fetching accessors data`
+      );
+    }
+  }, [accessorsDataError, isErrorAccessorsData]);
 
   const listenerSecretData = useMemo(() => {
     if (!secretData)
@@ -73,8 +94,9 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
   useEffect(() => {
     if (secretId) {
       secretRefetch();
+      accessorsRefetch();
     }
-  }, [secretId, secretRefetch]);
+  }, [accessorsRefetch, secretId, secretRefetch]);
 
   if (!secretId) return null;
 
@@ -90,7 +112,7 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
           <DialogDescription />
         </DialogHeader>
         {
-          isLoadingSecretData || isFetchingSecretData ?
+          isLoadingSecretData ?
             <div className="flex justify-center items-center">
               <Loader />
             </div> :
@@ -198,14 +220,49 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
                     {listenerSecretData.accessors.length > 0 ? (
                       <div className="space-y-2">
                         {listenerSecretData.accessors.map(access => (
-                          <Alert key={access.id}>
-                            <AlertDescription className="flex items-center gap-2">
-                              <Badge variant="secondary">{access.name || access.id || "Unknown Accessor"}</Badge>
-                              <Badge variant="outline" className="ml-auto">
-                                {formatDate(access.accessTime, { format: 'readableDate' })}
-                              </Badge>
-                            </AlertDescription>
-                          </Alert>
+                          <Accordion type="single" collapsible key={access.id} className="w-full">
+                            <AccordionItem value="accessor-details" className="border-none">
+                              <Alert className="p-0 overflow-clip">
+                                <AccordionTrigger className="hover:no-underline hover:bg-muted/20 py-3 px-4">
+                                  <AlertDescription className="flex items-center justify-between w-full mr-4">
+                                    <span className="font-medium">
+                                      <LucideUser className="inline-flex mr-1" />
+                                      {access.name || access.id || "Unknown Accessor"}
+                                    </span>
+                                    <Badge variant="outline" className="font-mono">
+                                      {formatDate(access.accessTime, { format: 'readableDate' })}
+                                    </Badge>
+                                  </AlertDescription>
+                                </AccordionTrigger>
+                                <AccordionContent className="grid grid-cols-[auto_1fr] justify-items-end items-start border-t mx-4 py-4">
+                                  {accessorsData?.[access.name] && accessorsData[access.name].length > 0 ? (
+                                    <>
+                                      <div className="flex items-center gap-2">
+                                        <LucideHistory className="text-muted-foreground" />
+                                        <span className="text-sm text-muted-foreground">History</span>
+                                        <Badge variant="secondary">{accessorsData[access.name].length || "0"}</Badge>
+                                      </div>
+                                      <div className="flex flex-col gap-2">
+                                        {accessorsData[access.name].map(log => (
+                                          <Badge
+                                            key={`${log.accessorID}-${log.timestamp}`}
+                                            className="mr-8 font-mono"
+                                            variant="outline"
+                                          >
+                                            {formatDate(log.timestamp, { format: 'readableDate' })}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <span className="text-sm text-muted-foreground m-auto">
+                                      No history available
+                                    </span>
+                                  )}
+                                </AccordionContent>
+                              </Alert>
+                            </AccordionItem>
+                          </Accordion>
                         ))}
                       </div>
                     ) : (
