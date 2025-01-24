@@ -49,12 +49,9 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
   const {
     data: accessorsData,
     refetch: accessorsRefetch,
-    // isLoading: isLoadingAccessorsData,
     isError: isErrorAccessorsData,
     error: accessorsDataError,
   } = useGetSecretAccessors(false, secretId || '', {
-    refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
-    refetchIntervalInBackground: true,
     enabled: !!secretId
   });
 
