@@ -8,17 +8,19 @@ import {
   LucideAlertCircle,
   LucideCheck,
   LucideClock,
+  LucideHistory,
   LucideRotateCcw,
   LucideShieldCheck,
   LucideSquareAsterisk,
   LucideSquareStack,
+  LucideUser,
   LucideUsers
 } from "lucide-react";
 import { AuditSecretData } from "./Audit.interfaces";
 import { formatDate } from "@/utils/dateUtils";
 import useGetAuditSecretData from "@/services/audit/queries/useGetAuditSecretData";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { Loader } from "@/components/ui/Loader"
 import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
@@ -32,8 +34,6 @@ interface AuditSecretDetailsDialogProps {
 }
 
 export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpenChange }: AuditSecretDetailsDialogProps) {
-  const [selectedAccessor, setSelectedAccessor] = useState<string | undefined>();
-
   const {
     data: secretData,
     refetch: secretRefetch,
@@ -221,36 +221,53 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
                       <Badge variant="secondary">{listenerSecretData.accessors.length || "0"}</Badge>
                     </h3>
                     {listenerSecretData.accessors.length > 0 ? (
-                      <Accordion type="single" collapsible value={selectedAccessor} onValueChange={setSelectedAccessor}>
+                      <div className="space-y-2">
                         {listenerSecretData.accessors.map(access => (
-                          <AccordionItem key={access.id} value={access.id}>
-                            <AccordionTrigger>
-                              <Badge variant="secondary">{access.name || access.id || "Unknown Accessor"}</Badge>
-                              <Badge variant="outline" className="ml-auto">
-                                {formatDate(access.accessTime, { format: 'readableDate' })}
-                              </Badge>
-                            </AccordionTrigger>
-                            <AccordionContent>
-                              {accessorsData?.[access.name] && accessorsData[access.name].length > 0 ? (
-                                accessorsData[access.name].map(log => (
-                                  <div key={log.accessorID} className="flex justify-between items-center space-y-2">
-                                    <Badge variant="secondary">{log.name}</Badge>
-                                    <Badge variant="outline">
-                                      {formatDate(log.timestamp, { format: 'readableDate' })}
+                          <Accordion type="single" collapsible key={access.id} className="w-full">
+                            <AccordionItem value="accessor-details" className="border-none">
+                              <Alert className="p-0 overflow-clip">
+                                <AccordionTrigger className="hover:no-underline hover:bg-muted/20 py-3 px-4">
+                                  <AlertDescription className="flex items-center justify-between w-full mr-4">
+                                    <span className="font-medium">
+                                      <LucideUser className="inline-flex mr-1" />
+                                      {access.name || access.id || "Unknown Accessor"}
+                                    </span>
+                                    <Badge variant="outline" className="font-mono">
+                                      {formatDate(access.accessTime, { format: 'readableDate' })}
                                     </Badge>
-                                  </div>
-                                ))
-                              ) : (
-                                <Alert>
-                                  <AlertDescription className="text-muted-foreground">
-                                    No access logs available
                                   </AlertDescription>
-                                </Alert>
-                              )}
-                            </AccordionContent>
-                          </AccordionItem>
+                                </AccordionTrigger>
+                                <AccordionContent className="grid grid-cols-[auto_1fr] justify-items-end items-start border-t mx-4 py-4">
+                                  {accessorsData?.[access.name] && accessorsData[access.name].length > 0 ? (
+                                    <>
+                                      <div className="flex items-center gap-2">
+                                        <LucideHistory className="text-muted-foreground" />
+                                        <span className="text-sm text-muted-foreground">History</span>
+                                        <Badge variant="secondary">{accessorsData[access.name].length || "0"}</Badge>
+                                      </div>
+                                      <div className="flex flex-col gap-2">
+                                        {accessorsData[access.name].map(log => (
+                                          <Badge
+                                            key={`${log.accessorID}-${log.timestamp}`}
+                                            className="mr-8 font-mono"
+                                            variant="outline"
+                                          >
+                                            {formatDate(log.timestamp, { format: 'readableDate' })}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <span className="text-sm text-muted-foreground m-auto">
+                                      No history available
+                                    </span>
+                                  )}
+                                </AccordionContent>
+                              </Alert>
+                            </AccordionItem>
+                          </Accordion>
                         ))}
-                      </Accordion>
+                      </div>
                     ) : (
                       <Alert>
                         <AlertDescription className="text-muted-foreground">
