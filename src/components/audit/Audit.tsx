@@ -66,7 +66,6 @@ const getTimeRangeFromDays = (days: number | null): TimeRange => {
 export default function Audit() {
   const [bashCommand, setBashCommand] = useState("");
   const [manifestCommand, setManifestCommand] = useState("");
-  const [helmCommand, setHelmCommand] = useState("");
   const [isListenerInstallDialogOpen, setIsListenerInstallDialogOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const [isTenantListenerCreated, setIsTenantListenerCreated] = useState(false);
