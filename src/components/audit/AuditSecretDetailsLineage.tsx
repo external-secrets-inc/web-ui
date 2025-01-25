@@ -28,7 +28,7 @@ const SecretNode = ({
       )}
       <div className={cn(
         'overflow-clip rounded-lg border ring-0 ring-transparent ring-offset-background/75 hover:ring-muted-foreground/50 hover:ring-offset-2 hover:ring-1 transition-shadow',
-        data.active && 'ring-1 ring-offset-2 ring-offset-accent ring-primary hover:ring-primary hover:ring-1 cursor-grab'
+        data.active && 'ring-1 ring-offset-2 ring-offset-accent ring-primary hover:ring-primary hover:ring-1 cursor-grab pointer-events-none'
       )}>
         <div className="flex items-center gap-2 px-4 py-2 bg-background border-b">
           <LucideSquareAsterisk
@@ -143,10 +143,12 @@ function applyLayout(nodes: Node[], edges: Edge[]) {
 
 export default function AuditSecretDetailsLineage({
   lineageData,
-  currentSecretId
+  currentSecretId,
+  setSecretId
 }: {
   lineageData: LineageData | undefined;
-  currentSecretId: string
+  currentSecretId: string;
+  setSecretId: (id: string) => void;
 }) {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
@@ -183,6 +185,7 @@ export default function AuditSecretDetailsLineage({
       zoomOnScroll={true}
       zoomOnPinch={true}
       zoomOnDoubleClick={true}
+      onNodeClick={(_, node) => setSecretId(node.id)}
     >
       <Controls />
       <Background

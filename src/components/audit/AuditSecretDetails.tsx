@@ -94,6 +94,7 @@ export default function AuditSecretDetails({ secretId, setSecretId, onOpenChange
               <AuditSecretDetailsLineage
                 lineageData={lineageData}
                 currentSecretId={secretId}
+                setSecretId={setSecretId}
               />
             </section>
             <section aria-label="Details" className="min-h-0 grid grid-rows-[auto_1fr] bg-background relative flex-1 max-w-[640px] min-w-[480px] border-l">
