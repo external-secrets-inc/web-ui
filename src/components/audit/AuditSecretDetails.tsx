@@ -96,10 +96,10 @@ export default function AuditSecretDetails({ secretId, setSecretId, onOpenChange
                 currentSecretId={secretId}
               />
             </section>
-            <section aria-label="Details" className="min-h-0 grid grid-rows-[auto_1fr] bg-muted/25 relative flex-1 max-w-[640px] min-w-[480px] border-l">
+            <section aria-label="Details" className="min-h-0 grid grid-rows-[auto_1fr] bg-background relative flex-1 max-w-[640px] min-w-[480px] border-l">
               <div className="p-6 border-b">
                 <div className="flex items-center flex-wrap gap-2">
-                  <LucideSquareAsterisk className="size-6" />
+                  <LucideSquareAsterisk className="size-6 text-primary" />
                   {listenerSecretData.name || "Unnamed Secret"}
                   <Badge variant="outline">{listenerSecretData.providerName}</Badge>
                 </div>

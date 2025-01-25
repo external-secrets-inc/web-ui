@@ -215,6 +215,7 @@ export type SecretDetails = AuditSecretTableData;
 export interface LineageNode {
   secretID: string;
   secretName: string;
+  providerName?: string;
 }
 
 export interface LineageLink {
@@ -228,16 +229,10 @@ export interface LineageData {
   links: LineageLink[];
 }
 
-export interface SecretNode {
-  secretID: string;
+export interface LineageNodeData {
   secretName: string;
-  providerID: string;
   providerName: string;
-  createdAt: string;
-}
-
-export interface Link {
-  fromSecret: string;
-  toSecret: string;
-  createdAt: string;
+  active: boolean;
+  sourcePosition: boolean;
+  targetPosition: boolean;
 }

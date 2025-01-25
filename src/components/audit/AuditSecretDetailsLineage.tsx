@@ -1,44 +1,15 @@
-import { Background, Controls, ReactFlow, type Node, type Edge } from '@xyflow/react';
-import '@xyflow/react/dist/style.css';
-import dagre from '@dagrejs/dagre';
+import { Background, Controls, ReactFlow, Node, Edge, MarkerType } from '@xyflow/react';
+import '@xyflow/react/dist/base.css';
+import Dagre from '@dagrejs/dagre';
 import SecretNode from "@/components/lineage/SecretNode";
 import SecretEdge from "@/components/lineage/SecretEdge";
 import { useEffect, useState } from 'react';
 import { LineageData } from '@/components/audit/Audit.interfaces';
+import { formatDate } from "@/utils/dateUtils";
 
-const nodeWidth = 300;
-const nodeHeight = 125;
 
-const nodeTypes = {
-  secretNode: SecretNode
-}
-
-const edgeTypes = {
-  secretEdge: SecretEdge
-}
-
-const dagreGraph = new dagre.graphlib.Graph();
-dagreGraph.setDefaultEdgeLabel(() => ({}));
-dagreGraph.setGraph({ rankdir: 'TB' }); // TB: Top-Bottom (pode ser 'LR', 'RL', etc.)
-const applyLayout = (nodes: Node[], edges: Edge[]) => {
-  nodes.forEach((node) => {
-    dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
-  });
-
-  edges.forEach((edge) => {
-    dagreGraph.setEdge(edge.source, edge.target);
-  });
-
-  dagre.layout(dagreGraph);
-
-  return nodes.map((node) => {
-    const position = dagreGraph.node(node.id);
-    return {
-      ...node,
-      position: { x: position.x - nodeWidth / 2, y: position.y - nodeHeight / 2 },
-    };
-  });
-};
+const NODE_WIDTH = 320;
+const NODE_HEIGHT = 192;
 
 interface AuditSecretDetailsLineageProps {
   lineageData: LineageData | undefined;
@@ -50,38 +21,72 @@ export default function AuditSecretDetailsLineage({ lineageData, currentSecretId
   const [edges, setEdges] = useState<Edge[]>([]);
 
   useEffect(() => {
-    if (!lineageData) return;
+    if (!lineageData?.nodes || !lineageData?.links) return;
 
-    const nodes = lineageData.nodes.map((node) => {
+    // Create edges
+    const newEdges = lineageData.links.map(link => ({
+      id: `${link.fromSecret}-${link.toSecret}`,
+      source: link.fromSecret,
+      target: link.toSecret,
+      type: 'default',
+      animated: true,
+      label: `${formatDate(new Date(link.createdAt), { format: 'readableDate' })}`,
+      markerEnd: {
+        type: MarkerType.Arrow,
+        width: 32,
+        height: 32,
+      },
+    }));
+
+    // Track which nodes are sources and targets for handle placement
+    const sourceNodes = new Set(newEdges.map(e => e.source));
+    const targetNodes = new Set(newEdges.map(e => e.target));
+
+    // Create nodes
+    const newNodes = lineageData.nodes.map(node => ({
+      id: node.secretID,
+      type: "secretNode",
+      data: {
+        secretName: node.secretName,
+        providerName: node.providerName || "Unknown Provider",
+        active: node.secretID === currentSecretId,
+        sourcePosition: sourceNodes.has(node.secretID),
+        targetPosition: targetNodes.has(node.secretID)
+      },
+      position: { x: 0, y: 0 }
+    }));
+
+    // Apply layout
+    const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
+    g.setGraph({ rankdir: 'TB' });
+
+    newEdges.forEach(edge => g.setEdge(edge.source, edge.target));
+    newNodes.forEach(node => {
+      g.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
+    });
+
+    Dagre.layout(g);
+
+    // Set final positions
+    const layoutedNodes = newNodes.map(node => {
+      const { x, y } = g.node(node.id);
       return {
-        id: node.secretID,
-        type: "secretNode",
-        data: {
-          label: node.secretName,
-          active: node.secretID === currentSecretId,
-          ...node
-        },
-        position: { x: 0, y: 0 }
-      }
-    })
-    const edges = lineageData.links.map((link) => {
-      return {
-        id: `${link.fromSecret}-${link.toSecret}`,
-        source: link.fromSecret,
-        target: link.toSecret,
-        animated: true,
-        label: `duplicated on ${new Date(link.createdAt).toLocaleString()}`
-      }
-    })
-    setNodes(applyLayout(nodes, edges))
-    setEdges(edges)
-  }, [lineageData, currentSecretId])
+        ...node,
+        position: { x: x - NODE_WIDTH / 2, y: y - NODE_HEIGHT / 2 },
+      };
+    });
+
+    setNodes(layoutedNodes);
+    setEdges(newEdges);
+  }, [lineageData, currentSecretId]);
 
   return (
     <ReactFlow
       className="h-full"
       nodes={nodes}
       edges={edges}
+      nodeTypes={{ secretNode: SecretNode }}
+      edgeTypes={{ default: SecretEdge }}
       fitView
       fitViewOptions={{
         minZoom: 0.5,
@@ -89,8 +94,6 @@ export default function AuditSecretDetailsLineage({ lineageData, currentSecretId
       }}
       minZoom={0.25}
       maxZoom={1.75}
-      nodeTypes={nodeTypes}
-      edgeTypes={edgeTypes}
       nodesDraggable={false}
       nodesConnectable={false}
       elementsSelectable={true}
@@ -102,6 +105,7 @@ export default function AuditSecretDetailsLineage({ lineageData, currentSecretId
       <Controls />
       <Background
         patternClassName="!fill-muted-background"
+        className="!bg-muted/10"
         gap={32}
         size={2}
       />

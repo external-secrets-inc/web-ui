@@ -1,41 +1,54 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { LucideSquareAsterisk } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
-const SecretNode = memo(({ data, isConnectable }) => {
-  let bgColor;
-  let borderColor;
-  if (data.active) {
-    bgColor = "bg-purple-100"
-    borderColor = "border-purple-400"
-  } else {
-    bgColor = "bg-gray-100"
-    borderColor = "border-gray-200"
-  }
+type SecretNodeData = {
+  secretName: string;
+  providerName: string;
+  active: boolean;
+  targetPosition?: boolean;
+  sourcePosition?: boolean;
+  [key: string]: unknown;
+}
+
+function SecretNode({ data }: { data: SecretNodeData }) {
   return (
     <>
-      <Handle
-        type="target"
-        position={Position.Top}
-        onConnect={(params) => console.log('handle onConnect', params)}
-        isConnectable={isConnectable}
-      />
-      <div className={`flex items-center min-w-64 space-x-4 bg-white p-4 rounded-lg shadow-md border ${borderColor}`}>
-        <div className={`flex items-center justify-center w-12 h-12 ${bgColor} text-gray-600 rounded-full`}>
-          <LucideSquareAsterisk className="w-6 h-6" />
+      {data.targetPosition && (
+        <Handle
+          type="target"
+          position={Position.Top}
+          isConnectable={false}
+          className="invisible"
+        />
+      )}
+      <div className={cn(
+        'overflow-clip rounded-lg border ring-0 ring-transparent ring-offset-background/75 hover:ring-muted-foreground/50 hover:ring-offset-2 hover:ring-1 transition-shadow',
+        data.active && 'ring-1 ring-offset-2 ring-offset-accent ring-primary hover:ring-primary hover:ring-1 cursor-grab'
+      )}>
+        <div className="flex items-center gap-2 px-4 py-2 bg-background border-b">
+          <LucideSquareAsterisk className={cn(
+            "size-6 text-muted-foreground transition-color",
+            data.active && "text-primary"
+          )}/>
+          <span>{data.secretName}</span>
         </div>
-        <div>
-          <h3 className="text-lg font-medium text-gray-900">{data.secretName}</h3>
-          <p className="text-sm text-gray-500">{data.providerName}</p>
+        <div className="flex p-4 py-3 bg-muted/40 backdrop-blur-sm">
+          <Badge variant="outline" className="bg-background">{data.providerName}</Badge>
         </div>
       </div>
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        id="a"
-        isConnectable={isConnectable}
-      />
+      {data.sourcePosition && (
+        <Handle
+          type="source"
+          position={Position.Bottom}
+          isConnectable={false}
+          className="rounded-full !bg-muted ring-1 ring-muted-foreground"
+        />
+      )}
     </>
   );
-});
-export default SecretNode
+}
+
+export default memo(SecretNode);
