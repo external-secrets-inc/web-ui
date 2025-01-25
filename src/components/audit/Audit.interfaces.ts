@@ -218,6 +218,12 @@ export interface LineageNode {
   providerName?: string;
 }
 
+export interface LineageNodeData extends Omit<LineageNode, 'secretID'> {
+  active: boolean;
+  sourcePosition?: boolean;
+  targetPosition?: boolean;
+}
+
 export interface LineageLink {
   fromSecret: string;
   toSecret: string;
@@ -227,12 +233,4 @@ export interface LineageLink {
 export interface LineageData {
   nodes: LineageNode[];
   links: LineageLink[];
-}
-
-export interface LineageNodeData {
-  secretName: string;
-  providerName: string;
-  active: boolean;
-  sourcePosition: boolean;
-  targetPosition: boolean;
 }

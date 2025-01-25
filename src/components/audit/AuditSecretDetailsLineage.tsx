@@ -1,15 +1,88 @@
-import { Background, Controls, ReactFlow, Node, Edge, MarkerType } from '@xyflow/react';
+import { Background, Controls, ReactFlow, Node, Edge, MarkerType, Handle, Position, BaseEdge, EdgeLabelRenderer, EdgeProps, getStraightPath } from '@xyflow/react';
 import '@xyflow/react/dist/base.css';
 import Dagre from '@dagrejs/dagre';
-import SecretNode from "@/components/lineage/SecretNode";
-import SecretEdge from "@/components/lineage/SecretEdge";
-import { useEffect, useState } from 'react';
-import { LineageData } from '@/components/audit/Audit.interfaces';
+import { useEffect, useState, memo } from 'react';
+import { LineageData, LineageNodeData } from '@/components/audit/Audit.interfaces';
 import { formatDate } from "@/utils/dateUtils";
-
+import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
+import { LucideSquareAsterisk, LucideCopy } from 'lucide-react';
 
 const NODE_WIDTH = 320;
 const NODE_HEIGHT = 192;
+
+const SecretNode = memo(function SecretNode({ data }: { data: LineageNodeData }) {
+  return (
+    <>
+      {data.targetPosition && (
+        <Handle
+          type="target"
+          position={Position.Top}
+          isConnectable={false}
+          className="invisible"
+        />
+      )}
+      <div className={cn(
+        'overflow-clip rounded-lg border ring-0 ring-transparent ring-offset-background/75 hover:ring-muted-foreground/50 hover:ring-offset-2 hover:ring-1 transition-shadow',
+        data.active && 'ring-1 ring-offset-2 ring-offset-accent ring-primary hover:ring-primary hover:ring-1 cursor-grab'
+      )}>
+        <div className="flex items-center gap-2 px-4 py-2 bg-background border-b">
+          <LucideSquareAsterisk className={cn(
+            "size-6 text-muted-foreground transition-color",
+            data.active && "text-primary"
+          )}/>
+          <span>{data.secretName}</span>
+        </div>
+        <div className="flex p-4 py-3 bg-muted/40 backdrop-blur-sm">
+          <Badge variant="outline" className="bg-background">{data.providerName}</Badge>
+        </div>
+      </div>
+      {data.sourcePosition && (
+        <Handle
+          type="source"
+          position={Position.Bottom}
+          isConnectable={false}
+          className="rounded-full !bg-muted ring-1 ring-muted-foreground"
+        />
+      )}
+    </>
+  );
+});
+
+function SecretEdge({
+  id,
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  label,
+  markerEnd,
+}: EdgeProps) {
+  const [edgePath, labelX, labelY] = getStraightPath({
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+  });
+
+  return (
+    <>
+      <BaseEdge id={id} path={edgePath} markerEnd={markerEnd} className="!stroke-muted-foreground" />
+      {label && (
+        <EdgeLabelRenderer>
+          <Badge
+            variant="outline"
+            className="absolute font-mono font-normal bg-background"
+            style={{transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`}}
+          >
+            <LucideCopy className="size-3 mr-2" />
+            {label}
+          </Badge>
+        </EdgeLabelRenderer>
+      )}
+    </>
+  );
+}
 
 interface AuditSecretDetailsLineageProps {
   lineageData: LineageData | undefined;
