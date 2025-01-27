@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.10.0](https://github.com/external-secrets-inc/web-ui/compare/v0.9.0...v0.10.0) (2025-01-27)
+
+
+### Features
+
+* :children_crossing: improve charts intermediate states ([ac0156e](https://github.com/external-secrets-inc/web-ui/commit/ac0156ed5ced6abcd1d0cb915ffc4394ae98d040))
+* add table/grid toggle for features  ([#126](https://github.com/external-secrets-inc/web-ui/issues/126)) ([32c9054](https://github.com/external-secrets-inc/web-ui/commit/32c9054436417def7b495c8d0c53dfc826030c2b))
+* implemented accordion and accessor logs logic ([#266](https://github.com/external-secrets-inc/web-ui/issues/266)) ([dbaa301](https://github.com/external-secrets-inc/web-ui/commit/dbaa3012000846f6bcefb0cda5b02ddea70c0f5f))
+* implemented darkmode toggle button ([#269](https://github.com/external-secrets-inc/web-ui/issues/269)) ([ae5baa2](https://github.com/external-secrets-inc/web-ui/commit/ae5baa251e9b135777ed97c77e3147c338fb32bd))
+* improve charts intermediate states styles ([#251](https://github.com/external-secrets-inc/web-ui/issues/251)) ([ac0156e](https://github.com/external-secrets-inc/web-ui/commit/ac0156ed5ced6abcd1d0cb915ffc4394ae98d040))
+* Update secrets endpoints ([#247](https://github.com/external-secrets-inc/web-ui/issues/247)) ([36aa532](https://github.com/external-secrets-inc/web-ui/commit/36aa5327a3030743100da1f540893393b656ccfd))
+
+
+### Bug Fixes
+
+* fixed empty data alert, and centered loading and error cases ([#245](https://github.com/external-secrets-inc/web-ui/issues/245)) ([043d6ee](https://github.com/external-secrets-inc/web-ui/commit/043d6ee3899cd366abe1e7722239630ccfd373d7))
+* little fix for handleDefaultApiHttpError ([#259](https://github.com/external-secrets-inc/web-ui/issues/259)) ([356512d](https://github.com/external-secrets-inc/web-ui/commit/356512d53044aaba2ca57294b82e7c13b48f9bfa))
+* Secret table mock data and mock return for get secret data function ([#250](https://github.com/external-secrets-inc/web-ui/issues/250)) ([4b8ad86](https://github.com/external-secrets-inc/web-ui/commit/4b8ad86c3489542830c59adb6df4282db02dc219))
+* Update filters to new format expected by BE ([#261](https://github.com/external-secrets-inc/web-ui/issues/261)) ([9f52b11](https://github.com/external-secrets-inc/web-ui/commit/9f52b11c8dfd89f9f0af440b2376885c1cb0a25b))
+
 ## [0.9.0](https://github.com/external-secrets-inc/web-ui/compare/v0.8.0...v0.9.0) (2025-01-14)
 
 
