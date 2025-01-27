@@ -23,35 +23,35 @@ const NavLinks: React.FC<NavLinksProps> = ({ closeSheetOnClick }) => {
 
   return (
     <>
-      <LinkWrapper>
-        <OrgNavLink
-          path='/agents'
-          title='Agents'
-        />
-      </LinkWrapper>
-      <LinkWrapper>
-        <OrgNavLink
-          path='/rotators'
-          title='Async Rotators'
-        />
-      </LinkWrapper>
-      {/* TODO: Remove mock variable when audit is ready https://github.com/external-secrets-inc/web-ui/issues/124*/}
-      {import.meta.env.VITE_MOCK_AUDIT_ROUTE && <LinkWrapper>
-        <OrgNavLink
-          path='/audit'
-          title='Audit'
-        />
-      </LinkWrapper>}
-      <LinkWrapper>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleTheme}
-          className="md:ml-auto"
-        >
-          {theme === 'dark' ? <LucideSun className="h-6 w-6" /> : <LucideMoon className="h-6 w-6" />}
-        </Button>
-      </LinkWrapper>
+      <div className="flex items-center gap-4">
+        <LinkWrapper>
+          <OrgNavLink
+            path='/agents'
+            title='Agents'
+          />
+        </LinkWrapper>
+        <LinkWrapper>
+          <OrgNavLink
+            path='/rotators'
+            title='Async Rotators'
+          />
+        </LinkWrapper>
+        {/* TODO: Remove mock variable when audit is ready https://github.com/external-secrets-inc/web-ui/issues/124*/}
+        {import.meta.env.VITE_MOCK_AUDIT_ROUTE && <LinkWrapper>
+          <OrgNavLink
+            path='/audit'
+            title='Audit'
+          />
+        </LinkWrapper>}
+      </div>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={toggleTheme}
+        className="md:ml-auto text-muted-foreground hover:text-foreground"
+      >
+        {theme === 'dark' ? <LucideSun /> : <LucideMoon />}
+      </Button>
       <LinkWrapper>
         <a
           href={docsUrl}
