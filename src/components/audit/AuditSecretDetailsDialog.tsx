@@ -26,6 +26,7 @@ import { Loader } from "@/components/ui/Loader"
 import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 import useGetSecretAccessorLogs from "@/services/audit/queries/useGetSecretAccessorLogs";
+import useGetSecretPolicyLogs from "@/services/audit/queries/useGetSecretPolicyLogs";
 
 interface AuditSecretDetailsDialogProps {
   secretId: string | null;
@@ -34,6 +35,7 @@ interface AuditSecretDetailsDialogProps {
 }
 
 export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpenChange }: AuditSecretDetailsDialogProps) {
+  const [policyId, setPolicyId] = useState<string>('');
   const [accessorName, setAccessorName] = useState<string>('');
 
   const {
@@ -46,6 +48,15 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
     refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
     enabled: !!secretId
+  });
+
+  const {
+    data: policyLogsData,
+    refetch: policyLogsRefetch,
+    isLoading: isLoadingPolicyLogs,
+    error: policyLogsError,
+  } = useGetSecretPolicyLogs(true, secretId || '', policyId || '', {
+    enabled: !!secretId && !!policyId
   });
 
   const {
@@ -66,6 +77,15 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
       onOpenChange(false);
     }
   }, [secretDataError, isErrorSecretData, onOpenChange]);
+
+  useEffect(() => {
+    if (policyLogsError) {
+      handleDefaultApiHttpError(
+        policyLogsError,
+        `Error while fetching policy data`
+      );
+    }
+  }, [policyLogsError]);
 
   useEffect(() => {
     if (accessorLogsError) {
@@ -98,6 +118,12 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
       secretRefetch();
     }
   }, [secretId, secretRefetch]);
+
+  useEffect(() => {
+    if (policyId) {
+      policyLogsRefetch();
+    }
+  }, [policyId, policyLogsRefetch]);
 
   useEffect(() => {
     if (accessorName) {
@@ -158,24 +184,79 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
                     {listenerSecretData.policies.length > 0 ? (
                       <div className="space-y-2">
                         {listenerSecretData.policies.map(policy => (
-                          <Alert
-                            key={policy.id}
-                            variant={policy.status === "compliant" ? "default" : "destructive"}
-                          >
-                            <AlertDescription className="flex items-center gap-2">
-                              {policy.status === "compliant" ? (
-                                <LucideCheck className="text-green-500" />
-                              ) : (
-                                <LucideAlertCircle className="text-destructive" />
-                              )}
-                              <span className="font-medium">{policy.name}</span>
-                              {policy.status !== "compliant" && (
-                                <Badge variant="outline" className="text-destructive border-destructive ml-auto">
-                                  {policy.status}
-                                </Badge>
-                              )}
-                            </AlertDescription>
-                          </Alert>
+                          <Accordion type="single" collapsible key={policy.id} className="w-full">
+                            <AccordionItem value="policy-details" className="border-none" onClick={() => setPolicyId(policy.id)}>
+                              <Alert className="p-0 overflow-clip" variant={policy.status === "compliant" ? "default" : "destructive"}>
+                                <AccordionTrigger className="hover:no-underline hover:bg-muted/20 py-3 px-4">
+                                  <AlertDescription className="flex items-center justify-between w-full mr-4">
+                                    <div className="flex items-center gap-2">
+                                      {policy.status === "compliant" ? (
+                                        <LucideCheck className="text-green-500" />
+                                      ) : (
+                                        <LucideAlertCircle className="text-destructive" />
+                                      )}
+                                      <span className="font-medium">{policy.name}</span>
+                                    </div>
+                                    {policy.status !== "compliant" && (
+                                      <Badge variant="outline" className="text-destructive border-destructive">
+                                        {policy.status}
+                                      </Badge>
+                                    )}
+                                  </AlertDescription>
+                                </AccordionTrigger>
+                                <AccordionContent className="border-t mx-4 py-4">
+                                  {isLoadingPolicyLogs ? (
+                                    <div className="flex justify-center items-center w-full">
+                                      <Loader />
+                                    </div>
+                                  ) : policyLogsData && policyLogsData.length > 0 ? (
+                                    <div className="space-y-3 relative before:absolute before:left-[17px] before:top-[26px] before:bottom-[6px] before:w-[2px] before:bg-muted">
+                                      <div className="flex items-center gap-2">
+                                        <LucideHistory className="text-muted-foreground" />
+                                        <span className="text-sm text-muted-foreground">History</span>
+                                        <Badge variant="secondary">{policyLogsData.length || "0"}</Badge>
+                                      </div>
+                                      <div className="flex flex-col gap-3 pl-2">
+                                        {policyLogsData.map(log => (
+                                          <Alert 
+                                            key={`${log.policyID}-${log.timestamp}`}
+                                            variant={log.status === "compliant" ? "default" : "destructive"}
+                                            className="relative"
+                                          >
+                                            <div className="absolute -left-[22px] top-1/2 -translate-y-1/2 size-3 rounded-full bg-background border-2 border-primary" />
+                                            <AlertDescription className="flex items-center justify-between">
+                                              <div className="flex items-center gap-2">
+                                                {log.status === "compliant" ? (
+                                                  <LucideCheck className="text-green-500" />
+                                                ) : (
+                                                  <LucideAlertCircle className="text-destructive" />
+                                                )}
+                                                <Badge 
+                                                  variant="outline" 
+                                                  className={cn(
+                                                    log.status !== "compliant" && "text-destructive border-destructive"
+                                                  )}
+                                                >
+                                                  {log.status}
+                                                </Badge>
+                                              </div>
+                                              <span className="text-sm text-muted-foreground font-mono">
+                                                {formatDate(log.timestamp, { format: 'readableDate' })}
+                                              </span>
+                                            </AlertDescription>
+                                          </Alert>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <span className="text-sm text-muted-foreground">
+                                      No history available
+                                    </span>
+                                  )}
+                                </AccordionContent>
+                              </Alert>
+                            </AccordionItem>
+                          </Accordion>
                         ))}
                       </div>
                     ) : (
