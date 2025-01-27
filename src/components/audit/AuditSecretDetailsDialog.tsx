@@ -186,7 +186,7 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
                         {listenerSecretData.policies.map(policy => (
                           <Accordion type="single" collapsible key={policy.id} className="w-full">
                             <AccordionItem value="policy-details" className="border-none" onClick={() => setPolicyId(policy.id)}>
-                              <Alert className="p-0 overflow-clip" variant={policy.status === "compliant" ? "default" : "destructive"}>
+                              <Alert className="p-0 overflow-clip" variant={policy.status === "compliant" ? "success" : "destructive"}>
                                 <AccordionTrigger className="hover:no-underline hover:bg-muted/20 py-3 px-4">
                                   <AlertDescription className="flex items-center justify-between w-full mr-4">
                                     <div className="flex items-center gap-2">
@@ -220,7 +220,7 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
                                         {policyLogsData.map(log => (
                                           <Alert 
                                             key={`${log.policyID}-${log.timestamp}`}
-                                            variant={log.status === "compliant" ? "default" : "destructive"}
+                                            variant={log.status === "compliant" ? "success" : "destructive"}
                                             className="relative"
                                           >
                                             <div className="absolute -left-[22px] top-1/2 -translate-y-1/2 size-3 rounded-full bg-background border-2 border-primary" />
