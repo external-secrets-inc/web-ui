@@ -5,7 +5,6 @@ import { ApiHttpError, Manifest } from "@/types";
 import { AxiosError } from "axios";
 import { useAuditMock } from '@/services/audit/context/AuditMockContext';
 
-// TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/118
 const getTenantHelm = async (mock: boolean, signal: AbortSignal, version: string = "latest", listenerId: string) => {
   if(mock) return {manifest: 'Helm chart configuration for listener installation!'}
 
