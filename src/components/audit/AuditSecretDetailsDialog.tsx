@@ -55,7 +55,7 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
     refetch: policyLogsRefetch,
     isLoading: isLoadingPolicyLogs,
     error: policyLogsError,
-  } = useGetSecretPolicyLogs(true, secretId || '', policyId || '', {
+  } = useGetSecretPolicyLogs(false, secretId || '', policyId || '', {
     enabled: !!secretId && !!policyId
   });
 
