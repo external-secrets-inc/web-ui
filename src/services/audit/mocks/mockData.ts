@@ -447,6 +447,279 @@ export const mockProvidersData = [
   },
 ] as const
 
+export const mockSecretPoliciesData = {
+  "42bcd969-fcd7-44fc-ad37-1749c666096d": [
+    {
+      "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+      "policyID": "42bcd969-fcd7-44fc-ad37-1749c666096d",
+      "name": "Policy1",
+      "status": "compliant",
+      "timestamp": "2025-01-24T16:56:53.084000"
+    },
+    {
+      "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+      "policyID": "42bcd969-fcd7-44fc-ad37-1749c666096d",
+      "name": "Policy1",
+      "status": "non_compliant",
+      "timestamp": "2025-01-24T16:56:53.081000"
+    },
+    {
+      "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+      "policyID": "42bcd969-fcd7-44fc-ad37-1749c666096d",
+      "name": "Policy0",
+      "status": "error",
+      "timestamp": "2025-01-24T16:56:53.080000"
+    },
+    {
+      "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+      "policyID": "42bcd969-fcd7-44fc-ad37-1749c666096d",
+      "name": "Policy1",
+      "status": "non_compliant",
+      "timestamp": "2025-01-23T07:46:56.084000"
+    },
+    {
+      "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+      "policyID": "42bcd969-fcd7-44fc-ad37-1749c666096d",
+      "name": "Policy1",
+      "status": "non_compliant",
+      "timestamp": "2025-01-22T21:44:20.084000"
+    },
+    {
+      "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+      "policyID": "42bcd969-fcd7-44fc-ad37-1749c666096d",
+      "name": "Policy1",
+      "status": "compliant",
+      "timestamp": "2025-01-19T12:58:53.081000"
+    },
+    {
+      "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+      "policyID": "42bcd969-fcd7-44fc-ad37-1749c666096d",
+      "name": "Policy1",
+      "status": "compliant",
+      "timestamp": "2025-01-19T02:14:14.081000"
+    },
+    {
+      "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+      "policyID": "42bcd969-fcd7-44fc-ad37-1749c666096d",
+      "name": "Policy0",
+      "status": "compliant",
+      "timestamp": "2025-01-07T01:54:31.080000"
+    },
+    {
+      "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+      "policyID": "42bcd969-fcd7-44fc-ad37-1749c666096d",
+      "name": "Policy0",
+      "status": "non_compliant",
+      "timestamp": "2025-01-02T13:41:51.080000"
+    }
+  ],
+  "5d0749bc-0e6f-4c28-81d7-99d5dfbf2071": [
+    {
+      "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+      "policyID": "5d0749bc-0e6f-4c28-81d7-99d5dfbf2071",
+      "name": "Policy0",
+      "status": "compliant",
+      "timestamp": "2025-01-24T16:56:53.085000"
+    },
+    {
+      "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+      "policyID": "5d0749bc-0e6f-4c28-81d7-99d5dfbf2071",
+      "name": "Policy0",
+      "status": "compliant",
+      "timestamp": "2025-01-24T16:56:53.084000"
+    },
+    {
+      "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+      "policyID": "5d0749bc-0e6f-4c28-81d7-99d5dfbf2071",
+      "name": "Policy0",
+      "status": "error",
+      "timestamp": "2025-01-24T16:56:53.083000"
+    },
+    {
+      "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+      "policyID": "5d0749bc-0e6f-4c28-81d7-99d5dfbf2071",
+      "name": "Policy1",
+      "status": "non_compliant",
+      "timestamp": "2025-01-24T16:56:53.081000"
+    },
+    {
+      "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+      "policyID": "5d0749bc-0e6f-4c28-81d7-99d5dfbf2071",
+      "name": "Policy0",
+      "status": "error",
+      "timestamp": "2025-01-23T13:08:06.084000"
+    },
+    {
+      "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+      "policyID": "5d0749bc-0e6f-4c28-81d7-99d5dfbf2071",
+      "name": "Policy0",
+      "status": "non_compliant",
+      "timestamp": "2025-01-19T15:23:12.083000"
+    },
+    {
+      "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+      "policyID": "5d0749bc-0e6f-4c28-81d7-99d5dfbf2071",
+      "name": "Policy1",
+      "status": "non_compliant",
+      "timestamp": "2025-01-15T15:53:20.081000"
+    },
+    {
+      "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+      "policyID": "5d0749bc-0e6f-4c28-81d7-99d5dfbf2071",
+      "name": "Policy0",
+      "status": "compliant",
+      "timestamp": "2025-01-14T18:26:42.085000"
+    },
+    {
+      "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+      "policyID": "5d0749bc-0e6f-4c28-81d7-99d5dfbf2071",
+      "name": "Policy1",
+      "status": "non_compliant",
+      "timestamp": "2025-01-13T21:45:21.081000"
+    },
+    {
+      "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+      "policyID": "5d0749bc-0e6f-4c28-81d7-99d5dfbf2071",
+      "name": "Policy0",
+      "status": "error",
+      "timestamp": "2025-01-13T11:43:04.084000"
+    },
+    {
+      "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+      "policyID": "5d0749bc-0e6f-4c28-81d7-99d5dfbf2071",
+      "name": "Policy0",
+      "status": "non_compliant",
+      "timestamp": "2025-01-02T08:19:59.083000"
+    },
+    {
+      "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+      "policyID": "5d0749bc-0e6f-4c28-81d7-99d5dfbf2071",
+      "name": "Policy0",
+      "status": "non_compliant",
+      "timestamp": "2024-12-30T05:07:50.085000"
+    }
+  ],
+  "6d4fc522-5322-4f5a-88db-f77204164a8f": [
+    {
+      "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+      "policyID": "6d4fc522-5322-4f5a-88db-f77204164a8f",
+      "name": "Policy1",
+      "status": "compliant",
+      "timestamp": "2025-01-24T16:56:53.085000"
+    },
+    {
+      "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+      "policyID": "6d4fc522-5322-4f5a-88db-f77204164a8f",
+      "name": "Policy1",
+      "status": "error",
+      "timestamp": "2025-01-04T23:57:13.085000"
+    },
+    {
+      "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+      "policyID": "6d4fc522-5322-4f5a-88db-f77204164a8f",
+      "name": "Policy1",
+      "status": "error",
+      "timestamp": "2024-12-27T05:35:58.085000"
+    }
+  ],
+  "dce25246-c9eb-4dc6-9bcd-19a8d87569ca": [
+    {
+      "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+      "policyID": "dce25246-c9eb-4dc6-9bcd-19a8d87569ca",
+      "name": "Policy0",
+      "status": "compliant",
+      "timestamp": "2025-01-24T16:56:53.081000"
+    },
+    {
+      "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+      "policyID": "dce25246-c9eb-4dc6-9bcd-19a8d87569ca",
+      "name": "Policy0",
+      "status": "compliant",
+      "timestamp": "2025-01-11T06:15:53.081000"
+    },
+    {
+      "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+      "policyID": "dce25246-c9eb-4dc6-9bcd-19a8d87569ca",
+      "name": "Policy0",
+      "status": "non_compliant",
+      "timestamp": "2025-01-05T04:58:58.081000"
+    }
+  ]
+} as const
+
+export const mockSecretPolicyLogs = [
+  {
+    "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+    "policyID": "5d0749bc-0e6f-4c28-81d7-99d5dfbf2071",
+    "name": "Policy0",
+    "status": "compliant",
+    "timestamp": "2025-01-24T16:56:53.085000"
+  },
+  {
+    "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+    "policyID": "5d0749bc-0e6f-4c28-81d7-99d5dfbf2071",
+    "name": "Policy0",
+    "status": "compliant",
+    "timestamp": "2025-01-24T16:56:53.084000"
+  },
+  {
+    "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+    "policyID": "5d0749bc-0e6f-4c28-81d7-99d5dfbf2071",
+    "name": "Policy0",
+    "status": "error",
+    "timestamp": "2025-01-24T16:56:53.083000"
+  },
+  {
+    "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+    "policyID": "5d0749bc-0e6f-4c28-81d7-99d5dfbf2071",
+    "name": "Policy1",
+    "status": "non_compliant",
+    "timestamp": "2025-01-24T16:56:53.081000"
+  },
+  {
+    "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+    "policyID": "5d0749bc-0e6f-4c28-81d7-99d5dfbf2071",
+    "name": "Policy0",
+    "status": "error",
+    "timestamp": "2025-01-23T13:08:06.084000"
+  },
+  {
+    "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+    "policyID": "5d0749bc-0e6f-4c28-81d7-99d5dfbf2071",
+    "name": "Policy0",
+    "status": "non_compliant",
+    "timestamp": "2025-01-19T15:23:12.083000"
+  },
+  {
+    "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+    "policyID": "5d0749bc-0e6f-4c28-81d7-99d5dfbf2071",
+    "name": "Policy1",
+    "status": "non_compliant",
+    "timestamp": "2025-01-15T15:53:20.081000"
+  },
+  {
+    "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+    "policyID": "5d0749bc-0e6f-4c28-81d7-99d5dfbf2071",
+    "name": "Policy0",
+    "status": "compliant",
+    "timestamp": "2025-01-14T18:26:42.085000"
+  },
+  {
+    "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+    "policyID": "5d0749bc-0e6f-4c28-81d7-99d5dfbf2071",
+    "name": "Policy1",
+    "status": "non_compliant",
+    "timestamp": "2025-01-13T21:45:21.081000"
+  },
+  {
+    "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
+    "policyID": "5d0749bc-0e6f-4c28-81d7-99d5dfbf2071",
+    "name": "Policy0",
+    "status": "error",
+    "timestamp": "2025-01-13T11:43:04.084000"
+  }
+] as const
+
 export const mockSecretAccessorsData = {
   "accessor_3506": [
     {
