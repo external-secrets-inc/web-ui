@@ -216,23 +216,25 @@ export interface AuditTimelineEntry {
 
 export type SecretDetails = AuditSecretTableData;
 
-export interface PolicyLog {
+export interface PolicyDetails {
   secretID: string;
   policyID: string;
   name: string;
   status: "non_compliant" | "compliant" | "error";
   timestamp: string;
 }
+
 export interface SecretPolicies {
-  [key: string]: PolicyLog[];
+  [key: string]: PolicyDetails[];
 }
 
-export interface AccessDetails {
+export interface AccessorDetails {
   secretID: string;
   accessorID: string;
   name: string;
   timestamp: string;
 }
+
 export interface SecretAccessors {
-  [key: string]: AccessDetails[];
+  [key: string]: AccessorDetails[];
 }

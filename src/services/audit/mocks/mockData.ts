@@ -446,7 +446,6 @@ export const mockProvidersData = [
     policies: ["policy-id-1", "policy-id-2", "policy-id-3"],
   },
 ] as const
-
 export const mockSecretPoliciesData = {
   "42bcd969-fcd7-44fc-ad37-1749c666096d": [
     {
@@ -792,5 +791,32 @@ export const mockSecretAccessorsData = {
     }
   ]
 } as const
+
+export const mockSecretAccessorLogsData = [
+  {
+    "secretID": "dfc02f1f-eed1-4dcd-9699-0c5cc54f5827",
+    "accessorID": "c5381f36-a7f9-4748-9d5c-842198ddab7b",
+    "name": "accessor_3506",
+    "timestamp": "2025-01-19T18:19:37.411000"
+  },
+  {
+    "secretID": "dfc02f1f-eed1-4dcd-9699-0c5cc54f5827",
+    "accessorID": "c5381f36-a7f9-4748-9d5c-842198ddab7b",
+    "name": "accessor_3506",
+    "timestamp": "2025-01-19T03:41:29.411000"
+  },
+  {
+    "secretID": "dfc02f1f-eed1-4dcd-9699-0c5cc54f5827",
+    "accessorID": "c5381f36-a7f9-4748-9d5c-842198ddab7b",
+    "name": "accessor_3506",
+    "timestamp": "2025-01-09T09:03:37.411000"
+  },
+  {
+    "secretID": "dfc02f1f-eed1-4dcd-9699-0c5cc54f5827",
+    "accessorID": "c5381f36-a7f9-4748-9d5c-842198ddab7b",
+    "name": "accessor_3506",
+    "timestamp": "2025-01-05T23:55:35.411000"
+  }
+] as const
 
 export const mockNetworkResponseDelay = () => new Promise(resolve => setTimeout(resolve, 2500))

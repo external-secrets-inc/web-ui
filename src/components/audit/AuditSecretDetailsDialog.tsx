@@ -20,12 +20,12 @@ import { AuditSecretData } from "./Audit.interfaces";
 import { formatDate } from "@/utils/dateUtils";
 import useGetAuditSecretData from "@/services/audit/queries/useGetAuditSecretData";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { Loader } from "@/components/ui/Loader"
 import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
-import useGetSecretAccessors from "@/services/audit/queries/useGetSecretAccessors";
+import useGetSecretAccessorLogs from "@/services/audit/queries/useGetSecretAccessorLogs";
 
 interface AuditSecretDetailsDialogProps {
   secretId: string | null;
@@ -34,6 +34,8 @@ interface AuditSecretDetailsDialogProps {
 }
 
 export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpenChange }: AuditSecretDetailsDialogProps) {
+  const [accessorName, setAccessorName] = useState<string>('');
+
   const {
     data: secretData,
     refetch: secretRefetch,
@@ -47,12 +49,12 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
   });
 
   const {
-    data: accessorsData,
-    refetch: accessorsRefetch,
-    isError: isErrorAccessorsData,
-    error: accessorsDataError,
-  } = useGetSecretAccessors(false, secretId || '', {
-    enabled: !!secretId
+    data: accessorLogsData,
+    refetch: accessorLogsRefetch,
+    isLoading: isLoadingAccessorLogs,
+    error: accessorLogsError,
+  } = useGetSecretAccessorLogs(false, secretId || '', accessorName || '', {
+    enabled: !!secretId && !!accessorName
   });
 
   useEffect(() => {
@@ -66,13 +68,13 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
   }, [secretDataError, isErrorSecretData, onOpenChange]);
 
   useEffect(() => {
-    if (accessorsDataError) {
+    if (accessorLogsError) {
       handleDefaultApiHttpError(
-        accessorsDataError,
+        accessorLogsError,
         `Error while fetching accessors data`
       );
     }
-  }, [accessorsDataError, isErrorAccessorsData]);
+  }, [accessorLogsError]);
 
   const listenerSecretData = useMemo(() => {
     if (!secretData)
@@ -94,9 +96,14 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
   useEffect(() => {
     if (secretId) {
       secretRefetch();
-      accessorsRefetch();
     }
-  }, [accessorsRefetch, secretId, secretRefetch]);
+  }, [secretId, secretRefetch]);
+
+  useEffect(() => {
+    if (accessorName) {
+      accessorLogsRefetch();
+    }
+  }, [accessorName, accessorLogsRefetch]);
 
   if (!secretId) return null;
 
@@ -221,7 +228,7 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
                       <div className="space-y-2">
                         {listenerSecretData.accessors.map(access => (
                           <Accordion type="single" collapsible key={access.id} className="w-full">
-                            <AccordionItem value="accessor-details" className="border-none">
+                            <AccordionItem value="accessor-details" className="border-none" onClick={() => setAccessorName(access.name)}>
                               <Alert className="p-0 overflow-clip">
                                 <AccordionTrigger className="hover:no-underline hover:bg-muted/20 py-3 px-4">
                                   <AlertDescription className="flex items-center justify-between w-full mr-4">
@@ -235,15 +242,19 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
                                   </AlertDescription>
                                 </AccordionTrigger>
                                 <AccordionContent className="grid grid-cols-[auto_1fr] justify-items-end items-start border-t mx-4 py-4">
-                                  {accessorsData?.[access.name] && accessorsData[access.name].length > 0 ? (
+                                  {isLoadingAccessorLogs ? (
+                                    <div className="col-span-2 flex justify-center items-center w-full">
+                                      <Loader />
+                                    </div>
+                                  ) : accessorLogsData && accessorLogsData.length > 0 ? (
                                     <>
                                       <div className="flex items-center gap-2">
                                         <LucideHistory className="text-muted-foreground" />
                                         <span className="text-sm text-muted-foreground">History</span>
-                                        <Badge variant="secondary">{accessorsData[access.name].length || "0"}</Badge>
+                                        <Badge variant="secondary">{accessorLogsData.length || "0"}</Badge>
                                       </div>
                                       <div className="flex flex-col gap-2">
-                                        {accessorsData[access.name].map(log => (
+                                        {accessorLogsData.map(log => (
                                           <Badge
                                             key={`${log.accessorID}-${log.timestamp}`}
                                             className="mr-8 font-mono"

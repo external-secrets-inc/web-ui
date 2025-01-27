@@ -4,7 +4,7 @@ import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError, } from "@/types";
 import { AxiosError } from "axios";
 import { mockNetworkResponseDelay, mockSecretPolicyLogsData } from "../mocks/mockData";
-import { PolicyLog } from "@/components/audit/Audit.interfaces";
+import { PolicyDetails } from "@/components/audit/Audit.interfaces";
 import { useAuditMock } from '@/services/audit/context/AuditMockContext';
 
 const getSecretPolicyLogs = async (
@@ -27,7 +27,7 @@ const useGetSecretPolicyLogs = (
   mock: boolean,
   secretID: string,
   policyID: string,
-  options?: Omit<UseQueryOptions<PolicyLog[], AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<PolicyDetails[], AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
 ) => {
   const { isMocked } = useAuditMock(mock);
 
