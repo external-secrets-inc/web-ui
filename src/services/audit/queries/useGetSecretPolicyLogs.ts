@@ -3,11 +3,11 @@ import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError, } from "@/types";
 import { AxiosError } from "axios";
-import { mockNetworkResponseDelay, mockSecretPolicyLogs } from "../mocks/mockData";
+import { mockNetworkResponseDelay, mockSecretPolicyLogsData } from "../mocks/mockData";
 import { PolicyLog } from "@/components/audit/Audit.interfaces";
 import { useAuditMock } from '@/services/audit/context/AuditMockContext';
 
-const getPolicyLogs = async (
+const getSecretPolicyLogs = async (
   mock: boolean,
   secretID: string,
   policyID: string,
@@ -15,7 +15,7 @@ const getPolicyLogs = async (
 ) => {
   if (mock) {
     await mockNetworkResponseDelay();
-    return mockSecretPolicyLogs;
+    return mockSecretPolicyLogsData;
   }
 
   const headers = await getAuthHeaders();
@@ -23,7 +23,7 @@ const getPolicyLogs = async (
   return response.data;
 }
 
-const useGetPolicyLogs = (
+const useGetSecretPolicyLogs = (
   mock: boolean,
   secretID: string,
   policyID: string,
@@ -32,10 +32,10 @@ const useGetPolicyLogs = (
   const { isMocked } = useAuditMock(mock);
 
   return useQuery({
-    queryKey: ["useGetPolicyLogs", isMocked],
-    queryFn: ({ signal }) => getPolicyLogs(isMocked, secretID, policyID, signal),
+    queryKey: ["useGetSecretPolicyLogs", isMocked],
+    queryFn: ({ signal }) => getSecretPolicyLogs(isMocked, secretID, policyID, signal),
     ...options,
   });
 };
 
-export default useGetPolicyLogs;
+export default useGetSecretPolicyLogs;

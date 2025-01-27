@@ -647,7 +647,7 @@ export const mockSecretPoliciesData = {
   ]
 } as const
 
-export const mockSecretPolicyLogs = [
+export const mockSecretPolicyLogsData = [
   {
     "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
     "policyID": "5d0749bc-0e6f-4c28-81d7-99d5dfbf2071",
