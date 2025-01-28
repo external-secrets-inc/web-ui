@@ -28,15 +28,19 @@ export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
   // Memoization with schema validation
   const currentFilters = useMemo((): FilterSchema => {
     const filters: FilterSchema = {
-      providers: searchParams.getAll("providers"),
+      providerIDs: searchParams.getAll("providerIDs"),
       policyIDs: searchParams.getAll("policyIDs"),
       secretIDs: searchParams.getAll("secretIDs"),
+      duplicateIDs: searchParams.getAll("duplicateIDs"),
+      accessorNames: searchParams.getAll("accessorNames"),
       search: searchParams.get("search") ?? undefined,
       policyStatus: searchParams.get("policyStatus") ?? undefined,
-      duplicates: searchParams.get("duplicates") ?? undefined,
-      lastAccess: searchParams.get("lastAccess") ?? undefined,
-      lastRotation: searchParams.get("lastRotation") ?? undefined,
       accessors: searchParams.get("accessors") ?? undefined,
+      duplicates: searchParams.get("duplicates") ?? undefined,
+      startLastAccess: searchParams.get("startLastAccess") ?? undefined,
+      endLastAccess: searchParams.get("endLastAccess") ?? undefined,
+      startLastRotation: searchParams.get("startLastRotation") ?? undefined,
+      endLastRotation: searchParams.get("endLastRotation") ?? undefined,
     };
 
     return filterSchema.parse(filters);
@@ -73,7 +77,7 @@ export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
       }
 
       // Handle name params that's not assigned at filters form
-      if(generalSearchParam)
+      if (generalSearchParam)
         prevParams.set("search", generalSearchParam)
       return prevParams;
     });
@@ -86,7 +90,7 @@ export function AuditFilterProvider({ children }: AuditFilterProviderProps) {
   }, []);
 
   useEffect(() => {
-    if(debouncedGeneralSearchParam != null) {
+    if (debouncedGeneralSearchParam != null) {
       setSearchParams((prevParams) => {
         if (!generalSearchParam) {
           prevParams.delete("search");

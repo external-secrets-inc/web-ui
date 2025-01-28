@@ -24,7 +24,7 @@ const baseSchema = z.object({
   rule: z.string().min(1, { message: "Rule is required." }),
 });
 
-const executeOnArray = ["Read", "UpdatePreHash", "UpdatePostHash", "Create", "Delete", "RBACCreate", "RBACUpdate", "RBACDelete"];
+const executeOnArray = ["Read", "Update", "Result", "Create", "Delete", "RBACCreate", "RBACUpdate", "RBACDelete"];
 const executeOnOptions = executeOnArray.map(x => ({ label: x, value: x }));
 
 const PolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel }: {
