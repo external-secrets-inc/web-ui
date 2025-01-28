@@ -17,7 +17,6 @@ import { Input } from "../ui/input";
 import saveAs from "file-saver";
 import { Separator } from "@/components/ui/separator";
 import { formatDate } from "@/utils/dateUtils";
-import { ReactFlowProvider } from "@xyflow/react";
 
 interface AuditSecretTableProps {
   listenerID: string;
@@ -284,13 +283,11 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
         <DataTable onRowClick={(row) => setSelectedSecretId(row.id)} />
       </DataProvider>
 
-      <ReactFlowProvider>
-        <AuditSecretDetails
-          secretId={selectedSecretId}
-          setSecretId={setSelectedSecretId}
-          onOpenChange={(open) => !open && setSelectedSecretId(null)}
-        />
-      </ReactFlowProvider>
+      <AuditSecretDetails
+        secretId={selectedSecretId}
+        setSecretId={setSelectedSecretId}
+        onOpenChange={(open) => !open && setSelectedSecretId(null)}
+      />
     </>
   );
 };
