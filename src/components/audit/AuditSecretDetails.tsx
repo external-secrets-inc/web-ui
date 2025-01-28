@@ -8,8 +8,8 @@ import { useEffect, useMemo } from "react";
 import { AuditSecretData } from "./Audit.interfaces";
 import AuditSecretDetailsData from "./AuditSecretDetailsData";
 import AuditSecretDetailsLineage from "./AuditSecretDetailsLineage";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LucideNetwork, LucideSquareAsterisk } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 
 interface AuditSecretDetailsProps {
   secretId: string | null;
@@ -70,7 +70,7 @@ export default function AuditSecretDetails({ secretId, setSecretId, onOpenChange
 
   return (
     <Sheet open={!!secretId} onOpenChange={onOpenChange}>
-      <SheetContent className="min-w-[100vw] xl:min-w-[90vw] flex flex-col h-full p-0">
+      <SheetContent className="min-w-0 sm:max-w-[unset] w-screen lg:w-auto flex flex-col h-full p-0">
         <SheetHeader className="sr-only">
           <SheetTitle>
             {listenerSecretData.name || "Unnamed Secret"}
@@ -85,31 +85,47 @@ export default function AuditSecretDetails({ secretId, setSecretId, onOpenChange
             <Loader />
           </div>
         ) : (
-          <div className="flex-1 flex border-t min-h-0">
-            <section aria-label="Lineage" className="min-h-0 relative overflow-clip flex-1">
-              <h3 className="font-semibold mb-3 flex items-center gap-2 p-3 rounded-md bg-background border absolute top-3 left-1/2 -translate-x-1/2 z-10 w-max">
-                <LucideNetwork />
-                Duplicates Lineage
-              </h3>
-              <AuditSecretDetailsLineage
-                lineageData={lineageData}
-                currentSecretId={secretId}
-                setSecretId={setSecretId}
-              />
-            </section>
-            <section aria-label="Details" className="min-h-0 grid grid-rows-[auto_1fr] bg-background relative flex-1 max-w-[640px] min-w-[480px] border-l">
-              <div className="p-6 border-b">
-                <div className="flex items-center flex-wrap gap-2">
-                  <LucideSquareAsterisk className="size-6 text-primary" />
-                  {listenerSecretData.name || "Unnamed Secret"}
-                  <Badge variant="outline">{listenerSecretData.providerName}</Badge>
-                </div>
+          <div className="flex-1 min-h-0 flex flex-col">
+            <Tabs defaultValue="details" className="flex-1 min-h-0 flex flex-col">
+              <div className="lg:hidden py-2 px-12 flex justify-center bg-muted/35 border-b">
+                <TabsList className="grid w-full grid-cols-2 max-w-80">
+                  <TabsTrigger value="details" className="gap-2">
+                    <LucideSquareAsterisk className="flex-none" />
+                    Details
+                  </TabsTrigger>
+                  <TabsTrigger value="lineage" className="gap-2">
+                    <LucideNetwork className="flex-none" />
+                    Lineage
+                  </TabsTrigger>
+                </TabsList>
               </div>
-              <AuditSecretDetailsData
-                secretData={listenerSecretData}
-                setSecretId={setSecretId}
-              />
-            </section>
+
+              <div className="flex-1 min-h-0 flex flex-col lg:flex-row lg:border-t">
+                <TabsContent
+                  value="lineage"
+                  className="flex-1 !w-screen lg:max-w-[calc(50vw+(1280px/2-480px))] data-[state=inactive]:sr-only lg:data-[state=inactive]:not-sr-only order-1 lg:order-1 lg:flex-[2] mt-0"
+                  forceMount
+                >
+                  <AuditSecretDetailsLineage
+                    className="h-full"
+                    lineageData={lineageData}
+                    currentSecretId={secretId}
+                    setSecretId={setSecretId}
+                  />
+                </TabsContent>
+                <TabsContent
+                  value="details"
+                  className="flex-1 min-h-0 data-[state=inactive]:hidden lg:data-[state=inactive]:block order-2 lg:order-2"
+                  forceMount
+                >
+                  <AuditSecretDetailsData
+                    className="lg:max-w-[640px] lg:min-w-[480px]"
+                    secretData={listenerSecretData}
+                    setSecretId={setSecretId}
+                  />
+                </TabsContent>
+              </div>
+            </Tabs>
           </div>
         )}
       </SheetContent>

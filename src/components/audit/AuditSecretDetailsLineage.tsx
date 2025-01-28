@@ -6,7 +6,7 @@ import { LineageData, LineageNodeData } from '@/components/audit/Audit.interface
 import { formatDate } from "@/utils/dateUtils";
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { LucideSquareAsterisk, LucideCopy } from 'lucide-react';
+import { LucideSquareAsterisk, LucideCopy, LucideNetwork } from 'lucide-react';
 
 const NODE_WIDTH = 320;
 const NODE_HEIGHT = 192;
@@ -144,11 +144,13 @@ function applyLayout(nodes: Node[], edges: Edge[]) {
 export default function AuditSecretDetailsLineage({
   lineageData,
   currentSecretId,
-  setSecretId
+  setSecretId,
+  className
 }: {
   lineageData: LineageData | undefined;
   currentSecretId: string;
   setSecretId: (id: string) => void;
+  className?: string;
 }) {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
@@ -163,38 +165,43 @@ export default function AuditSecretDetailsLineage({
     setNodes(layoutedNodes);
     setEdges(edges);
   }, [lineageData, currentSecretId]);
-
   return (
-    <ReactFlow
-      className="h-full"
-      nodes={nodes}
-      edges={edges}
-      nodeTypes={{secretNode: SecretNode}}
-      edgeTypes={{default: SecretEdge}}
-      fitView
-      fitViewOptions={{
-        minZoom: 0.5,
-        maxZoom: 1,
-      }}
-      minZoom={0.25}
-      maxZoom={1.75}
-      nodesDraggable={false}
-      nodesConnectable={false}
-      elementsSelectable={true}
-      panOnDrag={true}
-      zoomOnScroll={true}
-      zoomOnPinch={true}
-      nodeOrigin={[0.5, 0.5]}
-      zoomOnDoubleClick={true}
-      onNodeClick={(_, node) => setSecretId(node.id)}
-    >
-      <Controls />
-      <Background
-        patternClassName="!fill-muted-background"
-        className="!bg-muted/10"
-        gap={32}
-        size={2}
-      />
-    </ReactFlow>
+    <section aria-label="Lineage" className={cn("min-h-0 relative overflow-clip", className)}>
+      <h3 className="font-semibold mb-3 flex items-center gap-2 p-3 rounded-md bg-background border absolute top-3 left-1/2 -translate-x-1/2 z-10 w-max">
+        <LucideNetwork />
+        Duplicates Lineage
+      </h3>
+      <ReactFlow
+        className="h-full"
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={{secretNode: SecretNode}}
+        edgeTypes={{default: SecretEdge}}
+        fitView
+        fitViewOptions={{
+          minZoom: 0.5,
+          maxZoom: 1,
+        }}
+        minZoom={0.25}
+        maxZoom={1.75}
+        nodesDraggable={false}
+        nodesConnectable={false}
+        elementsSelectable={true}
+        panOnDrag={true}
+        zoomOnScroll={true}
+        zoomOnPinch={true}
+        nodeOrigin={[0.5, 0.5]}
+        zoomOnDoubleClick={true}
+        onNodeClick={(_, node) => setSecretId(node.id)}
+      >
+        <Controls />
+        <Background
+          patternClassName="!fill-muted-background"
+          className="!bg-muted/10"
+          gap={32}
+          size={2}
+        />
+      </ReactFlow>
+    </section>
   );
 }
