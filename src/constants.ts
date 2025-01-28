@@ -16,3 +16,15 @@ export const WEBSITE_DOMAIN_STRIPPED = stripURLProtocol(WEBSITE_DOMAIN);
 // Date and time
 export const ONE_SECOND_IN_MILLISECONDS = 1000
 export const ONE_MINUTE_IN_SECONDS = 60;
+
+// Variants
+export const POLICY_STATUS_COLORS = {
+  compliant: "text-emerald-500",
+  non_compliant: "text-destructive",
+  error: "text-orange-500",
+};
+export const POLICY_STATUS_BADGE_COLORS = {
+  compliant: "border-emerald-500",
+  non_compliant: "border-destructive",
+  error: "border-orange-500",
+};

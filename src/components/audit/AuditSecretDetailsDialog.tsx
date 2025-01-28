@@ -23,7 +23,7 @@ import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { useEffect, useMemo, useState } from "react";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { Loader } from "@/components/ui/Loader"
-import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
+import { ONE_SECOND_IN_MILLISECONDS, POLICY_STATUS_BADGE_COLORS, POLICY_STATUS_COLORS } from "@/constants";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 import useGetSecretAccessorLogs from "@/services/audit/queries/useGetSecretAccessorLogs";
 import useGetSecretPolicyLogs from "@/services/audit/queries/useGetSecretPolicyLogs";
@@ -185,19 +185,15 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
                       <Accordion type="single" collapsible className="w-full">
                         {listenerSecretData.policies.map(policy => (
                           <AccordionItem value={policy.id} key={policy.id} className="border-none" onClick={() => setPolicyId(policy.id)}>
-                            <Alert className="p-0 overflow-clip" variant={policy.status === "compliant" ? "success" : "destructive"}>
+                            <Alert className="p-0 overflow-clip" variant={policy.status === "compliant" ? "success" : policy.status === "non_compliant" ? "destructive" : "warning"}>
                               <AccordionTrigger className="hover:no-underline hover:bg-muted/20 py-3 px-4">
                                 <AlertDescription className="flex items-center justify-between w-full mr-4">
                                   <div className="flex items-center gap-2">
-                                    {policy.status === "compliant" ? (
-                                      <LucideCheck className="text-green-500" />
-                                    ) : (
-                                      <LucideAlertCircle className="text-destructive" />
-                                    )}
+                                    <LucideCheck className={POLICY_STATUS_COLORS[policy.status]} />
                                     <span className="font-medium">{policy.name}</span>
                                   </div>
                                   {policy.status !== "compliant" && (
-                                    <Badge variant="outline" className="text-destructive border-destructive">
+                                    <Badge variant="outline" className={cn(`${POLICY_STATUS_COLORS[policy.status]} ${POLICY_STATUS_BADGE_COLORS[policy.status]}`)}>
                                       {policy.status}
                                     </Badge>
                                   )}
@@ -217,24 +213,22 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
                                     </div>
                                     <div className="flex flex-col gap-3 pl-2">
                                       {policyLogsData.map(log => (
-                                        <Alert 
+                                        <Alert
                                           key={`${log.policyID}-${log.timestamp}`}
-                                          variant={log.status === "compliant" ? "success" : "destructive"}
+                                          variant={log.status === "compliant" ? "success" : log.status === "non_compliant" ? "destructive" : "warning"}
                                           className="relative"
                                         >
                                           <div className="absolute -left-[22px] top-1/2 -translate-y-1/2 size-3 rounded-full bg-background border-2 border-primary" />
                                           <AlertDescription className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
                                               {log.status === "compliant" ? (
-                                                <LucideCheck className="text-green-500" />
+                                                <LucideCheck className="text-emerald-500" />
                                               ) : (
-                                                <LucideAlertCircle className="text-destructive" />
+                                                <LucideAlertCircle className={POLICY_STATUS_COLORS[log.status]} />
                                               )}
                                               <Badge 
                                                 variant="outline" 
-                                                className={cn(
-                                                  log.status !== "compliant" && "text-destructive border-destructive"
-                                                )}
+                                                className={cn(`${POLICY_STATUS_COLORS[log.status]} ${POLICY_STATUS_BADGE_COLORS[log.status]}`)}
                                               >
                                                 {log.status}
                                               </Badge>
