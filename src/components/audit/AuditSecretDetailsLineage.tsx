@@ -184,6 +184,7 @@ export default function AuditSecretDetailsLineage({
       panOnDrag={true}
       zoomOnScroll={true}
       zoomOnPinch={true}
+      nodeOrigin={[0.5, 0.5]}
       zoomOnDoubleClick={true}
       onNodeClick={(_, node) => setSecretId(node.id)}
     >
