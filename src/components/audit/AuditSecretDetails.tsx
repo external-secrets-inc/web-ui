@@ -87,7 +87,7 @@ export default function AuditSecretDetails({ secretId, setSecretId, onOpenChange
         ) : (
           <div className="flex-1 flex border-t min-h-0">
             <section aria-label="Lineage" className="min-h-0 relative overflow-clip flex-1">
-              <h3 className="font-semibold mb-3 flex items-center gap-2 p-3 rounded-md bg-background border absolute top-3 left-3 z-10 w-max">
+              <h3 className="font-semibold mb-3 flex items-center gap-2 p-3 rounded-md bg-background border absolute top-3 left-1/2 -translate-x-1/2 z-10 w-max">
                 <LucideNetwork />
                 Duplicates Lineage
               </h3>
