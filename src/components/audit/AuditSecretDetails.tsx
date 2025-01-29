@@ -115,11 +115,11 @@ export default function AuditSecretDetails({ secretId, setSecretId, onOpenChange
                 </TabsContent>
                 <TabsContent
                   value="details"
-                  className="flex-1 min-h-0 data-[state=inactive]:hidden lg:data-[state=inactive]:block order-2 lg:order-2"
+                  className="flex-1 min-h-0 data-[state=inactive]:hidden lg:data-[state=inactive]:block order-2 lg:order-2 mt-0"
                   forceMount
                 >
                   <AuditSecretDetailsData
-                    className="lg:max-w-[640px] lg:min-w-[480px]"
+                    className="lg:max-w-[640px] lg:min-w-[480px] h-full overflow-y-auto"
                     secretData={listenerSecretData}
                     setSecretId={setSecretId}
                   />
