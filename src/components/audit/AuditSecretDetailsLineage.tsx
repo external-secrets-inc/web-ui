@@ -1,12 +1,13 @@
 import { Background, Controls, ReactFlow, Node, Edge, MarkerType, Handle, Position, BaseEdge, EdgeLabelRenderer, EdgeProps, getStraightPath } from '@xyflow/react';
 import '@xyflow/react/dist/base.css';
 import Dagre from '@dagrejs/dagre';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { LineageData, LineageNodeData } from '@/components/audit/Audit.interfaces';
 import { formatDate } from "@/utils/dateUtils";
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { LucideSquareAsterisk, LucideCopy, LucideNetwork } from 'lucide-react';
+import { ReactFlowInstance } from '@xyflow/react';
 
 const NODE_WIDTH = 320;
 const NODE_HEIGHT = 192;
@@ -96,19 +97,20 @@ const SecretEdge = ({
   );
 };
 
-function createEdges(links: LineageData['links']) {
-  return links.map(link => ({
-    id: `${link.fromSecret}-${link.toSecret}`,
-    source: link.fromSecret,
-    target: link.toSecret,
-    type: 'default',
-    animated: true,
-    label: formatDate(new Date(link.createdAt), { format: 'readableDate' }),
-    markerEnd: { type: MarkerType.Arrow, width: 32, height: 32 },
-  }));
-}
+const nodeTypes = { secretNode: SecretNode };
+const edgeTypes = { default: SecretEdge };
 
-function createNodes(nodes: LineageData['nodes'], currentSecretId: string, edges: Edge[]) {
+const createEdges = (links: LineageData['links']) => links.map(link => ({
+  id: `${link.fromSecret}-${link.toSecret}`,
+  source: link.fromSecret,
+  target: link.toSecret,
+  type: 'default',
+  animated: true,
+  label: formatDate(new Date(link.createdAt), { format: 'readableDate' }),
+  markerEnd: { type: MarkerType.Arrow, width: 32, height: 32 },
+}));
+
+const createNodes = (nodes: LineageData['nodes'], currentSecretId: string, edges: Edge[]) => {
   const sourceNodes = new Set(edges.map(e => e.source));
   const targetNodes = new Set(edges.map(e => e.target));
 
@@ -124,9 +126,9 @@ function createNodes(nodes: LineageData['nodes'], currentSecretId: string, edges
     },
     position: { x: 0, y: 0 }
   }));
-}
+};
 
-function applyLayout(nodes: Node[], edges: Edge[]) {
+const applyLayout = (nodes: Node[], edges: Edge[]) => {
   const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
   g.setGraph({ rankdir: 'TB' });
 
@@ -139,34 +141,52 @@ function applyLayout(nodes: Node[], edges: Edge[]) {
     const { x, y } = g.node(node.id);
     return { ...node, position: { x: x - NODE_WIDTH/2, y: y - NODE_HEIGHT/2 } };
   });
-}
+};
 
 export default function AuditSecretDetailsLineage({
   lineageData,
   currentSecretId,
   setSecretId,
-  className
+  className,
+  // Critical for proper fitView timing - tells us when the tab is actually visible
+  isActive
 }: {
   lineageData: LineageData | undefined;
   currentSecretId: string;
   setSecretId: (id: string) => void;
   className?: string;
+  isActive?: boolean;
 }) {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
+  // Store instance for manual fitView - can't rely on initial fitView prop as container might be hidden
+  const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
 
   useEffect(() => {
     if (!lineageData?.nodes || !lineageData?.links) return;
 
     const edges = createEdges(lineageData.links);
     const nodes = createNodes(lineageData.nodes, currentSecretId, edges);
-    const layoutedNodes = applyLayout(nodes, edges);
+    setNodes(applyLayout(nodes, edges));
 
-    setNodes(layoutedNodes);
     setEdges(edges);
   }, [lineageData, currentSecretId]);
+
+  // Key to fixing mobile fit view - only fit when tab is visible and instance exists
+  useEffect(() => {
+    if (isActive && reactFlowInstance.current) {
+      // Use rAF to ensure DOM is ready after tab transition
+      window.requestAnimationFrame(() => reactFlowInstance.current?.fitView({ minZoom: 0.5, maxZoom: 1, padding: 0.5 }));
+    }
+  }, [isActive]);
+
+  if (!nodes.length) return null;
+
   return (
-    <section aria-label="Lineage" className={cn("min-h-0 relative overflow-clip", className)}>
+    <section
+      aria-label="Lineage"
+      className={cn("min-h-0 relative overflow-clip", className)}
+    >
       <h3 className="font-semibold mb-3 flex items-center gap-2 p-3 rounded-md bg-background border absolute top-3 left-1/2 -translate-x-1/2 z-10 w-max">
         <LucideNetwork />
         Duplicates Lineage
@@ -175,15 +195,14 @@ export default function AuditSecretDetailsLineage({
         className="h-full"
         nodes={nodes}
         edges={edges}
-        nodeTypes={{secretNode: SecretNode}}
-        edgeTypes={{default: SecretEdge}}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         fitView
         fitViewOptions={{
           minZoom: 0.5,
           maxZoom: 1,
+          padding: 0.5
         }}
-        minZoom={0.25}
-        maxZoom={1.75}
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable={true}
@@ -193,6 +212,9 @@ export default function AuditSecretDetailsLineage({
         nodeOrigin={[0.5, 0.5]}
         zoomOnDoubleClick={true}
         onNodeClick={(_, node) => setSecretId(node.id)}
+        onInit={(instance) => {
+          reactFlowInstance.current = instance;
+        }}
       >
         <Controls />
         <Background
