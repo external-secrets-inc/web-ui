@@ -207,7 +207,8 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
                               </AccordionTrigger>
                               <AccordionContent
                                 className={cn(
-                                  "border-t mx-4 py-4 min-h-[100px] transition-all duration-300 ease-[cubic-bezier(0.87,0,0.13,1)]",
+                                  "border-t mx-4 py-4 min-h-[100px]",
+                                  "transition-all duration-500 ease-out",
                                   "data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down",
                                   "overflow-hidden",
                                   isPolicyTransitioning && "opacity-50"
@@ -332,7 +333,8 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
                               </AccordionTrigger>
                               <AccordionContent
                                 className={cn(
-                                  "grid grid-cols-[auto_1fr] justify-items-end items-start border-t mx-4 py-4 min-h-[100px] transition-all duration-300 ease-[cubic-bezier(0.87,0,0.13,1)]",
+                                  "grid grid-cols-[auto_1fr] justify-items-end items-start border-t mx-4 py-4 min-h-[100px]",
+                                  "transition-all duration-500 ease-out",
                                   "data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down",
                                   "overflow-hidden",
                                   isAccessorTransitioning && "opacity-50"
