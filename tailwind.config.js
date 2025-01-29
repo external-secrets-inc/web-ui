@@ -70,20 +70,12 @@ module.exports = {
   		},
   		keyframes: {
   			'accordion-down': {
-  				from: {
-  					height: '0'
-  				},
-  				to: {
-  					height: 'var(--radix-accordion-content-height)'
-  				}
+  				from: { height: 0 },
+  				to: { height: 'var(--radix-accordion-content-height)' },
   			},
   			'accordion-up': {
-  				from: {
-  					height: 'var(--radix-accordion-content-height)'
-  				},
-  				to: {
-  					height: '0'
-  				}
+  				from: { height: 'var(--radix-accordion-content-height)' },
+  				to: { height: 0 },
   			},
   			'bg-auth-hero-scroll': {
   				from: {
@@ -132,8 +124,8 @@ module.exports = {
   			}
   		},
   		animation: {
-  			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out',
+  			'accordion-down': 'accordion-down 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+  			'accordion-up': 'accordion-up 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
   			'bg-auth-hero-scroll': 'bg-auth-hero-scroll 600s linear infinite',
   			'bg-auth-blob-animation-1': 'bg-auth-blob-animation-1 20s infinite cubic-bezier(0.1, 0, 0.9, 1)',
   			'bg-auth-blob-animation-2': 'bg-auth-blob-animation-2 20s infinite cubic-bezier(0.1, 0, 0.9, 1)'

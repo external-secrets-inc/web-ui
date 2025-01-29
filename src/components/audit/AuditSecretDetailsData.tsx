@@ -23,6 +23,18 @@ import useGetSecretPolicyLogs from "@/services/audit/queries/useGetSecretPolicyL
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { useEffect } from "react";
 
+const POLICY_STATUS_COLORS = {
+  compliant: "text-emerald-500",
+  non_compliant: "text-destructive",
+  error: "text-orange-500",
+};
+const POLICY_STATUS_BADGE_COLORS = {
+  compliant: "border-emerald-500",
+  non_compliant: "border-destructive",
+  error: "border-orange-500",
+};
+
+
 const SectionHeader = ({ icon, title, count }: { icon: React.ReactNode; title: string; count: number }) => (
   <h3 className="font-semibold mb-3 flex items-center gap-2">
     {icon}
@@ -62,11 +74,9 @@ const HistoryAccordion = <T, H extends { timestamp: string }>({
               {renderTrigger(item)}
             </AlertDescription>
           </AccordionTrigger>
-          <AccordionContent className="border-t p-4 ">
+          <AccordionContent className="border-t p-4">
             {isLoading ? (
-              <div className="flex justify-center items-center w-full">
-                <Loader />
-              </div>
+              <Loader className="w-full my-4"/>
             ) : historyData && historyData.length > 0 ? (
               <>
                 <div className="flex items-center gap-2 mb-4">
@@ -83,9 +93,9 @@ const HistoryAccordion = <T, H extends { timestamp: string }>({
                 </div>
               </>
             ) : (
-              <span className="text-sm text-muted-foreground m-auto">
+              <div className="text-sm text-muted-foreground text-center">
                 No history available
-              </span>
+              </div>
             )}
           </AccordionContent>
         </Alert>
@@ -147,14 +157,14 @@ const SectionSecretPolicies = ({
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
               {policy.status === "compliant" ? (
-                <LucideCheck className="text-green-500" />
+                <LucideCheck className="text-emerald-500" />
               ) : (
-                <LucideAlertCircle className="text-destructive" />
+                <LucideAlertCircle className={POLICY_STATUS_COLORS[policy.status]} />
               )}
               <span className="font-medium">{policy.name}</span>
             </div>
             {policy.status !== "compliant" && (
-              <Badge variant="outline" className="text-destructive border-destructive">
+              <Badge variant="outline" className={cn(`${POLICY_STATUS_COLORS[policy.status]} ${POLICY_STATUS_BADGE_COLORS[policy.status]}`)}>
                 {policy.status}
               </Badge>
             )}
