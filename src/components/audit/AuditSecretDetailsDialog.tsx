@@ -37,7 +37,8 @@ interface AuditSecretDetailsDialogProps {
 export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpenChange }: AuditSecretDetailsDialogProps) {
   const [policyId, setPolicyId] = useState<string>('');
   const [accessorName, setAccessorName] = useState<string>('');
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isPolicyTransitioning, setIsPolicyTransitioning] = useState(false);
+  const [isAccessorTransitioning, setIsAccessorTransitioning] = useState(false);
 
   const {
     data: secretData,
@@ -205,61 +206,63 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
                                 </AlertDescription>
                               </AccordionTrigger>
                               <AccordionContent
-                                className="border-t mx-4 py-4 transition-all duration-300 ease-[cubic-bezier(0.87,0,0.13,1)] data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
-                                onAnimationStart={() => setIsTransitioning(true)}
-                                onAnimationEnd={() => setIsTransitioning(false)}
+                                className={cn(
+                                  "border-t mx-4 py-4 min-h-[100px] transition-all duration-300 ease-[cubic-bezier(0.87,0,0.13,1)]",
+                                  "data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down",
+                                  "overflow-hidden",
+                                  isPolicyTransitioning && "opacity-50"
+                                )}
+                                onAnimationStart={() => setIsPolicyTransitioning(true)}
+                                onAnimationEnd={() => setIsPolicyTransitioning(false)}
                               >
-                                <div className={cn(
-                                  "min-h-[100px]",
-                                  isTransitioning && "h-[100px]"
-                                )}>
-                                  {(isLoadingPolicyLogs || isTransitioning) ? (
-                                    <div className="flex justify-center items-center w-full h-full">
-                                      <Loader />
+                                {(isLoadingPolicyLogs || isPolicyTransitioning) ? (
+                                  <div className="h-[60px] flex justify-center items-center">
+                                    <Loader />
+                                  </div>
+                                ) : policyLogsData && policyLogsData.length > 0 ? (
+                                  <div className="space-y-3 relative before:absolute before:left-[17px] before:top-[26px] before:bottom-[6px] before:w-[2px] before:bg-muted">
+                                    <div className="flex items-center gap-2">
+                                      <LucideHistory className="text-muted-foreground" />
+                                      <span className="text-sm text-muted-foreground">History</span>
+                                      <Badge variant="secondary">{policyLogsData.length || "0"}</Badge>
                                     </div>
-                                  ) : policyLogsData && policyLogsData.length > 0 ? (
-                                    <div className="space-y-3 relative before:absolute before:left-[17px] before:top-[26px] before:bottom-[6px] before:w-[2px] before:bg-muted">
-                                      <div className="flex items-center gap-2">
-                                        <LucideHistory className="text-muted-foreground" />
-                                        <span className="text-sm text-muted-foreground">History</span>
-                                        <Badge variant="secondary">{policyLogsData.length || "0"}</Badge>
-                                      </div>
-                                      <div className="flex flex-col gap-3 pl-2">
-                                        {policyLogsData.map(log => (
-                                          <Alert
-                                            key={`${log.policyID}-${log.timestamp}`}
-                                            variant={log.status === "compliant" ? "success" : log.status === "non_compliant" ? "destructive" : "warning"}
-                                            className="relative"
-                                          >
-                                            <div className="absolute -left-[22px] top-1/2 -translate-y-1/2 size-3 rounded-full bg-background border-2 border-primary" />
-                                            <AlertDescription className="flex items-center justify-between">
-                                              <div className="flex items-center gap-2">
-                                                {log.status === "compliant" ? (
-                                                  <LucideCheck className="text-emerald-500" />
-                                                ) : (
-                                                  <LucideAlertCircle className={POLICY_STATUS_COLORS[log.status]} />
-                                                )}
-                                                <Badge
-                                                  variant="outline"
-                                                  className={cn(`${POLICY_STATUS_COLORS[log.status]} ${POLICY_STATUS_BADGE_COLORS[log.status]}`)}
-                                                >
-                                                  {log.status}
-                                                </Badge>
-                                              </div>
-                                              <span className="text-sm text-muted-foreground font-mono">
-                                                {formatDate(log.timestamp, { format: 'readableDate' })}
-                                              </span>
-                                            </AlertDescription>
-                                          </Alert>
-                                        ))}
-                                      </div>
+                                    <div className="flex flex-col gap-3 pl-2">
+                                      {policyLogsData.map(log => (
+                                        <Alert
+                                          key={`${log.policyID}-${log.timestamp}`}
+                                          variant={log.status === "compliant" ? "success" : log.status === "non_compliant" ? "destructive" : "warning"}
+                                          className="relative"
+                                        >
+                                          <div className="absolute -left-[22px] top-1/2 -translate-y-1/2 size-3 rounded-full bg-background border-2 border-primary" />
+                                          <AlertDescription className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                              {log.status === "compliant" ? (
+                                                <LucideCheck className="text-emerald-500" />
+                                              ) : (
+                                                <LucideAlertCircle className={POLICY_STATUS_COLORS[log.status]} />
+                                              )}
+                                              <Badge
+                                                variant="outline"
+                                                className={cn(`${POLICY_STATUS_COLORS[log.status]} ${POLICY_STATUS_BADGE_COLORS[log.status]}`)}
+                                              >
+                                                {log.status}
+                                              </Badge>
+                                            </div>
+                                            <span className="text-sm text-muted-foreground font-mono">
+                                              {formatDate(log.timestamp, { format: 'readableDate' })}
+                                            </span>
+                                          </AlertDescription>
+                                        </Alert>
+                                      ))}
                                     </div>
-                                  ) : (
+                                  </div>
+                                ) : (
+                                  <div className="h-[60px] flex items-center justify-center">
                                     <span className="text-sm text-muted-foreground">
                                       No history available
                                     </span>
-                                  )}
-                                </div>
+                                  </div>
+                                )}
                               </AccordionContent>
                             </Alert>
                           </AccordionItem>
@@ -328,12 +331,17 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
                                 </AlertDescription>
                               </AccordionTrigger>
                               <AccordionContent
-                                className="grid grid-cols-[auto_1fr] justify-items-end items-start border-t mx-4 py-4 transition-all duration-300 ease-[cubic-bezier(0.87,0,0.13,1)] data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
-                                onAnimationStart={() => setIsTransitioning(true)}
-                                onAnimationEnd={() => setIsTransitioning(false)}
+                                className={cn(
+                                  "grid grid-cols-[auto_1fr] justify-items-end items-start border-t mx-4 py-4 min-h-[100px] transition-all duration-300 ease-[cubic-bezier(0.87,0,0.13,1)]",
+                                  "data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down",
+                                  "overflow-hidden",
+                                  isAccessorTransitioning && "opacity-50"
+                                )}
+                                onAnimationStart={() => setIsAccessorTransitioning(true)}
+                                onAnimationEnd={() => setIsAccessorTransitioning(false)}
                               >
-                                {(isLoadingAccessorLogs || isTransitioning) ? (
-                                  <div className="col-span-2 flex justify-center items-center w-full min-h-[100px]">
+                                {(isLoadingAccessorLogs || isAccessorTransitioning) ? (
+                                  <div className="col-span-2 h-[60px] w-full flex justify-center items-center">
                                     <Loader />
                                   </div>
                                 ) : accessorLogsData && accessorLogsData.length > 0 ? (
@@ -343,7 +351,7 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
                                       <span className="text-sm text-muted-foreground">History</span>
                                       <Badge variant="secondary">{accessorLogsData.length || "0"}</Badge>
                                     </div>
-                                    <div className="flex flex-col gap-2">
+                                    <div className="flex flex-col gap-2 justify-end">
                                       {accessorLogsData.map(log => (
                                         <Badge
                                           key={`${log.accessorID}-${log.timestamp}`}
@@ -356,9 +364,11 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
                                     </div>
                                   </>
                                 ) : (
-                                  <span className="col-span-2 text-sm text-muted-foreground m-auto">
-                                    No history available
-                                  </span>
+                                  <div className="col-span-2 h-[60px] w-full flex items-center justify-center">
+                                    <span className="text-sm text-muted-foreground">
+                                      No history available
+                                    </span>
+                                  </div>
                                 )}
                               </AccordionContent>
                             </Alert>
