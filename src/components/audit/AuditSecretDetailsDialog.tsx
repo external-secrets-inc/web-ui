@@ -23,7 +23,7 @@ import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { useEffect, useMemo, useState } from "react";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { Loader } from "@/components/ui/Loader"
-import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
+import { ONE_SECOND_IN_MILLISECONDS, POLICY_STATUS_BADGE_COLORS, POLICY_STATUS_COLORS } from "@/constants";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 import useGetSecretAccessorLogs from "@/services/audit/queries/useGetSecretAccessorLogs";
 import useGetSecretPolicyLogs from "@/services/audit/queries/useGetSecretPolicyLogs";
@@ -37,6 +37,8 @@ interface AuditSecretDetailsDialogProps {
 export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpenChange }: AuditSecretDetailsDialogProps) {
   const [policyId, setPolicyId] = useState<string>('');
   const [accessorName, setAccessorName] = useState<string>('');
+  const [isPolicyTransitioning, setIsPolicyTransitioning] = useState(false);
+  const [isAccessorTransitioning, setIsAccessorTransitioning] = useState(false);
 
   const {
     data: secretData,
@@ -185,27 +187,37 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
                       <Accordion type="single" collapsible className="w-full">
                         {listenerSecretData.policies.map(policy => (
                           <AccordionItem value={policy.id} key={policy.id} className="border-none" onClick={() => setPolicyId(policy.id)}>
-                            <Alert className="p-0 overflow-clip" variant={policy.status === "compliant" ? "success" : "destructive"}>
+                            <Alert className="p-0 overflow-clip" variant={policy.status === "compliant" ? "success" : policy.status === "non_compliant" ? "destructive" : "warning"}>
                               <AccordionTrigger className="hover:no-underline hover:bg-muted/20 py-3 px-4">
                                 <AlertDescription className="flex items-center justify-between w-full mr-4">
                                   <div className="flex items-center gap-2">
                                     {policy.status === "compliant" ? (
-                                      <LucideCheck className="text-green-500" />
+                                      <LucideCheck className="text-emerald-500" />
                                     ) : (
-                                      <LucideAlertCircle className="text-destructive" />
+                                      <LucideAlertCircle className={POLICY_STATUS_COLORS[policy.status]} />
                                     )}
                                     <span className="font-medium">{policy.name}</span>
                                   </div>
                                   {policy.status !== "compliant" && (
-                                    <Badge variant="outline" className="text-destructive border-destructive">
+                                    <Badge variant="outline" className={cn(`${POLICY_STATUS_COLORS[policy.status]} ${POLICY_STATUS_BADGE_COLORS[policy.status]}`)}>
                                       {policy.status}
                                     </Badge>
                                   )}
                                 </AlertDescription>
                               </AccordionTrigger>
-                              <AccordionContent className="border-t mx-4 py-4">
-                                {isLoadingPolicyLogs ? (
-                                  <div className="flex justify-center items-center w-full">
+                              <AccordionContent
+                                className={cn(
+                                  "border-t mx-4 py-4 min-h-[100px]",
+                                  "transition-all duration-500 ease-out",
+                                  "data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down",
+                                  "overflow-hidden",
+                                  isPolicyTransitioning && "opacity-50"
+                                )}
+                                onAnimationStart={() => setIsPolicyTransitioning(true)}
+                                onAnimationEnd={() => setIsPolicyTransitioning(false)}
+                              >
+                                {(isLoadingPolicyLogs || isPolicyTransitioning) ? (
+                                  <div className="h-[60px] flex justify-center items-center">
                                     <Loader />
                                   </div>
                                 ) : policyLogsData && policyLogsData.length > 0 ? (
@@ -217,24 +229,22 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
                                     </div>
                                     <div className="flex flex-col gap-3 pl-2">
                                       {policyLogsData.map(log => (
-                                        <Alert 
+                                        <Alert
                                           key={`${log.policyID}-${log.timestamp}`}
-                                          variant={log.status === "compliant" ? "success" : "destructive"}
+                                          variant={log.status === "compliant" ? "success" : log.status === "non_compliant" ? "destructive" : "warning"}
                                           className="relative"
                                         >
                                           <div className="absolute -left-[22px] top-1/2 -translate-y-1/2 size-3 rounded-full bg-background border-2 border-primary" />
                                           <AlertDescription className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
                                               {log.status === "compliant" ? (
-                                                <LucideCheck className="text-green-500" />
+                                                <LucideCheck className="text-emerald-500" />
                                               ) : (
-                                                <LucideAlertCircle className="text-destructive" />
+                                                <LucideAlertCircle className={POLICY_STATUS_COLORS[log.status]} />
                                               )}
-                                              <Badge 
-                                                variant="outline" 
-                                                className={cn(
-                                                  log.status !== "compliant" && "text-destructive border-destructive"
-                                                )}
+                                              <Badge
+                                                variant="outline"
+                                                className={cn(`${POLICY_STATUS_COLORS[log.status]} ${POLICY_STATUS_BADGE_COLORS[log.status]}`)}
                                               >
                                                 {log.status}
                                               </Badge>
@@ -248,9 +258,11 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
                                     </div>
                                   </div>
                                 ) : (
-                                  <span className="text-sm text-muted-foreground">
-                                    No history available
-                                  </span>
+                                  <div className="h-[60px] flex items-center justify-center">
+                                    <span className="text-sm text-muted-foreground">
+                                      No history available
+                                    </span>
+                                  </div>
                                 )}
                               </AccordionContent>
                             </Alert>
@@ -319,9 +331,19 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
                                   </Badge>
                                 </AlertDescription>
                               </AccordionTrigger>
-                              <AccordionContent className="grid grid-cols-[auto_1fr] justify-items-end items-start border-t mx-4 py-4">
-                                {isLoadingAccessorLogs ? (
-                                  <div className="col-span-2 flex justify-center items-center w-full">
+                              <AccordionContent
+                                className={cn(
+                                  "grid grid-cols-[auto_1fr] justify-items-end items-start border-t mx-4 py-4 min-h-[100px]",
+                                  "transition-all duration-500 ease-out",
+                                  "data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down",
+                                  "overflow-hidden",
+                                  isAccessorTransitioning && "opacity-50"
+                                )}
+                                onAnimationStart={() => setIsAccessorTransitioning(true)}
+                                onAnimationEnd={() => setIsAccessorTransitioning(false)}
+                              >
+                                {(isLoadingAccessorLogs || isAccessorTransitioning) ? (
+                                  <div className="col-span-2 h-[60px] w-full flex justify-center items-center">
                                     <Loader />
                                   </div>
                                 ) : accessorLogsData && accessorLogsData.length > 0 ? (
@@ -331,7 +353,7 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
                                       <span className="text-sm text-muted-foreground">History</span>
                                       <Badge variant="secondary">{accessorLogsData.length || "0"}</Badge>
                                     </div>
-                                    <div className="flex flex-col gap-2">
+                                    <div className="flex flex-col gap-2 justify-end">
                                       {accessorLogsData.map(log => (
                                         <Badge
                                           key={`${log.accessorID}-${log.timestamp}`}
@@ -344,9 +366,11 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
                                     </div>
                                   </>
                                 ) : (
-                                  <span className="text-sm text-muted-foreground m-auto">
-                                    No history available
-                                  </span>
+                                  <div className="col-span-2 h-[60px] w-full flex items-center justify-center">
+                                    <span className="text-sm text-muted-foreground">
+                                      No history available
+                                    </span>
+                                  </div>
                                 )}
                               </AccordionContent>
                             </Alert>
