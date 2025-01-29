@@ -12,6 +12,7 @@ import {
   LucideUser,
   LucideUsers,
   LucideSquareAsterisk,
+  LucideExternalLink,
 } from "lucide-react";
 import { AuditSecretData, PolicyDetails, AccessorDetails } from "./Audit.interfaces";
 import { formatDate } from "@/utils/dateUtils";
@@ -24,16 +25,16 @@ import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { useEffect } from "react";
 
 const POLICY_STATUS_COLORS = {
-  compliant: "text-emerald-500",
-  non_compliant: "text-destructive",
-  error: "text-orange-500",
-};
-const POLICY_STATUS_BADGE_COLORS = {
-  compliant: "border-emerald-500",
-  non_compliant: "border-destructive",
-  error: "border-orange-500",
+  compliant: "text-success",
+  non_compliant: "text-warning",
+  error: "text-destructive",
 };
 
+const POLICY_STATUS_BADGE_VARIANTS = {
+  compliant: "success",
+  non_compliant: "warning",
+  error: "destructive",
+} as const;
 
 const SectionHeader = ({ icon, title, count }: { icon: React.ReactNode; title: string; count: number }) => (
   <h3 className="font-semibold mb-3 flex items-center gap-2">
@@ -164,7 +165,7 @@ const SectionSecretPolicies = ({
               <span className="font-medium">{policy.name}</span>
             </div>
             {policy.status !== "compliant" && (
-              <Badge variant="outline" className={cn(`${POLICY_STATUS_COLORS[policy.status]} ${POLICY_STATUS_BADGE_COLORS[policy.status]}`)}>
+              <Badge variant={POLICY_STATUS_BADGE_VARIANTS[policy.status]}>
                 {policy.status}
               </Badge>
             )}
@@ -172,15 +173,7 @@ const SectionSecretPolicies = ({
         )}
         renderHistoryItem={(log) => (
           <>
-            <Badge
-              variant="outline"
-              className={cn(
-                "font-medium",
-                log.status === "compliant" && "text-green-500 border-green-500",
-                log.status === "non_compliant" && "text-destructive border-destructive",
-                log.status === "error" && "text-orange-500 border-orange-500"
-              )}
-            >
+            <Badge variant={POLICY_STATUS_BADGE_VARIANTS[log.status]}>
               {log.status}
             </Badge>
             <Badge className="font-mono" variant="outline">
@@ -209,11 +202,12 @@ const SectionSecretDuplicates = ({ duplicates, setSecretId }: { duplicates: Audi
     {duplicates.length > 0 ? (
       <div className="space-y-2">
         {duplicates.map(duplicate => (
-          <Alert variant="warning" key={duplicate.id} onClick={() => setSecretId(duplicate.id)} className="cursor-pointer">
+          <Alert key={duplicate.id} onClick={() => setSecretId(duplicate.id)} className="cursor-pointer bg-muted/40 hover:bg-muted/75">
             <AlertDescription className="flex items-center gap-2">
               <LucideAlertCircle className="text-orange-500" />
               <span className="font-medium">{duplicate.name || duplicate.id || "Unknown Duplicate"}</span>
               <Badge variant="outline" className="ml-auto">{duplicate.providerName || duplicate.providerID || "Unknown Provider"}</Badge>
+              <LucideExternalLink className="ml-2 text-muted-foreground" />
             </AlertDescription>
           </Alert>
         ))}
