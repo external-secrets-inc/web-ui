@@ -344,13 +344,13 @@ const AuditSecretDetailsData = ({ className, secretData, setSecretId }: {
           lastRotation={secretData.lastRotation}
           lastAccess={secretData.lastAccess}
         />
-        <SectionSecretPolicies
-          policies={secretData.policies}
-          secretId={secretData.id}
-        />
         <SectionSecretDuplicates
           duplicates={secretData.duplicates}
           setSecretId={setSecretId}
+        />
+        <SectionSecretPolicies
+          policies={secretData.policies}
+          secretId={secretData.id}
         />
         <SectionSecretAccessors
           accessors={secretData.accessors}
