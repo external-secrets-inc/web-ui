@@ -29,8 +29,8 @@ const SecretNode = ({
         />
       )}
       <div className={cn(
-        'overflow-clip rounded-lg border ring-0 ring-transparent ring-offset-background/75 hover:ring-muted-foreground/50 hover:ring-offset-2 hover:ring-1 transition-shadow',
-        data.active && 'ring-1 ring-offset-2 ring-offset-accent ring-primary hover:ring-primary hover:ring-1 cursor-grab pointer-events-none'
+        'shadow-md dark:shadow-none overflow-clip rounded-lg border ring-0 ring-transparent ring-offset-background/75 hover:ring-muted-foreground/50 hover:ring-offset-2 hover:ring-1 transition-shadow',
+        data.active && 'shadow-lg dark:shadow-none ring-1 ring-offset-2 ring-offset-accent ring-primary hover:ring-primary hover:ring-1 cursor-grab pointer-events-none'
       )}>
         <div className="flex items-center gap-2 px-4 py-2 bg-background border-b">
           <LucideSquareAsterisk
@@ -254,7 +254,7 @@ export default function AuditSecretDetailsLineage({
       aria-label="Lineage"
       className={cn("min-h-0 relative overflow-clip", className)}
     >
-      <h3 className="font-semibold mb-3 flex items-center gap-2 p-3 rounded-md bg-background border absolute top-3 left-1/2 -translate-x-1/2 z-10 w-max">
+      <h3 className="font-semibold shadow-lg dark:shadow-none mb-3 flex items-center gap-2 p-3 rounded-md bg-background border absolute top-3 left-1/2 -translate-x-1/2 z-10 w-max">
         <LucideNetwork />
         Duplicates Lineage
       </h3>
