@@ -32,7 +32,7 @@ const UserMenu: React.FC = () => {
   };
 
   const toggleFeatureFlag = (flag: FeatureFlagName) => {
-    if (featureFlags.isEnabledByEnv(flag)) return;
+    if (featureFlags.isLockedByEnv(flag)) return;
 
     if (featureFlags.hasFeatureFlagEnabled(flag)) {
       featureFlags.disableFeatureFlag(flag);
@@ -94,30 +94,31 @@ const UserMenu: React.FC = () => {
               <DropdownMenuSubContent>
                 {featureFlags.availableFlags.map((flag) => {
                   const isEnabled = featureFlags.hasFeatureFlagEnabled(flag);
-                  const isLockedByEnv = featureFlags.isEnabledByEnv(flag);
+                  const isLocked = featureFlags.isLockedByEnv(flag);
+                  const envValue = featureFlags.getEnvOverride(flag);
 
                   const menuItem = (
                     <DropdownMenuItem
                       key={flag}
                       onClick={() => toggleFeatureFlag(flag)}
-                      disabled={isLockedByEnv}
-                      className={isLockedByEnv ? 'opacity-50 cursor-not-allowed !pointer-events-auto' : ''}
+                      disabled={isLocked}
+                      className={isLocked ? 'opacity-50 cursor-not-allowed !pointer-events-auto' : ''}
                     >
-                      <span className="flex items-center gap-2">
+                      <span className="flex items-center gap-2 w-full">
                         {isEnabled ? (
                           <LucideToggleRight className="text-success" />
                         ) : (
                           <LucideToggleLeft className="text-muted-foreground" />
                         )}
                         {flag}
-                        {isLockedByEnv && (
-                          <LucideLock className="h-3 w-3 text-muted-foreground" />
+                        {isLocked && (
+                          <LucideLock className="ml-auto text-muted-foreground" />
                         )}
                       </span>
                     </DropdownMenuItem>
                   );
 
-                  if (isLockedByEnv) {
+                  if (isLocked) {
                     return (
                       <TooltipProvider key={flag}>
                         <Tooltip>
@@ -125,7 +126,7 @@ const UserMenu: React.FC = () => {
                             {menuItem}
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>This flag is enabled by the environment and cannot be changed</p>
+                            <p>This flag is {envValue ? 'enabled' : 'disabled'} by the environment and cannot be changed</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>

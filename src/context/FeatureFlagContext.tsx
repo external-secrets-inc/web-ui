@@ -1,26 +1,36 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 
-export type FeatureFlagName = 'lineage' | 'mobileTabs';
+export type FeatureFlagName = 'lineage';
 
 /**
  * List of all available feature flags in the application.
  * Add new flags here to make them available for toggling.
  */
-export const AVAILABLE_FEATURE_FLAGS: FeatureFlagName[] = ['lineage', 'mobileTabs'];
+export const AVAILABLE_FEATURE_FLAGS: FeatureFlagName[] = ['lineage'];
 
 /**
- * Parses the VITE_ENABLED_FEATURE_FLAGS environment variable to get flags that are
- * enabled by default and cannot be disabled through the UI/Query Params.
- * Format: comma-separated list of flag names (e.g., "flag1,flag2,flag3")
+ * Parses the VITE_FEATURE_FLAGS environment variable to get flags that are
+ * explicitly set to true or false.
+ * Format: flag1:true,flag2:false
+ * Example: VITE_FEATURE_FLAGS=lineage:true,someOtherFeature:false
  */
-const getEnabledFeatureFlagsFromEnv = (): Set<string> => {
-  const features = import.meta.env.VITE_ENABLED_FEATURE_FLAGS?.split(',').map((f: string) => f.trim()) || [];
-  return new Set(features);
+const getFeatureFlagsFromEnv = (): Record<string, boolean> => {
+  const flagString = import.meta.env.VITE_FEATURE_FLAGS;
+  if (!flagString) return {};
+
+  return flagString.split(',').reduce((acc: Record<string, boolean>, pair: string) => {
+    const [key, value] = pair.trim().split(':');
+    if (key && value) {
+      // Support both true/false and on/off syntax
+      acc[key.trim()] = value.trim().toLowerCase() === 'true' || value.trim().toLowerCase() === 'on';
+    }
+    return acc;
+  }, {});
 };
 
 /** Cache env flags to avoid recalculating on every check */
-const envFlags = getEnabledFeatureFlagsFromEnv();
+const envFlags = getFeatureFlagsFromEnv();
 
 /**
  * Extracts feature flags from URL search parameters.
@@ -46,20 +56,21 @@ const areSetsEqual = (a: Set<string>, b: Set<string>): boolean => {
 export interface FeatureFlagContextValue {
   /**
    * Checks if a feature flag is currently enabled.
-   * A flag can be enabled either through URL parameters or environment variables.
-   * @param feature - The feature flag to check
+   * Priority:
+   * 1. Environment override (if set to true or false)
+   * 2. URL parameters (if no environment override)
    */
   hasFeatureFlagEnabled: (feature: FeatureFlagName) => boolean;
 
   /**
    * Enables a feature flag by adding it to the URL parameters.
-   * Has no effect if the flag is already enabled or is enabled by environment variables.
+   * Has no effect if the flag is locked by environment variables.
    */
   enableFeatureFlag: (feature: FeatureFlagName) => void;
 
   /**
    * Disables a feature flag by removing it from the URL parameters.
-   * Has no effect if the flag is enabled by environment variables.
+   * Has no effect if the flag is locked by environment variables.
    */
   disableFeatureFlag: (feature: FeatureFlagName) => void;
 
@@ -69,10 +80,16 @@ export interface FeatureFlagContextValue {
   availableFlags: FeatureFlagName[];
 
   /**
-   * Checks if a feature flag is enabled by environment variable.
-   * Environment-enabled flags cannot be disabled through the UI.
+   * Checks if a feature flag is locked by environment variable.
+   * Returns true if the flag has an explicit true/false value in env vars.
    */
-  isEnabledByEnv: (feature: FeatureFlagName) => boolean;
+  isLockedByEnv: (feature: FeatureFlagName) => boolean;
+
+  /**
+   * Gets the environment override value for a feature flag.
+   * Returns undefined if the flag is not overridden by environment.
+   */
+  getEnvOverride: (feature: FeatureFlagName) => boolean | undefined;
 }
 
 /**
@@ -112,7 +129,7 @@ export const useFeatureFlagContext = (): FeatureFlagContextValue => {
  * Manages feature flag state and synchronization with URL parameters.
  *
  * Features can be enabled in two ways:
- * 1. Through environment variables (VITE_ENABLED_FEATURE_FLAGS)
+ * 1. Through environment variables (VITE_FEATURE_FLAGS)
  * 2. Through URL parameters (?features=flag1,flag2)
  *
  * Environment-enabled flags take precedence and cannot be disabled through the UI.
@@ -124,8 +141,12 @@ export const FeatureFlagProvider = ({ children }: { children: React.ReactNode })
     getFeaturesFromParams(location.search)
   ));
 
-  const isEnabledByEnv = useCallback((feature: FeatureFlagName): boolean => (
-    envFlags.has(feature)
+  const isLockedByEnv = useCallback((feature: FeatureFlagName): boolean => (
+    envFlags[feature] !== undefined
+  ), []);
+
+  const getEnvOverride = useCallback((feature: FeatureFlagName): boolean | undefined => (
+    envFlags[feature]
   ), []);
 
   // Sync URL flags with our state
@@ -159,20 +180,31 @@ export const FeatureFlagProvider = ({ children }: { children: React.ReactNode })
     setSearchParams(newParams, { replace: true });
   }, [location.search, setSearchParams, urlFeatureFlags]);
 
-  const hasFeatureFlagEnabled = useCallback((feature: FeatureFlagName): boolean => (
-    urlFeatureFlags.has(feature) || envFlags.has(feature)
-  ), [urlFeatureFlags]);
+  const hasFeatureFlagEnabled = useCallback((feature: FeatureFlagName): boolean => {
+    // Environment override takes precedence if set
+    const envValue = envFlags[feature];
+    if (envValue !== undefined) return envValue;
+
+    // Otherwise use URL params
+    return urlFeatureFlags.has(feature);
+  }, [urlFeatureFlags]);
 
   const enableFeatureFlag = useCallback((feature: FeatureFlagName) => {
+    // Don't modify if locked by environment
+    if (isLockedByEnv(feature)) return;
+
     setUrlFeatureFlags(prev => {
       if (prev.has(feature)) return prev; // No change needed
       const next = new Set(prev).add(feature);
       updateUrlFeatureFlags(next);
       return next;
     });
-  }, [updateUrlFeatureFlags]);
+  }, [isLockedByEnv, updateUrlFeatureFlags]);
 
   const disableFeatureFlag = useCallback((feature: FeatureFlagName) => {
+    // Don't modify if locked by environment
+    if (isLockedByEnv(feature)) return;
+
     setUrlFeatureFlags(prev => {
       if (!prev.has(feature)) return prev; // No change needed
       const next = new Set(prev);
@@ -180,7 +212,7 @@ export const FeatureFlagProvider = ({ children }: { children: React.ReactNode })
       updateUrlFeatureFlags(next);
       return next;
     });
-  }, [updateUrlFeatureFlags]);
+  }, [isLockedByEnv, updateUrlFeatureFlags]);
 
   return (
     <FeatureFlagContext.Provider value={{
@@ -188,7 +220,8 @@ export const FeatureFlagProvider = ({ children }: { children: React.ReactNode })
       enableFeatureFlag,
       disableFeatureFlag,
       availableFlags: AVAILABLE_FEATURE_FLAGS,
-      isEnabledByEnv,
+      isLockedByEnv,
+      getEnvOverride,
     }}>
       {children}
     </FeatureFlagContext.Provider>

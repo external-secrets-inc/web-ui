@@ -158,15 +158,15 @@ const SecretEdge = ({ id, sourceX, sourceY, targetX, targetY, label, markerEnd, 
       {label && (
         <EdgeLabelRenderer>
           <Badge
-            variant="outline"
-            className="absolute font-mono font-normal bg-background"
+            variant="warning"
+            className="absolute font-mono backdrop-blur-sm"
             style={{
               // translate(-50%, -50%) centers the label instead of using x=0 and y=0 start points, then compound the translation to move it to the middle of the edge with adjustedLabelX and adjustedLabelY
               transform: `translate(-50%, -50%) translate(${adjustedLabelX}px, ${adjustedLabelY}px)`
             }}
           >
-            <LucideCopy className="size-3 mr-2" />
-            {label}
+            <LucideCopy className="size-3 mr-2 text-warning" />
+            on {label}
           </Badge>
         </EdgeLabelRenderer>
       )}
