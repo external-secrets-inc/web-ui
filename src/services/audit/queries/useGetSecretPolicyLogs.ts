@@ -7,11 +7,11 @@ import { mockNetworkResponseDelay, mockSecretPolicyLogsData } from "../mocks/moc
 import { PolicyDetails } from "@/components/audit/Audit.interfaces";
 import { useAuditMock } from '@/services/audit/context/AuditMockContext';
 
-const getSecretPolicyLogs = async (
+export const getSecretPolicyLogs = async (
   mock: boolean,
   secretID: string,
   policyID: string,
-  signal: AbortSignal,
+  signal?: AbortSignal,
 ) => {
   if (mock) {
     await mockNetworkResponseDelay();
@@ -32,7 +32,7 @@ const useGetSecretPolicyLogs = (
   const { isMocked } = useAuditMock(mock);
 
   return useQuery({
-    queryKey: ["useGetSecretPolicyLogs", isMocked],
+    queryKey: ["useGetSecretPolicyLogs", isMocked, secretID, policyID],
     queryFn: ({ signal }) => getSecretPolicyLogs(isMocked, secretID, policyID, signal),
     ...options,
   });
