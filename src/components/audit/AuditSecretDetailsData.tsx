@@ -96,7 +96,7 @@ const HistoryAccordion = <T extends { id: string }, H extends { timestamp: strin
               {renderTrigger(item)}
             </AlertDescription>
             {isLoadingHistory && (
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 bg-background">
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 bg-muted rounded-full">
                 <Loader />
               </div>
             )}

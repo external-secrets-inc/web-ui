@@ -6,6 +6,7 @@ import { AxiosError } from "axios";
 import { mockNetworkResponseDelay, mockSecretPolicyLogsData } from "../mocks/mockData";
 import { PolicyDetails } from "@/components/audit/Audit.interfaces";
 import { useAuditMock } from '@/services/audit/context/AuditMockContext';
+import { ONE_MINUTE_IN_SECONDS } from "@/constants";
 
 export const getSecretPolicyLogs = async (
   mock: boolean,
@@ -34,6 +35,7 @@ const useGetSecretPolicyLogs = (
   return useQuery({
     queryKey: ["useGetSecretPolicyLogs", isMocked, secretID, policyID],
     queryFn: ({ signal }) => getSecretPolicyLogs(isMocked, secretID, policyID, signal),
+    staleTime: ONE_MINUTE_IN_SECONDS * 5,
     ...options,
   });
 };

@@ -6,6 +6,7 @@ import { AxiosError } from "axios";
 import { mockNetworkResponseDelay, mockSecretAccessorLogsData } from "../mocks/mockData";
 import { AccessorDetails } from "@/components/audit/Audit.interfaces";
 import { useAuditMock } from '@/services/audit/context/AuditMockContext';
+import { ONE_MINUTE_IN_SECONDS } from "@/constants";
 
 export const getSecretAccessorLogs = async (
   mock: boolean,
@@ -34,6 +35,7 @@ const useGetSecretAccessorLogs = (
   return useQuery({
     queryKey: ["useGetSecretAccessorLogs", isMocked, secretID, accessorName],
     queryFn: ({ signal }) => getSecretAccessorLogs(isMocked, secretID, accessorName, signal),
+    staleTime: ONE_MINUTE_IN_SECONDS * 5,
     ...options,
   });
 };
