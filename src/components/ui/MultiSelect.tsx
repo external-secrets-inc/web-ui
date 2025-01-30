@@ -146,6 +146,7 @@ export const MultiSelect = React.forwardRef<
       React.useState<string[]>(defaultValue);
     const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
     const [isAnimating, setIsAnimating] = React.useState(false);
+    const [searchValue, setSearchValue] = React.useState("");
 
     const handleInputKeyDown = (
       event: React.KeyboardEvent<HTMLInputElement>
@@ -196,7 +197,12 @@ export const MultiSelect = React.forwardRef<
     return (
       <Popover
         open={isPopoverOpen}
-        onOpenChange={setIsPopoverOpen}
+        onOpenChange={(open) => {
+          setIsPopoverOpen(open);
+          if (!open) {
+            setSearchValue("");
+          }
+        }}
         modal={modalPopover}
       >
         <PopoverTrigger asChild>
@@ -289,59 +295,66 @@ export const MultiSelect = React.forwardRef<
           align="start"
           onEscapeKeyDown={() => setIsPopoverOpen(false)}
         >
-          <Command className="w-full">
+          <Command className="w-full" shouldFilter={false}>
             <CommandInput
               placeholder="Search..."
               onKeyDown={handleInputKeyDown}
+              value={searchValue}
+              onValueChange={(value) => setSearchValue(value)}
             />
             <CommandList className="max-h-60">
               <CommandEmpty>No results found.</CommandEmpty>
-              <div className="sticky top-0 bg-background z-10 p-1 pb-0 -mb-1">
-                <CommandItem
-                  key="all"
-                  onSelect={toggleAll}
-                  className="cursor-pointer"
-                >
-                  <div
-                    className={cn(
-                      "mr-2 flex h-4 w-4 items-center justify-center rounded-xs border border-primary",
-                      selectedValues.length === options.length
-                        ? "bg-primary text-primary-foreground"
-                        : "opacity-50 [&_svg]:invisible"
-                    )}
+              {searchValue === "" && (
+                <div className="sticky top-0 bg-background z-10 p-1 pb-0 -mb-1">
+                  <CommandItem
+                    key="all"
+                    onSelect={toggleAll}
+                    className="cursor-pointer"
                   >
-                    <CheckIcon className="h-4 w-4" />
-                  </div>
-                  <span className="text-muted-foreground">(Select All)</span>
-                </CommandItem>
-              </div>
-              <CommandGroup>
-                {options.map((option) => {
-                  const isSelected = selectedValues.includes(option.value);
-                  return (
-                    <CommandItem
-                      key={option.value}
-                      onSelect={() => toggleOption(option.value)}
-                      className="cursor-pointer"
-                      value={option.value}
-                    >
-                      <div
-                        className={cn(
-                          "mr-2 flex h-4 w-4 items-center justify-center rounded-xs border border-primary",
-                          isSelected
-                            ? "bg-primary text-primary-foreground"
-                            : "opacity-50 [&_svg]:invisible"
-                        )}
-                      >
-                        <CheckIcon className="h-4 w-4" />
-                      </div>
-                      {option.icon && (
-                        <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+                    <div
+                      className={cn(
+                        "mr-2 flex h-4 w-4 items-center justify-center rounded-xs border border-primary",
+                        selectedValues.length === options.length
+                          ? "bg-primary text-primary-foreground"
+                          : "opacity-50 [&_svg]:invisible"
                       )}
-                      <span>{option.label}</span>
-                    </CommandItem>
-                  );
-                })}
+                    >
+                      <CheckIcon className="h-4 w-4" />
+                    </div>
+                    <span className="text-muted-foreground">(Select All)</span>
+                  </CommandItem>
+                </div>
+              )}
+              <CommandGroup>
+                {options
+                  .filter((option) =>
+                    option.label.toLowerCase().includes(searchValue.toLowerCase())
+                  )
+                  .map((option) => {
+                    const isSelected = selectedValues.includes(option.value);
+                    return (
+                      <CommandItem
+                        key={option.value}
+                        onSelect={() => toggleOption(option.value)}
+                        className="cursor-pointer"
+                      >
+                        <div
+                          className={cn(
+                            "mr-2 flex h-4 w-4 items-center justify-center rounded-xs border border-primary",
+                            isSelected
+                              ? "bg-primary text-primary-foreground"
+                              : "opacity-50 [&_svg]:invisible"
+                          )}
+                        >
+                          <CheckIcon className="h-4 w-4" />
+                        </div>
+                        {option.icon && (
+                          <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+                        )}
+                        <span>{option.label}</span>
+                      </CommandItem>
+                    );
+                  })}
               </CommandGroup>
             </CommandList>
             <CommandSeparator />
