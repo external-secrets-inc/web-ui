@@ -1,4 +1,4 @@
-import { Background, Controls, ReactFlow, Node, Edge, MarkerType, Handle, Position, BaseEdge, EdgeLabelRenderer, EdgeProps, getStraightPath } from '@xyflow/react';
+import { Background, Controls, ReactFlow, Node, Edge, MarkerType, Handle, Position, BaseEdge, EdgeLabelRenderer, EdgeProps, getSmoothStepPath } from '@xyflow/react';
 import '@xyflow/react/dist/base.css';
 import Dagre from '@dagrejs/dagre';
 import { useEffect, useState, useRef } from 'react';
@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { LucideSquareAsterisk, LucideCopy, LucideNetwork } from 'lucide-react';
 import { ReactFlowInstance } from '@xyflow/react';
 
+// Constants for node dimensions - used by Dagre to calculate proper spacing // TODO: Make this dynamic based on the rendered DOM elements. Spoiler: it's not easy lol.
 const NODE_WIDTH = 320;
 const NODE_HEIGHT = 192;
 
@@ -61,16 +62,91 @@ const SecretNode = ({
   );
 };
 
-const SecretEdge = ({
-  id,
-  sourceX,
-  sourceY,
-  targetX,
-  targetY,
-  label,
-  markerEnd
-}: EdgeProps) => {
-  const [edgePath, labelX, labelY] = getStraightPath({ sourceX, sourceY, targetX, targetY });
+/**
+ * Creates a Map to efficiently track how many target nodes each source node has.
+ * We use Map instead of an object because:
+ * 1. O(1) lookup performance
+ * 2. No prototype chain to worry about
+ * 3. No need to use hasOwnProperty checks
+ */
+const getSourceTargetMap = (links: LineageData['links']) => {
+  const map = new Map<string, number>();
+  for (const link of links) {
+    map.set(link.fromSecret, (map.get(link.fromSecret) || 0) + 1);
+  }
+  return map;
+};
+
+/**
+ * Creates edge configurations for React Flow.
+ * The key aspects here are:
+ * 1. We create the source-target map once outside the loop for performance
+ * 2. We attach sourceHasMultipleTargets to edge data to inform label positioning
+ * 3. Edge IDs combine source and target for unique IDs.
+ */
+const createEdges = (links: LineageData['links']) => {
+  // Create the map once to avoid recalculating for each edge
+  const sourceTargetMap = getSourceTargetMap(links);
+
+  return links.map(link => ({
+    id: `${link.fromSecret}-${link.toSecret}`,
+    source: link.fromSecret,
+    target: link.toSecret,
+    type: 'default',
+    animated: true,
+    data: {
+      // This boolean drives the label positioning logic for split paths or single paths
+      sourceHasMultipleTargets: (sourceTargetMap.get(link.fromSecret) || 0) > 1
+    },
+    label: formatDate(new Date(link.createdAt), { format: 'readableDate' }),
+    markerEnd: { type: MarkerType.Arrow, width: 32, height: 32 },
+  }));
+};
+
+/**
+ * Calculates the optimal label position for an edge based on:
+ * 1. Whether the source node has multiple targets (splits into multiple edges)
+ * 2. The geometric relationship between source and target nodes
+ *
+ * For split paths (multiple targets):
+ * - Places label at middle point of edge after the source node split
+ * - This helps avoid label overlaps where edges diverge
+ *
+ * For single paths:
+ * - Places label middle of the path
+ * - No need to adjust since there's no risk of overlaps
+ */
+const getAdjustedLabelPosition = (sourceX: number, sourceY: number, targetX: number, targetY: number, hasMultipleTargets: boolean) => {
+  // Calculate the total distance of the edge in both dimensions
+  const dx = targetX - sourceX;
+  const dy = targetY - sourceY;
+
+  if (hasMultipleTargets) {
+    return {
+      // For split paths, align with the vertical segment of the step path
+      x: sourceX + dx, // Places label the vertical segment of the splitted path
+      y: sourceY + dy * 0.75 // getSmoothStepPath() splits the path right at 50%, so we need to move it down 25% for the label to be in the middle of the splitted path, hence 75%.
+    };
+  }
+
+  return {
+    // For single paths, simple center positioning
+    x: sourceX + dx / 2,
+    y: sourceY + dy / 2
+  };
+};
+
+/**
+ * Custom edge component that handles:
+ * 1. Path generation with smooth corners
+ * 2. Smart label positioning based on edge type
+ * 3. Visual styling and markers
+ */
+const SecretEdge = ({ id, sourceX, sourceY, targetX, targetY, label, markerEnd, data }: EdgeProps) => {
+  const [edgePath] = getSmoothStepPath({ sourceX, sourceY, targetX, targetY, borderRadius: 16 });
+  const hasMultipleTargets = Boolean(data?.sourceHasMultipleTargets);
+  const { x: adjustedLabelX, y: adjustedLabelY } = getAdjustedLabelPosition(sourceX, sourceY, targetX, targetY, hasMultipleTargets);
+
   return (
     <>
       <BaseEdge
@@ -85,7 +161,8 @@ const SecretEdge = ({
             variant="outline"
             className="absolute font-mono font-normal bg-background"
             style={{
-              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`
+              // translate(-50%, -50%) centers the label instead of using x=0 and y=0 start points, then compound the translation to move it to the middle of the edge with adjustedLabelX and adjustedLabelY
+              transform: `translate(-50%, -50%) translate(${adjustedLabelX}px, ${adjustedLabelY}px)`
             }}
           >
             <LucideCopy className="size-3 mr-2" />
@@ -99,16 +176,6 @@ const SecretEdge = ({
 
 const nodeTypes = { secretNode: SecretNode };
 const edgeTypes = { default: SecretEdge };
-
-const createEdges = (links: LineageData['links']) => links.map(link => ({
-  id: `${link.fromSecret}-${link.toSecret}`,
-  source: link.fromSecret,
-  target: link.toSecret,
-  type: 'default',
-  animated: true,
-  label: formatDate(new Date(link.createdAt), { format: 'readableDate' }),
-  markerEnd: { type: MarkerType.Arrow, width: 32, height: 32 },
-}));
 
 const createNodes = (nodes: LineageData['nodes'], currentSecretId: string, edges: Edge[]) => {
   const sourceNodes = new Set(edges.map(e => e.source));
