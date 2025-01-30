@@ -1,14 +1,17 @@
+import { trackSignedOut } from "@/analytics";
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { IS_DEV } from '@/constants';
+import { FeatureFlagName, useFeatureFlagContext } from '@/context/FeatureFlagContext';
 import useOrgLink from '@/hooks/useOrgLink';
 import { IUserData } from '@/types';
-import { LucideChevronDown } from 'lucide-react';
+import { LucideChevronDown, LucideLock, LucideToggleLeft, LucideToggleRight } from 'lucide-react';
 import React from 'react';
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
 import useSignOut from 'react-auth-kit/hooks/useSignOut';
 import { Link, useNavigate } from 'react-router-dom';
-import { trackSignedOut } from "@/analytics";
 
 const UserMenu: React.FC = () => {
   const authUser = useAuthUser<IUserData>();
@@ -18,11 +21,24 @@ const UserMenu: React.FC = () => {
   const name = authUser?.name;
   const initials = getInitials(name);
   const getOrgLink = useOrgLink();
+  const featureFlags = useFeatureFlagContext();
+
+  const showFeatureFlags = IS_DEV;
 
   const handleSignOut = () => {
     signOut();
     trackSignedOut(true);
     navigate('/login');
+  };
+
+  const toggleFeatureFlag = (flag: FeatureFlagName) => {
+    if (featureFlags.isEnabledByEnv(flag)) return;
+
+    if (featureFlags.hasFeatureFlagEnabled(flag)) {
+      featureFlags.disableFeatureFlag(flag);
+    } else {
+      featureFlags.enableFeatureFlag(flag);
+    }
   };
 
   return (
@@ -69,6 +85,59 @@ const UserMenu: React.FC = () => {
         <Link to={getOrgLink('/settings')}>
           <DropdownMenuItem>Settings</DropdownMenuItem>
         </Link>
+
+        {showFeatureFlags && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>Feature Flags</DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                {featureFlags.availableFlags.map((flag) => {
+                  const isEnabled = featureFlags.hasFeatureFlagEnabled(flag);
+                  const isLockedByEnv = featureFlags.isEnabledByEnv(flag);
+
+                  const menuItem = (
+                    <DropdownMenuItem
+                      key={flag}
+                      onClick={() => toggleFeatureFlag(flag)}
+                      disabled={isLockedByEnv}
+                      className={isLockedByEnv ? 'opacity-50 cursor-not-allowed !pointer-events-auto' : ''}
+                    >
+                      <span className="flex items-center gap-2">
+                        {isEnabled ? (
+                          <LucideToggleRight className="text-success" />
+                        ) : (
+                          <LucideToggleLeft className="text-muted-foreground" />
+                        )}
+                        {flag}
+                        {isLockedByEnv && (
+                          <LucideLock className="h-3 w-3 text-muted-foreground" />
+                        )}
+                      </span>
+                    </DropdownMenuItem>
+                  );
+
+                  if (isLockedByEnv) {
+                    return (
+                      <TooltipProvider key={flag}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            {menuItem}
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>This flag is enabled by the environment and cannot be changed</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    );
+                  }
+
+                  return menuItem;
+                })}
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+          </>
+        )}
 
         <DropdownMenuItem onClick={handleSignOut}>
           Sign Out
