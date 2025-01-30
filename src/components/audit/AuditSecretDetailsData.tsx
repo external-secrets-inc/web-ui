@@ -330,7 +330,7 @@ const AuditSecretDetailsData = ({ className, secretData, setSecretId }: {
   setSecretId: (id: string) => void;
 }) => {
   return (
-    <section aria-label="Details" className={cn("min-h-0 grid grid-rows-[auto_1fr] bg-background relative flex-1 border-l", className)}>
+    <section aria-label="Details" className={cn("min-h-0 grid grid-rows-[auto_1fr] bg-background relative flex-1", className)}>
       <div className="px-6 py-4 border-b">
         <div className="flex items-center flex-wrap gap-2">
           <LucideSquareAsterisk className="size-6 text-primary" />
