@@ -11,6 +11,7 @@ import AuditSecretDetailsLineage from "./AuditSecretDetailsLineage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LucideNetwork, LucideSquareAsterisk } from "lucide-react";
 import { useFeatureFlag } from "@/context/FeatureFlagContext";
+import { cn } from "@/lib/utils";
 
 export default function AuditSecretDetails({
   secretId,
@@ -61,6 +62,10 @@ export default function AuditSecretDetails({
     return secretData;
   }, [secretData]);
 
+  // Only show lineage view when feature flag is enabled AND secret has duplicates
+  // This prevents loading ReactFlow and related components when they're not needed
+  const shouldShowLineage = featureFlagShowLineage && listenerSecretData.duplicates.length > 0;
+
   // Reset to details tab when viewing a different secret
   // This ensures users always start with details view when switching secrets,
   // preventing confusion if they were previously on lineage tab of another secret
@@ -105,7 +110,7 @@ export default function AuditSecretDetails({
         </SheetHeader>
 
         {isLoadingSecretData ? (
-          <div className="flex justify-center items-center flex-1 max-w-full w-[calc(50vw+(1280px/2))]">
+          <div className="flex justify-center items-center flex-1 lg:max-w-[640px] lg:min-w-[480px] h-full">
             <Loader />
           </div>
         ) : (
@@ -116,7 +121,7 @@ export default function AuditSecretDetails({
               onValueChange={setActiveTab}
             >
               {/* Mobile-only tab list but hidden on desktop with sr-only/hidden classes */}
-              {featureFlagShowLineage && (
+              {shouldShowLineage && (
                 <div className="lg:hidden py-2 px-12 flex justify-center bg-muted/35 border-b">
                   <TabsList className="grid w-full grid-cols-2 max-w-80">
                     <TabsTrigger
@@ -138,9 +143,9 @@ export default function AuditSecretDetails({
               )}
 
               <div className="flex-1 min-h-0 flex flex-col lg:flex-row lg:border-t divide-x">
-                {/* forceMount is necessary to maintain ReactFlow's instance
-                    but we use sr-only/hidden classes to manage visibility */}
-                {featureFlagShowLineage && (
+                {/* forceMount is necessary to maintain both tabs "open" at the same time on desktop.
+                    With that, then we need manage visibility with sr-only/hidden classes manually */}
+                {shouldShowLineage && (
                   <TabsContent
                     value="lineage"
                     className="flex-1 !w-screen lg:!max-w-[calc(100vw-480px)] lg:!w-[calc(50vw+(1280px/2-480px))] data-[state=inactive]:sr-only lg:data-[state=inactive]:not-sr-only order-1 lg:order-1 lg:flex-[2] mt-0"
@@ -161,7 +166,10 @@ export default function AuditSecretDetails({
                 )}
                 <TabsContent
                   value="details"
-                  className="flex-1 min-h-0 data-[state=inactive]:hidden lg:data-[state=inactive]:block order-2 lg:order-2 mt-0"
+                  className={cn(
+                    "flex-1 min-h-0 data-[state=inactive]:hidden lg:data-[state=inactive]:block order-2 lg:order-2 mt-0",
+                    !shouldShowLineage && "lg:w-[640px]"
+                  )}
                   forceMount
                 >
                   <AuditSecretDetailsData
