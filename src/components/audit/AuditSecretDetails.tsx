@@ -32,7 +32,7 @@ export default function AuditSecretDetails({
     isLoading: isLoadingSecretData,
     error: secretDataError,
   } = useGetAuditSecretData(false, secretId || '', {
-    refetchInterval: 2 * ONE_SECOND_IN_MILLISECONDS,
+    refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
     refetchIntervalInBackground: true,
     enabled: !!secretId
   });
@@ -102,7 +102,7 @@ export default function AuditSecretDetails({
         </SheetHeader>
 
         {isLoadingSecretData ? (
-          <div className="flex justify-center items-center flex-1">
+          <div className="flex justify-center items-center flex-1 max-w-full w-[calc(50vw+(1280px/2))]">
             <Loader />
           </div>
         ) : (
