@@ -137,7 +137,7 @@ export default function AuditSecretDetails({
                     but we use sr-only/hidden classes to manage visibility */}
                 <TabsContent
                   value="lineage"
-                  className="flex-1 !w-screen lg:max-w-[calc(50vw+(1280px/2-480px))] data-[state=inactive]:sr-only lg:data-[state=inactive]:not-sr-only order-1 lg:order-1 lg:flex-[2] mt-0"
+                  className="flex-1 !w-screen lg:!max-w-[calc(100vw-480px)] lg:!w-[calc(50vw+(1280px/2-480px))] data-[state=inactive]:sr-only lg:data-[state=inactive]:not-sr-only order-1 lg:order-1 lg:flex-[2] mt-0"
                   forceMount
                 >
                   <AuditSecretDetailsLineage
