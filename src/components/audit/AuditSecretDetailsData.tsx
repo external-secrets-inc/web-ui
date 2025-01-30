@@ -14,7 +14,7 @@ import {
   LucideHistory,
   LucideUser,
 } from "lucide-react";
-import { AuditSecretData, PolicyDetails, AccessorDetails } from "./Audit.interfaces";
+import { AuditSecretData } from "./Audit.interfaces";
 import { formatDate } from "@/utils/dateUtils";
 import { useState } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -34,7 +34,7 @@ const POLICY_STATUS_BADGE_VARIANTS = {
   error: "destructive",
 } as const;
 
-const SingleItemHistoryAccordion = <T extends { id: string }, H extends { timestamp: string }>({
+const HistoryAccordion = <T extends { id: string }, H extends { timestamp: string }>({
   item,
   secretId,
   renderTrigger,
@@ -54,21 +54,25 @@ const SingleItemHistoryAccordion = <T extends { id: string }, H extends { timest
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const { data: historyData, isLoading } = useHistoryQuery(
+  // Only fetch data when accordion is open to prevent unnecessary requests on panel load
+  const { data: historyData, isLoading: isLoadingHistory } = useHistoryQuery(
     false,
     secretId,
     item.id,
     { enabled: isOpen }
   );
 
+  // Prevent default accordion behavior to handle async data loading first time
+  // This prevents buggy Radix UI height calculation issues during content transitions
   const handleTriggerClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (isOpen) {
       setIsOpen(false);
     } else if (historyData) {
+      // Open immediately if data is cached
       setIsOpen(true);
     } else {
-      // Start fetching and wait for data
+      // Start loading but defer opening until data arrives
       setIsOpen(true);
     }
   };
@@ -77,8 +81,10 @@ const SingleItemHistoryAccordion = <T extends { id: string }, H extends { timest
     <Accordion
       type="single"
       collapsible
+      // Only set accordion value when data exists to ensure correct height calculation
       value={historyData && isOpen ? item.id : undefined}
-      onValueChange={() => {}} // We handle state manually
+      // Manual state handling for the async control
+      onValueChange={() => {}}
     >
       <AccordionItem value={item.id} className="border-none">
         <Alert className="p-0 overflow-clip">
@@ -89,7 +95,7 @@ const SingleItemHistoryAccordion = <T extends { id: string }, H extends { timest
             <AlertDescription className="flex items-center justify-between w-full mr-4">
               {renderTrigger(item)}
             </AlertDescription>
-            {(isLoading) && (
+            {isLoadingHistory && (
               <div className="absolute right-4 top-1/2 -translate-y-1/2 bg-background">
                 <Loader />
               </div>
@@ -123,78 +129,58 @@ const SingleItemHistoryAccordion = <T extends { id: string }, H extends { timest
   );
 };
 
-const PolicyHistoryAccordion = ({
-  policy,
-  secretId
+const HistorySection = <T extends { id: string }, H extends { timestamp: string }>({
+  title,
+  icon,
+  items,
+  secretId,
+  useHistoryQuery,
+  renderTrigger,
+  renderHistoryItem,
+  emptyMessage = "No history available"
 }: {
-  policy: AuditSecretData['policies'][0],
-  secretId: string
+  title: string;
+  icon: React.ReactNode;
+  items: T[];
+  secretId: string;
+  useHistoryQuery: (
+    mock: boolean,
+    secretId: string,
+    itemId: string,
+    options?: { enabled?: boolean }
+  ) => { data: H[] | undefined; isLoading: boolean };
+  renderTrigger: (item: T) => React.ReactNode;
+  renderHistoryItem: (historyItem: H) => React.ReactNode;
+  emptyMessage?: string;
 }) => {
   return (
-    <SingleItemHistoryAccordion<typeof policy, PolicyDetails>
-      item={policy}
-      secretId={secretId}
-      useHistoryQuery={useGetSecretPolicyLogs}
-      renderTrigger={(policy) => (
-        <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-2">
-            {policy.status === "compliant" ? (
-              <LucideCheck className="text-emerald-500" />
-            ) : (
-              <LucideAlertCircle className={POLICY_STATUS_COLORS[policy.status]} />
-            )}
-            <span className="font-medium">{policy.name}</span>
-          </div>
-          {policy.status !== "compliant" && (
-            <Badge variant={POLICY_STATUS_BADGE_VARIANTS[policy.status]}>
-              {policy.status}
-            </Badge>
-          )}
+    <section aria-label={title} className="space-y-2 p-6">
+      <SectionHeader
+        icon={icon}
+        title={title}
+        count={items.length}
+      />
+      {items.length > 0 ? (
+        <div className="space-y-2">
+          {items.map(item => (
+            <HistoryAccordion
+              key={item.id}
+              item={item}
+              secretId={secretId}
+              useHistoryQuery={useHistoryQuery}
+              renderTrigger={renderTrigger}
+              renderHistoryItem={renderHistoryItem}
+            />
+          ))}
         </div>
+      ) : (
+        <Alert>
+          <AlertDescription className="text-muted-foreground">
+            {emptyMessage}
+          </AlertDescription>
+        </Alert>
       )}
-      renderHistoryItem={(log) => (
-        <>
-          <Badge variant={POLICY_STATUS_BADGE_VARIANTS[log.status]}>
-            {log.status}
-          </Badge>
-          <Badge className="font-mono" variant="outline">
-            {formatDate(log.timestamp, { format: 'readableDate' })}
-          </Badge>
-        </>
-      )}
-    />
-  );
-};
-
-const AccessorHistoryAccordion = ({
-  accessor,
-  secretId
-}: {
-  accessor: AuditSecretData['accessors'][0],
-  secretId: string
-}) => {
-  return (
-    <SingleItemHistoryAccordion<typeof accessor, AccessorDetails>
-      item={accessor}
-      secretId={secretId}
-      useHistoryQuery={useGetSecretAccessorLogs}
-      renderTrigger={(accessor) => (
-        <div className="flex items-center justify-between w-full">
-          <span className="font-medium">
-            <LucideUser className="inline-flex mr-1" />
-            {accessor.name || accessor.id || "Unknown Accessor"}
-          </span>
-          <Badge variant="outline" className="font-mono">
-            {formatDate(accessor.accessTime, { format: 'readableDate' })}
-          </Badge>
-        </div>
-      )}
-      renderHistoryItem={(log) => (
-        <Badge className="font-mono ml-auto" variant="outline">
-          {formatDate(log.timestamp, { format: 'readableDate' })}
-        </Badge>
-      )}
-    />
+    </section>
   );
 };
 
@@ -238,30 +224,41 @@ const SectionSecretPolicies = ({
   policies: AuditSecretData['policies'];
   secretId: string;
 }) => (
-  <section aria-label="Policies" className="space-y-2 p-6">
-    <SectionHeader
-      icon={<LucideShieldCheck />}
-      title="Policies"
-      count={policies.length}
-    />
-    {policies.length > 0 ? (
-      <div className="space-y-2">
-        {policies.map(policy => (
-          <PolicyHistoryAccordion
-            key={policy.id}
-            policy={policy}
-            secretId={secretId}
-          />
-        ))}
+  <HistorySection
+    title="Policies"
+    icon={<LucideShieldCheck />}
+    items={policies}
+    secretId={secretId}
+    useHistoryQuery={useGetSecretPolicyLogs}
+    emptyMessage="No policies associated with this secret"
+    renderTrigger={(policy) => (
+      <div className="flex items-center justify-between w-full">
+        <div className="flex items-center gap-2">
+          {policy.status === "compliant" ? (
+            <LucideCheck className="text-emerald-500" />
+          ) : (
+            <LucideAlertCircle className={POLICY_STATUS_COLORS[policy.status]} />
+          )}
+          <span className="font-medium">{policy.name}</span>
+        </div>
+        {policy.status !== "compliant" && (
+          <Badge variant={POLICY_STATUS_BADGE_VARIANTS[policy.status]}>
+            {policy.status}
+          </Badge>
+        )}
       </div>
-    ) : (
-      <Alert>
-        <AlertDescription className="text-muted-foreground">
-          No policies associated with this secret
-        </AlertDescription>
-      </Alert>
     )}
-  </section>
+    renderHistoryItem={(log) => (
+      <>
+        <Badge variant={POLICY_STATUS_BADGE_VARIANTS[log.status]}>
+          {log.status}
+        </Badge>
+        <Badge className="font-mono" variant="outline">
+          {formatDate(log.timestamp, { format: 'readableDate' })}
+        </Badge>
+      </>
+    )}
+  />
 );
 
 const SectionSecretDuplicates = ({ duplicates, setSecretId }: { duplicates: AuditSecretData['duplicates']; setSecretId: (id: string) => void }) => (
@@ -301,30 +298,30 @@ const SectionSecretAccessors = ({
   accessors: AuditSecretData['accessors'];
   secretId: string;
 }) => (
-  <section aria-label="Last access records" className="space-y-2 p-6">
-    <SectionHeader
-      icon={<LucideUsers />}
-      title="Last Access Records"
-      count={accessors.length}
-    />
-    {accessors.length > 0 ? (
-      <div className="space-y-2">
-        {accessors.map(accessor => (
-          <AccessorHistoryAccordion
-            key={accessor.id}
-            accessor={accessor}
-            secretId={secretId}
-          />
-        ))}
+  <HistorySection
+    title="Last Access Records"
+    icon={<LucideUsers />}
+    items={accessors}
+    secretId={secretId}
+    useHistoryQuery={useGetSecretAccessorLogs}
+    emptyMessage="No recent access history available"
+    renderTrigger={(accessor) => (
+      <div className="flex items-center justify-between w-full">
+        <span className="font-medium">
+          <LucideUser className="inline-flex mr-1" />
+          {accessor.name || accessor.id || "Unknown Accessor"}
+        </span>
+        <Badge variant="outline" className="font-mono">
+          {formatDate(accessor.accessTime, { format: 'readableDate' })}
+        </Badge>
       </div>
-    ) : (
-      <Alert>
-        <AlertDescription className="text-muted-foreground">
-          No recent access history available
-        </AlertDescription>
-      </Alert>
     )}
-  </section>
+    renderHistoryItem={(log) => (
+      <Badge className="font-mono ml-auto" variant="outline">
+        {formatDate(log.timestamp, { format: 'readableDate' })}
+      </Badge>
+    )}
+  />
 );
 
 const AuditSecretDetailsData = ({ className, secretData, setSecretId }: {
