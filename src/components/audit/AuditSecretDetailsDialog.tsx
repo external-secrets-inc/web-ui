@@ -8,6 +8,7 @@ import {
   LucideAlertCircle,
   LucideCheck,
   LucideClock,
+  LucideDownload,
   LucideHistory,
   LucideRotateCcw,
   LucideShieldCheck,
@@ -27,6 +28,9 @@ import { ONE_SECOND_IN_MILLISECONDS, POLICY_STATUS_BADGE_COLORS, POLICY_STATUS_C
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 import useGetSecretAccessorLogs from "@/services/audit/queries/useGetSecretAccessorLogs";
 import useGetSecretPolicyLogs from "@/services/audit/queries/useGetSecretPolicyLogs";
+import useExportAuditSecrets from "@/services/audit/queries/useExportAuditSecret";
+import saveAs from "file-saver";
+import { Button } from "../ui/button";
 
 interface AuditSecretDetailsDialogProps {
   secretId: string | null;
@@ -39,6 +43,15 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
   const [accessorName, setAccessorName] = useState<string>('');
   const [isPolicyTransitioning, setIsPolicyTransitioning] = useState(false);
   const [isAccessorTransitioning, setIsAccessorTransitioning] = useState(false);
+
+  const {
+    data: exportSecretData,
+    isLoading: isLoadingExportSecretData,
+    isError: isErrorExportSecretData,
+    error: exportSecretDataError,
+  } = useExportAuditSecrets(false, secretId || '', {
+    enabled: !!secretId
+  });
 
   const {
     data: secretData,
@@ -69,6 +82,15 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
   } = useGetSecretAccessorLogs(false, secretId || '', accessorName || '', {
     enabled: !!secretId && !!accessorName
   });
+
+  useEffect(() => {
+    if (exportSecretDataError) {
+      handleDefaultApiHttpError(
+        exportSecretDataError,
+        `Error while fetching to export secret data`
+      );
+    }
+  }, [exportSecretDataError, isErrorExportSecretData]);
 
   useEffect(() => {
     if (secretDataError) {
@@ -133,6 +155,12 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
     }
   }, [accessorName, accessorLogsRefetch]);
 
+  const handleExportSecret = () => {
+    if(!exportSecretData) return
+    const file = new File([exportSecretData[0]], exportSecretData[1], { type: exportSecretData[2] });
+    saveAs(file);
+  }
+
   if (!secretId) return null;
 
   return (
@@ -143,6 +171,17 @@ export default function AuditSecretDetailsDialog({ secretId, setSecretId, onOpen
             <LucideSquareAsterisk className="size-6" />
             {listenerSecretData.name || "Unnamed Secret"}
             <Badge variant="outline">{listenerSecretData.providerName}</Badge>
+            <Button
+              size="icon"
+              variant="outline"
+              className="self-center"
+              aria-label="Download"
+              title="Download"
+              onClick={() => {handleExportSecret()}}
+              disabled={isLoadingExportSecretData || !exportSecretData}
+            >
+              <LucideDownload />
+            </Button>
           </DialogTitle>
           <DialogDescription />
         </DialogHeader>
