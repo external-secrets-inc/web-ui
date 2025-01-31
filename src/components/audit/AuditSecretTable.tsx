@@ -173,9 +173,9 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
       return value === null || ['string', 'number', 'boolean'].includes(typeof value);
     };
 
-    const headers = Object.entries(csvHeaderMap)
-      .filter(([_, header]) => header !== null)
-      .map(([_, header]) => header)
+    const headers = Object.values(csvHeaderMap)
+      .filter((header) => header !== null)
+      .map((header) => header)
       .join(",");
 
     const rows = json.map((row) => {
