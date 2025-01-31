@@ -30,7 +30,6 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
 } from "@/components/ui/command";
 
 /**
@@ -317,55 +316,60 @@ export const MultiSelect = React.forwardRef<
               placeholder="Search..."
               onKeyDown={handleInputKeyDown}
             />
-            <CommandList className="max-h-60">
+            <CommandList className="max-h-[unset]">
               <CommandEmpty>No results found.</CommandEmpty>
-              <CommandGroup >
-                <CommandItem
-                  key="all"
-                  onSelect={toggleAll}
-                  className="cursor-pointer"
-                >
-                  <div
-                    className={cn(
-                      "mr-2 flex h-4 w-4 items-center justify-center rounded-xs border border-primary",
-                      selectedValues.length === options.length
-                        ? "bg-primary text-primary-foreground"
-                        : "opacity-50 [&_svg]:invisible"
-                    )}
-                  >
-                    <CheckIcon className="h-4 w-4" />
-                  </div>
-                  <span className="text-muted-foreground">(Select All)</span>
-                </CommandItem>
-                {options.map((option) => {
-                  const isSelected = selectedValues.includes(option.value);
-                  return (
+              <CommandGroup className="p-0">
+                <div className="overflow-y-auto max-h-60"> {/* This wrapper div is necessary to avoid the Toggle All Item from changing position after filtering */}
+                  <div className="p-1 pb-0 bg-background sticky top-0 z-10">
                     <CommandItem
-                      key={option.value}
-                      onSelect={() => toggleOption(option.value)}
+                      key="all"
+                      onSelect={toggleAll}
                       className="cursor-pointer"
-                      value={option.value}
+                      value="selectAll"
+                      forceMount
                     >
                       <div
                         className={cn(
                           "mr-2 flex h-4 w-4 items-center justify-center rounded-xs border border-primary",
-                          isSelected
+                          selectedValues.length === options.length
                             ? "bg-primary text-primary-foreground"
                             : "opacity-50 [&_svg]:invisible"
                         )}
                       >
                         <CheckIcon className="h-4 w-4" />
                       </div>
-                      {option.icon && (
-                        <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />
-                      )}
-                      <span>{option.label}</span>
+                      <span className="text-muted-foreground">(Select All)</span>
                     </CommandItem>
-                  );
-                })}
+                  </div>
+                  {options.map((option) => {
+                    const isSelected = selectedValues.includes(option.value);
+                    return (
+                      <CommandItem
+                        key={option.value}
+                        onSelect={() => toggleOption(option.value)}
+                        className="cursor-pointer mx-1"
+                        value={option.value}
+                      >
+                        <div
+                          className={cn(
+                            "mr-2 flex h-4 w-4 items-center justify-center rounded-xs border border-primary",
+                            isSelected
+                              ? "bg-primary text-primary-foreground"
+                              : "opacity-50 [&_svg]:invisible"
+                          )}
+                        >
+                          <CheckIcon className="h-4 w-4" />
+                        </div>
+                        {option.icon && (
+                          <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+                        )}
+                        <span>{option.label}</span>
+                      </CommandItem>
+                    );
+                  })}
+                </div>
               </CommandGroup>
-              <CommandSeparator />
-              <CommandGroup>
+              <CommandGroup forceMount className="border-t">
                 <div className="flex items-center justify-between">
                   {selectedValues.length > 0 && (
                     <>
