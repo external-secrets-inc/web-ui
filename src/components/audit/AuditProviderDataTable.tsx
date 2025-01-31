@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { LucideEdit, LucideMoreVertical, LucidePlus, LucideTrash2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { DataProvider, DataTable } from "../ui/DataProvider";

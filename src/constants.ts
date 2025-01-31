@@ -13,18 +13,10 @@ export const APP_DOMAIN_STRIPPED = stripURLProtocol(APP_DOMAIN);
 export const DOCS_DOMAIN_STRIPPED = stripURLProtocol(DOCS_DOMAIN);
 export const WEBSITE_DOMAIN_STRIPPED = stripURLProtocol(WEBSITE_DOMAIN);
 
+// Environment checks
+export const IS_PROD = import.meta.env.PROD;
+export const IS_DEV = !import.meta.env.PROD;
+
 // Date and time
 export const ONE_SECOND_IN_MILLISECONDS = 1000
 export const ONE_MINUTE_IN_SECONDS = 60;
-
-// Variants
-export const POLICY_STATUS_COLORS = {
-  compliant: "text-emerald-500",
-  non_compliant: "text-destructive",
-  error: "text-orange-500",
-};
-export const POLICY_STATUS_BADGE_COLORS = {
-  compliant: "border-emerald-500",
-  non_compliant: "border-destructive",
-  error: "border-orange-500",
-};

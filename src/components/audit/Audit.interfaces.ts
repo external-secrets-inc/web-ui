@@ -216,6 +216,29 @@ export interface AuditTimelineEntry {
 
 export type SecretDetails = AuditSecretTableData;
 
+export interface LineageNode {
+  secretID: string;
+  secretName: string;
+  providerName?: string;
+}
+
+export interface LineageNodeData extends Omit<LineageNode, 'secretID'> {
+  active: boolean;
+  sourcePosition?: boolean;
+  targetPosition?: boolean;
+}
+
+export interface LineageLink {
+  fromSecret: string;
+  toSecret: string;
+  createdAt: string;
+}
+
+export interface LineageData {
+  nodes: LineageNode[];
+  links: LineageLink[];
+}
+
 export interface PolicyDetails {
   secretID: string;
   policyID: string;

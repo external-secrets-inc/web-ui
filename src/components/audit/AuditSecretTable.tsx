@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { createColumnHelper } from "@tanstack/react-table";
 import { LucideAlertCircle, LucideCircle, LucideDownload, LucideFilter, LucideSearch, LucideX } from "lucide-react";
-import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { DataProvider, DataTable } from "@/components/ui/DataProvider";
@@ -10,7 +10,7 @@ import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import useGetDashboarSecretTable from "@/services/audit/queries/useGetDashboarSecretTable";
 import { AuditSecretTableData } from "./Audit.interfaces";
 import FilterDialogForm from "./FilterDialogForm";
-import AuditSecretDetailsDialog from "./AuditSecretDetailsDialog";
+import AuditSecretDetails from "./AuditSecretDetails";
 import { useAuditFilter } from "./AuditFilterProvider";
 import { useSearchParams } from "react-router-dom";
 import { Input } from "../ui/input";
@@ -283,7 +283,7 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
         <DataTable onRowClick={(row) => setSelectedSecretId(row.id)} />
       </DataProvider>
 
-      <AuditSecretDetailsDialog
+      <AuditSecretDetails
         secretId={selectedSecretId}
         setSecretId={setSelectedSecretId}
         onOpenChange={(open) => !open && setSelectedSecretId(null)}
