@@ -5,7 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { LucideMoreVertical, LucidePlus, LucideTrash2, LucideUsers, LucideAlertCircle, LucideEdit } from "lucide-react";
 import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction" // TODO: We should not import components from non generic stuff! This should be a generic component, or re-implemented here.
 import { Button } from "../ui/button";
-import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
