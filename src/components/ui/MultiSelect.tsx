@@ -12,6 +12,7 @@ import {
 import {
   CaretSortIcon,
 } from "@radix-ui/react-icons"
+import { defaultFilter } from "cmdk";
 
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
@@ -146,7 +147,6 @@ export const MultiSelect = React.forwardRef<
       React.useState<string[]>(defaultValue);
     const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
     const [isAnimating, setIsAnimating] = React.useState(false);
-    const [searchValue, setSearchValue] = React.useState("");
 
     const handleInputKeyDown = (
       event: React.KeyboardEvent<HTMLInputElement>
@@ -194,14 +194,28 @@ export const MultiSelect = React.forwardRef<
       }
     };
 
+    /**
+     * Customizes CMDK's fuzzy search to work with our dual needs:
+     * - Using IDs as values (for unique hover states)
+     * - Searching by labels (for UX)
+     *
+     * Without this, CMDK would match against IDs or we'd have broken hover states.
+     * Instead, we redirect its own fuzzy search to only look at labels.
+     */
+    const fuzzyFilterItemLabels = React.useCallback((value: string, search: string) => {
+      // CMDK passes the CommandItem's value prop (in our case, that's usually a unique ID)
+      // We need to map this back to the option object to have access to its label
+      const option = options.find(opt => opt.value === value);
+      if (!option) return 0; // CMDK expects a number, so we return 0 instead of false if no match is found
+
+      return (defaultFilter as (value: string, search: string, keywords?: string[]) => number)(option.label, search, []);
+    }, [options]);
+
     return (
       <Popover
         open={isPopoverOpen}
         onOpenChange={(open) => {
           setIsPopoverOpen(open);
-          if (!open) {
-            setSearchValue("");
-          }
         }}
         modal={modalPopover}
       >
@@ -295,93 +309,87 @@ export const MultiSelect = React.forwardRef<
           align="start"
           onEscapeKeyDown={() => setIsPopoverOpen(false)}
         >
-          <Command className="w-full" shouldFilter={false}>
+          <Command
+            className="w-full"
+            filter={fuzzyFilterItemLabels}
+          >
             <CommandInput
               placeholder="Search..."
               onKeyDown={handleInputKeyDown}
-              value={searchValue}
-              onValueChange={(value) => setSearchValue(value)}
             />
             <CommandList className="max-h-60">
               <CommandEmpty>No results found.</CommandEmpty>
-              {searchValue === "" && (
-                <div className="sticky top-0 bg-background z-10 p-1 pb-0 -mb-1">
-                  <CommandItem
-                    key="all"
-                    onSelect={toggleAll}
-                    className="cursor-pointer"
+              <CommandGroup >
+                <CommandItem
+                  key="all"
+                  onSelect={toggleAll}
+                  className="cursor-pointer"
+                >
+                  <div
+                    className={cn(
+                      "mr-2 flex h-4 w-4 items-center justify-center rounded-xs border border-primary",
+                      selectedValues.length === options.length
+                        ? "bg-primary text-primary-foreground"
+                        : "opacity-50 [&_svg]:invisible"
+                    )}
                   >
-                    <div
-                      className={cn(
-                        "mr-2 flex h-4 w-4 items-center justify-center rounded-xs border border-primary",
-                        selectedValues.length === options.length
-                          ? "bg-primary text-primary-foreground"
-                          : "opacity-50 [&_svg]:invisible"
-                      )}
+                    <CheckIcon className="h-4 w-4" />
+                  </div>
+                  <span className="text-muted-foreground">(Select All)</span>
+                </CommandItem>
+                {options.map((option) => {
+                  const isSelected = selectedValues.includes(option.value);
+                  return (
+                    <CommandItem
+                      key={option.value}
+                      onSelect={() => toggleOption(option.value)}
+                      className="cursor-pointer"
+                      value={option.value}
                     >
-                      <CheckIcon className="h-4 w-4" />
-                    </div>
-                    <span className="text-muted-foreground">(Select All)</span>
+                      <div
+                        className={cn(
+                          "mr-2 flex h-4 w-4 items-center justify-center rounded-xs border border-primary",
+                          isSelected
+                            ? "bg-primary text-primary-foreground"
+                            : "opacity-50 [&_svg]:invisible"
+                        )}
+                      >
+                        <CheckIcon className="h-4 w-4" />
+                      </div>
+                      {option.icon && (
+                        <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+                      )}
+                      <span>{option.label}</span>
+                    </CommandItem>
+                  );
+                })}
+              </CommandGroup>
+              <CommandSeparator />
+              <CommandGroup>
+                <div className="flex items-center justify-between">
+                  {selectedValues.length > 0 && (
+                    <>
+                      <CommandItem
+                        onSelect={handleClear}
+                        className="flex-1 justify-center cursor-pointer"
+                      >
+                        Clear
+                      </CommandItem>
+                      <Separator
+                        orientation="vertical"
+                        className="flex min-h-6 h-full"
+                      />
+                    </>
+                  )}
+                  <CommandItem
+                    onSelect={() => setIsPopoverOpen(false)}
+                    className="flex-1 justify-center cursor-pointer max-w-full"
+                  >
+                    Close
                   </CommandItem>
                 </div>
-              )}
-              <CommandGroup>
-                {options
-                  .filter((option) =>
-                    option.label.toLowerCase().includes(searchValue.toLowerCase())
-                  )
-                  .map((option) => {
-                    const isSelected = selectedValues.includes(option.value);
-                    return (
-                      <CommandItem
-                        key={option.value}
-                        onSelect={() => toggleOption(option.value)}
-                        className="cursor-pointer"
-                      >
-                        <div
-                          className={cn(
-                            "mr-2 flex h-4 w-4 items-center justify-center rounded-xs border border-primary",
-                            isSelected
-                              ? "bg-primary text-primary-foreground"
-                              : "opacity-50 [&_svg]:invisible"
-                          )}
-                        >
-                          <CheckIcon className="h-4 w-4" />
-                        </div>
-                        {option.icon && (
-                          <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />
-                        )}
-                        <span>{option.label}</span>
-                      </CommandItem>
-                    );
-                  })}
               </CommandGroup>
             </CommandList>
-            <CommandSeparator />
-            <CommandGroup>
-              <div className="flex items-center justify-between">
-                {selectedValues.length > 0 && (
-                  <>
-                    <CommandItem
-                      onSelect={handleClear}
-                      className="flex-1 justify-center cursor-pointer"
-                    >
-                      Clear
-                    </CommandItem>
-                    <Separator
-                      orientation="vertical"
-                      className="flex min-h-6 h-full"
-                    />
-                  </>
-                )}
-                <CommandItem
-                  onSelect={() => setIsPopoverOpen(false)}
-                  className="flex-1 justify-center cursor-pointer max-w-full"
-                >
-                  Close
-                </CommandItem>
-              </div>
-            </CommandGroup>
           </Command>
         </PopoverContent>
         {animation > 0 && selectedValues.length > 0 && (
