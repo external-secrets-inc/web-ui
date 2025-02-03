@@ -452,19 +452,19 @@ export default function Audit() {
         ) : null}
       </div>
 
-      <AuditPolicyDataTable
-        tenantID={authUser?.tenantId ?? ""}
-        listenerID={auditListener.listenerID}
-      />
-
-      <AuditProviderDataTable
-        tenantID={auditListener.tenantID}
-        listenerID={auditListener.listenerID}
-      />
-
-      <AuditSecretTable
-        listenerID={auditListener.listenerID}
-      />
+      <div className="grid grid-cols-1 gap-4">
+        <AuditPolicyDataTable
+          tenantID={authUser?.tenantId ?? ""}
+          listenerID={auditListener.listenerID}
+        />
+        <AuditProviderDataTable
+          tenantID={auditListener.tenantID}
+          listenerID={auditListener.listenerID}
+        />
+        <AuditSecretTable
+          listenerID={auditListener.listenerID}
+        />
+      </div>
     </div>
   );
 }
