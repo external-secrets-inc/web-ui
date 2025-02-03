@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { createColumnHelper } from "@tanstack/react-table";
 import { LucideAlertCircle, LucideCircle, LucideDownload, LucideFilter, LucideSearch, LucideX } from "lucide-react";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { DataProvider, DataTable } from "@/components/ui/DataProvider";
 import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
@@ -122,16 +122,14 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
               {info.getValue() !== null ? policiesAmountStr : "Unknown"
               }{" "}
               {!info.row.original.fullCompliant && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <LucideAlertCircle className="text-orange-500" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      Needs attention for {nonCompliantPolicies} {nonCompliantPolicies === 1 ? "policy" : "policies"}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <LucideAlertCircle className="text-orange-500" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Needs attention for {nonCompliantPolicies} {nonCompliantPolicies === 1 ? "policy" : "policies"}
+                  </TooltipContent>
+                </Tooltip>
               )}
             </div>
           );

@@ -27,6 +27,7 @@ import OrgRedirector from "./components/OrgRedirector";
 import { Loader } from "@/components/ui/Loader";
 import { SubscriptionProvider } from '@/context/SubscriptionContext';
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext';
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const queryClient = new QueryClient()
 
@@ -183,8 +184,10 @@ if (rootElement) {
       <AuthProvider store={authStore}>
         <ThemeProvider storageKey="ui-theme">
           <QueryClientProvider client={queryClient}>
-            <Main />
-            <Toaster />
+            <TooltipProvider delayDuration={300} skipDelayDuration={300}>
+              <Main />
+              <Toaster />
+            </TooltipProvider>
           </QueryClientProvider>
         </ThemeProvider>
       </AuthProvider>

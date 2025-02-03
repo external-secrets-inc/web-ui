@@ -2,7 +2,7 @@ import { trackSignedOut } from "@/analytics";
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { IS_DEV } from '@/constants';
 import { FeatureFlagName, useFeatureFlagContext } from '@/context/FeatureFlagContext';
 import useOrgLink from '@/hooks/useOrgLink';
@@ -120,16 +120,14 @@ const UserMenu: React.FC = () => {
 
                   if (isLocked) {
                     return (
-                      <TooltipProvider key={flag}>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            {menuItem}
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>This flag is {envValue ? 'enabled' : 'disabled'} by the environment and cannot be changed</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                      <Tooltip key={flag}>
+                        <TooltipTrigger asChild>
+                          {menuItem}
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>This flag is {envValue ? 'enabled' : 'disabled'} by the environment and cannot be changed</p>
+                        </TooltipContent>
+                      </Tooltip>
                     );
                   }
 
