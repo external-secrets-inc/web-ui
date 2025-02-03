@@ -34,7 +34,7 @@ export interface BadgeProps
   asChild?: boolean
 }
 
-// Adding forwardRef to Badge
+// [cfviotti]: Added forwardRef to Badge to allow proper use with asChild parents
 const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
   ({ className, variant, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "div"
