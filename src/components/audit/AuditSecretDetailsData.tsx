@@ -21,6 +21,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Loader } from "@/components/ui/Loader";
 import useGetSecretPolicyLogs from "@/services/audit/queries/useGetSecretPolicyLogs";
 import useGetSecretAccessorLogs from "@/services/audit/queries/useGetSecretAccessorLogs";
+import { Trimmer } from "@/components/ui/Trimmer";
 
 const POLICY_STATUS_COLORS = {
   compliant: "text-success",
@@ -86,44 +87,42 @@ const HistoryAccordion = <T extends { id: string }, H extends { timestamp: strin
       // Manual state handling for the async control
       onValueChange={() => {}}
     >
-      <AccordionItem value={item.id} className="border-none">
-        <Alert className="p-0 overflow-clip">
-          <AccordionTrigger
-            className="hover:no-underline bg-muted/40 hover:bg-muted/75 py-3 px-4 relative"
-            onClick={handleTriggerClick}
-          >
-            <AlertDescription className="flex items-center justify-between w-full mr-4">
-              {renderTrigger(item)}
-            </AlertDescription>
-            {isLoadingHistory && (
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 bg-muted rounded-full">
-                <Loader />
+      <AccordionItem value={item.id} className="border rounded-lg overflow-clip">
+        <AccordionTrigger
+          className="hover:no-underline bg-muted/40 hover:bg-muted/75 py-3 px-4 relative flex items-center justify-between w-full"
+          onClick={handleTriggerClick}
+        >
+          <div className="flex items-center justify-between gap-2 w-full min-w-0 mr-4">
+            {renderTrigger(item)}
+          </div>
+          {isLoadingHistory && (
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 bg-muted rounded-full">
+              <Loader />
+            </div>
+          )}
+        </AccordionTrigger>
+        <AccordionContent className="border-t p-4">
+          {historyData && historyData.length > 0 ? (
+            <>
+              <div className="flex items-center gap-2 mb-4">
+                <LucideHistory className="text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">History</span>
+                <Badge variant="secondary">{historyData.length}</Badge>
               </div>
-            )}
-          </AccordionTrigger>
-          <AccordionContent className="border-t p-4">
-            {historyData && historyData.length > 0 ? (
-              <>
-                <div className="flex items-center gap-2 mb-4">
-                  <LucideHistory className="text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">History</span>
-                  <Badge variant="secondary">{historyData.length}</Badge>
-                </div>
-                <div className="flex flex-col gap-2 pr-8">
-                  {historyData.map((historyItem, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      {renderHistoryItem(historyItem)}
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : historyData ? (
-              <div className="text-sm text-muted-foreground text-center">
-                No history available
+              <div className="flex flex-col gap-2 pr-8">
+                {historyData.map((historyItem, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    {renderHistoryItem(historyItem)}
+                  </div>
+                ))}
               </div>
-            ) : null}
-          </AccordionContent>
-        </Alert>
+            </>
+          ) : historyData ? (
+            <div className="text-sm text-muted-foreground text-center">
+              No history available
+            </div>
+          ) : null}
+        </AccordionContent>
       </AccordionItem>
     </Accordion>
   );
@@ -232,29 +231,29 @@ const SectionSecretPolicies = ({
     useHistoryQuery={useGetSecretPolicyLogs}
     emptyMessage="No policies associated with this secret"
     renderTrigger={(policy) => (
-      <div className="flex items-center justify-between w-full">
-        <div className="flex items-center gap-2">
+      <>
+        <div className="flex items-center gap-2 flex-1 min-w-14">
           {policy.status === "compliant" ? (
             <LucideCheck className="text-emerald-500" />
           ) : (
-            <LucideAlertCircle className={POLICY_STATUS_COLORS[policy.status]} />
+            <LucideAlertCircle className={cn(POLICY_STATUS_COLORS[policy.status])} />
           )}
-          <span className="font-medium">{policy.name}</span>
+          <Trimmer className="font-medium">{policy.name}</Trimmer>
         </div>
         {policy.status !== "compliant" && (
-          <Badge variant={POLICY_STATUS_BADGE_VARIANTS[policy.status]}>
-            {policy.status}
+          <Badge variant={POLICY_STATUS_BADGE_VARIANTS[policy.status]} className="min-w-14">
+            <Trimmer>{policy.status}</Trimmer>
           </Badge>
         )}
-      </div>
+      </>
     )}
     renderHistoryItem={(log) => (
       <>
         <Badge variant={POLICY_STATUS_BADGE_VARIANTS[log.status]}>
-          {log.status}
+          <Trimmer>{log.status}</Trimmer>
         </Badge>
         <Badge className="font-mono" variant="outline">
-          {formatDate(log.timestamp, { format: 'readableDate' })}
+          <Trimmer>{formatDate(log.timestamp, { format: 'readableDate' })}</Trimmer>
         </Badge>
       </>
     )}
@@ -273,9 +272,13 @@ const SectionSecretDuplicates = ({ duplicates, setSecretId }: { duplicates: Audi
         {duplicates.map(duplicate => (
           <Alert key={duplicate.id} onClick={() => setSecretId(duplicate.id)} className="cursor-pointer bg-muted/40 hover:bg-muted/75">
             <AlertDescription className="flex items-center gap-2">
-              <LucideAlertCircle className="text-orange-500" />
-              <span className="font-medium">{duplicate.name || duplicate.id || "Unknown Duplicate"}</span>
-              <Badge variant="outline" className="ml-auto">{duplicate.providerName || duplicate.providerID || "Unknown Provider"}</Badge>
+              <div className="flex items-center gap-2 flex-1 min-w-14">
+                <LucideAlertCircle className="text-orange-500" />
+                <Trimmer className="font-medium mr-auto">{duplicate.name || duplicate.id || "Unknown Duplicate"}</Trimmer>
+              </div>
+              <Badge variant="outline" className="min-w-14">
+                <Trimmer>{duplicate.providerName || duplicate.providerID || "Unknown Provider"}</Trimmer>
+              </Badge>
               <LucideExternalLink className="ml-2 text-muted-foreground" />
             </AlertDescription>
           </Alert>
@@ -306,19 +309,19 @@ const SectionSecretAccessors = ({
     useHistoryQuery={useGetSecretAccessorLogs}
     emptyMessage="No recent access history available"
     renderTrigger={(accessor) => (
-      <div className="flex items-center justify-between w-full">
-        <span className="font-medium">
-          <LucideUser className="inline-flex mr-1" />
-          {accessor.name || accessor.id || "Unknown Accessor"}
-        </span>
-        <Badge variant="outline" className="font-mono">
-          {formatDate(accessor.accessTime, { format: 'readableDate' })}
+      <>
+        <div className="flex items-center gap-2 flex-1 min-w-14">
+          <LucideUser />
+          <Trimmer>{accessor.name || accessor.id || "Unknown Accessor"}</Trimmer>
+        </div>
+        <Badge variant="outline" className="font-mono min-w-14">
+          <Trimmer>{formatDate(accessor.accessTime, { format: 'readableDate' })}</Trimmer>
         </Badge>
-      </div>
+      </>
     )}
     renderHistoryItem={(log) => (
       <Badge className="font-mono ml-auto" variant="outline">
-        {formatDate(log.timestamp, { format: 'readableDate' })}
+        <Trimmer>{formatDate(log.timestamp, { format: 'readableDate' })}</Trimmer>
       </Badge>
     )}
   />
@@ -332,7 +335,7 @@ const AuditSecretDetailsData = ({ className, secretData, setSecretId }: {
   return (
     <section aria-label="Details" className={cn("min-h-0 grid grid-rows-[auto_1fr] bg-background relative flex-1", className)}>
       <div className="px-6 py-4 border-b">
-        <div className="flex items-center flex-wrap gap-2">
+        <div className="flex items-center flex-wrap gap-2 font-bold">
           <LucideSquareAsterisk className="size-6 text-primary" />
           {secretData.name || "Unnamed Secret"}
           <Badge variant="outline">{secretData.providerName}</Badge>
