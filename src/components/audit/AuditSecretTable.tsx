@@ -22,6 +22,20 @@ interface AuditSecretTableProps {
   listenerID: string;
 }
 
+const csvHeaderMap: Record<keyof AuditSecretTableData, string | null> = {
+  id: "Secret ID",
+  name: null,
+  provider: null,
+  providerName: "Provider Name",
+  lastRotation: "Last Rotation",
+  lastAccess: "Last Access",
+  accessorsAmount: "Accessors",
+  duplicatesAmount: "Duplicates",
+  compliantPoliciesAmount: "Compliant Policies",
+  policiesAmount: "Total Policies",
+  fullCompliant: null,
+};
+
 export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
   const [selectedSecretId, setSelectedSecretId] = useState<string | null>(null);
   const [searchInputValue, setSearchInputValue] = useState("");
@@ -159,16 +173,17 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
       return value === null || ['string', 'number', 'boolean'].includes(typeof value);
     };
 
-    const headers = Object.keys(json[0])
-      .filter((key) => isPrimitive(json[0][key as keyof AuditSecretTableData]))
-      .join(',');
+    const headers = Object.values(csvHeaderMap)
+      .filter((header) => header !== null)
+      .map((header) => header)
+      .join(",");
 
     const rows = json.map((row) => {
-      return Object.keys(row)
-        .filter((key) => isPrimitive(row[key as keyof AuditSecretTableData]))
-        .map((key) => `"${row[key as keyof AuditSecretTableData] ?? ''}"`)
-        .join(',');
-    });
+        return Object.entries(csvHeaderMap)
+          .filter(([key, header]) => header !== null && isPrimitive(row[key as keyof AuditSecretTableData]))
+          .map(([key]) => `"${row[key as keyof AuditSecretTableData] ?? ""}"`)
+          .join(",");
+      });
 
     return [headers, ...rows].join('\n');
   };

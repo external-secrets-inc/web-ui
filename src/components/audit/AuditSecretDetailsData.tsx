@@ -13,14 +13,19 @@ import {
   LucideCheck,
   LucideHistory,
   LucideUser,
+  LucideDownload,
 } from "lucide-react";
 import { AuditSecretData } from "./Audit.interfaces";
 import { formatDate } from "@/utils/dateUtils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Loader } from "@/components/ui/Loader";
 import useGetSecretPolicyLogs from "@/services/audit/queries/useGetSecretPolicyLogs";
 import useGetSecretAccessorLogs from "@/services/audit/queries/useGetSecretAccessorLogs";
+import useExportAuditSecrets from "@/services/audit/queries/useExportAuditSecret";
+import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
+import { Button } from "../ui/button";
+import saveAs from "file-saver";
 
 const POLICY_STATUS_COLORS = {
   compliant: "text-success",
@@ -329,6 +334,31 @@ const AuditSecretDetailsData = ({ className, secretData, setSecretId }: {
   secretData: AuditSecretData;
   setSecretId: (id: string) => void;
 }) => {
+  const {
+    data: exportSecretData,
+    isLoading: isLoadingExportSecretData,
+    isFetching: isFetchingExportSecretData,
+    isError: isErrorExportSecretData,
+    error: exportSecretDataError,
+  } = useExportAuditSecrets(false, secretData.id || '', {
+    enabled: !!secretData.id
+  });
+
+  useEffect(() => {
+    if (exportSecretDataError) {
+      handleDefaultApiHttpError(
+        exportSecretDataError,
+        `Error while fetching to export secret data`
+      );
+    }
+  }, [exportSecretDataError, isErrorExportSecretData]);
+
+  const handleExportSecret = () => {
+    if(!exportSecretData) return
+    const file = new File([exportSecretData[0]], exportSecretData[1], { type: exportSecretData[2] });
+    saveAs(file);
+  }
+
   return (
     <section aria-label="Details" className={cn("min-h-0 grid grid-rows-[auto_1fr] bg-background relative flex-1", className)}>
       <div className="px-6 py-4 border-b">
@@ -336,6 +366,17 @@ const AuditSecretDetailsData = ({ className, secretData, setSecretId }: {
           <LucideSquareAsterisk className="size-6 text-primary" />
           {secretData.name || "Unnamed Secret"}
           <Badge variant="outline">{secretData.providerName}</Badge>
+          <Button
+              size="icon"
+              variant="outline"
+              className="self-center"
+              aria-label="Download"
+              title="Download"
+              onClick={() => {handleExportSecret()}}
+              disabled={isLoadingExportSecretData || isFetchingExportSecretData || !exportSecretData}
+            >
+              <LucideDownload />
+            </Button>
         </div>
       </div>
 
