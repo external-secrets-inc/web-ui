@@ -18,7 +18,6 @@ const exportAuditSecrets = async (
 
   const headers = await getAuthHeaders();
   const response = await axiosInstance.get(`/api/export/secrets/${secretID}`, { headers, signal, backend: 'AUDIT_POC'});
-  console.log(response)
   return response.data;
 }
 

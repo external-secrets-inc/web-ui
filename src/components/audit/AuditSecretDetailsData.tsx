@@ -337,6 +337,7 @@ const AuditSecretDetailsData = ({ className, secretData, setSecretId }: {
   const {
     data: exportSecretData,
     isLoading: isLoadingExportSecretData,
+    isFetching: isFetchingExportSecretData,
     isError: isErrorExportSecretData,
     error: exportSecretDataError,
   } = useExportAuditSecrets(false, secretData.id || '', {
@@ -372,7 +373,7 @@ const AuditSecretDetailsData = ({ className, secretData, setSecretId }: {
               aria-label="Download"
               title="Download"
               onClick={() => {handleExportSecret()}}
-              disabled={isLoadingExportSecretData || !exportSecretData}
+              disabled={isLoadingExportSecretData || isFetchingExportSecretData || !exportSecretData}
             >
               <LucideDownload />
             </Button>
