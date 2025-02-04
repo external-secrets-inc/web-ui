@@ -16,7 +16,6 @@ import {
 import { cva, type VariantProps } from "class-variance-authority";
 import { defaultFilter } from "cmdk";
 import {
-  CheckIcon,
   XCircle,
   XIcon,
 } from "lucide-react";
@@ -32,6 +31,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
 
 /**
  * Variants for the multi-select component to handle different styles.
@@ -368,7 +368,7 @@ const MultiSelectPopoverTrigger = React.forwardRef<HTMLButtonElement, React.Comp
         onClick={() => setIsOpen(prev => !prev)}
         variant="outline"
         className={cn(
-          "w-full min-w-24 py-1 px-3 min-h-9 h-auto items-center justify-between hover:bg-inherit [&_svg]:pointer-events-auto relative group",
+          "w-full min-w-24 py-1 px-3 min-h-9 h-auto items-center justify-between hover:bg-inherit [:where(&_svg)]:pointer-events-auto relative group",
           className
         )}
       >
@@ -422,16 +422,7 @@ const MultiSelectListOptions: React.FC<{ className?: string }> = ({ className })
               }
             }}
           >
-            <div
-              className={cn(
-                "mr-2 flex h-4 w-4 items-center justify-center rounded-xs border border-primary",
-                isSelected
-                  ? "bg-primary text-primary-foreground"
-                  : "opacity-50 [&_svg]:invisible"
-              )}
-            >
-              <CheckIcon className="!h-3 !w-3" />
-            </div>
+            <Checkbox checked={isSelected} className="mr-2" />
             {option.icon && (
               <option.icon className="mr-2 text-muted-foreground" />
             )}
@@ -474,10 +465,14 @@ const MultiSelectFooterOptions: React.FC = () => {
  * - When filtering: only affects currently filtered options
  */
 const MultiSelectToggleAllOptions: React.FC<{ className?: string }> = ({ className }) => {
-  const { hasMatchingResults, matchingOptions, hasActiveSearch } = useFilteredOptions(); // Get filtered options based on CMDK's state
-  const { areAllMatchingOptionsSelected, toggleAllMatchingOptions } = useFilteredSelection(matchingOptions); // Get selection state and handlers for filtered options
+  const { hasMatchingResults, matchingOptions, hasActiveSearch } = useFilteredOptions();
+  const { areAllMatchingOptionsSelected, toggleAllMatchingOptions } = useFilteredSelection(matchingOptions);
+  const { selectedValues } = useMultiSelect();
 
-  if (!hasMatchingResults) return null; // Hide if no matching options
+  if (!hasMatchingResults) return null;
+
+  const hasPartialSelection = selectedValues.length > 0 && !areAllMatchingOptionsSelected;
+  const checked = areAllMatchingOptionsSelected ? true : hasPartialSelection ? "indeterminate" : false;
 
   return (
     <CommandGroup className={cn(className)} forceMount>
@@ -486,14 +481,7 @@ const MultiSelectToggleAllOptions: React.FC<{ className?: string }> = ({ classNa
         className="cursor-pointer"
         value="toggle-all"
       >
-        <div
-          className={cn(
-            "mr-2 flex size-4 items-center justify-center rounded-xs border border-primary",
-            areAllMatchingOptionsSelected ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible"
-          )}
-        >
-          <CheckIcon className="!h-3 !w-3" />
-        </div>
+        <Checkbox checked={checked} className="mr-2" />
         <span className="text-muted-foreground">
           {hasActiveSearch
             ? `(${areAllMatchingOptionsSelected ? "Deselect" : "Select"} Filtered)`
