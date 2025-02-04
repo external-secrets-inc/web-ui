@@ -32,6 +32,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Trimmer } from "@/components/ui/Trimmer";
 
 /**
  * Variants for the multi-select component to handle different styles.
@@ -291,7 +292,7 @@ const MultiSelectBadge: React.FC<{ option: Option; onRemove: () => void }> = ({
       className={cn("flex min-w-14 items-center gap-2 pr-0.5", multiSelectVariants({ variant }))}
     >
       {IconComponent && <IconComponent className="size-3"/>}
-      <span className="flex-1 min-w-4 truncate">{option.label}</span>
+      <Trimmer className="flex-1 min-w-4">{option.label}</Trimmer>
       <XCircle
         className="size-4 cursor-pointer opacity-50 hover:opacity-100"
         onClick={(e) => {
