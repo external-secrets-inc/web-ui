@@ -1,8 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
 import { createColumnHelper } from "@tanstack/react-table";
 import { LucideAlertCircle, LucideCircle, LucideDownload, LucideFilter, LucideSearch, LucideX } from "lucide-react";
-import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { DataProvider, DataTable } from "@/components/ui/DataProvider";
 import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
@@ -10,7 +10,7 @@ import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import useGetDashboarSecretTable from "@/services/audit/queries/useGetDashboarSecretTable";
 import { AuditSecretTableData } from "./Audit.interfaces";
 import FilterDialogForm from "./FilterDialogForm";
-import AuditSecretDetailsDialog from "./AuditSecretDetailsDialog";
+import AuditSecretDetails from "./AuditSecretDetails";
 import { useAuditFilter } from "./AuditFilterProvider";
 import { useSearchParams } from "react-router-dom";
 import { Input } from "../ui/input";
@@ -21,6 +21,20 @@ import { formatDate } from "@/utils/dateUtils";
 interface AuditSecretTableProps {
   listenerID: string;
 }
+
+const csvHeaderMap: Record<keyof AuditSecretTableData, string | null> = {
+  id: "Secret ID",
+  name: null,
+  provider: null,
+  providerName: "Provider Name",
+  lastRotation: "Last Rotation",
+  lastAccess: "Last Access",
+  accessorsAmount: "Accessors",
+  duplicatesAmount: "Duplicates",
+  compliantPoliciesAmount: "Compliant Policies",
+  policiesAmount: "Total Policies",
+  fullCompliant: null,
+};
 
 export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
   const [selectedSecretId, setSelectedSecretId] = useState<string | null>(null);
@@ -122,16 +136,14 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
               {info.getValue() !== null ? policiesAmountStr : "Unknown"
               }{" "}
               {!info.row.original.fullCompliant && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <LucideAlertCircle className="text-orange-500" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      Needs attention for {nonCompliantPolicies} {nonCompliantPolicies === 1 ? "policy" : "policies"}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <LucideAlertCircle className="text-orange-500" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Needs attention for {nonCompliantPolicies} {nonCompliantPolicies === 1 ? "policy" : "policies"}
+                  </TooltipContent>
+                </Tooltip>
               )}
             </div>
           );
@@ -159,16 +171,17 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
       return value === null || ['string', 'number', 'boolean'].includes(typeof value);
     };
 
-    const headers = Object.keys(json[0])
-      .filter((key) => isPrimitive(json[0][key as keyof AuditSecretTableData]))
-      .join(',');
+    const headers = Object.values(csvHeaderMap)
+      .filter((header) => header !== null)
+      .map((header) => header)
+      .join(",");
 
     const rows = json.map((row) => {
-      return Object.keys(row)
-        .filter((key) => isPrimitive(row[key as keyof AuditSecretTableData]))
-        .map((key) => `"${row[key as keyof AuditSecretTableData] ?? ''}"`)
-        .join(',');
-    });
+        return Object.entries(csvHeaderMap)
+          .filter(([key, header]) => header !== null && isPrimitive(row[key as keyof AuditSecretTableData]))
+          .map(([key]) => `"${row[key as keyof AuditSecretTableData] ?? ""}"`)
+          .join(",");
+      });
 
     return [headers, ...rows].join('\n');
   };
@@ -283,7 +296,7 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
         <DataTable onRowClick={(row) => setSelectedSecretId(row.id)} />
       </DataProvider>
 
-      <AuditSecretDetailsDialog
+      <AuditSecretDetails
         secretId={selectedSecretId}
         setSecretId={setSelectedSecretId}
         onOpenChange={(open) => !open && setSelectedSecretId(null)}

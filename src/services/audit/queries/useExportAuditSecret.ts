@@ -3,37 +3,36 @@ import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError, } from "@/types";
 import { AxiosError } from "axios";
-import { mockNetworkResponseDelay, mockAuditSecretsData } from "../mocks/mockData";
-import { AuditSecretData } from "@/components/audit/Audit.interfaces";
+import { mockNetworkResponseDelay } from "../mocks/mockData";
 import { useAuditMock } from '@/services/audit/context/AuditMockContext';
 
-const getAuditSecretData = async (
+const exportAuditSecrets = async (
   mock: boolean,
   secretID: string,
   signal: AbortSignal,
 ) => {
   if (mock) {
     await mockNetworkResponseDelay();
-    return mockAuditSecretsData[0];
+    return ["", "empty_file.csv", "text/csv"];
   }
 
   const headers = await getAuthHeaders();
-  const response = await axiosInstance.get(`/api/secrets/${secretID}`, { headers, signal, backend: 'AUDIT_POC'});
+  const response = await axiosInstance.get(`/api/export/secrets/${secretID}`, { headers, signal, backend: 'AUDIT_POC'});
   return response.data;
 }
 
-const useGetAuditSecretData = (
+const useExportAuditSecrets = (
   mock: boolean,
   secretID: string,
-  options?: Omit<UseQueryOptions<AuditSecretData, AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<[string, string, string], AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
 ) => {
   const { isMocked } = useAuditMock(mock);
 
   return useQuery({
-    queryKey: ["useGetAuditSecretData", isMocked, secretID],
-    queryFn: ({ signal }) => getAuditSecretData(isMocked, secretID, signal),
+    queryKey: ["useExportAuditSecrets", isMocked],
+    queryFn: ({ signal }) => exportAuditSecrets(isMocked, secretID, signal),
     ...options,
   });
 };
 
-export default useGetAuditSecretData;
+export default useExportAuditSecrets;
