@@ -1,27 +1,6 @@
 // source: https://github.com/sersavan/shadcn-multi-select-component
 // TODO: tweak styles for consistency with our current theme. It seems this repo assumes everyone uses the default Shadcn theme, while ours is the new-york theme.
 
-import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
-import {
-  CheckIcon,
-  XCircle,
-  XIcon,
-} from "lucide-react";
-import {
-  CaretSortIcon,
-} from "@radix-ui/react-icons"
-import { defaultFilter } from "cmdk";
-
-import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   Command,
   CommandEmpty,
@@ -29,7 +8,30 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  useCommandState,
 } from "@/components/ui/command";
+import {
+  CaretSortIcon,
+} from "@radix-ui/react-icons";
+import { cva, type VariantProps } from "class-variance-authority";
+import { defaultFilter } from "cmdk";
+import {
+  CheckIcon,
+  XCircle,
+  XIcon,
+} from "lucide-react";
+import * as React from "react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 /**
  * Variants for the multi-select component to handle different styles.
@@ -181,12 +183,13 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
   }), [selectedValues, options, maxCount, variant, placeholder, isOpen]);
 
   /**
-   * Customizes CMDK's fuzzy search to work with our dual needs:
-   * - Using IDs as values (for unique hover states)
-   * - Searching by labels (for UX)
+   * Customizes cmdk's fuzzy search to work with our dual needs:
+   * - Using IDs as values (for unique hover states when duplicate labels exist)
+   * - Searching by labels ONLY, not ID values (for UX)
    *
-   * Without this, CMDK would match against IDs or we'd have broken hover states.
-   * Instead, we redirect its own fuzzy search to only look at labels.
+   * Without this, we would either match only by IDs or have broken hover states.
+   *
+   * This redirects cmdk's fuzzy search (`defaultFilter`) to focus solely on labels.
    */
   const fuzzyFilterOptionsByLabels = React.useCallback((value: string, search: string) => {
     const option = options.find(opt => opt.value === value);
@@ -211,19 +214,36 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
           className={cn(className)}
         />
         <PopoverContent className="min-w-[--radix-popover-trigger-width] p-0">
-          <Command filter={fuzzyFilterOptionsByLabels}>
+          <Command filter={fuzzyFilterOptionsByLabels} loop>
             <CommandInput placeholder="Search..."/>
             <CommandList className="max-h-none">
               <CommandEmpty>No results found.</CommandEmpty>
-              <CommandGroup className="p-0">
-                <div className="overflow-y-auto max-h-60 pb-1">
-                  <MultiSelectToggleAllOptions className="p-1 pb-0 bg-background sticky top-0 z-10" />
-                  <MultiSelectListOptions />
-                </div>
-              </CommandGroup>
-              <CommandGroup className="border-t" forceMount>
-                <MultiSelectFooterOptions />
-              </CommandGroup>
+              {/**
+                * !!The markup order here is crucial!!
+                *
+                * - The `<Command />` component focuses on the first item during filtering.
+                *   Therefore, list options must be rendered before ToggleAll, which uses
+                *   `forceMount` to always display. This ensures that the focus remains on
+                *   the list options rather than the ToggleAll if it were to be rendered first.
+                *
+                * - CSS `order` properties adjust visual positions without changing markup.
+                *
+                * - The `loop` prop on `<Command />` enables cycling through options
+                *   in the expected visual order via keyboard navigation.
+                *
+                * - ToggleAll is conditionally rendered only when filtered options exist.
+                */}
+              <div className="grid grid-cols-1">
+                <ScrollArea className="max-h-[calc(theme(spacing.52)+theme(spacing.1))] pb-1" type="always">
+                  <CommandGroup className="p-0">
+                    <MultiSelectListOptions />
+                  </CommandGroup>
+                </ScrollArea>
+                <CommandGroup forceMount className="border-t order-last" >
+                  <MultiSelectFooterOptions />
+                </CommandGroup>
+                <MultiSelectToggleAllOptions className="p-1 pb-0 order-first" />
+              </div>
             </CommandList>
           </Command>
         </PopoverContent>
@@ -346,7 +366,9 @@ MultiSelectPopoverTrigger.displayName = "MultiSelectPopoverTrigger";
 
 const MultiSelectToggleAllOptions: React.FC<{ className?: string }> = ({ className }) => {
   const { selectedValues, options, handleClear, updateSelection } = useMultiSelect();
+  const filteredCount = useCommandState(state => state.filtered.count);
   const isAllSelected = selectedValues.length === options.length;
+  const shouldShow = filteredCount > 0;
 
   const onToggleAll = () => {
     if (isAllSelected) {
@@ -357,8 +379,15 @@ const MultiSelectToggleAllOptions: React.FC<{ className?: string }> = ({ classNa
     }
   };
 
+  /**
+   * The ToggleAll CommandGroup should not render if there are no filtered
+   * options. Since we use `forceMount`, it would remain selectable even
+   * when no options are available, which is not what we want in this case.
+   */
+  if (!shouldShow) return null;
+
   return (
-    <div className={cn(className)}>
+    <CommandGroup className={cn(className)} forceMount>
       <CommandItem
         key="all"
         onSelect={onToggleAll}
@@ -378,7 +407,7 @@ const MultiSelectToggleAllOptions: React.FC<{ className?: string }> = ({ classNa
         </div>
         <span className="text-muted-foreground">(Select All)</span>
       </CommandItem>
-    </div>
+    </CommandGroup>
   );
 };
 
