@@ -307,43 +307,27 @@ const MultiSelectBadge: React.FC<{ option: Option; onRemove: () => void }> = ({
  * Renders the currently selected options as badges with a "+N more" badge if exceeding `maxCount`.
  */
 const MultiSelectCurrentBadges: React.FC<{ className?: string }> = ({ className }) => {
-  const { selectedValues, options, maxCount, variant, toggleOption, clearExtraOptions } = useMultiSelect();
-
-  const displayedOptions = selectedValues.slice(0, maxCount).map((value) => {
-    const option = options.find((o) => o.value === value);
-    if (!option) return null;
-
-    return (
-      <MultiSelectBadge
-        key={value}
-        option={option}
-        onRemove={() => toggleOption(value)}
-      />
-    );
-  });
-
+  const { selectedValues, options, maxCount, toggleOption, clearExtraOptions } = useMultiSelect();
   const extraOptionsCount = selectedValues.length - maxCount;
-  const hasExtraOptions = extraOptionsCount > 0;
 
   return (
-    <div className={cn(className)}>
-      {displayedOptions}
-      {hasExtraOptions && (
-        <Badge
-          className={cn(
-            "bg-transparent text-foreground border-foreground/1 hover:bg-transparent min-w-4 flex items-center gap-2 pr-0.5",
-            multiSelectVariants({ variant })
-          )}
-        >
-          <span className="flex-1 min-w-4 truncate">+{extraOptionsCount} more</span>
-          <XCircle
-            className="size-4 cursor-pointer opacity-50 hover:opacity-100"
-            onClick={(e) => {
-              e.stopPropagation();
-              clearExtraOptions();
-            }}
+    <div className={cn("flex flex-wrap items-center gap-1", className)}>
+      {selectedValues.slice(0, maxCount).map((value) => {
+        const option = options.find((o) => o.value === value);
+        if (!option) return null;
+        return (
+          <MultiSelectBadge
+            key={value}
+            option={option}
+            onRemove={() => toggleOption(value)}
           />
-        </Badge>
+        );
+      })}
+      {extraOptionsCount > 0 && (
+        <MultiSelectBadge
+          option={{ label: `+${extraOptionsCount} more`, value: "extra-options" }}
+          onRemove={clearExtraOptions}
+        />
       )}
     </div>
   );
@@ -422,7 +406,7 @@ const MultiSelectListOptions: React.FC<{ className?: string }> = ({ className })
               }
             }}
           >
-            <Checkbox checked={isSelected} className="mr-2" />
+            <Checkbox checked={isSelected} />
             {option.icon && (
               <option.icon className="mr-2 text-muted-foreground" />
             )}
@@ -481,7 +465,7 @@ const MultiSelectToggleAllOptions: React.FC<{ className?: string }> = ({ classNa
         className="cursor-pointer"
         value="toggle-all"
       >
-        <Checkbox checked={checked} className="mr-2" />
+        <Checkbox checked={checked} />
         <span className="text-muted-foreground">
           {hasActiveSearch
             ? `(${areAllMatchingOptionsSelected ? "Deselect" : "Select"} Filtered)`
