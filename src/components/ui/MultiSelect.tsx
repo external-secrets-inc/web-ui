@@ -70,6 +70,7 @@ interface MultiSelectContextValue {
   handleClear: () => void;
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   updateSelection: (values: string[]) => void;
+  itemRefs: React.MutableRefObject<Map<string, CommandItemRef>>;
 }
 const MultiSelectContext = React.createContext<MultiSelectContextValue | undefined>(undefined);
 
@@ -81,6 +82,12 @@ interface Option {
   /** Optional icon component to display alongside the option. */
   icon?: React.ComponentType<{ className?: string }>;
 }
+
+type CommandItemRef = {
+  id: string;
+  value: string;
+  element: HTMLElement;
+};
 
 /**
  * Props for MultiSelect component
@@ -149,24 +156,27 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
 }, ref) => {
   const [selectedValues, setSelectedValues] = React.useState<string[]>(defaultValue);
   const [isOpen, setIsOpen] = React.useState(false);
+  const itemRefs = React.useRef<Map<string, CommandItemRef>>(new Map());
 
-  const updateSelection = (newValues: string[]) => {
+  const updateSelection = React.useCallback((newValues: string[]) => {
     setSelectedValues(newValues);
     onValueChange(newValues);
-  };
+  }, [onValueChange]);
 
-  const toggleOption = (option: string) => {
+  const toggleOption = React.useCallback((option: string) => {
     const newValues = selectedValues.includes(option)
       ? selectedValues.filter((value) => value !== option)
       : [...selectedValues, option];
     updateSelection(newValues);
-  };
+  }, [selectedValues, updateSelection]);
 
-  const handleClear = () => updateSelection([]);
+  const handleClear = React.useCallback(() => {
+    updateSelection([]);
+  }, [updateSelection]);
 
-  const clearExtraOptions = () => {
+  const clearExtraOptions = React.useCallback(() => {
     updateSelection(selectedValues.slice(0, maxCount));
-  };
+  }, [selectedValues, maxCount, updateSelection]);
 
   const contextValue = React.useMemo(() => ({
     selectedValues,
@@ -180,7 +190,20 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
     handleClear,
     setIsOpen,
     updateSelection,
-  }), [selectedValues, options, maxCount, variant, placeholder, isOpen]);
+    itemRefs,
+  }), [
+    selectedValues,
+    options,
+    maxCount,
+    variant,
+    placeholder,
+    isOpen,
+    toggleOption,
+    clearExtraOptions,
+    handleClear,
+    setIsOpen,
+    updateSelection
+  ]);
 
   /**
    * Customizes cmdk's fuzzy search to work with our dual needs:
@@ -253,6 +276,9 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
 });
 MultiSelect.displayName = "MultiSelect";
 
+/**
+ * Badge with an optional icon and a remove button representing a selected option.
+ */
 const MultiSelectBadge: React.FC<{ option: Option; onRemove: () => void }> = ({
   option,
   onRemove,
@@ -277,6 +303,9 @@ const MultiSelectBadge: React.FC<{ option: Option; onRemove: () => void }> = ({
   );
 };
 
+/**
+ * Renders the currently selected options as badges with a "+N more" badge if exceeding `maxCount`.
+ */
 const MultiSelectCurrentBadges: React.FC<{ className?: string }> = ({ className }) => {
   const { selectedValues, options, maxCount, variant, toggleOption, clearExtraOptions } = useMultiSelect();
 
@@ -320,6 +349,10 @@ const MultiSelectCurrentBadges: React.FC<{ className?: string }> = ({ className 
   );
 };
 
+/**
+ * The trigger button for the multi-select popover.
+ * Displays selected options as badges and can handle clearing all selections.
+ */
 const MultiSelectPopoverTrigger = React.forwardRef<HTMLButtonElement, React.ComponentPropsWithRef<typeof Button>>(({
   className,
   ...props
@@ -364,55 +397,12 @@ const MultiSelectPopoverTrigger = React.forwardRef<HTMLButtonElement, React.Comp
 });
 MultiSelectPopoverTrigger.displayName = "MultiSelectPopoverTrigger";
 
-const MultiSelectToggleAllOptions: React.FC<{ className?: string }> = ({ className }) => {
-  const { selectedValues, options, handleClear, updateSelection } = useMultiSelect();
-  const filteredCount = useCommandState(state => state.filtered.count);
-  const isAllSelected = selectedValues.length === options.length;
-  const shouldShow = filteredCount > 0;
-
-  const onToggleAll = () => {
-    if (isAllSelected) {
-      handleClear();
-    } else {
-      const allValues = options.map((option) => option.value);
-      updateSelection(allValues);
-    }
-  };
-
-  /**
-   * The ToggleAll CommandGroup should not render if there are no filtered
-   * options. Since we use `forceMount`, it would remain selectable even
-   * when no options are available, which is not what we want in this case.
-   */
-  if (!shouldShow) return null;
-
-  return (
-    <CommandGroup className={cn(className)} forceMount>
-      <CommandItem
-        key="all"
-        onSelect={onToggleAll}
-        className="cursor-pointer"
-        value="toggleAll"
-        forceMount
-      >
-        <div
-          className={cn(
-            "mr-2 flex size-4 items-center justify-center rounded-xs border border-primary",
-            isAllSelected
-              ? "bg-primary text-primary-foreground"
-              : "opacity-50 [&_svg]:invisible"
-          )}
-        >
-          <CheckIcon className="!h-3 !w-3" />
-        </div>
-        <span className="text-muted-foreground">(Select All)</span>
-      </CommandItem>
-    </CommandGroup>
-  );
-};
-
+/**
+ * Renders the list of all available options inside the Command menu.
+ * Manages refs for CMDK's internal filtering state!
+ */
 const MultiSelectListOptions: React.FC<{ className?: string }> = ({ className }) => {
-  const { options, selectedValues, toggleOption } = useMultiSelect();
+  const { options, selectedValues, toggleOption, itemRefs } = useMultiSelect();
 
   return (
     <div className={cn(className)}>
@@ -424,6 +414,13 @@ const MultiSelectListOptions: React.FC<{ className?: string }> = ({ className })
             onSelect={() => toggleOption(option.value)}
             className="cursor-pointer mx-1"
             value={option.value}
+            ref={(element) => {
+              if (element) {
+                itemRefs.current.set(option.value, { id: element.id, value: option.value, element });
+              } else {
+                itemRefs.current.delete(option.value);
+              }
+            }}
           >
             <div
               className={cn(
@@ -446,6 +443,9 @@ const MultiSelectListOptions: React.FC<{ className?: string }> = ({ className })
   );
 };
 
+/**
+ * Footer component with Clear and Close actions.
+ */
 const MultiSelectFooterOptions: React.FC = () => {
   const { selectedValues, handleClear, setIsOpen } = useMultiSelect();
   const hasSelectedValues = selectedValues.length > 0;
@@ -467,10 +467,125 @@ const MultiSelectFooterOptions: React.FC = () => {
   );
 };
 
+/**
+ * Toggle component to select/deselect all currently visible options.
+ * Adapts its behavior based on CMDK's filtering state:
+ * - When not filtering: affects all options
+ * - When filtering: only affects currently filtered options
+ */
+const MultiSelectToggleAllOptions: React.FC<{ className?: string }> = ({ className }) => {
+  const { hasMatchingResults, matchingOptions, hasActiveSearch } = useFilteredOptions(); // Get filtered options based on CMDK's state
+  const { areAllMatchingOptionsSelected, toggleAllMatchingOptions } = useFilteredSelection(matchingOptions); // Get selection state and handlers for filtered options
+
+  if (!hasMatchingResults) return null; // Hide if no matching options
+
+  return (
+    <CommandGroup className={cn(className)} forceMount>
+      <CommandItem
+        onSelect={toggleAllMatchingOptions}
+        className="cursor-pointer"
+        value="toggle-all"
+      >
+        <div
+          className={cn(
+            "mr-2 flex size-4 items-center justify-center rounded-xs border border-primary",
+            areAllMatchingOptionsSelected ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible"
+          )}
+        >
+          <CheckIcon className="!h-3 !w-3" />
+        </div>
+        <span className="text-muted-foreground">
+          {hasActiveSearch
+            ? `(${areAllMatchingOptionsSelected ? "Deselect" : "Select"} Filtered)`
+            : `(${areAllMatchingOptionsSelected ? "Deselect" : "Select"} All)`}
+        </span>
+      </CommandItem>
+    </CommandGroup>
+  );
+};
+
+/**
+ * Hook to access the MultiSelect context.
+ * @returns The MultiSelect context value
+ * @throws Error if used outside of a MultiSelectProvider
+ */
 function useMultiSelect() {
   const context = React.useContext(MultiSelectContext);
   if (!context) {
     throw new Error("useMultiSelect must be used within a MultiSelectProvider");
   }
   return context;
+}
+
+/**
+ * These hooks MUST be used within CMDK's <Command/> component tree.
+ * They rely on CMDK's internal state which is only available within Command's context.
+ */
+
+/**
+ * Hook to get CMDK's current filtering state.
+ * @requires CMDK Command context
+ */
+function useCommandFiltering() {
+  const searchQuery = useCommandState(state => state.search);
+  const filteredState = useCommandState(state => state.filtered);
+
+  // Keep debug logs for now
+  console.log('Search:', searchQuery, 'Filtered state:', filteredState);
+  console.log('Filtered items Map:', Array.from(filteredState?.items?.entries() ?? []));
+
+  const hasActiveSearch = Boolean(searchQuery);
+  const hasMatchingResults = !hasActiveSearch || filteredState.count > 0;
+
+  return { searchQuery, filteredState, hasMatchingResults, hasActiveSearch };
+}
+
+/**
+ * Hook to get options that match CMDK's current filtering state.
+ * Uses our item refs to match Radix-generated IDs with our option values.
+ * @requires Must be used within a <Command/> component context
+ */
+function useFilteredOptions() {
+  const { options, itemRefs } = useMultiSelect();
+  const { filteredState, hasMatchingResults, hasActiveSearch } = useCommandFiltering();
+
+  console.log('Our options:', options);
+
+  const matchingOptions = React.useMemo(() => {
+    if (!hasActiveSearch) return options;
+    return options.filter(option => {
+      // Get the Radix-generated ID for this option through our refs, because
+      // CMDK uses these IDs for filtering instead of our values (dumb, I know)
+      const ref = itemRefs.current.get(option.value);
+      // Check if CMDK considers this option a match. They basically set a score
+      // in the items Map and if it is above 0, is a fuzzy match!
+      return ref?.id && (filteredState.items.get(ref.id) ?? 0) > 0;
+    });
+  }, [options, filteredState.items, itemRefs, hasActiveSearch]);
+
+  return { hasMatchingResults, matchingOptions, hasActiveSearch };
+}
+
+/**
+ * Hook to manage selection state for visible options.
+ * Handles the logic for selecting/deselecting filtered options.
+ * @requires Must be used within a <Command/> component context (as it depends on useFilteredOptions)
+ */
+function useFilteredSelection(matchingOptions: Option[]) {
+  const { selectedValues, updateSelection } = useMultiSelect();
+  const matchingOptionValues = matchingOptions.map(opt => opt.value);
+  const selectedMatchingValues = selectedValues.filter(value => matchingOptionValues.includes(value));
+  const areAllMatchingOptionsSelected = matchingOptionValues.length > 0 && selectedMatchingValues.length === matchingOptionValues.length;
+
+  const toggleAllMatchingOptions = React.useCallback(() => {
+    if (areAllMatchingOptionsSelected) {
+      const valuesExceptMatching = selectedValues.filter(value => !matchingOptionValues.includes(value));
+      updateSelection(valuesExceptMatching);
+      return;
+    }
+    const valuesWithAllMatching = [...new Set([...selectedValues, ...matchingOptionValues])];
+    updateSelection(valuesWithAllMatching);
+  }, [areAllMatchingOptionsSelected, selectedValues, matchingOptionValues, updateSelection]);
+
+  return { areAllMatchingOptionsSelected, toggleAllMatchingOptions };
 }
