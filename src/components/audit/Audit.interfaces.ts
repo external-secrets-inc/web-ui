@@ -219,7 +219,9 @@ export type SecretDetails = AuditSecretTableData;
 export interface LineageNode {
   secretID: string;
   secretName: string;
-  providerName?: string;
+  providerID: string;
+  providerName: string;
+  createdAt: string;
 }
 
 export interface LineageNodeData extends Omit<LineageNode, 'secretID'> {

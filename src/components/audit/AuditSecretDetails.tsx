@@ -110,7 +110,7 @@ export default function AuditSecretDetails({
         </SheetHeader>
 
         {isLoadingSecretData ? (
-          <div className="flex justify-center items-center flex-1 lg:max-w-[640px] lg:min-w-[480px] h-full">
+          <div className="flex justify-center items-center flex-1 lg:max-w-[560px] lg:min-w-[560px] h-full">
             <Loader />
           </div>
         ) : (
@@ -148,7 +148,7 @@ export default function AuditSecretDetails({
                 {shouldShowLineage && (
                   <TabsContent
                     value="lineage"
-                    className="flex-1 !w-screen lg:!max-w-[calc(100vw-480px)] lg:!w-[calc(50vw+(1280px/2-480px))] data-[state=inactive]:sr-only lg:data-[state=inactive]:not-sr-only order-1 lg:order-1 lg:flex-[2] mt-0"
+                    className="flex-1 !w-screen lg:!max-w-[calc(100vw-560px)] lg:!w-[calc(50vw+(1280px/2-560px))] data-[state=inactive]:sr-only lg:data-[state=inactive]:not-sr-only order-1 lg:order-1 lg:flex-[2] mt-0"
                     forceMount
                   >
                     <AuditSecretDetailsLineage
@@ -156,7 +156,7 @@ export default function AuditSecretDetails({
                       // This ensures a clean slate for the graph, preventing any stale state
                       // from affecting the new secret's layout and fit view calculations
                       key={`lineage-${secretId}`}
-                      className="h-full"
+                      className="h-full shadow-[inset_-24px_0px_32px_-32px_rgba(0,0,0,0.2)] dark:shadow-none"
                       lineageData={lineageData}
                       currentSecretId={secretId}
                       setSecretId={setSecretId}
@@ -167,13 +167,13 @@ export default function AuditSecretDetails({
                 <TabsContent
                   value="details"
                   className={cn(
-                    "flex-1 min-h-0 data-[state=inactive]:hidden lg:data-[state=inactive]:block order-2 lg:order-2 mt-0",
-                    !shouldShowLineage && "lg:w-[640px]"
+                    "lg:max-w-[560px] lg:min-w-[560px] flex-1 min-h-0 data-[state=inactive]:hidden lg:data-[state=inactive]:block order-2 lg:order-2 mt-0",
+                    !shouldShowLineage && "lg:w-[560px]"
                   )}
                   forceMount
                 >
                   <AuditSecretDetailsData
-                    className="lg:max-w-[640px] lg:min-w-[480px] h-full overflow-y-auto"
+                    className="lg:max-w-[560px] lg:min-w-[560px] h-full overflow-y-auto"
                     secretData={listenerSecretData}
                     setSecretId={setSecretId}
                   />

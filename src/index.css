@@ -131,5 +131,5 @@
 
 /* Override default size for lucide icons */
 :where(.lucide) {
-  @apply w-4 h-4;
+  @apply w-4 h-4 flex-none;
 }

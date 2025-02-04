@@ -20,7 +20,7 @@ import PolicyDialogForm from "./PolicyDialogForm";
 import { AssignProvidersDialog } from "./AssignProvidersDialog";
 import useAssignProviderPolicy from "@/services/audit/mutations/useAssignProviderPolicy";
 import useUnassignProviderPolicy from "@/services/audit/mutations/useUnassignProviderPolicy";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import useEditPolicy, { EditPolicyVariables } from "@/services/audit/mutations/useEditPolicy";
 
 interface PolicyTableMeta {
@@ -45,16 +45,14 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
         <div className="flex items-center gap-2">
           <span>{info.getValue()?.amount || 0}</span>
           {(!info.getValue()?.amount) && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <LucideAlertCircle className="h-4 w-4 text-orange-500" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>You must assign a provider for this policy to take effect</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <LucideAlertCircle className="h-4 w-4 text-orange-500" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>You must assign a provider for this policy to take effect</p>
+              </TooltipContent>
+            </Tooltip>
           )}
         </div>
       )
