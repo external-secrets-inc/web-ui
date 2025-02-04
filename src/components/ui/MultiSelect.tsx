@@ -7,7 +7,6 @@ import {
   CheckIcon,
   XCircle,
   XIcon,
-  WandSparkles,
 } from "lucide-react";
 import {
   CaretSortIcon,
@@ -37,7 +36,7 @@ import {
  * Uses class-variance-authority (cva) to define different styles based on "variant" prop.
  */
 const multiSelectVariants = cva(
-  "transition ease-in-out hover:scale-105 duration-150",
+  "transition ease-in-out",
   {
     variants: {
       variant: {
@@ -56,6 +55,31 @@ const multiSelectVariants = cva(
   }
 );
 
+// Context
+interface MultiSelectContextValue {
+  selectedValues: string[];
+  options: Option[];
+  maxCount: number;
+  variant: MultiSelectProps['variant'];
+  placeholder: string;
+  isOpen: boolean;
+  toggleOption: (value: string) => void;
+  clearExtraOptions: () => void;
+  handleClear: () => void;
+  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  updateSelection: (values: string[]) => void;
+}
+const MultiSelectContext = React.createContext<MultiSelectContextValue | undefined>(undefined);
+
+interface Option {
+  /** The text to display for the option. */
+  label: string;
+  /** The unique value associated with the option. */
+  value: string;
+  /** Optional icon component to display alongside the option. */
+  icon?: React.ComponentType<{ className?: string }>;
+}
+
 /**
  * Props for MultiSelect component
  */
@@ -66,14 +90,7 @@ interface MultiSelectProps
    * An array of option objects to be displayed in the multi-select component.
    * Each option object has a label, value, and an optional icon.
    */
-  options: {
-    /** The text to display for the option. */
-    label: string;
-    /** The unique value associated with the option. */
-    value: string;
-    /** Optional icon component to display alongside the option. */
-    icon?: React.ComponentType<{ className?: string }>;
-  }[];
+  options: Option[];
 
   /**
    * Callback function triggered when the selected values change.
@@ -89,12 +106,6 @@ interface MultiSelectProps
    * Optional, defaults to "Select options".
    */
   placeholder?: string;
-
-  /**
-   * Animation duration in seconds for the visual effects (e.g., bouncing badges).
-   * Optional, defaults to 0 (no animation).
-   */
-  animation?: number;
 
   /**
    * Maximum number of items to display. Extra selected items will be summarized.
@@ -122,292 +133,315 @@ interface MultiSelectProps
   className?: string;
 }
 
-export const MultiSelect = React.forwardRef<
-  HTMLButtonElement,
-  MultiSelectProps
->(
-  (
-    {
-      options,
-      onValueChange,
-      variant,
-      defaultValue = [],
-      placeholder = "Select options",
-      animation = 0,
-      maxCount = 3,
-      modalPopover = true,
-      asChild = false, // eslint-disable-line @typescript-eslint/no-unused-vars
-      className,
-      ...props
-    },
-    ref
-  ) => {
-    const [selectedValues, setSelectedValues] =
-      React.useState<string[]>(defaultValue);
-    const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
-    const [isAnimating, setIsAnimating] = React.useState(false);
+// Components
+export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(({
+  options,
+  onValueChange,
+  variant,
+  defaultValue = [],
+  placeholder = "Select options",
+  maxCount = 3,
+  modalPopover = true,
+  className,
+  ...props
+}, ref) => {
+  const [selectedValues, setSelectedValues] = React.useState<string[]>(defaultValue);
+  const [isOpen, setIsOpen] = React.useState(false);
 
-    const handleInputKeyDown = (
-      event: React.KeyboardEvent<HTMLInputElement>
-    ) => {
-      if (event.key === "Enter") {
-        setIsPopoverOpen(true);
-      } else if (event.key === "Backspace" && !event.currentTarget.value) {
-        const newSelectedValues = [...selectedValues];
-        newSelectedValues.pop();
-        setSelectedValues(newSelectedValues);
-        onValueChange(newSelectedValues);
-      }
-    };
+  const updateSelection = (newValues: string[]) => {
+    setSelectedValues(newValues);
+    onValueChange(newValues);
+  };
 
-    const toggleOption = (option: string) => {
-      const newSelectedValues = selectedValues.includes(option)
-        ? selectedValues.filter((value) => value !== option)
-        : [...selectedValues, option];
-      setSelectedValues(newSelectedValues);
-      onValueChange(newSelectedValues);
-    };
+  const toggleOption = (option: string) => {
+    const newValues = selectedValues.includes(option)
+      ? selectedValues.filter((value) => value !== option)
+      : [...selectedValues, option];
+    updateSelection(newValues);
+  };
 
-    const handleClear = () => {
-      setSelectedValues([]);
-      onValueChange([]);
-    };
+  const handleClear = () => updateSelection([]);
 
-    const handleTogglePopover = () => {
-      setIsPopoverOpen((prev) => !prev);
-    };
+  const clearExtraOptions = () => {
+    updateSelection(selectedValues.slice(0, maxCount));
+  };
 
-    const clearExtraOptions = () => {
-      const newSelectedValues = selectedValues.slice(0, maxCount);
-      setSelectedValues(newSelectedValues);
-      onValueChange(newSelectedValues);
-    };
+  const contextValue = React.useMemo(() => ({
+    selectedValues,
+    options,
+    maxCount,
+    variant,
+    placeholder,
+    isOpen,
+    toggleOption,
+    clearExtraOptions,
+    handleClear,
+    setIsOpen,
+    updateSelection,
+  }), [selectedValues, options, maxCount, variant, placeholder, isOpen]);
 
-    const toggleAll = () => {
-      if (selectedValues.length === options.length) {
-        handleClear();
-      } else {
-        const allValues = options.map((option) => option.value);
-        setSelectedValues(allValues);
-        onValueChange(allValues);
-      }
-    };
+  /**
+   * Customizes CMDK's fuzzy search to work with our dual needs:
+   * - Using IDs as values (for unique hover states)
+   * - Searching by labels (for UX)
+   *
+   * Without this, CMDK would match against IDs or we'd have broken hover states.
+   * Instead, we redirect its own fuzzy search to only look at labels.
+   */
+  const fuzzyFilterOptionsByLabels = React.useCallback((value: string, search: string) => {
+    const option = options.find(opt => opt.value === value);
+    if (!option) return 0;
+    return (defaultFilter as (value: string, search: string, keywords?: string[]) => number)(
+      option.label,
+      search,
+      []
+    );
+  }, [options]);
 
-    /**
-     * Customizes CMDK's fuzzy search to work with our dual needs:
-     * - Using IDs as values (for unique hover states)
-     * - Searching by labels (for UX)
-     *
-     * Without this, CMDK would match against IDs or we'd have broken hover states.
-     * Instead, we redirect its own fuzzy search to only look at labels.
-     */
-    const fuzzyFilterItemLabels = React.useCallback((value: string, search: string) => {
-      // CMDK passes the CommandItem's value prop (in our case, that's usually a unique ID)
-      // We need to map this back to the option object to have access to its label
-      const option = options.find(opt => opt.value === value);
-      if (!option) return 0; // CMDK expects a number, so we return 0 instead of false if no match is found
-
-      return (defaultFilter as (value: string, search: string, keywords?: string[]) => number)(option.label, search, []);
-    }, [options]);
-
-    return (
+  return (
+    <MultiSelectContext.Provider value={contextValue}>
       <Popover
-        open={isPopoverOpen}
-        onOpenChange={(open) => {
-          setIsPopoverOpen(open);
-        }}
+        open={isOpen}
+        onOpenChange={setIsOpen}
         modal={modalPopover}
       >
-        <PopoverTrigger asChild>
-          <Button
-            ref={ref}
-            {...props}
-            onClick={handleTogglePopover}
-            variant="outline"
-            className={cn(
-              "flex w-full py-1 px-3 rounded-md border min-h-9 h-auto items-center justify-between bg-inherit hover:bg-inherit [&_svg]:pointer-events-auto",
-              className
-            )}
-          >
-            {selectedValues.length > 0 ? (
-              <div className="flex justify-between items-center w-full">
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 ">
-                  {selectedValues.slice(0, maxCount).map((value) => {
-                    const option = options.find((o) => o.value === value);
-                    const IconComponent = option?.icon;
-                    return (
-                      <Badge
-                        key={value}
-                        className={cn(
-                          isAnimating ? "animate-bounce" : "",
-                          multiSelectVariants({ variant })
-                        )}
-                        style={{ animationDuration: `${animation}s` }}
-                      >
-                        {IconComponent && (
-                          <IconComponent className="h-4 w-4 mr-2" />
-                        )}
-                        {option?.label}
-                        <XCircle
-                          className="ml-2 h-4 w-4 cursor-pointer"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            toggleOption(value);
-                          }}
-                        />
-                      </Badge>
-                    );
-                  })}
-                  {selectedValues.length > maxCount && (
-                    <Badge
-                      className={cn(
-                        "bg-transparent text-foreground border-foreground/1 hover:bg-transparent",
-                        isAnimating ? "animate-bounce" : "",
-                        multiSelectVariants({ variant })
-                      )}
-                      style={{ animationDuration: `${animation}s` }}
-                    >
-                      {`+ ${selectedValues.length - maxCount} more`}
-                      <XCircle
-                        className="ml-2 h-4 w-4 cursor-pointer"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          clearExtraOptions();
-                        }}
-                      />
-                    </Badge>
-                  )}
-                </div>
-                <div className="flex items-center justify-between">
-                  <XIcon
-                    className="h-4 mx-2 cursor-pointer text-muted-foreground opacity-50 hover:opacity-100"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      handleClear();
-                    }}
-                  />
-                  <Separator
-                    orientation="vertical"
-                    className="flex min-h-6 h-full"
-                  />
-                  <CaretSortIcon className="h-4 ml-2 cursor-pointer text-muted-foreground opacity-50" />
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center justify-between w-full mx-auto">
-                <span className="text-sm text-muted-foreground font-normal truncate">
-                  {placeholder}
-                </span>
-                <CaretSortIcon className="h-4 ml-2 cursor-pointer text-muted-foreground opacity-50" />
-              </div>
-            )}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent
-          className="min-w-[--radix-popover-trigger-width] p-0"
-          align="start"
-          onEscapeKeyDown={() => setIsPopoverOpen(false)}
-        >
-          <Command
-            className="w-full"
-            filter={fuzzyFilterItemLabels}
-          >
-            <CommandInput
-              placeholder="Search..."
-              onKeyDown={handleInputKeyDown}
-            />
-            <CommandList className="max-h-[unset]">
+        <MultiSelectPopoverTrigger
+          ref={ref}
+          {...props}
+          className={cn(className)}
+        />
+        <PopoverContent className="min-w-[--radix-popover-trigger-width] p-0">
+          <Command filter={fuzzyFilterOptionsByLabels}>
+            <CommandInput placeholder="Search..."/>
+            <CommandList className="max-h-none">
               <CommandEmpty>No results found.</CommandEmpty>
               <CommandGroup className="p-0">
-                <div className="overflow-y-auto max-h-60"> {/* This wrapper div is necessary to avoid the Toggle All Item from changing position after filtering */}
-                  <div className="p-1 pb-0 bg-background sticky top-0 z-10">
-                    <CommandItem
-                      key="all"
-                      onSelect={toggleAll}
-                      className="cursor-pointer"
-                      value="selectAll"
-                      forceMount
-                    >
-                      <div
-                        className={cn(
-                          "mr-2 flex h-4 w-4 items-center justify-center rounded-xs border border-primary",
-                          selectedValues.length === options.length
-                            ? "bg-primary text-primary-foreground"
-                            : "opacity-50 [&_svg]:invisible"
-                        )}
-                      >
-                        <CheckIcon className="h-4 w-4" />
-                      </div>
-                      <span className="text-muted-foreground">(Select All)</span>
-                    </CommandItem>
-                  </div>
-                  {options.map((option) => {
-                    const isSelected = selectedValues.includes(option.value);
-                    return (
-                      <CommandItem
-                        key={option.value}
-                        onSelect={() => toggleOption(option.value)}
-                        className="cursor-pointer mx-1"
-                        value={option.value}
-                      >
-                        <div
-                          className={cn(
-                            "mr-2 flex h-4 w-4 items-center justify-center rounded-xs border border-primary",
-                            isSelected
-                              ? "bg-primary text-primary-foreground"
-                              : "opacity-50 [&_svg]:invisible"
-                          )}
-                        >
-                          <CheckIcon className="h-4 w-4" />
-                        </div>
-                        {option.icon && (
-                          <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />
-                        )}
-                        <span>{option.label}</span>
-                      </CommandItem>
-                    );
-                  })}
+                <div className="overflow-y-auto max-h-60 pb-1">
+                  <MultiSelectToggleAllOptions className="p-1 pb-0 bg-background sticky top-0 z-10" />
+                  <MultiSelectListOptions />
                 </div>
               </CommandGroup>
-              <CommandGroup forceMount className="border-t">
-                <div className="flex items-center justify-between">
-                  {selectedValues.length > 0 && (
-                    <>
-                      <CommandItem
-                        onSelect={handleClear}
-                        className="flex-1 justify-center cursor-pointer"
-                      >
-                        Clear
-                      </CommandItem>
-                      <Separator
-                        orientation="vertical"
-                        className="flex min-h-6 h-full"
-                      />
-                    </>
-                  )}
-                  <CommandItem
-                    onSelect={() => setIsPopoverOpen(false)}
-                    className="flex-1 justify-center cursor-pointer max-w-full"
-                  >
-                    Close
-                  </CommandItem>
-                </div>
+              <CommandGroup className="border-t" forceMount>
+                <MultiSelectFooterOptions />
               </CommandGroup>
             </CommandList>
           </Command>
         </PopoverContent>
-        {animation > 0 && selectedValues.length > 0 && (
-          <WandSparkles
-            className={cn(
-              "cursor-pointer my-2 text-foreground bg-background w-3 h-3",
-              isAnimating ? "" : "text-muted-foreground"
-            )}
-            onClick={() => setIsAnimating(!isAnimating)}
-          />
-        )}
       </Popover>
-    );
-  }
-);
-
+    </MultiSelectContext.Provider>
+  );
+});
 MultiSelect.displayName = "MultiSelect";
+
+const MultiSelectBadge: React.FC<{ option: Option; onRemove: () => void }> = ({
+  option,
+  onRemove,
+}) => {
+  const { variant } = useMultiSelect();
+  const IconComponent = option.icon;
+
+  return (
+    <Badge
+      className={cn("flex min-w-14 items-center gap-2 pr-0.5", multiSelectVariants({ variant }))}
+    >
+      {IconComponent && <IconComponent className="size-3"/>}
+      <span className="flex-1 min-w-4 truncate">{option.label}</span>
+      <XCircle
+        className="size-4 cursor-pointer opacity-50 hover:opacity-100"
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemove();
+        }}
+      />
+    </Badge>
+  );
+};
+
+const MultiSelectCurrentBadges: React.FC<{ className?: string }> = ({ className }) => {
+  const { selectedValues, options, maxCount, variant, toggleOption, clearExtraOptions } = useMultiSelect();
+
+  const displayedOptions = selectedValues.slice(0, maxCount).map((value) => {
+    const option = options.find((o) => o.value === value);
+    if (!option) return null;
+
+    return (
+      <MultiSelectBadge
+        key={value}
+        option={option}
+        onRemove={() => toggleOption(value)}
+      />
+    );
+  });
+
+  const extraOptionsCount = selectedValues.length - maxCount;
+  const hasExtraOptions = extraOptionsCount > 0;
+
+  return (
+    <div className={cn(className)}>
+      {displayedOptions}
+      {hasExtraOptions && (
+        <Badge
+          className={cn(
+            "bg-transparent text-foreground border-foreground/1 hover:bg-transparent min-w-4 flex items-center gap-2 pr-0.5",
+            multiSelectVariants({ variant })
+          )}
+        >
+          <span className="flex-1 min-w-4 truncate">+{extraOptionsCount} more</span>
+          <XCircle
+            className="size-4 cursor-pointer opacity-50 hover:opacity-100"
+            onClick={(e) => {
+              e.stopPropagation();
+              clearExtraOptions();
+            }}
+          />
+        </Badge>
+      )}
+    </div>
+  );
+};
+
+const MultiSelectPopoverTrigger = React.forwardRef<HTMLButtonElement, React.ComponentPropsWithRef<typeof Button>>(({
+  className,
+  ...props
+}, ref) => {
+  const { selectedValues, placeholder, handleClear, setIsOpen } = useMultiSelect();
+  const isUnselected = selectedValues.length === 0;
+
+  return (
+    <PopoverTrigger asChild>
+      <Button
+        ref={ref}
+        {...props}
+        onClick={() => setIsOpen(prev => !prev)}
+        variant="outline"
+        className={cn(
+          "w-full min-w-24 py-1 px-3 min-h-9 h-auto items-center justify-between hover:bg-inherit [&_svg]:pointer-events-auto relative group",
+          className
+        )}
+      >
+        {isUnselected
+        ? <span className="text-sm text-muted-foreground font-normal truncate">{placeholder}</span>
+        : <>
+            <MultiSelectCurrentBadges className="flex flex-wrap items-center gap-1 min-w-12" />
+            <XIcon
+              className="opacity-0 group-hover:opacity-50 hover:!opacity-100 absolute right-3 translate-x-full group-hover:translate-x-0 transition-all duration-300 z-10"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleClear();
+              }}
+            />
+          </>
+        }
+        <CaretSortIcon
+          className={cn(
+            "opacity-50 ",
+            !isUnselected && "group-hover:opacity-0 transition-opacity duration-300 group-hover:delay-0 delay-100"
+          )}
+        />
+      </Button>
+    </PopoverTrigger>
+  );
+});
+MultiSelectPopoverTrigger.displayName = "MultiSelectPopoverTrigger";
+
+const MultiSelectToggleAllOptions: React.FC<{ className?: string }> = ({ className }) => {
+  const { selectedValues, options, handleClear, updateSelection } = useMultiSelect();
+  const isAllSelected = selectedValues.length === options.length;
+
+  const onToggleAll = () => {
+    if (isAllSelected) {
+      handleClear();
+    } else {
+      const allValues = options.map((option) => option.value);
+      updateSelection(allValues);
+    }
+  };
+
+  return (
+    <div className={cn(className)}>
+      <CommandItem
+        key="all"
+        onSelect={onToggleAll}
+        className="cursor-pointer"
+        value="toggleAll"
+        forceMount
+      >
+        <div
+          className={cn(
+            "mr-2 flex size-4 items-center justify-center rounded-xs border border-primary",
+            isAllSelected
+              ? "bg-primary text-primary-foreground"
+              : "opacity-50 [&_svg]:invisible"
+          )}
+        >
+          <CheckIcon className="!h-3 !w-3" />
+        </div>
+        <span className="text-muted-foreground">(Select All)</span>
+      </CommandItem>
+    </div>
+  );
+};
+
+const MultiSelectListOptions: React.FC<{ className?: string }> = ({ className }) => {
+  const { options, selectedValues, toggleOption } = useMultiSelect();
+
+  return (
+    <div className={cn(className)}>
+      {options.map((option) => {
+        const isSelected = selectedValues.includes(option.value);
+        return (
+          <CommandItem
+            key={option.value}
+            onSelect={() => toggleOption(option.value)}
+            className="cursor-pointer mx-1"
+            value={option.value}
+          >
+            <div
+              className={cn(
+                "mr-2 flex h-4 w-4 items-center justify-center rounded-xs border border-primary",
+                isSelected
+                  ? "bg-primary text-primary-foreground"
+                  : "opacity-50 [&_svg]:invisible"
+              )}
+            >
+              <CheckIcon className="!h-3 !w-3" />
+            </div>
+            {option.icon && (
+              <option.icon className="mr-2 text-muted-foreground" />
+            )}
+            <span>{option.label}</span>
+          </CommandItem>
+        );
+      })}
+    </div>
+  );
+};
+
+const MultiSelectFooterOptions: React.FC = () => {
+  const { selectedValues, handleClear, setIsOpen } = useMultiSelect();
+  const hasSelectedValues = selectedValues.length > 0;
+
+  return (
+    <div className="flex items-center justify-between gap-1">
+      {hasSelectedValues && (
+        <>
+          <CommandItem onSelect={handleClear} className="flex-1 justify-center cursor-pointer">
+            Clear
+          </CommandItem>
+          <Separator orientation="vertical" className="flex min-h-6 h-full" />
+        </>
+      )}
+      <CommandItem onSelect={() => setIsOpen(false)} className="flex-1 justify-center cursor-pointer max-w-full">
+        Close
+      </CommandItem>
+    </div>
+  );
+};
+
+function useMultiSelect() {
+  const context = React.useContext(MultiSelectContext);
+  if (!context) {
+    throw new Error("useMultiSelect must be used within a MultiSelectProvider");
+  }
+  return context;
+}
