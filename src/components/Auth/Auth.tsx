@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import BGAuthHero from "@/assets/bg-auth-hero.jpg";
 import BGNoise from "@/assets/bg-noise.png";
 import logoESIFullWhite from "@/assets/logo-esi-full-white.svg";
-import { Button } from "@/components/ui/button";
-import { LucideArrowLeft } from "lucide-react";
+// import { Button } from "@/components/ui/button";
+// import { LucideArrowLeft } from "lucide-react";
 import { WEBSITE_DOMAIN } from '@/constants';
 import AuthSignupSection from '@/components/Auth/AuthSignupSection';
 import AuthLoginSection from '@/components/Auth/AuthLoginSection';
@@ -65,7 +65,7 @@ function Auth({ variant }: AuthProps) {
               <AuthSignupSection />
             }
 
-            <Button
+            {/* <Button
               variant="link"
               size="inline"
               className="text-foreground justify-self-start"
@@ -74,7 +74,7 @@ function Auth({ variant }: AuthProps) {
               <a href={WEBSITE_DOMAIN}>
                 <LucideArrowLeft className="mr-2" /> Home
               </a>
-            </Button>
+            </Button> */}
           </div>
         </div>
       </div>
