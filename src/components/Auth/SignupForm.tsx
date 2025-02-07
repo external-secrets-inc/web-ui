@@ -1,17 +1,16 @@
 import { trackSignedIn, trackSignupStepCompleted, trackSignupStepMovedBack } from "@/analytics";
 import { useState } from "react";
-import useSignIn from "react-auth-kit/hooks/useSignIn";
 import { useForm, FormProvider } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { loginAndIdentifyUser } from "@/services/auth/authHelpers";
-import { signup } from "@/services/auth/authService";
 import SignupOrganizationInfoStep from "./SignupOrganizationInfoStep";
 import SignupCredentialsStep from "./SignupCredentialsStep";
 import zValidations from "./fields/zValidations";
 import { isAxiosError } from "axios";
 import { toast } from "sonner";
+import useSignup from "@/services/auth/mutations/useSignup";
+import { useLoginWithIdentification } from "@/services/auth/mutations/useLoginWithIdentification";
 
 const OrganizationInfoSchema = z.object({
   organizationName: zValidations.organizationName,
@@ -29,10 +28,14 @@ type Step = "organizationInfo" | "credentials";
 
 function SignupForm() {
   const [step, setStep] = useState<Step>("organizationInfo");
-  const [loading, setLoading] = useState<boolean>(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const authKitSignIn = useSignIn();
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const { login, isLoading: isLoginLoading } = useLoginWithIdentification({});
+  const { mutateAsync: signup, isPending: isSignupLoading } = useSignup({
+    onError: (error) => handleSignupErrors(error),
+  });
 
   const formMethods = useForm<SignupData>({
     resolver: zodResolver(step === "organizationInfo" ? OrganizationInfoSchema : CredentialsSchema),
@@ -51,75 +54,76 @@ function SignupForm() {
     setStep("credentials");
   };
 
+  const handleSignupErrors = (error: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+    if (isAxiosError(error)) {
+      const responseError = error.response?.data?.errors?.body;
+
+      if (responseError?.includes("could not create tenant: duplicate key value violates unique constraint")) {
+        setStep("organizationInfo");
+        formMethods.setError("organizationURL", { type: "manual", message: "This Organization URL is taken. Create a unique one or log in." });
+        // setTimeout is used to ensure the focus is set after the step set is rendered. Not sure what is the Reacty way to do this.
+        return setTimeout(() => {
+          formMethods.setFocus("organizationURL");
+        }, 0);
+
+      }
+
+      // TODO: would be nice to validate this live on the client while the user is typing. Couldn't get it to work.
+      if (responseError?.includes("Field validation for 'Password' failed on the 'password_regex' tag")) {
+        formMethods.setError("password", { type: "manual", message: "Invalid special character. Use only: _ ! @ # $ % ^ & * ( ) -" });
+        return formMethods.setFocus("password"); // TODO: This is not working, need to investigate. Maybe because of being inside it's own component?
+      }
+    }
+
+    console.error("Non-Axios error:", error);
+    setFormError("Signup failed. Please try again.");
+  };
+
   const handleCredentialsSubmit = async () => {
-    setLoading(true);
     formMethods.clearErrors();
     setFormError(null);
     const formData = formMethods.getValues();
-    const stockError = "Signup failed. Please try again.";
     const maxLoginRetries = 6;
     const loginRetryDelay = 3000;
 
-    const handleSignupErrors = (error: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
-      if (isAxiosError(error)) {
-        const responseError = error.response?.data?.errors?.body;
-
-        if (responseError?.includes("could not create tenant: duplicate key value violates unique constraint")) {
-          setStep("organizationInfo");
-          formMethods.setError("organizationURL", { type: "manual", message: "This Organization URL is taken. Create a unique one or log in." });
-          // setTimeout is used to ensure the focus is set after the step set is rendered. Not sure what is the Reacty way to do this.
-          return setTimeout(() => {
-            formMethods.setFocus("organizationURL");
-          }, 0);
-
-        }
-
-        // TODO: would be nice to validate this live on the client while the user is typing. Couldn't get it to work.
-        if (responseError?.includes("Field validation for 'Password' failed on the 'password_regex' tag")) {
-          formMethods.setError("password", { type: "manual", message: "Invalid special character. Use only: _ ! @ # $ % ^ & * ( ) -" });
-          return formMethods.setFocus("password"); // TODO: This is not working, need to investigate. Maybe because of being inside it's own component?
-        }
-      }
-
-      console.error("Non-Axios error:", error);
-      setFormError(stockError);
-    };
-
-    try {
-      await signup(
-        formData.email,
-        formData.name,
-        formData.password,
-        formData.organizationURL,
-        { suppressToast: true },
-      );
-
-      trackSignupStepCompleted(2, formData.organizationName);
-
-      const tryLogin = async (): Promise<boolean> => {
-        const hasSignedIn = await loginAndIdentifyUser({
+    const tryLogin = async (): Promise<boolean> => {
+      try {
+        await login({
           email: formData.email,
           password: formData.password,
           tenantSlug: formData.organizationURL,
           name: formData.name,
-          authKitSignIn,
         });
-        return hasSignedIn;
-      };
+        return true;
+      } catch (error) {
+        console.error('Login failed:', error);
+        return false;
+      }
+    };
+
+    try {
+      setLoading(true);
+      
+      await signup({
+        email: formData.email,
+        name: formData.name,
+        password: formData.password,
+        tenant: formData.organizationURL,
+      });
+
+      trackSignupStepCompleted(2, formMethods.getValues("organizationName"));
+
+      await new Promise(resolve => setTimeout(resolve, loginRetryDelay));
 
       for (let attempt = 1; attempt <= maxLoginRetries; attempt++) {
-        try {
-          const hasSignedIn = await tryLogin();
-          if (hasSignedIn) {
-            trackSignedIn(formData.organizationURL);
-            setLoading(false);
-            return navigate(`/${formData.organizationURL}/agents`);
-          }
-        } catch (error) {
-          console.error(`Login attempt ${attempt} failed:`, error);
+        const hasSignedIn = await tryLogin();
+        if (hasSignedIn) {
+          trackSignedIn(formData.organizationURL);
+          return navigate(`/${formData.organizationURL}/agents`);
         }
+        console.error(`Login attempt ${attempt} failed`);
         if (attempt < maxLoginRetries) {
-          await new Promise((resolve) => setTimeout(resolve, loginRetryDelay));
+          await new Promise(resolve => setTimeout(resolve, loginRetryDelay));
         }
       }
 
@@ -139,35 +143,37 @@ function SignupForm() {
     trackSignupStepMovedBack();
   };
 
+  const isLoading = isSignupLoading || isLoginLoading || loading;
+
   return (
     <>
-    <FormProvider {...formMethods}>
-      {step === "organizationInfo" ? (
-        <SignupOrganizationInfoStep
-          onSubmit={formMethods.handleSubmit(handleOrganizationInfoSubmit)}
-        />
-      ) : (
-        <SignupCredentialsStep
-          onSubmit={formMethods.handleSubmit(handleCredentialsSubmit)}
-          onBack={handleBack}
-          loading={loading}
-        />
-      )}
-      {formError && <div className="text-destructive">{formError}</div>}
-    </FormProvider>
+      <FormProvider {...formMethods}>
+        {step === "organizationInfo" ? (
+          <SignupOrganizationInfoStep
+            onSubmit={formMethods.handleSubmit(handleOrganizationInfoSubmit)}
+          />
+        ) : (
+          <SignupCredentialsStep
+            onSubmit={formMethods.handleSubmit(handleCredentialsSubmit)}
+            onBack={handleBack}
+            loading={isLoading}
+          />
+        )}
+        {formError && <div className="text-destructive">{formError}</div>}
+      </FormProvider>
 
-    <div className="text-sm text-muted-foreground">
-      Already a member of an Organization?{" "}
-      <Link
-        to="/login"
-        className={`
+      <div className="text-sm text-muted-foreground">
+        Already a member of an Organization?{" "}
+        <Link
+          to="/login"
+          className={`
           underline text-foreground text-nowrap
-          ${loading ? 'pointer-events-none text-muted-foreground/50 no-underline' : ''}
+          ${isLoading ? 'pointer-events-none text-muted-foreground/50 no-underline' : ''}
         `}
-      >
-        Log in
-      </Link>
-    </div>
+        >
+          Log in
+        </Link>
+      </div>
     </>
   );
 }

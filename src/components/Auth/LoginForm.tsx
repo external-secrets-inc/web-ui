@@ -1,7 +1,6 @@
 import { trackLoginStepCompleted, trackLoginStepMovedBack, trackSignedIn } from "@/analytics";
 import { FormProvider, useForm } from "react-hook-form";
 import { useState } from "react";
-import useSignIn from "react-auth-kit/hooks/useSignIn";
 import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,7 +8,7 @@ import { isAxiosError } from "axios";
 import { LoginOrganizationURLStep } from "./LoginOrganizationURLStep";
 import { LoginCredentialsStep } from "./LoginCredentialsStep";
 import zValidations from "./fields/zValidations";
-import { loginAndIdentifyUser } from "@/services/auth/authHelpers";
+import { useLoginWithIdentification } from "@/services/auth/mutations/useLoginWithIdentification";
 
 const LoginOrganizationURLSchema = z.object({
   organizationURL: zValidations.organizationURL
@@ -32,9 +31,7 @@ interface LoginFormProps {
 
 function LoginForm({ onStepChange, onOrganizationURLChange }: LoginFormProps) {
   const [step, setStep] = useState<Step>("organizationURL");
-  const [loading, setLoading] = useState<boolean>(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const authKitSignIn = useSignIn();
   const navigate = useNavigate();
 
   const formMethods = useForm<LoginData>({
@@ -54,53 +51,48 @@ function LoginForm({ onStepChange, onOrganizationURLChange }: LoginFormProps) {
     onStepChange("credentials");
   };
 
-  const handleCredentialsStepSubmit = async (data: LoginCredentialsData) => {
-    setLoading(true);
-    formMethods.clearErrors();
-    setFormError(null);
-    const stockError = "Login failed. Please try again.";
-
-    const handleLoginErrors = (error: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+  const { login, isLoading } = useLoginWithIdentification({
+    onSuccess: () => {
+      const formData = formMethods.getValues();
+      trackLoginStepCompleted(2);
+      trackSignedIn(formData.organizationURL!);
+      navigate(`/${formData.organizationURL}/agents`);
+    },
+    onError: (error) => {
       if (isAxiosError(error)) {
         const responseError = error.response?.data?.errors?.body;
 
         if (responseError?.includes("invalid username/password")) {
-          return setFormError("Invalid login credentials");
+          setFormError("Invalid login credentials");
+          return;
         }
 
         if (responseError?.includes("invalid tenant")) {
           setStep("organizationURL");
           onStepChange("organizationURL");
-          return formMethods.setError("organizationURL", { type: "manual", message: "Invalid Organization URL" });
+          formMethods.setError("organizationURL", { 
+            type: "manual", 
+            message: "Invalid Organization URL" 
+          });
+          return;
         }
       }
 
       console.error("Non-Axios error:", error);
-      setFormError(stockError);
-    };
-
-    try {
-      const formData = formMethods.getValues();
-      const hasSignedIn = await loginAndIdentifyUser({
-        email: data.email!,
-        password: data.password!,
-        tenantSlug: formData.organizationURL!,
-        authKitSignIn,
-      });
-
-      trackLoginStepCompleted(2);
-
-      if (hasSignedIn) {
-        trackSignedIn(formData.organizationURL!);
-        return navigate(`/${formData.organizationURL}/agents`);
-      }
-
-      handleLoginErrors(new Error(stockError));
-    } catch (err) {
-      handleLoginErrors(err);
-    } finally {
-      setLoading(false);
+      setFormError("Login failed. Please try again.");
     }
+  });
+
+  const handleCredentialsStepSubmit = async (data: LoginCredentialsData) => {
+    formMethods.clearErrors();
+    setFormError(null);
+
+    const formData = formMethods.getValues();
+    await login({
+      email: data.email!,
+      password: data.password!,
+      tenantSlug: formData.organizationURL!,
+    });
   };
 
   const handleBack = () => {
@@ -120,7 +112,7 @@ function LoginForm({ onStepChange, onOrganizationURLChange }: LoginFormProps) {
           <LoginCredentialsStep
             onSubmit={formMethods.handleSubmit(handleCredentialsStepSubmit)}
             onBack={handleBack}
-            loading={loading}
+            loading={isLoading}
           />
         )}
         {formError ? <div className="text-destructive">{formError}</div> : null}
@@ -132,7 +124,7 @@ function LoginForm({ onStepChange, onOrganizationURLChange }: LoginFormProps) {
           to="/signup"
           className={`
             underline text-foreground text-nowrap
-            ${loading ? 'pointer-events-none text-muted-foreground/50 no-underline' : ''}
+            ${isLoading ? 'pointer-events-none text-muted-foreground/50 no-underline' : ''}
           `}
         >
           Sign up for one
