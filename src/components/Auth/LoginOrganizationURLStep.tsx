@@ -13,9 +13,10 @@ import { APP_DOMAIN_STRIPPED } from "@/constants";
 
 interface LoginOrganizationURLStepProps {
   onSubmit: () => void;
+  disabled?: boolean;
 }
 
-export function LoginOrganizationURLStep({ onSubmit }: LoginOrganizationURLStepProps) {
+export function LoginOrganizationURLStep({ onSubmit, disabled }: LoginOrganizationURLStepProps) {
   const { control, handleSubmit } = useFormContext();
   const orgURLref = useRef<HTMLInputElement>(null);
 
@@ -57,7 +58,7 @@ export function LoginOrganizationURLStep({ onSubmit }: LoginOrganizationURLStepP
           );
         }}
       />
-      <Button type="submit" className="w-full">
+      <Button type="submit" className="w-full" disabled={disabled}>
         Next
       </Button>
     </form>

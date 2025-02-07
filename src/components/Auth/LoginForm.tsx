@@ -32,6 +32,7 @@ interface LoginFormProps {
 function LoginForm({ onStepChange, onOrganizationURLChange }: LoginFormProps) {
   const [step, setStep] = useState<Step>("organizationURL");
   const [formError, setFormError] = useState<string | null>(null);
+  const [hasModifiedURL, setHasModifiedURL] = useState(true);
   const navigate = useNavigate();
 
   const formMethods = useForm<LoginData>({
@@ -44,11 +45,15 @@ function LoginForm({ onStepChange, onOrganizationURLChange }: LoginFormProps) {
   });
 
   const handleOrganizationURLStepSubmit = () => {
-    const formData = formMethods.getValues();
-    onOrganizationURLChange(formData.organizationURL);
-    trackLoginStepCompleted(1);
-    setStep("credentials");
-    onStepChange("credentials");
+    formMethods.trigger("organizationURL").then(isValid => {
+      if (!isValid || !hasModifiedURL) return;
+      
+      const formData = formMethods.getValues();
+      onOrganizationURLChange(formData.organizationURL);
+      trackLoginStepCompleted(1);
+      setStep("credentials");
+      onStepChange("credentials");
+    });
   };
 
   const { login, isLoading } = useLoginWithIdentification({
@@ -60,7 +65,8 @@ function LoginForm({ onStepChange, onOrganizationURLChange }: LoginFormProps) {
     },
     onError: (error) => {
       if (isAxiosError(error)) {
-        const responseError = error.response?.data?.errors?.body;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const responseError = (error.response?.data?.errors as any)?.error;
 
         if (responseError?.includes("invalid username/password")) {
           setFormError("Invalid login credentials");
@@ -74,6 +80,7 @@ function LoginForm({ onStepChange, onOrganizationURLChange }: LoginFormProps) {
             type: "manual", 
             message: "Invalid Organization URL" 
           });
+          setHasModifiedURL(false);
           return;
         }
       }
@@ -98,8 +105,15 @@ function LoginForm({ onStepChange, onOrganizationURLChange }: LoginFormProps) {
   const handleBack = () => {
     setStep("organizationURL");
     onStepChange("organizationURL");
+    setFormError(null);
     trackLoginStepMovedBack();
   };
+
+  formMethods.watch((_, { name }) => {
+    if (name === "organizationURL") {
+      setHasModifiedURL(true);
+    }
+  });
 
   return (
     <>
@@ -107,6 +121,7 @@ function LoginForm({ onStepChange, onOrganizationURLChange }: LoginFormProps) {
         {step === "organizationURL" ? (
           <LoginOrganizationURLStep
             onSubmit={formMethods.handleSubmit(handleOrganizationURLStepSubmit)}
+            disabled={!hasModifiedURL}
           />
         ) : (
           <LoginCredentialsStep
