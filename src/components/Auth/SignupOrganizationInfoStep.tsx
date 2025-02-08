@@ -12,8 +12,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { APP_DOMAIN_STRIPPED } from "@/constants";
 
-const SignupOrganizationInfoStep = ({ onSubmit }: { onSubmit: () => void }) => {
-  const { handleSubmit, setValue, control } = useFormContext();
+interface SignupOrganizationInfoStepProps {
+  onSubmit: () => void;
+  disabled?: boolean;
+}
+
+const SignupOrganizationInfoStep = ({ onSubmit, disabled }: SignupOrganizationInfoStepProps) => {
+  const { handleSubmit, setValue, control, formState: { isValid, errors } } = useFormContext();
   const orgURLRef = useRef<HTMLInputElement | null>(null);
   const [isURLManuallyEdited, setIsURLManuallyEdited] = useState(false);
 
@@ -123,7 +128,11 @@ const SignupOrganizationInfoStep = ({ onSubmit }: { onSubmit: () => void }) => {
           );
         }}
       />
-      <Button type="submit" className="w-full">
+      <Button 
+        type="submit" 
+        className="w-full"
+        disabled={disabled || !isValid || Object.keys(errors).length > 0}
+      >
         Next
       </Button>
     </form>

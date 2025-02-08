@@ -1,5 +1,5 @@
 import { trackSignedIn, trackSignupStepCompleted, trackSignupStepMovedBack } from "@/analytics";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,8 +29,10 @@ type Step = "organizationInfo" | "credentials";
 function SignupForm() {
   const [step, setStep] = useState<Step>("organizationInfo");
   const [formError, setFormError] = useState<string | null>(null);
+  const [hasModifiedOrgName, setHasModifiedOrgName] = useState(true);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const passwordFieldRef = useRef<HTMLInputElement>(null);
 
   const { login, isLoading: isLoginLoading } = useLoginWithIdentification({});
   const { mutateAsync: signup, isPending: isSignupLoading } = useSignup({
@@ -50,28 +52,33 @@ function SignupForm() {
   });
 
   const handleOrganizationInfoSubmit = () => {
-    trackSignupStepCompleted(1, formMethods.getValues("organizationName"));
-    setStep("credentials");
+    formMethods.trigger("organizationName").then(isValid => {
+      if (!isValid || !hasModifiedOrgName) return;
+      
+      trackSignupStepCompleted(1, formMethods.getValues("organizationName"));
+      setStep("credentials");
+    });
   };
 
   const handleSignupErrors = (error: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
     if (isAxiosError(error)) {
-      const responseError = error.response?.data?.errors?.body;
+      const responseError = (error.response?.data?.errors as any)?.error; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-      if (responseError?.includes("could not create tenant: duplicate key value violates unique constraint")) {
+      if (responseError?.includes("tenant name already exists")) {
         setStep("organizationInfo");
-        formMethods.setError("organizationURL", { type: "manual", message: "This Organization URL is taken. Create a unique one or log in." });
-        // setTimeout is used to ensure the focus is set after the step set is rendered. Not sure what is the Reacty way to do this.
+        formMethods.setError("organizationName", { 
+          type: "manual", 
+          message: "This Organization Name is taken. Create a unique one or log in." 
+        });
+        setHasModifiedOrgName(false);
         return setTimeout(() => {
-          formMethods.setFocus("organizationURL");
+          formMethods.setFocus("organizationName");
         }, 0);
-
       }
 
-      // TODO: would be nice to validate this live on the client while the user is typing. Couldn't get it to work.
       if (responseError?.includes("Field validation for 'Password' failed on the 'password_regex' tag")) {
-        formMethods.setError("password", { type: "manual", message: "Invalid special character. Use only: _ ! @ # $ % ^ & * ( ) -" });
-        return formMethods.setFocus("password"); // TODO: This is not working, need to investigate. Maybe because of being inside it's own component?
+        formMethods.setError("password", { type: "manual", message: "Password contains invalid characters. Use only letters, numbers, and these special characters: _!@#$%^&*()-" });
+        return passwordFieldRef.current?.focus();
       }
     }
 
@@ -145,18 +152,29 @@ function SignupForm() {
 
   const isLoading = isSignupLoading || isLoginLoading || loading;
 
+  formMethods.watch((_, { name }) => {
+    if (name === "organizationName") {
+      setHasModifiedOrgName(true);
+    }
+    if (name === "password") {
+      formMethods.clearErrors("password");
+    }
+  });
+
   return (
     <>
       <FormProvider {...formMethods}>
         {step === "organizationInfo" ? (
           <SignupOrganizationInfoStep
             onSubmit={formMethods.handleSubmit(handleOrganizationInfoSubmit)}
+            disabled={!hasModifiedOrgName}
           />
         ) : (
           <SignupCredentialsStep
             onSubmit={formMethods.handleSubmit(handleCredentialsSubmit)}
             onBack={handleBack}
             loading={isLoading}
+            passwordRef={passwordFieldRef}
           />
         )}
         {formError && <div className="text-destructive">{formError}</div>}

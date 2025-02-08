@@ -12,8 +12,15 @@ import { Button } from "@/components/ui/button";
 import { LucideLoader } from "lucide-react";
 import NewPasswordField from "./fields/NewPasswordField";
 
-const SignupCredentialsStep = ({ onSubmit, onBack, loading }: { onSubmit: (data: any) => void, onBack: () => void, loading: boolean }) => { // eslint-disable-line @typescript-eslint/no-explicit-any
-  const { handleSubmit, control } = useFormContext();
+interface SignupCredentialsStepProps {
+  onSubmit: (e: React.FormEvent) => void;
+  onBack: () => void;
+  loading: boolean;
+  passwordRef: React.RefObject<HTMLInputElement>;
+}
+
+const SignupCredentialsStep = ({ onSubmit, onBack, loading, passwordRef }: SignupCredentialsStepProps) => {
+  const { handleSubmit, control, formState: { isValid, errors } } = useFormContext();
   const [submittedWithErrors, setSubmittedWithErrors] = useState(false);
 
   const handleFormSubmit = (data: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -51,7 +58,10 @@ const SignupCredentialsStep = ({ onSubmit, onBack, loading }: { onSubmit: (data:
         )}
       />
 
-      <NewPasswordField submittedWithErrors={submittedWithErrors} />
+      <NewPasswordField 
+        submittedWithErrors={submittedWithErrors}
+        ref={passwordRef}
+      />
 
       <div className="flex justify-between">
         <Button
@@ -65,7 +75,7 @@ const SignupCredentialsStep = ({ onSubmit, onBack, loading }: { onSubmit: (data:
 
         <Button
           type="submit"
-          disabled={loading}
+          disabled={loading || !isValid || Object.keys(errors).length > 0}
           className="grid [&>*]:row-start-1 [&>*]:column-start-1 place-items-center"
         >
           <span className={loading ? "invisible [grid-area:1/1]" : ""}>Sign Up</span>
