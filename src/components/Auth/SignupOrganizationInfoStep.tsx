@@ -11,13 +11,20 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { APP_DOMAIN_STRIPPED } from "@/constants";
+import { AxiosError } from "axios";
+import { LucideCheckCircle2, LucideXCircle } from "lucide-react";
 
 interface SignupOrganizationInfoStepProps {
   onSubmit: () => void;
-  disabled?: boolean;
+  disabled: boolean;
+  tenantValidationState: {
+    isChecking: boolean;
+    isAvailable: boolean | undefined;
+    error: AxiosError | null;
+  };
 }
 
-const SignupOrganizationInfoStep = ({ onSubmit, disabled }: SignupOrganizationInfoStepProps) => {
+const SignupOrganizationInfoStep = ({ onSubmit, disabled, tenantValidationState }: SignupOrganizationInfoStepProps) => {
   const { handleSubmit, setValue, control, formState: { isValid, errors } } = useFormContext();
   const orgURLRef = useRef<HTMLInputElement | null>(null);
   const [isURLManuallyEdited, setIsURLManuallyEdited] = useState(false);
@@ -85,6 +92,21 @@ const SignupOrganizationInfoStep = ({ onSubmit, disabled }: SignupOrganizationIn
                 }}
               />
             </FormControl>
+            {tenantValidationState.isChecking && (
+              <p className="text-sm text-muted-foreground">Checking availability...</p>
+            )}
+            {tenantValidationState.isAvailable && (
+              <p className="text-sm text-success flex items-center gap-1">
+                <LucideCheckCircle2 className="h-4 w-4" />
+                Organization name is available!
+              </p>
+            )}
+            {tenantValidationState.isAvailable === false && (
+              <p className="text-sm text-destructive flex items-center gap-1">
+                <LucideXCircle className="h-4 w-4" />
+                Organization name is already taken
+              </p>
+            )}
             <FormMessage />
           </FormItem>
         )}

@@ -1,5 +1,5 @@
 import { trackSignedIn, trackSignupStepCompleted, trackSignupStepMovedBack } from "@/analytics";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,6 +11,8 @@ import { isAxiosError } from "axios";
 import { toast } from "sonner";
 import useSignup from "@/services/auth/mutations/useSignup";
 import { useLoginWithIdentification } from "@/services/auth/mutations/useLoginWithIdentification";
+import useCheckTenantAvailability from "@/services/auth/queries/useCheckTenantAvailability";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const OrganizationInfoSchema = z.object({
   organizationName: zValidations.organizationName,
@@ -51,9 +53,25 @@ function SignupForm() {
     },
   });
 
+  const debouncedOrgName = useDebounce(formMethods.watch("organizationName"), 500);
+  
+  const { 
+    data: isTenantAvailable,
+    isLoading: isCheckingTenant,
+    error: tenantError
+  } = useCheckTenantAvailability(debouncedOrgName, {
+    retry: false
+  });
+
+  useEffect(() => {
+    if (tenantError) {
+      toast.error("Unable to verify organization name. Please try again.");
+    }
+  }, [tenantError]);
+
   const handleOrganizationInfoSubmit = () => {
     formMethods.trigger("organizationName").then(isValid => {
-      if (!isValid || !hasModifiedOrgName) return;
+      if (!isValid || !hasModifiedOrgName || !isTenantAvailable) return;
       
       trackSignupStepCompleted(1, formMethods.getValues("organizationName"));
       setStep("credentials");
@@ -167,7 +185,12 @@ function SignupForm() {
         {step === "organizationInfo" ? (
           <SignupOrganizationInfoStep
             onSubmit={formMethods.handleSubmit(handleOrganizationInfoSubmit)}
-            disabled={!hasModifiedOrgName}
+            disabled={!hasModifiedOrgName || !isTenantAvailable}
+            tenantValidationState={{
+              isChecking: isCheckingTenant,
+              isAvailable: isTenantAvailable,
+              error: tenantError
+            }}
           />
         ) : (
           <SignupCredentialsStep
