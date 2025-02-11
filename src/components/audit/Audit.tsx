@@ -11,6 +11,7 @@ import useCreateTenantInstallationToken from "@/services/audit/mutations/useCrea
 import useCreateTenantListener from "@/services/audit/mutations/useCreateTenantListener";
 import useGetAuditListener from "@/services/audit/queries/useGetAuditListener";
 import useGetTenantBashFile from "@/services/audit/queries/useGetTenantBashFile";
+import useGetTenantHelm from "@/services/audit/queries/useGetTenantHelm";
 import useGetTenantListeners from "@/services/audit/queries/useGetTenantListeners";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { ApiHttpError, IUserData } from "@/types";
@@ -234,6 +235,16 @@ export default function Audit() {
     enabled: isListenerInstallDialogOpen && Boolean(tenantInstallationToken && tenantListener.id) // Only fetch when dialog is open with token and listener ID
   });
 
+  const {
+    data: tenantHelmData,
+    isLoading: isLoadingTenantHelm,
+    error: tenantHelmError,
+    isError: isErrorTenantHelm,
+  } = useGetTenantHelm(false, "latest", tenantListener.id, {
+    enabled: isListenerInstallDialogOpen && Boolean(tenantListener.id) // Only fetch when dialog is open with listener ID
+  });
+
+
   useEffect(() => {
     if (!tenantBashFileError) return;
 
@@ -242,6 +253,15 @@ export default function Audit() {
       "Error while fetching tenant bash file"
     );
   }, [tenantBashFileError, isErrorTenantBashFile]);
+
+  useEffect(() => {
+    if (!tenantHelmError) return;
+
+    handleDefaultApiHttpError(
+      tenantHelmError,
+      "Error while fetching Helm chart"
+    );
+  }, [tenantHelmError, isErrorTenantHelm]);
 
   useEffect(() => {
     if (!isTenantListenerCreated) return;
@@ -270,6 +290,7 @@ export default function Audit() {
       "| bash",
     ].join("\n");
     setBashCommand(command);
+
   }, [tenantInstallationToken, tenantListener.id]);
 
   const handleListenerInstallDialogOpenChange = (isOpen: boolean) => {
@@ -322,6 +343,11 @@ export default function Audit() {
   const getTenantBashFileContent = () => {
     if (tenantBashFileError) return "Failed to load bash file.";
     return tenantBashFileData?.bash || "";
+  };
+
+  const getTenantHelmContent = () => {
+    if (tenantHelmError) return "Failed to load Helm chart.";
+    return tenantHelmData?.manifest || "";
   };
 
   return (
@@ -386,7 +412,9 @@ export default function Audit() {
               <ListenerInstallDialogContent
                 id={auditListener.listenerID}
                 bashFileContent={getTenantBashFileContent()}
+                helmContent={getTenantHelmContent()}
                 isLoadingBashFile={isLoadingTenantBashFile}
+                isLoadingHelm={isLoadingTenantHelm}
                 bashCommand={bashCommand}
                 manifestCommand={manifestCommand}
               />

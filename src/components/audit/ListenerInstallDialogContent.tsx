@@ -15,10 +15,12 @@ interface ListenerInstallDialogContentProps {
   isLoadingBashFile: boolean;
   bashCommand: string;
   manifestCommand: string;
+  helmContent: string;
+  isLoadingHelm: boolean;
   openTab?: string;
 }
 
-function ListenerInstallDialogContent({ id, bashFileContent, isLoadingBashFile, bashCommand, manifestCommand, openTab }: ListenerInstallDialogContentProps) {
+function ListenerInstallDialogContent({ id, bashFileContent, isLoadingBashFile, bashCommand, manifestCommand, helmContent, isLoadingHelm, openTab }: ListenerInstallDialogContentProps) {
   const defaultTab = 'bash';
   const [activeTab, setActiveTab] = useState(openTab ?? defaultTab);
 
@@ -50,6 +52,10 @@ function ListenerInstallDialogContent({ id, bashFileContent, isLoadingBashFile, 
     trackListenerInstallCopyKubernetes(id)
   };
 
+  const handleCopyHelm = () => {
+    copyToClipboard(helmContent, "'helm' command");
+  };
+
   return (
     <DialogContent
       className="w-[max(50%,640px)] max-w-[calc(100%-theme(spacing.12))] max-h-[calc(100%-theme(spacing.12))] overflow-auto grid-rows-[auto_minmax(100px,1fr)_auto] grid-cols-[minmax(100%,1fr)]"
@@ -68,6 +74,7 @@ function ListenerInstallDialogContent({ id, bashFileContent, isLoadingBashFile, 
         <TabsList className="mb-2 w-fit">
           <TabsTrigger value="bash">Bash</TabsTrigger>
           <TabsTrigger value="kubernetes">Kubernetes</TabsTrigger>
+          <TabsTrigger value="helm">Helm</TabsTrigger>
         </TabsList>
         <TabsContent className="data-[state=active]:grid min-h-0" value="bash">
           <DescribedScrollArea
@@ -102,10 +109,30 @@ function ListenerInstallDialogContent({ id, bashFileContent, isLoadingBashFile, 
             </AlertDescription>
           </Alert>
         </TabsContent>
+        <TabsContent className="data-[state=active]:grid min-h-0" value="helm">
+          <DescribedScrollArea
+            description='Run the helm command line below to install the listener as a helm chart'
+            content={helmContent}
+            isLoadingContent={isLoadingHelm}
+          />
+          <Alert className="mt-4">
+            <AlertDescription className="flex gap-2 items-center">
+              <LucideInfo className="flex-none" />
+              <p>
+                The provided URL in the <code>curl</code> command is a link to the listener manifest file. It is piped to a <code>kubectl apply</code> command that will apply it to your cluster.
+              </p>
+            </AlertDescription>
+          </Alert>
+        </TabsContent>
       </Tabs>
       <DialogFooter>
         {activeTab === 'bash' &&
           <Button onClick={handleCopyBash}>
+            <ClipboardCopyIcon className="mr-2" />Copy
+          </Button>
+        }
+        {activeTab === 'helm' &&
+          <Button onClick={handleCopyHelm}>
             <ClipboardCopyIcon className="mr-2" />Copy
           </Button>
         }
