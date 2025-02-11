@@ -2,6 +2,7 @@ import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
+import { Slot } from "@radix-ui/react-slot"
 
 const badgeVariants = cva(
   "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
@@ -9,12 +10,16 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          "border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80",
+          "border-primary/40 bg-primary/15 text-primary-foreground shadow",
         secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "border-transparent bg-secondary text-secondary-foreground",
         destructive:
-          "border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80",
-        outline: "text-foreground",
+          "border-destructive/40 bg-destructive/15 text-destructive dark:text-destructive-foreground shadow",
+        warning:
+          "border-warning/40 bg-warning/15 text-warning dark:text-warning-foreground shadow",
+        success:
+          "border-success/40 bg-success/15 text-success dark:text-success-foreground shadow",
+        outline: "text-foreground bg-background/50",
       },
     },
     defaultVariants: {
@@ -25,12 +30,23 @@ const badgeVariants = cva(
 
 export interface BadgeProps
   extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof badgeVariants> {}
-
-function Badge({ className, variant, ...props }: BadgeProps) {
-  return (
-    <div className={cn(badgeVariants({ variant }), className)} {...props} />
-  )
+    VariantProps<typeof badgeVariants> {
+  asChild?: boolean
 }
+
+// [cfviotti]: Added forwardRef to Badge to allow proper use with asChild parents
+const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
+  ({ className, variant, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : "div"
+    return (
+      <Comp
+        className={cn(badgeVariants({ variant, className }))}
+        ref={ref}
+        {...props}
+      />
+    )
+  }
+)
+Badge.displayName = "Badge"
 
 export { Badge, badgeVariants }

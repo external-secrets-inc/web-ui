@@ -19,13 +19,15 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { load, page } from './analytics';
 import App from './App';
 import './index.css';
-import { DOCS_DOMAIN } from "@/constants";
+import { DOCS_DOMAIN, IS_PROD } from "@/constants";
 import ListRotators from "@/components/rotators/ListRotators";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import AuditWrapper from "@/components/audit/AuditWrapper";
 import OrgRedirector from "./components/OrgRedirector";
 import { Loader } from "@/components/ui/Loader";
 import { SubscriptionProvider } from '@/context/SubscriptionContext';
+import { FeatureFlagProvider } from '@/context/FeatureFlagContext';
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const queryClient = new QueryClient()
 
@@ -67,7 +69,9 @@ const router = createBrowserRouter([
         <RequireActiveUser loginFallbackPath="/login" inactiveFallbackPath="/verify">
           <OrgRedirector>
             <SubscriptionProvider>
-              <App />
+              <FeatureFlagProvider>
+                <App />
+              </FeatureFlagProvider>
             </SubscriptionProvider>
           </OrgRedirector>
         </RequireActiveUser>
@@ -154,7 +158,7 @@ const router = createBrowserRouter([
 
 const Main = () => {
   React.useEffect(() => {
-    if (import.meta.env.PROD) {
+    if (IS_PROD) {
       load(); // Load Segment analytics on app load
 
       // Track the initial page load (for refreshes and direct url access)
@@ -180,8 +184,10 @@ if (rootElement) {
       <AuthProvider store={authStore}>
         <ThemeProvider storageKey="ui-theme">
           <QueryClientProvider client={queryClient}>
-            <Main />
-            <Toaster />
+            <TooltipProvider delayDuration={300} skipDelayDuration={300}>
+              <Main />
+              <Toaster />
+            </TooltipProvider>
           </QueryClientProvider>
         </ThemeProvider>
       </AuthProvider>

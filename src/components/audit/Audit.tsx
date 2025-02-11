@@ -15,7 +15,7 @@ import useGetTenantHelm from "@/services/audit/queries/useGetTenantHelm";
 import useGetTenantListeners from "@/services/audit/queries/useGetTenantListeners";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { ApiHttpError, IUserData } from "@/types";
-import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { AxiosError } from "axios";
 import { LucideAlertCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -480,19 +480,19 @@ export default function Audit() {
         ) : null}
       </div>
 
-      <AuditPolicyDataTable
-        tenantID={authUser?.tenantId ?? ""}
-        listenerID={auditListener.listenerID}
-      />
-
-      <AuditProviderDataTable
-        tenantID={auditListener.tenantID}
-        listenerID={auditListener.listenerID}
-      />
-
-      <AuditSecretTable
-        listenerID={auditListener.listenerID}
-      />
+      <div className="grid grid-cols-1 gap-4">
+        <AuditPolicyDataTable
+          tenantID={authUser?.tenantId ?? ""}
+          listenerID={auditListener.listenerID}
+        />
+        <AuditProviderDataTable
+          tenantID={auditListener.tenantID}
+          listenerID={auditListener.listenerID}
+        />
+        <AuditSecretTable
+          listenerID={auditListener.listenerID}
+        />
+      </div>
     </div>
   );
 }

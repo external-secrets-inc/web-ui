@@ -4,7 +4,7 @@
 // redundant dialogs that are triggered from multiple places.
 // Ref: https://github.com/radix-ui/primitives/discussions/1234
 
-import { Dialog } from "@radix-ui/react-dialog";
+import { Dialog } from "@/components/ui/dialog";
 import { createContext, useContext, useState, useEffect } from "react";
 import { trackFeatureItemDialogOpened } from "@/analytics";
 import FeatureItemDialogContent from "./FeatureItemDialogContent";
