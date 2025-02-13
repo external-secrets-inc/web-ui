@@ -699,9 +699,10 @@ const MultiSelectFooterOptions: React.FC = () => {
 const MultiSelectToggleAllOptions: React.FC<{ className?: string }> = ({ className }) => {
   const { hasMatchingResults, matchingOptions, hasActiveSearch } = useFilteredOptions();
   const { areAllMatchingOptionsSelected, toggleAllMatchingOptions } = useFilteredSelection(matchingOptions);
-  const { selectedValues } = useMultiSelect();
+  const { selectedValues, options } = useMultiSelect();
 
-  if (!hasMatchingResults) return null;
+  // Don't show if there are no matching results OR if there are no options at all
+  if (!hasMatchingResults || options.length === 0) return null;
 
   const hasPartialSelection = selectedValues.length > 0 && !areAllMatchingOptionsSelected;
   const checked = areAllMatchingOptionsSelected ? true : hasPartialSelection ? "indeterminate" : false;
