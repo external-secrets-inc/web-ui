@@ -58,11 +58,58 @@ const multiSelectVariants = cva(
   }
 );
 
-// Context
+/**
+ * Global resize observer for all MultiSelect instances.
+ * This singleton manages subscriptions for all MultiSelect components that need
+ * to observe their mirrored badge lists for wrapping detection.
+ */
+class MultiSelectGlobalResizeObserver {
+  private observer: ResizeObserver | null = null;
+  private callbacks = new Map<Element, () => void>();
+
+  private ensureObserver() {
+    if (!this.observer) {
+      this.observer = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          const callback = this.callbacks.get(entry.target);
+          if (callback) callback();
+        }
+      });
+    }
+    return this.observer;
+  }
+
+  observe(element: Element, callback: () => void) {
+    this.callbacks.set(element, callback);
+    this.ensureObserver().observe(element);
+  }
+
+  unobserve(element: Element) {
+    this.callbacks.delete(element);
+    if (this.observer) {
+      this.observer.unobserve(element);
+
+      // If no more elements are being observed, disconnect the observer
+      if (this.callbacks.size === 0) {
+        this.observer.disconnect();
+        this.observer = null;
+      }
+    }
+  }
+}
+
+// Single instance to be shared across all MultiSelect components
+const multiSelectGlobalResizeObserver = new MultiSelectGlobalResizeObserver();
+
+/**
+ * Context for MultiSelect component
+ * This context is used to share state and functions across the MultiSelect
+ * inner components.
+ */
 interface MultiSelectContextValue {
   selectedValues: string[];
   options: Option[];
-  maxCount: number;
+  maxCount: number | "auto" | undefined;
   variant: MultiSelectProps['variant'];
   placeholder: string;
   isOpen: boolean;
@@ -72,6 +119,13 @@ interface MultiSelectContextValue {
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   updateSelection: (values: string[]) => void;
   itemRefs: React.MutableRefObject<Map<string, CommandItemRef>>;
+  visibleBadgesCount: number;
+  extraBadgesCount: number;
+  shouldShowExtraCounterBadge: boolean;
+  isAutoMaxCount: boolean;
+  computedMaxCount: number | undefined;
+  badgeRefs: React.MutableRefObject<Map<string, HTMLDivElement>>;
+  observedMirroredBadgeListRef: React.RefObject<HTMLDivElement>;
 }
 const MultiSelectContext = React.createContext<MultiSelectContextValue | undefined>(undefined);
 
@@ -119,9 +173,12 @@ interface MultiSelectProps
 
   /**
    * Maximum number of items to display. Extra selected items will be summarized.
-   * Optional, defaults to 3.
+   * - undefined: show all badges with dynamic height (alternatively, use can also set to `Infinity` too)
+   * - number: hard limit of badges before showing +N more
+   * - "auto": automatically determine limit based on available width
+   * Optional, defaults to undefined.
    */
-  maxCount?: number;
+  maxCount?: number | "auto";
 
   /**
    * The modality of the popover. When set to true, interaction with outside elements
@@ -150,14 +207,24 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
   variant,
   defaultValue = [],
   placeholder = "Select options",
-  maxCount = 3,
+  maxCount,
   modalPopover = true,
   className,
   ...props
 }, ref) => {
+  console.log("MultiSelect rendered");
   const [selectedValues, setSelectedValues] = React.useState<string[]>(defaultValue);
   const [isOpen, setIsOpen] = React.useState(false);
+  const [computedMaxCount, setComputedMaxCount] = React.useState<number | undefined>(typeof maxCount === "number" ? maxCount : undefined);
+
+  const isAutoMaxCount = maxCount === "auto";
+  const visibleBadgesCount = computedMaxCount !== undefined ? Math.min(computedMaxCount, selectedValues.length) : selectedValues.length;
+  const extraBadgesCount = selectedValues.length - visibleBadgesCount;
+  const shouldShowExtraCounterBadge = extraBadgesCount > 0;
+
   const itemRefs = React.useRef<Map<string, CommandItemRef>>(new Map());
+  const badgeRefs = React.useRef<Map<string, HTMLDivElement>>(new Map());
+  const observedMirroredBadgeListRef = React.useRef<HTMLDivElement>(null);
 
   const updateSelection = React.useCallback((newValues: string[]) => {
     setSelectedValues(newValues);
@@ -176,8 +243,12 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
   }, [updateSelection]);
 
   const clearExtraOptions = React.useCallback(() => {
-    updateSelection(selectedValues.slice(0, maxCount));
-  }, [selectedValues, maxCount, updateSelection]);
+    if (maxCount === "auto") {
+      updateSelection(selectedValues.slice(0, computedMaxCount)); // In auto mode, use the computed max count from wrapping calculation
+    } else if (typeof maxCount === "number") {
+      updateSelection(selectedValues.slice(0, maxCount)); // In numbered mode, use the maxCount prop directly
+    }
+  }, [selectedValues, maxCount, computedMaxCount, updateSelection]);
 
   const contextValue = React.useMemo(() => ({
     selectedValues,
@@ -192,6 +263,13 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
     setIsOpen,
     updateSelection,
     itemRefs,
+    visibleBadgesCount,
+    extraBadgesCount,
+    shouldShowExtraCounterBadge,
+    isAutoMaxCount,
+    computedMaxCount,
+    badgeRefs,
+    observedMirroredBadgeListRef,
   }), [
     selectedValues,
     options,
@@ -203,7 +281,12 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
     clearExtraOptions,
     handleClear,
     setIsOpen,
-    updateSelection
+    updateSelection,
+    visibleBadgesCount,
+    extraBadgesCount,
+    shouldShowExtraCounterBadge,
+    isAutoMaxCount,
+    computedMaxCount
   ]);
 
   /**
@@ -224,6 +307,48 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
       []
     );
   }, [options]);
+
+  const detectFlexWrap = React.useCallback(() => {
+    const baselineTop = 0; // Relative to first `position: relative` parent
+
+    for (let i = 0; i < selectedValues.length; i++) {
+      const badge = badgeRefs.current.get(selectedValues[i]);
+      if (!badge) continue;
+
+      if (badge.offsetTop > baselineTop) {
+        setComputedMaxCount(i);
+        return;
+      }
+    }
+
+    setComputedMaxCount(selectedValues.length);
+  }, [selectedValues]);
+
+  // Effect to handle measurement and resize observer
+  React.useEffect(() => {
+    if (maxCount !== "auto") return;
+    if (selectedValues.length <= 1) {
+      setComputedMaxCount(selectedValues.length);
+      return;
+    }
+
+    const mirrorRef = observedMirroredBadgeListRef.current;
+    if (!mirrorRef) return;
+
+    multiSelectGlobalResizeObserver.observe(mirrorRef, detectFlexWrap);
+
+    // Initial measurement
+    queueMicrotask(detectFlexWrap);
+
+    return () => {
+      if (mirrorRef) multiSelectGlobalResizeObserver.unobserve(mirrorRef);
+    };
+  }, [maxCount, selectedValues, detectFlexWrap]);
+
+  // Reset computedMaxCount when maxCount prop changes
+  React.useEffect(() => {
+    setComputedMaxCount(typeof maxCount === "number" ? maxCount : undefined);
+  }, [maxCount]);
 
   return (
     <MultiSelectContext.Provider value={contextValue}>
@@ -280,55 +405,177 @@ MultiSelect.displayName = "MultiSelect";
 /**
  * Badge with an optional icon and a remove button representing a selected option.
  */
-const MultiSelectBadge: React.FC<{ option: Option; onRemove: () => void }> = ({
-  option,
+const MultiSelectBadge = React.forwardRef<HTMLDivElement, {
+  label: string;
+  onRemove?: () => void;
+  className?: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  interactive?: boolean;
+}>(({
+  label,
   onRemove,
-}) => {
+  className,
+  icon: IconComponent,
+}, ref) => {
   const { variant } = useMultiSelect();
-  const IconComponent = option.icon;
 
   return (
     <Badge
-      className={cn("flex min-w-14 items-center gap-2 pr-0.5", multiSelectVariants({ variant }))}
+      ref={ref}
+      className={cn(
+        multiSelectVariants({ variant }),
+        "flex items-center gap-1 pl-2 pr-0.5",
+        className,
+      )}
     >
       {IconComponent && <IconComponent className="size-3"/>}
-      <Trimmer className="flex-1 min-w-4">{option.label}</Trimmer>
+      <Trimmer className="flex-1 min-w-0">{label}</Trimmer>
+      <XCircle
+        className="size-4 cursor-pointer opacity-50 hover:opacity-100"
+        onClick={onRemove ? (e) => {
+          e.stopPropagation();
+          onRemove();
+        } : undefined}
+      />
+    </Badge>
+  );
+});
+MultiSelectBadge.displayName = "MultiSelectBadge";
+
+/**
+ * Extra badge that shows the count of hidden/wrapped items.
+ * Uses the same base as MultiSelectBadge but with slightly different styling and behavior.
+ */
+const MultiSelectExtraBadge: React.FC = () => {
+  const { clearExtraOptions, variant, extraBadgesCount } = useMultiSelect();
+
+  return (
+    <Badge
+      className={cn(
+        multiSelectVariants({ variant }),
+        "flex items-center gap-1 pl-1.5 pr-0.5"
+      )}
+    >
+      {`+${extraBadgesCount}`}
       <XCircle
         className="size-4 cursor-pointer opacity-50 hover:opacity-100"
         onClick={(e) => {
           e.stopPropagation();
-          onRemove();
+          clearExtraOptions();
         }}
       />
     </Badge>
   );
 };
+MultiSelectExtraBadge.displayName = "MultiSelectExtraBadge";
 
 /**
  * Renders the currently selected options as badges with a "+N more" badge if exceeding `maxCount`.
  */
-const MultiSelectCurrentBadges: React.FC<{ className?: string }> = ({ className }) => {
-  const { selectedValues, options, maxCount, toggleOption, clearExtraOptions } = useMultiSelect();
-  const extraOptionsCount = selectedValues.length - maxCount;
+const MultiSelectCurrentBadges: React.FC = () => {
+  const {
+    selectedValues,
+    options,
+    maxCount,
+    toggleOption,
+    isAutoMaxCount,
+    shouldShowExtraCounterBadge,
+    visibleBadgesCount,
+    extraBadgesCount,
+    badgeRefs,
+    observedMirroredBadgeListRef,
+  } = useMultiSelect();
 
   return (
-    <div className={cn("flex flex-wrap items-center gap-1", className)}>
-      {selectedValues.slice(0, maxCount).map((value) => {
-        const option = options.find((o) => o.value === value);
-        if (!option) return null;
-        return (
-          <MultiSelectBadge
-            key={value}
-            option={option}
-            onRemove={() => toggleOption(value)}
-          />
-        );
-      })}
-      {extraOptionsCount > 0 && (
-        <MultiSelectBadge
-          option={{ label: `+${extraOptionsCount} more`, value: "extra-options" }}
-          onRemove={clearExtraOptions}
-        />
+    <div className={cn(
+      "grid w-full [&>*]:row-start-1 [&>*]:column-start-1 relative overflow-clip items-start", // grid with cell overlaping, similar to absolute positioning but more robust
+      maxCount === "auto" && "grid-rows-[22px]" // max height same as badge height (22px) to render a single-row for the automatic extra badge numbering mode
+    )}>
+      {/* Actual interactive badges visible to the user */}
+      <div className="[grid-area:1/-1] flex gap-1 min-w-12 items-start">
+        {extraBadgesCount < selectedValues.length && (
+          <div className={cn("flex gap-1 min-w-12", !isAutoMaxCount && "flex-wrap")}>
+            {selectedValues.slice(0, visibleBadgesCount).map((value) => {
+              const option = options.find((o) => o.value === value);
+              if (!option) return null;
+              return (
+                <MultiSelectBadge
+                  key={value}
+                  label={option.label}
+                  icon={option.icon}
+                  onRemove={() => toggleOption(value)}
+                  className={cn(
+                    (!isAutoMaxCount || visibleBadgesCount === 1) && "min-w-12 flex-auto max-w-fit", // Ensure shrinking only when wrapping or when only one badge is visible in auto mode to use most of the available real estate
+                  )}
+                />
+              );
+            })}
+            {/* When not on auto mode, we just keep the extra badge at the end of the list */}
+            {!isAutoMaxCount && shouldShowExtraCounterBadge && (
+              <MultiSelectExtraBadge />
+            )}
+          </div>
+        )}
+        {/* When on auto mode, we render the extra badge outside of the list to avoid it being wrapped first */}
+        {isAutoMaxCount && shouldShowExtraCounterBadge && (
+          <div className="flex flex-1 justify-start">
+            <MultiSelectExtraBadge />
+          </div>
+        )}
+      </div>
+
+      {/*
+        Non-Interactive Badge List Mirror:
+        -------------------------
+        Why:
+          In "auto" mode for maxCount, our goal is to determine exactly how many
+          badges can fit in the available width. We need to detect when badges
+          are forced to wrap onto a new line so we can replace the overflow with
+          a "N more" badge. Measuring this directly on the interactive badge
+          list is problematic because hiding or removing badges for layout
+          adjustments would break the measurement logic (creating a circular
+          dependency where layout changes remove the very elements needed for
+          observation). This invisible mirrored list allows us to observe the
+          full, unhindered badge layout using a ResizeObserver, without disturbing
+          the user's interactive view.
+
+        Note:
+          Ensure that any visual changes applied to the interactive badges for
+          "auto" mode are also reflected in this mirrored list to keep the
+          measurements accurate.
+
+        TODO:
+        - Explore a DRYier solution with the same effect so it's easier to read.
+        - Monitor performance due to duplicate render and resize observer usage.
+      */}
+      {isAutoMaxCount && (
+        <div className="invisible [grid-area:1/-1] flex min-w-12 gap-1 [&>*]:pointer-events-none flex-wrap-reverse items-end">
+          <div
+            className="flex flex-wrap gap-1 flex-1 min-w-12 outline outline-1 outline-red-500 -outline-offset-1"
+            ref={observedMirroredBadgeListRef}
+          >
+              {selectedValues.map((value) => {
+                const option = options.find((o) => o.value === value);
+                if (!option) return null;
+                return (
+                  <MultiSelectBadge
+                    key={value}
+                    ref={el => {
+                      if (el) badgeRefs.current.set(value, el);
+                      else badgeRefs.current.delete(value);
+                    }}
+                    label={option.label}
+                    icon={option.icon}
+                  />
+                );
+              })}
+            </div>
+            {shouldShowExtraCounterBadge && (
+            <div className="flex flex-wrap justify-start min-w-12 flex-none outline outline-1 outline-green-500 -outline-offset-1">
+              <MultiSelectExtraBadge />
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
@@ -353,14 +600,14 @@ const MultiSelectPopoverTrigger = React.forwardRef<HTMLButtonElement, React.Comp
         onClick={() => setIsOpen(prev => !prev)}
         variant="outline"
         className={cn(
-          "w-full min-w-24 py-1 px-3 min-h-9 h-auto items-center justify-between hover:bg-inherit [:where(&_svg)]:pointer-events-auto relative group",
+          "w-full min-w-24 py-1.5 px-3 min-h-9 h-auto items-center justify-between hover:bg-inherit [:where(&_svg)]:pointer-events-auto relative group",
           className
         )}
       >
         {isUnselected
         ? <span className="text-sm text-muted-foreground font-normal truncate">{placeholder}</span>
         : <>
-            <MultiSelectCurrentBadges className="flex flex-wrap items-center gap-1 min-w-12" />
+            <MultiSelectCurrentBadges />
             <XIcon
               className="opacity-0 group-hover:opacity-50 hover:!opacity-100 absolute right-3 translate-x-full group-hover:translate-x-0 transition-all duration-300 z-10"
               onClick={(e) => {
