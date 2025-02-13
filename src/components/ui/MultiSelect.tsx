@@ -750,11 +750,6 @@ function useMultiSelect() {
 function useCommandFiltering() {
   const searchQuery = useCommandState(state => state.search);
   const filteredState = useCommandState(state => state.filtered);
-
-  // Keep debug logs for now
-  console.log('Search:', searchQuery, 'Filtered state:', filteredState);
-  console.log('Filtered items Map:', Array.from(filteredState?.items?.entries() ?? []));
-
   const hasActiveSearch = Boolean(searchQuery);
   const hasMatchingResults = !hasActiveSearch || filteredState.count > 0;
 
@@ -769,9 +764,6 @@ function useCommandFiltering() {
 function useFilteredOptions() {
   const { options, itemRefs } = useMultiSelect();
   const { filteredState, hasMatchingResults, hasActiveSearch } = useCommandFiltering();
-
-  console.log('Our options:', options);
-
   const matchingOptions = React.useMemo(() => {
     if (!hasActiveSearch) return options;
     return options.filter(option => {
