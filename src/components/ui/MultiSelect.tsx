@@ -13,11 +13,9 @@ import {
 import {
   CaretSortIcon,
 } from "@radix-ui/react-icons";
-import { cva, type VariantProps } from "class-variance-authority";
 import { defaultFilter } from "cmdk";
 import {
-  XCircle,
-  XIcon,
+  LucideX,
 } from "lucide-react";
 import * as React from "react";
 
@@ -33,30 +31,6 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Trimmer } from "@/components/ui/Trimmer";
-
-/**
- * Variants for the multi-select component to handle different styles.
- * Uses class-variance-authority (cva) to define different styles based on "variant" prop.
- */
-const multiSelectVariants = cva(
-  "transition ease-in-out",
-  {
-    variants: {
-      variant: {
-        default:
-          "border-foreground/10 text-foreground bg-card hover:bg-card/80",
-        secondary:
-          "border-foreground/10 bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        destructive:
-          "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
-        inverted: "inverted",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-    },
-  }
-);
 
 /**
  * Global resize observer for all MultiSelect instances.
@@ -110,7 +84,6 @@ interface MultiSelectContextValue {
   selectedValues: string[];
   options: Option[];
   maxCount: number | "auto" | undefined;
-  variant: MultiSelectProps['variant'];
   placeholder: string;
   isOpen: boolean;
   toggleOption: (value: string) => void;
@@ -147,9 +120,7 @@ type CommandItemRef = {
 /**
  * Props for MultiSelect component
  */
-interface MultiSelectProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof multiSelectVariants> {
+interface MultiSelectProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   /**
    * An array of option objects to be displayed in the multi-select component.
    * Each option object has a label, value, and an optional icon.
@@ -204,7 +175,6 @@ interface MultiSelectProps
 export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(({
   options,
   onValueChange,
-  variant,
   defaultValue = [],
   placeholder = "Select options",
   maxCount,
@@ -212,7 +182,6 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
   className,
   ...props
 }, ref) => {
-  console.log("MultiSelect rendered");
   const [selectedValues, setSelectedValues] = React.useState<string[]>(defaultValue);
   const [isOpen, setIsOpen] = React.useState(false);
   const [computedMaxCount, setComputedMaxCount] = React.useState<number | undefined>(typeof maxCount === "number" ? maxCount : undefined);
@@ -254,7 +223,6 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
     selectedValues,
     options,
     maxCount,
-    variant,
     placeholder,
     isOpen,
     toggleOption,
@@ -274,7 +242,6 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
     selectedValues,
     options,
     maxCount,
-    variant,
     placeholder,
     isOpen,
     toggleOption,
@@ -417,26 +384,27 @@ const MultiSelectBadge = React.forwardRef<HTMLDivElement, {
   className,
   icon: IconComponent,
 }, ref) => {
-  const { variant } = useMultiSelect();
-
   return (
     <Badge
+      variant="secondary"
       ref={ref}
       className={cn(
-        multiSelectVariants({ variant }),
-        "flex items-center gap-1 pl-2 pr-0.5",
+        "flex items-center gap-0.5 pl-2 pr-0.5",
         className,
       )}
     >
       {IconComponent && <IconComponent className="size-3"/>}
       <Trimmer className="flex-1 min-w-0">{label}</Trimmer>
-      <XCircle
-        className="size-4 cursor-pointer opacity-50 hover:opacity-100"
+      <Button
+        size="icon"
+        className="size-5 -my-2 -mx-0.5 hover:bg-destructive/25 focus-visible:bg-destructive/25 focus-visible:opacity-100 opacity-50 hover:opacity-100 transition-all"
+        variant="ghost"
         onClick={onRemove ? (e) => {
           e.stopPropagation();
           onRemove();
-        } : undefined}
-      />
+        } : undefined}>
+          <LucideX className="size-3"/>
+      </Button>
     </Badge>
   );
 });
@@ -447,23 +415,26 @@ MultiSelectBadge.displayName = "MultiSelectBadge";
  * Uses the same base as MultiSelectBadge but with slightly different styling and behavior.
  */
 const MultiSelectExtraBadge: React.FC = () => {
-  const { clearExtraOptions, variant, extraBadgesCount } = useMultiSelect();
+  const { clearExtraOptions, extraBadgesCount } = useMultiSelect();
 
   return (
     <Badge
+      variant="outline"
       className={cn(
-        multiSelectVariants({ variant }),
-        "flex items-center gap-1 pl-1.5 pr-0.5"
+        "flex items-center gap-0.5 pl-1.5 pr-0.5 font-mono"
       )}
     >
       {`+${extraBadgesCount}`}
-      <XCircle
-        className="size-4 cursor-pointer opacity-50 hover:opacity-100"
-        onClick={(e) => {
-          e.stopPropagation();
-          clearExtraOptions();
-        }}
-      />
+      <Button
+      size="icon"
+      className="size-5 -my-2 -mx-0.5 hover:bg-destructive/25 opacity-50 hover:opacity-100 transition-all"
+      variant="ghost"
+      onClick={(e) => {
+        e.stopPropagation();
+        clearExtraOptions();
+      }}>
+        <LucideX className="size-3"/>
+      </Button>
     </Badge>
   );
 };
@@ -600,7 +571,7 @@ const MultiSelectPopoverTrigger = React.forwardRef<HTMLButtonElement, React.Comp
         onClick={() => setIsOpen(prev => !prev)}
         variant="outline"
         className={cn(
-          "w-full min-w-24 py-1.5 px-3 min-h-9 h-auto items-center justify-between hover:bg-inherit [:where(&_svg)]:pointer-events-auto relative group",
+          "w-full min-w-24 py-1.5 px-3 min-h-9 h-auto items-center justify-between hover:bg-inherit relative overflow-clip group",
           className
         )}
       >
@@ -608,19 +579,23 @@ const MultiSelectPopoverTrigger = React.forwardRef<HTMLButtonElement, React.Comp
         ? <span className="text-sm text-muted-foreground font-normal truncate">{placeholder}</span>
         : <>
             <MultiSelectCurrentBadges />
-            <XIcon
-              className="opacity-0 group-hover:opacity-50 hover:!opacity-100 absolute right-3 translate-x-full group-hover:translate-x-0 transition-all duration-300 z-10"
+            <Button
+              className="size-7 opacity-0 group-hover:opacity-50 hover:!opacity-100 hover:bg-destructive/25 focus-visible:bg-destructive/25 focus-visible:!opacity-100 group-focus-within:opacity-50 absolute right-1.5 translate-x-full group-hover:translate-x-0 group-focus-within:translate-x-0 transition-all duration-300 z-10"
+              variant="ghost"
+              size="icon"
               onClick={(e) => {
                 e.stopPropagation();
                 handleClear();
               }}
-            />
+            >
+              <LucideX/>
+            </Button>
           </>
         }
         <CaretSortIcon
           className={cn(
             "opacity-50 ",
-            !isUnselected && "group-hover:opacity-0 transition-opacity duration-300 group-hover:delay-0 delay-100"
+            !isUnselected && "group-hover:opacity-0 group-focus-within:opacity-0 transition-opacity duration-300 group-hover:delay-0 delay-100"
           )}
         />
       </Button>
@@ -644,7 +619,7 @@ const MultiSelectListOptions: React.FC<{ className?: string }> = ({ className })
           <CommandItem
             key={option.value}
             onSelect={() => toggleOption(option.value)}
-            className="cursor-pointer mx-1"
+            className="cursor-pointer mx-1 has-[[data-state=checked]]:bg-accent/50 border border-transparent has-[[data-state=checked]]:border-background transition-all"
             value={option.value}
             ref={(element) => {
               if (element) {
