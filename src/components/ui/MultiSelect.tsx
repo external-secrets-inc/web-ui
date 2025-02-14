@@ -633,7 +633,7 @@ const MultiSelectListOptions: React.FC<{ className?: string }> = ({ className })
             {option.icon && (
               <option.icon className="mr-2 text-muted-foreground" />
             )}
-            <span>{option.label}</span>
+            <Trimmer>{option.label}</Trimmer>
           </CommandItem>
         );
       })}
