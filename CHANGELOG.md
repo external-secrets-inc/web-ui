@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.1](https://github.com/external-secrets-inc/web-ui/compare/v0.11.0...v0.11.1) (2025-02-25)
+
+
+### Bug Fixes
+
+* should use accessor name instead of id ([#286](https://github.com/external-secrets-inc/web-ui/issues/286)) ([2d6e998](https://github.com/external-secrets-inc/web-ui/commit/2d6e9983601319c8c87c1d65b5131b1baf58d56b))
+
 ## [0.11.0](https://github.com/external-secrets-inc/web-ui/compare/v0.10.0...v0.11.0) (2025-02-11)
 
 
