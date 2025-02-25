@@ -40,12 +40,13 @@ const POLICY_STATUS_BADGE_VARIANTS = {
   error: "destructive",
 } as const;
 
-const HistoryAccordion = <T extends { id: string }, H extends { timestamp: string }>({
+const HistoryAccordion = <T extends object, H extends { timestamp: string }>({
   item,
   secretId,
   renderTrigger,
   renderHistoryItem,
   useHistoryQuery,
+  getItemId,
 }: {
   item: T;
   secretId: string;
@@ -57,14 +58,16 @@ const HistoryAccordion = <T extends { id: string }, H extends { timestamp: strin
     itemId: string,
     options?: { enabled?: boolean }
   ) => { data: H[] | undefined; isLoading: boolean };
+  getItemId: (item: T) => string;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const itemId = getItemId(item);
 
   // Only fetch data when accordion is open to prevent unnecessary requests on panel load
   const { data: historyData, isLoading: isLoadingHistory } = useHistoryQuery(
     false,
     secretId,
-    item.id,
+    itemId,
     { enabled: isOpen }
   );
 
@@ -88,11 +91,11 @@ const HistoryAccordion = <T extends { id: string }, H extends { timestamp: strin
       type="single"
       collapsible
       // Only set accordion value when data exists to ensure correct height calculation
-      value={historyData && isOpen ? item.id : undefined}
+      value={historyData && isOpen ? itemId : undefined}
       // Manual state handling for the async control
       onValueChange={() => {}}
     >
-      <AccordionItem value={item.id} className="border rounded-lg overflow-clip">
+      <AccordionItem value={itemId} className="border rounded-lg overflow-clip">
         <AccordionTrigger
           className="hover:no-underline bg-muted/40 hover:bg-muted/75 py-3 px-4 relative flex items-center justify-between w-full"
           onClick={handleTriggerClick}
@@ -133,7 +136,7 @@ const HistoryAccordion = <T extends { id: string }, H extends { timestamp: strin
   );
 };
 
-const HistorySection = <T extends { id: string }, H extends { timestamp: string }>({
+const HistorySection = <T extends object, H extends { timestamp: string }>({
   title,
   icon,
   items,
@@ -141,7 +144,8 @@ const HistorySection = <T extends { id: string }, H extends { timestamp: string 
   useHistoryQuery,
   renderTrigger,
   renderHistoryItem,
-  emptyMessage = "No history available"
+  emptyMessage = "No history available",
+  getItemId,
 }: {
   title: string;
   icon: React.ReactNode;
@@ -156,6 +160,7 @@ const HistorySection = <T extends { id: string }, H extends { timestamp: string 
   renderTrigger: (item: T) => React.ReactNode;
   renderHistoryItem: (historyItem: H) => React.ReactNode;
   emptyMessage?: string;
+  getItemId: (item: T) => string;
 }) => {
   return (
     <section aria-label={title} className="space-y-2 p-6">
@@ -168,12 +173,13 @@ const HistorySection = <T extends { id: string }, H extends { timestamp: string 
         <div className="space-y-2">
           {items.map(item => (
             <HistoryAccordion
-              key={item.id}
+              key={getItemId(item)}
               item={item}
               secretId={secretId}
               useHistoryQuery={useHistoryQuery}
               renderTrigger={renderTrigger}
               renderHistoryItem={renderHistoryItem}
+              getItemId={getItemId}
             />
           ))}
         </div>
@@ -262,6 +268,7 @@ const SectionSecretPolicies = ({
         </Badge>
       </>
     )}
+    getItemId={(policy) => policy.id}
   />
 );
 
@@ -329,6 +336,7 @@ const SectionSecretAccessors = ({
         <Trimmer>{formatDate(log.timestamp, { format: 'readableDate' })}</Trimmer>
       </Badge>
     )}
+    getItemId={(accessor) => accessor.name}
   />
 );
 
