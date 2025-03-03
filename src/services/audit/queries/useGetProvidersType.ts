@@ -13,6 +13,12 @@ const getProvidersTypes = async (
 ) => {
   if (mock) {
     return {
+      "GKE": {
+        "project-id": { "type": "string", "required": true },
+        "location": { "type": "string", "required": true },
+        "cluster": { "type": "string", "required": true },
+        "subscription": { "type": "string", "required": true }
+      },
       "GCP": {
         "project-id": { "type": "string", "required": true },
         "topic": { "type": "string", "required": true },
