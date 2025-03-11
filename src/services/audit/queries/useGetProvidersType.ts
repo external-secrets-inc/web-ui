@@ -30,6 +30,10 @@ const getProvidersTypes = async (
         "vaultVersion": { "type": "string", "required": false, "default": "v2" },
         "socketHost": { "type": "string", "required": false, "default": "0.0.0.0" },
         "socketPort": { "type": "number", "required": false, "default": 8000}
+      },
+      "AWS": {
+        "region": {"type": "string", "required": true},
+        "queue-url": {"type": "string", "required": true}
       }
     } as AddProviderFormSchema;
   }
