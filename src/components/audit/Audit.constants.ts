@@ -14,6 +14,6 @@ export const TIME_RANGES: TimeRangeOption[] = [
   { days: 90, label: '90D' },
 ] as const;
 
-// TODO: This can still yield unsynced data from Audit page vs inner queries. Investigate alternative approaches that keep data in sync.
+// TODO[cfviotti]: This can still yield unsynced data from Audit page vs inner queries. Investigate alternative approaches that keep data in sync.
 export const AUDIT_PAGE_QUERY_REFETCH_INTERVAL = 5 * ONE_MINUTE_IN_SECONDS * ONE_SECOND_IN_MILLISECONDS;
 export const AUDIT_QUERY_STALE_TIME = AUDIT_PAGE_QUERY_REFETCH_INTERVAL - 30 * ONE_SECOND_IN_MILLISECONDS;

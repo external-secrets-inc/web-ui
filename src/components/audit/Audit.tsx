@@ -68,20 +68,23 @@ const getTimeRangeFromDays = (days: number | null): TimeRange => {
 
 const RefreshDataButton = () => {
   const queryClient = useQueryClient();
-  const isFetchingAuditData = useIsFetching({ queryKey: ['audit'] });
 
   const handleRefresh = () => {
     queryClient.invalidateQueries({
+      // Every Audit query has this as "root" query-key, so by invalidating it, we
+      // effectively invalidate all Audit queries and automatically refetch them
       queryKey: ['audit'],
       refetchType: 'active',
     });
   };
+  const isFetchingAuditData = useIsFetching({ queryKey: ['audit'] }) > 0;
+
 
   return (
     <Button
       variant="secondary"
       onClick={handleRefresh}
-      disabled={isFetchingAuditData > 0}
+      disabled={isFetchingAuditData}
     >
       {isFetchingAuditData ? (
         <Loader />

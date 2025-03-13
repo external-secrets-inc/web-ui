@@ -319,8 +319,6 @@ const FilterDialogForm = (
 
   const filterMinDate = formatDate(new Date(new Date().setDate(new Date().getDate() - 90)), { format: 'isoDateOnlyUTC' }); // 90 days ago
   const filterMaxDate = formatDate(new Date(), { format: 'isoDateOnlyUTC' }); // Current date
-
-  // Watch values outside useEffect to avoid complex expressions in dependency array
   const accessorsValue = form.watch("accessors");
   const duplicatesValue = form.watch("duplicates");
 

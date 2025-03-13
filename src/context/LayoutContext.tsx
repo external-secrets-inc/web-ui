@@ -17,10 +17,6 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   );
 };
 
-/**
- * Hook to access the layout context
- * Throws an error if used outside of a LayoutProvider
- */
 export const useLayout = () => {
   const context = useContext(LayoutContext);
 
