@@ -22,7 +22,7 @@ import { useEffect, useMemo, useState } from "react";
 import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "../ui/button";
-import { LISTENER_STATUS, TIME_RANGES } from "./Audit.constants";
+import { AUDIT_PAGE_QUERY_REFETCH_INTERVAL, AUDIT_QUERY_STALE_TIME, LISTENER_STATUS, TIME_RANGES } from "./Audit.constants";
 import {
   AuditListener,
   CreateAuditListenerPayload,
@@ -97,7 +97,8 @@ export default function Audit() {
 
   // TODO remove mock https://github.com/external-secrets-inc/web-ui/issues/115
   const { data: tenantListenersData } = useGetTenantListeners(false, {
-    refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
+    staleTime: AUDIT_QUERY_STALE_TIME,
+    refetchInterval: AUDIT_PAGE_QUERY_REFETCH_INTERVAL,
     refetchIntervalInBackground: true,
     retry: false,
   });
@@ -153,7 +154,8 @@ export default function Audit() {
     isSuccess: isSuccessAuditListener,
     error: fetchAuditListenerError,
   } = useGetAuditListener(false, tenantListener.id, {
-    refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
+    staleTime: AUDIT_QUERY_STALE_TIME,
+    refetchInterval: AUDIT_PAGE_QUERY_REFETCH_INTERVAL,
     refetchIntervalInBackground: true,
     enabled: Boolean(tenantListener.id), // Only fetch when tenant listener exists
     retry: false,
@@ -232,6 +234,7 @@ export default function Audit() {
     error: tenantBashFileError,
     isError: isErrorTenantBashFile,
   } = useGetTenantBashFile(false, tenantInstallationToken ?? "", "latest", tenantListener.id, {
+    staleTime: AUDIT_QUERY_STALE_TIME,
     enabled: isListenerInstallDialogOpen && Boolean(tenantInstallationToken && tenantListener.id) // Only fetch when dialog is open with token and listener ID
   });
 
@@ -241,6 +244,7 @@ export default function Audit() {
     error: tenantHelmError,
     isError: isErrorTenantHelm,
   } = useGetTenantHelm(false, "latest", tenantListener.id, {
+    staleTime: AUDIT_QUERY_STALE_TIME,
     enabled: isListenerInstallDialogOpen && Boolean(tenantListener.id) // Only fetch when dialog is open with listener ID
   });
 

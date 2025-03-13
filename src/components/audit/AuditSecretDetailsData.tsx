@@ -23,10 +23,11 @@ import { Loader } from "@/components/ui/Loader";
 import useGetSecretPolicyLogs from "@/services/audit/queries/useGetSecretPolicyLogs";
 import useGetSecretAccessorLogs from "@/services/audit/queries/useGetSecretAccessorLogs";
 import { Trimmer } from "@/components/ui/Trimmer";
-import useExportAuditSecrets from "@/services/audit/queries/useExportAuditSecret";
+import useGetAuditSecretExport from "@/services/audit/queries/useGetAuditSecretExport";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { Button } from "../ui/button";
 import saveAs from "file-saver";
+import { AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants";
 
 const POLICY_STATUS_COLORS = {
   compliant: "text-success",
@@ -56,7 +57,7 @@ const HistoryAccordion = <T extends object, H extends { timestamp: string }>({
     mock: boolean,
     secretId: string,
     itemId: string,
-    options?: { enabled?: boolean }
+    options?: { enabled?: boolean, staleTime?: number }
   ) => { data: H[] | undefined; isLoading: boolean };
   getItemId: (item: T) => string;
 }) => {
@@ -68,7 +69,10 @@ const HistoryAccordion = <T extends object, H extends { timestamp: string }>({
     false,
     secretId,
     itemId,
-    { enabled: isOpen }
+    {
+      staleTime: AUDIT_QUERY_STALE_TIME,
+      enabled: isOpen,
+    }
   );
 
   // Prevent default accordion behavior to handle async data loading first time
@@ -351,7 +355,8 @@ const AuditSecretDetailsData = ({ className, secretData, setSecretId }: {
     isFetching: isFetchingExportSecretData,
     isError: isErrorExportSecretData,
     error: exportSecretDataError,
-  } = useExportAuditSecrets(false, secretData.id || '', {
+  } = useGetAuditSecretExport(false, secretData.id || '', {
+    staleTime: AUDIT_QUERY_STALE_TIME,
     enabled: !!secretData.id
   });
 

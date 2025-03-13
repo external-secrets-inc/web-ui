@@ -1,8 +1,7 @@
 import { Loader } from "@/components/ui/Loader";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import useGetAuditSecretData from "@/services/audit/queries/useGetAuditSecretData";
-import useGetLineagePath from "@/services/lineage/queries/useGetLineagePath";
+import useGetLineagePath from "@/services/audit/queries/useGetLineagePath";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { useEffect, useMemo, useState, useRef } from "react";
 import { AuditSecretData } from "./Audit.interfaces";
@@ -12,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LucideNetwork, LucideSquareAsterisk } from "lucide-react";
 import { useFeatureFlag } from "@/context/FeatureFlagContext";
 import { cn } from "@/lib/utils";
+import { AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants";
 
 export default function AuditSecretDetails({
   secretId,
@@ -32,16 +32,15 @@ export default function AuditSecretDetails({
 
   const {
     data: secretData,
-    refetch: secretRefetch,
     isLoading: isLoadingSecretData,
     error: secretDataError,
   } = useGetAuditSecretData(false, secretId || '', {
-    refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
-    refetchIntervalInBackground: true,
+    staleTime: AUDIT_QUERY_STALE_TIME,
     enabled: !!secretId
   });
 
   const { data: lineageData } = useGetLineagePath(false, secretId || '', {
+    staleTime: AUDIT_QUERY_STALE_TIME,
     enabled: !!secretId && featureFlagShowLineage
   });
 
@@ -85,12 +84,6 @@ export default function AuditSecretDetails({
       onOpenChange(false);
     }
   }, [secretDataError, onOpenChange]);
-
-  useEffect(() => {
-    if (secretId) {
-      secretRefetch();
-    }
-  }, [secretId, secretRefetch]);
 
   if (!secretId) return null;
 

@@ -10,7 +10,6 @@ import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
-import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import { DataProvider, DataTable } from "../ui/DataProvider";
 import useGetPolicies from "@/services/audit/queries/useGetPolicies";
 import useGetAuditProviders from "@/services/audit/queries/useGetAuditProviders";
@@ -22,6 +21,7 @@ import useAssignProviderPolicy from "@/services/audit/mutations/useAssignProvide
 import useUnassignProviderPolicy from "@/services/audit/mutations/useUnassignProviderPolicy";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import useEditPolicy, { EditPolicyVariables } from "@/services/audit/mutations/useEditPolicy";
+import { AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants";
 
 interface PolicyTableMeta {
   renderRowActions?: (row: PolicyTableData) => React.ReactNode;
@@ -152,16 +152,14 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
     isRefetchError: isRefetchErrorPolicies,
     error: policiesError
   } = useGetPolicies(false, tenantID, {
-    refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
-    refetchIntervalInBackground: true,
+    staleTime: AUDIT_QUERY_STALE_TIME,
   });
 
   const {
     data: providersData,
     isLoading: isLoadingProviders,
   } = useGetAuditProviders(false, listenerID || '', {
-    refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
-    refetchIntervalInBackground: true,
+    staleTime: AUDIT_QUERY_STALE_TIME,
     enabled: !!listenerID
   });
 
