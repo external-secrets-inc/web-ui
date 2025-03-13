@@ -33,7 +33,7 @@ const useGetSecretPolicyLogs = (
   const { isMocked } = useAuditMock(mock);
 
   return useQuery({
-    queryKey: ["useGetSecretPolicyLogs", isMocked, secretID, policyID],
+    queryKey: ["audit", "useGetSecretPolicyLogs", isMocked, secretID, policyID],
     queryFn: ({ signal }) => getSecretPolicyLogs(isMocked, secretID, policyID, signal),
     staleTime: ONE_MINUTE_IN_SECONDS * 5,
     ...options,

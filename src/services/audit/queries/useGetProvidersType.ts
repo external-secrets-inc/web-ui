@@ -46,7 +46,7 @@ const useGetProvidersTypes = (
   const { isMocked } = useAuditMock(mock);
 
   return useQuery({
-    queryKey: ["useGetProvidersTypes", isMocked],
+    queryKey: ["audit", "useGetProvidersTypes", isMocked],
     queryFn: ({ signal }) => {
       return getProvidersTypes(isMocked, signal)
     },

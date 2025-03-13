@@ -29,7 +29,7 @@ const useGetPoliciesTypes = (
   options?: Omit<UseQueryOptions<object, AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
 ) => {
   return useQuery({
-    queryKey: ["useGetPoliciesTypes", mock],
+    queryKey: ["audit", "useGetPoliciesTypes", mock],
     queryFn: ({ signal }) => {
       return getPoliciesTypes(mock, signal)
     },

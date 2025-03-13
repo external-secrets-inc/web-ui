@@ -33,7 +33,7 @@ const useGetSecretAccessorLogs = (
   const { isMocked } = useAuditMock(mock);
 
   return useQuery({
-    queryKey: ["useGetSecretAccessorLogs", isMocked, secretID, accessorName],
+    queryKey: ["audit", "useGetSecretAccessorLogs", isMocked, secretID, accessorName],
     queryFn: ({ signal }) => getSecretAccessorLogs(isMocked, secretID, accessorName, signal),
     staleTime: ONE_MINUTE_IN_SECONDS * 5,
     ...options,
