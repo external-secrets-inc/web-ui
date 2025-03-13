@@ -36,7 +36,7 @@ const getProvidersTypes = async (
         "queue-url": {"type": "string", "required": true}
       },
       "KEYVAULT": {
-        "vaultName": {"type": "string", "required": true},
+        "vaultURL": {"type": "string", "required": true},
         "eventHubNamespace": {"type": "string", "required": true},
         "eventHubName": {"type": "string", "required": true},
         "storageEndpoint": {"type": "string", "required": true},
