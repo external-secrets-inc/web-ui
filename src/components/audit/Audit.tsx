@@ -17,7 +17,7 @@ import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { ApiHttpError, IUserData } from "@/types";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { AxiosError } from "axios";
-import { LucideAlertCircle } from "lucide-react";
+import { LucideAlertCircle, LucideRefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 import { useSearchParams } from "react-router-dom";
@@ -41,6 +41,9 @@ import AuditTimelineProviders from "./AuditTimelineProviders";
 import ListenerInstallDialogContent from "./ListenerInstallDialogContent";
 import { AuditSecretTable } from "./AuditSecretTable";
 import { formatDate } from "@/utils/dateUtils";
+import AppPageHeaderPortal from "@/components/AppPageHeaderPortal";
+import { useQueryClient, useIsFetching } from "@tanstack/react-query";
+import { Loader } from "@/components/ui/Loader";
 
 const getDaysBetweenDates = (start: string, end: string) => {
   const ONE_DAY_IN_MILLISECONDS =
@@ -61,6 +64,33 @@ const getTimeRangeFromDays = (days: number | null): TimeRange => {
   const range = TIME_RANGES.find((r) => r.days === days);
   if (!range) return null;
   return range.label;
+};
+
+const RefreshDataButton = () => {
+  const queryClient = useQueryClient();
+  const isFetchingAuditData = useIsFetching({ queryKey: ['audit'] });
+
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({
+      queryKey: ['audit'],
+      refetchType: 'active',
+    });
+  };
+
+  return (
+    <Button
+      variant="secondary"
+      onClick={handleRefresh}
+      disabled={isFetchingAuditData > 0}
+    >
+      {isFetchingAuditData ? (
+        <Loader />
+      ) : (
+        <LucideRefreshCw />
+      )}
+      Refresh Data
+    </Button>
+  );
 };
 
 export default function Audit() {
@@ -356,6 +386,10 @@ export default function Audit() {
 
   return (
     <div className="space-y-4">
+      <AppPageHeaderPortal>
+        <RefreshDataButton />
+      </AppPageHeaderPortal>
+
       {createTenantListenerError && (
         <Alert
           className="flex gap-2 items-center justify-between flex-wrap"
@@ -443,7 +477,9 @@ export default function Audit() {
       )}
 
       <div className="flex items-center justify-between pt-4">
-        <h2 className="font-bold">Analytics</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="font-bold">Analytics</h2>
+        </div>
         <ToggleGroup
           variant="outline"
           type="single"
