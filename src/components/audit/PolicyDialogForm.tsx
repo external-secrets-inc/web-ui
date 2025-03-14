@@ -16,6 +16,7 @@ import usePostValidateRule from "@/services/audit/mutations/usePostValidateRule"
 import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants";
 
 const baseSchema = z.object({
   name: z.string().min(1, { message: "Name is required." }),
@@ -52,7 +53,9 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel }: 
     // isLoading: isLoadingSample, TODO: Implement loading components
     isError: isErrorSample,
     error: errorSample,
-  } = useGetValidateRule(false, executeOn);
+  } = useGetValidateRule(false, executeOn, {
+    staleTime: AUDIT_QUERY_STALE_TIME,
+  });
 
   useEffect(() => {
     const sample = sampleData ?? {};

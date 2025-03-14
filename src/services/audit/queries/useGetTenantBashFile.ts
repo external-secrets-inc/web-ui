@@ -24,7 +24,7 @@ const useGetTenantBashFile = <T = Bash>(
   const { isMocked } = useAuditMock(mock);
 
   return useQuery({
-    queryKey: ["useGetTenantBashFile", isMocked, token, listenerId],
+    queryKey: ["audit", "useGetTenantBashFile", isMocked, token, listenerId],
     queryFn: ({signal}) => {
       return getTenantBashFile(isMocked, signal, version, listenerId, token)
     },

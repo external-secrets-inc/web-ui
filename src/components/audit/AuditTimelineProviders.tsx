@@ -4,6 +4,7 @@ import { ChartConfig } from "@/components/ui/chart"
 import useGetAuditProviderTimelineStats from "@/services/audit/queries/useGetAuditProviderTimelineStats"
 import { TimeRange } from "./Audit.interfaces"
 import { formatDate } from "@/utils/dateUtils"
+import { AUDIT_PAGE_QUERY_REFETCH_INTERVAL, AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants"
 
 const BASE_CHART_CONFIG = {
   amount: {
@@ -25,6 +26,8 @@ function AuditTimelineProviders({ listenerID, timeRange, startDate, endDate, tim
     endDate,
     timeUnit
   }, {
+    staleTime: AUDIT_QUERY_STALE_TIME,
+    refetchInterval: AUDIT_PAGE_QUERY_REFETCH_INTERVAL,
     enabled: !!listenerID
   })
 

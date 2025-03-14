@@ -34,7 +34,6 @@ import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 import { IUserData } from "@/types";
 import { useMemo, useState, useEffect } from "react";
 import { useAuditFilter } from "./AuditFilterProvider";
-import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import { Loader } from "@/components/ui/Loader";
 
 interface FilterDialogFormProps {
@@ -44,6 +43,7 @@ interface FilterDialogFormProps {
 }
 import { formatDate } from "@/utils/dateUtils";
 import useGetAuditSecrets from "@/services/audit/queries/useGetAuditSecrets";
+import { AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants";
 
 const BooleanFilter = ({
   formControl,
@@ -251,8 +251,8 @@ const FilterDialogForm = (
     false,
     listenerID,
     {
+      staleTime: AUDIT_QUERY_STALE_TIME,
       enabled: isFiltersDialogOpen,
-      staleTime: 20 * ONE_SECOND_IN_MILLISECONDS,
     }
   );
 
@@ -260,8 +260,8 @@ const FilterDialogForm = (
     false,
     listenerID,
     {
+      staleTime: AUDIT_QUERY_STALE_TIME,
       enabled: isFiltersDialogOpen,
-      staleTime: 20 * ONE_SECOND_IN_MILLISECONDS,
     }
   );
 
@@ -269,8 +269,8 @@ const FilterDialogForm = (
     false,
     authUser?.tenantId || '',
     {
+      staleTime: AUDIT_QUERY_STALE_TIME,
       enabled: isFiltersDialogOpen,
-      staleTime: 20 * ONE_SECOND_IN_MILLISECONDS,
     }
   );
 
@@ -319,26 +319,26 @@ const FilterDialogForm = (
 
   const filterMinDate = formatDate(new Date(new Date().setDate(new Date().getDate() - 90)), { format: 'isoDateOnlyUTC' }); // 90 days ago
   const filterMaxDate = formatDate(new Date(), { format: 'isoDateOnlyUTC' }); // Current date
+  const accessorsValue = form.watch("accessors");
+  const duplicatesValue = form.watch("duplicates");
 
   useEffect(() => {
-    const accessorsValue = form.watch("accessors")
     if (accessorsValue === "true" || accessorsValue === "false")
       setAccessorsVisible(true);
     else {
       setAccessorsVisible(false);
       form.setValue("accessorNames", [])
     }
-  }, [form.watch("accessors")]);
+  }, [accessorsValue, form]);
 
   useEffect(() => {
-    const duplicatesValue = form.watch("duplicates")
     if (duplicatesValue === "true" || duplicatesValue === "false")
       setDuplicatesVisible(true);
     else {
       setDuplicatesVisible(false);
       form.setValue("duplicateIDs", [])
     }
-  }, [form.watch("duplicates")]);
+  }, [duplicatesValue, form]);
 
   return (
     <DialogContent

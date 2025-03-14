@@ -23,10 +23,11 @@ import { Loader } from "@/components/ui/Loader";
 import useGetSecretPolicyLogs from "@/services/audit/queries/useGetSecretPolicyLogs";
 import useGetSecretAccessorLogs from "@/services/audit/queries/useGetSecretAccessorLogs";
 import { Trimmer } from "@/components/ui/Trimmer";
-import useExportAuditSecrets from "@/services/audit/queries/useExportAuditSecret";
+import useGetAuditSecretExport from "@/services/audit/queries/useGetAuditSecretExport";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { Button } from "../ui/button";
 import saveAs from "file-saver";
+import { AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants";
 
 const POLICY_STATUS_COLORS = {
   compliant: "text-success",
@@ -56,7 +57,7 @@ const HistoryAccordion = <T extends object, H extends { timestamp: string }>({
     mock: boolean,
     secretId: string,
     itemId: string,
-    options?: { enabled?: boolean }
+    options?: { enabled?: boolean, staleTime?: number }
   ) => { data: H[] | undefined; isLoading: boolean };
   getItemId: (item: T) => string;
 }) => {
@@ -68,7 +69,10 @@ const HistoryAccordion = <T extends object, H extends { timestamp: string }>({
     false,
     secretId,
     itemId,
-    { enabled: isOpen }
+    {
+      staleTime: AUDIT_QUERY_STALE_TIME,
+      enabled: isOpen,
+    }
   );
 
   // Prevent default accordion behavior to handle async data loading first time
@@ -345,14 +349,16 @@ const AuditSecretDetailsData = ({ className, secretData, setSecretId }: {
   secretData: AuditSecretData;
   setSecretId: (id: string) => void;
 }) => {
+  const [shouldFetch, setShouldFetch] = useState(false);
+
   const {
     data: exportSecretData,
     isLoading: isLoadingExportSecretData,
     isFetching: isFetchingExportSecretData,
-    isError: isErrorExportSecretData,
     error: exportSecretDataError,
-  } = useExportAuditSecrets(false, secretData.id || '', {
-    enabled: !!secretData.id
+  } = useGetAuditSecretExport(false, secretData.id || '', {
+    staleTime: AUDIT_QUERY_STALE_TIME,
+    enabled: shouldFetch,
   });
 
   useEffect(() => {
@@ -362,13 +368,24 @@ const AuditSecretDetailsData = ({ className, secretData, setSecretId }: {
         `Error while fetching to export secret data`
       );
     }
-  }, [exportSecretDataError, isErrorExportSecretData]);
+  }, [exportSecretDataError]);
+
+  const createAndSaveFile = (data: [string, string, string]) => {
+    const [content, fileName, fileType] = data;
+    const file = new File([content], fileName, { type: fileType });
+    saveAs(file);
+  };
+
+  useEffect(() => {
+    if (exportSecretData && shouldFetch) {
+      createAndSaveFile(exportSecretData);
+      setShouldFetch(false);
+    }
+  }, [exportSecretData, shouldFetch]);
 
   const handleExportSecret = () => {
-    if(!exportSecretData) return
-    const file = new File([exportSecretData[0]], exportSecretData[1], { type: exportSecretData[2] });
-    saveAs(file);
-  }
+    setShouldFetch(true);
+  };
 
   return (
     <section aria-label="Details" className={cn("min-h-0 grid grid-rows-[auto_1fr] bg-background relative flex-1", className)}>
@@ -378,16 +395,16 @@ const AuditSecretDetailsData = ({ className, secretData, setSecretId }: {
           {secretData.name || "Unnamed Secret"}
           <Badge variant="outline">{secretData.providerName}</Badge>
           <Button
-              size="icon"
-              variant="outline"
-              className="self-center"
-              aria-label="Download"
-              title="Download"
-              onClick={() => {handleExportSecret()}}
-              disabled={isLoadingExportSecretData || isFetchingExportSecretData || !exportSecretData}
-            >
-              <LucideDownload />
-            </Button>
+            size="icon"
+            variant="outline"
+            className="self-center"
+            aria-label="Download"
+            title="Download"
+            onClick={handleExportSecret}
+            disabled={isLoadingExportSecretData || isFetchingExportSecretData}
+          >
+            {(isLoadingExportSecretData || isFetchingExportSecretData) ? <Loader /> : <LucideDownload />}
+          </Button>
         </div>
       </div>
 

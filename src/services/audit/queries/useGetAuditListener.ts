@@ -39,7 +39,7 @@ const useGetAuditListener = <T = AuditListener>(
   const { isMocked } = useAuditMock(mock);
 
   return useQuery({
-    queryKey: ["useGetAuditListeners", isMocked, listener_id],
+    queryKey: ["audit", "useGetAuditListeners", isMocked, listener_id],
     queryFn: ({ signal }) => {
       return getAuditListener(isMocked, signal, listener_id)
     },

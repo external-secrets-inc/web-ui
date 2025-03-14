@@ -92,7 +92,7 @@ const useGetLineagePath = <T = LineageData>(
   const { isMocked } = useAuditMock(mock);
 
   return useQuery({
-    queryKey: ["useGetLineagePaths", secretID],
+    queryKey: ["audit", "useGetLineagePaths", secretID],
     queryFn: ({ signal }) => {
       return getLineagePath(isMocked, signal, secretID)
     },

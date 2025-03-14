@@ -17,12 +17,12 @@ import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { ApiHttpError, IUserData } from "@/types";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { AxiosError } from "axios";
-import { LucideAlertCircle } from "lucide-react";
+import { LucideAlertCircle, LucideRefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "../ui/button";
-import { LISTENER_STATUS, TIME_RANGES } from "./Audit.constants";
+import { AUDIT_PAGE_QUERY_REFETCH_INTERVAL, AUDIT_QUERY_STALE_TIME, LISTENER_STATUS, TIME_RANGES } from "./Audit.constants";
 import {
   AuditListener,
   CreateAuditListenerPayload,
@@ -41,6 +41,9 @@ import AuditTimelineProviders from "./AuditTimelineProviders";
 import ListenerInstallDialogContent from "./ListenerInstallDialogContent";
 import { AuditSecretTable } from "./AuditSecretTable";
 import { formatDate } from "@/utils/dateUtils";
+import AppPageHeaderPortal from "@/components/AppPageHeaderPortal";
+import { useQueryClient, useIsFetching } from "@tanstack/react-query";
+import { Loader } from "@/components/ui/Loader";
 
 const getDaysBetweenDates = (start: string, end: string) => {
   const ONE_DAY_IN_MILLISECONDS =
@@ -61,6 +64,36 @@ const getTimeRangeFromDays = (days: number | null): TimeRange => {
   const range = TIME_RANGES.find((r) => r.days === days);
   if (!range) return null;
   return range.label;
+};
+
+const RefreshDataButton = () => {
+  const queryClient = useQueryClient();
+
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({
+      // Every Audit query has this as "root" query-key, so by invalidating it, we
+      // effectively invalidate all Audit queries and automatically refetch them
+      queryKey: ['audit'],
+      refetchType: 'active',
+    });
+  };
+  const isFetchingAuditData = useIsFetching({ queryKey: ['audit'] }) > 0;
+
+
+  return (
+    <Button
+      variant="secondary"
+      onClick={handleRefresh}
+      disabled={isFetchingAuditData}
+    >
+      {isFetchingAuditData ? (
+        <Loader />
+      ) : (
+        <LucideRefreshCw />
+      )}
+      Refresh Data
+    </Button>
+  );
 };
 
 export default function Audit() {
@@ -97,7 +130,8 @@ export default function Audit() {
 
   // TODO remove mock https://github.com/external-secrets-inc/web-ui/issues/115
   const { data: tenantListenersData } = useGetTenantListeners(false, {
-    refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
+    staleTime: AUDIT_QUERY_STALE_TIME,
+    refetchInterval: AUDIT_PAGE_QUERY_REFETCH_INTERVAL,
     refetchIntervalInBackground: true,
     retry: false,
   });
@@ -153,7 +187,8 @@ export default function Audit() {
     isSuccess: isSuccessAuditListener,
     error: fetchAuditListenerError,
   } = useGetAuditListener(false, tenantListener.id, {
-    refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
+    staleTime: AUDIT_QUERY_STALE_TIME,
+    refetchInterval: AUDIT_PAGE_QUERY_REFETCH_INTERVAL,
     refetchIntervalInBackground: true,
     enabled: Boolean(tenantListener.id), // Only fetch when tenant listener exists
     retry: false,
@@ -232,6 +267,7 @@ export default function Audit() {
     error: tenantBashFileError,
     isError: isErrorTenantBashFile,
   } = useGetTenantBashFile(false, tenantInstallationToken ?? "", "latest", tenantListener.id, {
+    staleTime: AUDIT_QUERY_STALE_TIME,
     enabled: isListenerInstallDialogOpen && Boolean(tenantInstallationToken && tenantListener.id) // Only fetch when dialog is open with token and listener ID
   });
 
@@ -241,6 +277,7 @@ export default function Audit() {
     error: tenantHelmError,
     isError: isErrorTenantHelm,
   } = useGetTenantHelm(false, "latest", tenantListener.id, {
+    staleTime: AUDIT_QUERY_STALE_TIME,
     enabled: isListenerInstallDialogOpen && Boolean(tenantListener.id) // Only fetch when dialog is open with listener ID
   });
 
@@ -352,6 +389,10 @@ export default function Audit() {
 
   return (
     <div className="space-y-4">
+      <AppPageHeaderPortal>
+        <RefreshDataButton />
+      </AppPageHeaderPortal>
+
       {createTenantListenerError && (
         <Alert
           className="flex gap-2 items-center justify-between flex-wrap"
@@ -439,7 +480,9 @@ export default function Audit() {
       )}
 
       <div className="flex items-center justify-between pt-4">
-        <h2 className="font-bold">Analytics</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="font-bold">Analytics</h2>
+        </div>
         <ToggleGroup
           variant="outline"
           type="single"
