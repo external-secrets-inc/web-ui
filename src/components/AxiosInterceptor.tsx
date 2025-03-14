@@ -1,10 +1,9 @@
 import React, { useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useSignOut from 'react-auth-kit/hooks/useSignOut';
 import axiosInstance, { BACKEND_DOMAINS } from '@/services/axiosConfig';
-import { trackSignedOut } from '@/analytics';
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { useQueryClient } from '@tanstack/react-query';
+import { useSignOut } from '@/hooks/useSignOut';
 
 interface AxiosInterceptorProps {
   children: ReactNode;
@@ -49,10 +48,7 @@ const AxiosInterceptor: React.FC<AxiosInterceptorProps> = ({ children }) => {
       (response: AxiosResponse) => response,
       (error: AxiosError) => {
         if (error?.response?.status === 401) {
-          signOut();
-          queryClient.clear();
-          trackSignedOut(false);
-          navigate('/login');
+          signOut({ reason: 'session_expired' });
         }
         return Promise.reject(error);
       }
@@ -93,7 +89,7 @@ const AxiosInterceptor: React.FC<AxiosInterceptorProps> = ({ children }) => {
       axiosInstance.interceptors.response.eject(authGuard);
       axiosInstance.interceptors.request.eject(backendRouter);
     };
-  }, [navigate, signOut, queryClient]);
+  }, [navigate, queryClient, signOut]);
 
   return <>{children}</>;
 };

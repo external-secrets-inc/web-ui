@@ -1,4 +1,3 @@
-import { trackSignedOut } from "@/analytics";
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -6,17 +5,16 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { IS_DEV } from '@/constants';
 import { FeatureFlagName, useFeatureFlagContext } from '@/context/FeatureFlagContext';
 import useOrgLink from '@/hooks/useOrgLink';
+import { useSignOut } from '@/hooks/useSignOut';
 import { IUserData } from '@/types';
 import { LucideChevronDown, LucideLock, LucideToggleLeft, LucideToggleRight } from 'lucide-react';
 import React from 'react';
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
-import useSignOut from 'react-auth-kit/hooks/useSignOut';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const UserMenu: React.FC = () => {
   const authUser = useAuthUser<IUserData>();
   const signOut = useSignOut();
-  const navigate = useNavigate();
   const tenant = authUser?.tenant;
   const name = authUser?.name;
   const initials = getInitials(name);
@@ -24,12 +22,6 @@ const UserMenu: React.FC = () => {
   const featureFlags = useFeatureFlagContext();
 
   const showFeatureFlags = IS_DEV;
-
-  const handleSignOut = () => {
-    signOut();
-    trackSignedOut(true);
-    navigate('/login');
-  };
 
   const toggleFeatureFlag = (flag: FeatureFlagName) => {
     if (featureFlags.isLockedByEnv(flag)) return;
@@ -138,7 +130,7 @@ const UserMenu: React.FC = () => {
           </>
         )}
 
-        <DropdownMenuItem onClick={handleSignOut}>
+        <DropdownMenuItem onClick={() => signOut({ reason: 'manual' })}>
           Sign Out
         </DropdownMenuItem>
       </DropdownMenuContent>
