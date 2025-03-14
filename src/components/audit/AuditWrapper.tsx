@@ -16,6 +16,8 @@ const RefreshDataButton = ({ children }: { children: React.ReactNode }) => {
 
   const handleRefresh = () => {
     queryClient.invalidateQueries({
+      // Every Audit query has this as "root" query-key, so by invalidating it, we
+      // effectively invalidate all Audit queries and automatically refetch them
       queryKey: ['audit'],
       refetchType: 'active',
     });

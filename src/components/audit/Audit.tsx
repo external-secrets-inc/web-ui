@@ -81,6 +81,7 @@ export default function Audit({ tenantListener, auditListener }: AuditProps) {
     if (!isDateFromToday(endDate)) return null;
 
     const diffDays = getDaysBetweenDates(startDate, endDate);
+    // Only return a value if it matches one of our predefined ranges
     return TIME_RANGES.find((r) => r.days === diffDays)?.days ?? null;
   });
 
@@ -141,6 +142,7 @@ export default function Audit({ tenantListener, auditListener }: AuditProps) {
   }, [tenantHelmError, isErrorTenantHelm]);
 
   // Update commands contents when token is available
+  // TODO update commands to real endpoints https://github.com/external-secrets-inc/web-ui/issues/118
   useEffect(() => {
     if (!tenantInstallationToken || !tenantListener.id) return;
 
