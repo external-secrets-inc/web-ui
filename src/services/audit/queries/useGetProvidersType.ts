@@ -30,6 +30,19 @@ const getProvidersTypes = async (
         "vaultVersion": { "type": "string", "required": false, "default": "v2" },
         "socketHost": { "type": "string", "required": false, "default": "0.0.0.0" },
         "socketPort": { "type": "number", "required": false, "default": 8000}
+      },
+      "AWS": {
+        "region": {"type": "string", "required": true},
+        "queue-url": {"type": "string", "required": true}
+      },
+      "KEYVAULT": {
+        "vaultURL": {"type": "string", "required": true},
+        "eventHubNamespace": {"type": "string", "required": true},
+        "eventHubName": {"type": "string", "required": true},
+        "storageEndpoint": {"type": "string", "required": true},
+        "storageContainerName": {"type": "string", "required": true},
+        "eventHubConnectionString": {"type": "string", "required": false},
+        "storageAccountConnectionString": {"type": "string", "required": false}
       }
     } as AddProviderFormSchema;
   }
