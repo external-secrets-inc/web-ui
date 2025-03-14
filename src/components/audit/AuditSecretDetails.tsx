@@ -8,10 +8,11 @@ import { AuditSecretData } from "./Audit.interfaces";
 import AuditSecretDetailsData from "./AuditSecretDetailsData";
 import AuditSecretDetailsLineage from "./AuditSecretDetailsLineage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LucideNetwork, LucideSquareAsterisk } from "lucide-react";
+import { LucideNetwork, LucideSquareAsterisk, LucideAlertCircle } from "lucide-react";
 import { useFeatureFlag } from "@/context/FeatureFlagContext";
 import { cn } from "@/lib/utils";
 import { AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function AuditSecretDetails({
   secretId,
@@ -39,11 +40,6 @@ export default function AuditSecretDetails({
     enabled: !!secretId
   });
 
-  const { data: lineageData } = useGetLineagePath(false, secretId || '', {
-    staleTime: AUDIT_QUERY_STALE_TIME,
-    enabled: !!secretId && featureFlagShowLineage
-  });
-
   const listenerSecretData = useMemo(() => {
     if (!secretData)
       return {
@@ -64,6 +60,16 @@ export default function AuditSecretDetails({
   // Only show lineage view when feature flag is enabled AND secret has duplicates
   // This prevents loading ReactFlow and related components when they're not needed
   const shouldShowLineage = featureFlagShowLineage && listenerSecretData.duplicates.length > 0;
+
+  const {
+    data: lineageData,
+    isLoading: isLoadingLineage,
+    error: lineageError
+  } = useGetLineagePath(false, secretId || '', {
+    staleTime: AUDIT_QUERY_STALE_TIME,
+    enabled: !!secretId && shouldShowLineage,
+    retry: 3
+  });
 
   // Reset to details tab when viewing a different secret
   // This ensures users always start with details view when switching secrets,
@@ -144,17 +150,35 @@ export default function AuditSecretDetails({
                     className="flex-1 !w-screen lg:!max-w-[calc(100vw-560px)] lg:!w-[calc(50vw+(1280px/2-560px))] data-[state=inactive]:sr-only lg:data-[state=inactive]:not-sr-only order-1 lg:order-1 lg:flex-[2] mt-0"
                     forceMount
                   >
-                    <AuditSecretDetailsLineage
-                      // `key` to force a fresh instance of ReactFlow when secret changes
-                      // This ensures a clean slate for the graph, preventing any stale state
-                      // from affecting the new secret's layout and fit view calculations
-                      key={`lineage-${secretId}`}
-                      className="h-full shadow-[inset_-24px_0px_32px_-32px_rgba(0,0,0,0.2)] dark:shadow-none"
-                      lineageData={lineageData}
-                      currentSecretId={secretId}
-                      setSecretId={setSecretId}
-                      isActive={activeTab === "lineage"}
-                    />
+                    {lineageError ? (
+                      <Alert
+                        className="m-6 w-[stretch]"
+                        variant="destructive"
+                      >
+                        <AlertTitle className="flex gap-3 items-center">
+                          <LucideAlertCircle className="text-destructive" /> Failed to load lineage data
+                        </AlertTitle>
+                        <AlertDescription>
+                          Unable to load the secret lineage visualization
+                        </AlertDescription>
+                      </Alert>
+                    ) : isLoadingLineage ? (
+                      <div className="h-full flex items-center justify-center">
+                        <Loader size="lg" />
+                      </div>
+                    ) : (
+                      <AuditSecretDetailsLineage
+                        // `key` to force a fresh instance of ReactFlow when secret changes
+                        // This ensures a clean slate for the graph, preventing any stale state
+                        // from affecting the new secret's layout and fit view calculations
+                        key={`lineage-${secretId}`}
+                        className="h-full shadow-[inset_-24px_0px_32px_-32px_rgba(0,0,0,0.2)] dark:shadow-none"
+                        lineageData={lineageData}
+                        currentSecretId={secretId}
+                        setSecretId={setSecretId}
+                        isActive={activeTab === "lineage"}
+                      />
+                    )}
                   </TabsContent>
                 )}
                 <TabsContent
