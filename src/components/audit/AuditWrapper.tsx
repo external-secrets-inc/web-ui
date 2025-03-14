@@ -10,15 +10,18 @@ import { Button } from "@/components/ui/button";
 import { useQueryClient, useIsFetching } from "@tanstack/react-query";
 import AppPageHeaderPortal from "@/components/AppPageHeaderPortal";
 
-const RefreshDataButton = ({ children }: { children: React.ReactNode }) => {
+interface RefreshButtonProps {
+  children: React.ReactNode;
+  queryKey: string[];
+}
+
+const RefreshButton = ({ children, queryKey }: RefreshButtonProps) => {
   const queryClient = useQueryClient();
-  const isFetchingAuditData = useIsFetching({ queryKey: ['audit'] }) > 0;
+  const isFetching = useIsFetching({ queryKey }) > 0;
 
   const handleRefresh = () => {
     queryClient.invalidateQueries({
-      // Every Audit query has this as "root" query-key, so by invalidating it, we
-      // effectively invalidate all Audit queries and automatically refetch them
-      queryKey: ['audit'],
+      queryKey,
       refetchType: 'active',
     });
   };
@@ -27,12 +30,13 @@ const RefreshDataButton = ({ children }: { children: React.ReactNode }) => {
     <Button
       variant="secondary"
       onClick={handleRefresh}
-      disabled={isFetchingAuditData}
+      disabled={isFetching}
+      className="flex items-center gap-2"
     >
-      {isFetchingAuditData ? (
+      {isFetching ? (
         <Loader />
       ) : (
-        <LucideRefreshCw />
+        <LucideRefreshCw className="size-4" />
       )}
       {children}
     </Button>
@@ -40,8 +44,11 @@ const RefreshDataButton = ({ children }: { children: React.ReactNode }) => {
 };
 
 const AuditWrapper = () => {
-  const { hasFeature, isLoading: isLoadingSubscriptions } = useSubscription();
-  const hasAccess = hasFeature('Listener Component');
+  const {
+    hasFeature,
+    isLoading: isLoadingSubscriptions,
+    error: subscriptionError
+  } = useSubscription();
 
   const {
     isReady,
@@ -55,7 +62,30 @@ const AuditWrapper = () => {
     return <Loader size="lg" className="flex-1 self-center" />;
   }
 
-  // Show premium feature alert if user doesn't have access
+  // Handle subscription errors first
+  if (subscriptionError) {
+    return (
+      <Alert
+        className="flex gap-2 items-center justify-between flex-wrap"
+        variant="destructive"
+      >
+        <div>
+          <AlertTitle className="flex gap-3 items-center">
+            <LucideAlertCircle className="text-destructive" /> Failed to verify subscription status
+          </AlertTitle>
+          <AlertDescription>
+            Unable to verify your access to this feature. Please try again or contact support if the issue persists.
+          </AlertDescription>
+        </div>
+        <RefreshButton queryKey={['useGetSubscriptions']}>
+          Retry
+        </RefreshButton>
+      </Alert>
+    );
+  }
+
+  // Then check for feature access
+  const hasAccess = hasFeature('Listener Component');
   if (!hasAccess) {
     return (
       <Alert className='border-emerald-500'>
@@ -70,7 +100,7 @@ const AuditWrapper = () => {
     );
   }
 
-  // Show setup error if something went wrong
+  // Finally handle setup errors
   if (setupError) {
     return (
       <Alert
@@ -81,11 +111,13 @@ const AuditWrapper = () => {
           <AlertTitle className="flex gap-3 items-center">
             <LucideAlertCircle className="text-destructive" /> Failed to setup audit listener
           </AlertTitle>
-          <AlertDescription className="flex items-center justify-between">
+          <AlertDescription>
             Please retry or contact support if the issue persists
           </AlertDescription>
         </div>
-        <RefreshDataButton>Retry Setup</RefreshDataButton>
+        <RefreshButton queryKey={['audit']}>
+          Retry Setup
+        </RefreshButton>
       </Alert>
     );
   }
@@ -99,7 +131,9 @@ const AuditWrapper = () => {
     <AuditMockProvider>
       <div className="space-y-4">
         <AppPageHeaderPortal>
-          <RefreshDataButton>Refresh Data</RefreshDataButton>
+          <RefreshButton queryKey={['audit']}>
+            Refresh Data
+          </RefreshButton>
         </AppPageHeaderPortal>
         <AuditFilterProvider>
           <Audit

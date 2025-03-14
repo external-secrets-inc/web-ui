@@ -33,7 +33,6 @@ const useAuditSetup = () => {
     refetch: refetchTenantListeners
   } = useGetTenantListeners(false, {
     staleTime: AUDIT_QUERY_STALE_TIME,
-    retry: true, // Retry on failure since tenant listener is critical
     refetchInterval: AUDIT_PAGE_QUERY_REFETCH_INTERVAL,
   });
 
@@ -59,14 +58,15 @@ const useAuditSetup = () => {
   } = useGetAuditListener(false, tenantListenerId || '', {
     staleTime: AUDIT_QUERY_STALE_TIME,
     enabled: !!tenantListenerId, // Prevent unnecessary calls when tenant doesn't exist
-    retry: (_failureCount, error: AxiosError) => {
+    retry: (failureCount, error: AxiosError) => {
       // Only retry if it's not a 404 error and we're not currently creating a listener
       // This prevents multiple creation attempts while the first one is still in progress
-      return error?.status !== 404 && !isCreatingAudit;
+      // Retry other errors up to 3 times
+      if (error?.response?.status === 404) return false;
+      return failureCount < 3 && !isCreatingAudit;
     },
     refetchInterval: isCreatingAudit ? undefined : AUDIT_PAGE_QUERY_REFETCH_INTERVAL, // Pause refetching while creating
     retryOnMount: false, // Prevent retrying on component mount
-    throwOnError: false // Don't throw errors to prevent React Router from catching them
   });
 
   const handleTenantCreation = useCallback(() => {
@@ -100,7 +100,7 @@ const useAuditSetup = () => {
 
     // Only attempt to create audit listener if we got a 404 and we're not already creating one
     // This prevents multiple creation attempts while the first one is still in progress
-    const needsAuditListener = tenantListenerId && auditError?.status === 404;
+    const needsAuditListener = tenantListenerId && auditError?.response?.status === 404;
 
     if (needsAuditListener) {
       handleAuditCreation();
@@ -111,7 +111,7 @@ const useAuditSetup = () => {
     isCreatingAudit,
     tenantListeners,
     tenantListenerId,
-    auditError?.status,
+    auditError?.response?.status,
     handleTenantCreation,
     handleAuditCreation
   ]);
@@ -129,7 +129,8 @@ const useAuditSetup = () => {
       isLoadingAuditListener ||
       isCreatingTenant ||
       isCreatingAudit,
-    error: tenantError || (auditError?.status !== 404 ? auditError : null) || null,
+    // Only expose non-404 errors since 404s are expected and handled
+    error: tenantError || (auditError?.response?.status !== 404 ? auditError : null) || null,
     tenantListener: tenantListeners?.[0],
     auditListener
   };
