@@ -296,14 +296,9 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
         <h2 className="font-bold">Policies</h2>
         <Dialog open={isAddPolicyDialogOpen} onOpenChange={handleAddPolicyDialogOpenChange}>
           <DialogTrigger asChild>
-            <Button
-              size="icon"
-              variant="outline"
-              className="self-center min-[260px]:self-end"
-              aria-label="Add Policy"
-              title="Add Policy"
-            >
+            <Button variant="outline">
               <LucidePlus />
+              Add Policy
             </Button>
           </DialogTrigger>
           <PolicyDialogForm

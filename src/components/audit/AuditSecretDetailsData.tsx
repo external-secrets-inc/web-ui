@@ -389,23 +389,22 @@ const AuditSecretDetailsData = ({ className, secretData, setSecretId }: {
 
   return (
     <section aria-label="Details" className={cn("min-h-0 grid grid-rows-[auto_1fr] bg-background relative flex-1", className)}>
-      <div className="px-6 py-4 border-b">
-        <div className="flex items-center flex-wrap gap-2 font-bold">
+      <div className="px-6 py-4 border-b flex items-center flex-wrap gap-2 font-bold min-w-0">
+        <div className="flex items-center gap-2 flex-1 min-w-0 basis-48 max-w-fit">
           <LucideSquareAsterisk className="size-6 text-primary" />
-          {secretData.name || "Unnamed Secret"}
-          <Badge variant="outline">{secretData.providerName}</Badge>
-          <Button
-            size="icon"
-            variant="outline"
-            className="self-center"
-            aria-label="Download"
-            title="Download"
-            onClick={handleExportSecret}
-            disabled={isLoadingExportSecretData || isFetchingExportSecretData}
-          >
-            {(isLoadingExportSecretData || isFetchingExportSecretData) ? <Loader /> : <LucideDownload />}
-          </Button>
+          <Trimmer lineClamp={2}>{secretData.name || "Unnamed Secret"}jdjdjldajdjiasjffda  fsjfdfsdjlfjs fsjflsdjfs kljdfjksl d</Trimmer>
         </div>
+        <Badge variant="outline" className="mr-auto">{secretData.providerName}</Badge>
+        <Button
+          className="lg:mr-6"
+          size="sm"
+          variant="outline"
+          onClick={handleExportSecret}
+          disabled={isLoadingExportSecretData || isFetchingExportSecretData}
+        >
+          {(isLoadingExportSecretData || isFetchingExportSecretData) ? <Loader /> : <LucideDownload />}
+          Export
+        </Button>
       </div>
 
       <div className="pb-20 overflow-auto divide-y">

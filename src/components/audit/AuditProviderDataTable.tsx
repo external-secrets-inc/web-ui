@@ -214,14 +214,9 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
         <h2 className="font-bold">Providers</h2>
         <Dialog open={isAddProviderDialogOpen} onOpenChange={handleAddProviderDialogOpenChange}>
           <DialogTrigger asChild>
-            <Button
-              size="icon"
-              variant="outline"
-              className="self-center min-[260px]:self-end"
-              aria-label="Add Provider"
-              title="Add Provider"
-            >
+            <Button variant="outline">
               <LucidePlus />
+              Add Provider
             </Button>
           </DialogTrigger>
           <ProviderDialogForm
