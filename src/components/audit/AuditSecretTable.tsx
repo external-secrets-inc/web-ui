@@ -222,8 +222,8 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between pt-4">
-        <h2 className="font-bold w-auto mb-2">All Secrets</h2>
+      <div className="flex flex-wrap items-center justify-between pt-4 gap-2">
+        <h2 className="font-bold w-auto">Secrets</h2>
 
         <div className="flex gap-2">
           <div className="relative flex gap-2 items-center">
