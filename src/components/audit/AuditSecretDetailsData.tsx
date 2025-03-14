@@ -392,7 +392,7 @@ const AuditSecretDetailsData = ({ className, secretData, setSecretId }: {
       <div className="px-6 py-4 border-b flex items-center flex-wrap gap-2 font-bold min-w-0">
         <div className="flex items-center gap-2 flex-1 min-w-0 basis-48 max-w-fit">
           <LucideSquareAsterisk className="size-6 text-primary" />
-          <Trimmer lineClamp={2}>{secretData.name || "Unnamed Secret"}jdjdjldajdjiasjffda  fsjfdfsdjlfjs fsjflsdjfs kljdfjksl d</Trimmer>
+          <Trimmer lineClamp={2}>{secretData.name || "Unnamed Secret"}</Trimmer>
         </div>
         <Badge variant="outline" className="mr-auto">{secretData.providerName}</Badge>
         <Button
