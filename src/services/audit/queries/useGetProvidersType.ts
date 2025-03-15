@@ -31,7 +31,11 @@ const getProvidersTypes = async (
         "socketHost": { "type": "string", "required": false, "default": "0.0.0.0" },
         "socketPort": { "type": "number", "required": false, "default": 8000}
       },
-      "AWS": {
+      "AWS_SECRETS_MANAGER": {
+        "region": {"type": "string", "required": true},
+        "queue-url": {"type": "string", "required": true}
+      },
+      "AWS_PARAMETER_STORE": {
         "region": {"type": "string", "required": true},
         "queue-url": {"type": "string", "required": true}
       },
