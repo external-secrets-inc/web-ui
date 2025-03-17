@@ -28,8 +28,18 @@ import { Loader } from "@/components/ui/Loader";
 import { SubscriptionProvider } from '@/context/SubscriptionContext';
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext';
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { LoadingProvider } from '@/context/LoadingContext';
 
-const queryClient = new QueryClient()
+// Configure QueryClient with better retry and error behavior
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2, // Reduce default retry count from 3 to 2 for faster error feedback
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff with max 30s
+      refetchOnWindowFocus: false, // Disable automatic refetching when window regains focus
+    },
+  },
+})
 
 const router = createBrowserRouter([
   {
@@ -184,10 +194,12 @@ if (rootElement) {
       <AuthProvider store={authStore}>
         <ThemeProvider storageKey="ui-theme">
           <QueryClientProvider client={queryClient}>
-            <TooltipProvider delayDuration={300} skipDelayDuration={300}>
-              <Main />
-              <Toaster />
-            </TooltipProvider>
+            <LoadingProvider>
+              <TooltipProvider delayDuration={300} skipDelayDuration={300}>
+                <Main />
+                <Toaster />
+              </TooltipProvider>
+            </LoadingProvider>
           </QueryClientProvider>
         </ThemeProvider>
       </AuthProvider>

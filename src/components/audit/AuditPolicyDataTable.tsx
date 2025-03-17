@@ -12,9 +12,9 @@ import { AxiosError } from "axios";
 import { toast } from "sonner";
 import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import { DataProvider, DataTable } from "../ui/DataProvider";
-import useGetPolicies from "@/services/audit/queries/useGetPolicies";
+import useGetPoliciesWithLoading from "@/services/audit/queries/useGetPoliciesWithLoading";
 import useGetAuditProviders from "@/services/audit/queries/useGetAuditProviders";
-import useCreatePolicy from "@/services/audit/mutations/useCreatePolicy";
+import useCreatePolicyWithLoading from "@/services/audit/mutations/useCreatePolicyWithLoading";
 import useDeletePolicy from "@/services/audit/mutations/useDeletePolicy";
 import PolicyDialogForm from "./PolicyDialogForm";
 import { AssignProvidersDialog } from "./AssignProvidersDialog";
@@ -151,10 +151,7 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
     isError: isErrorPolicies,
     isRefetchError: isRefetchErrorPolicies,
     error: policiesError
-  } = useGetPolicies(false, tenantID, {
-    refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
-    refetchIntervalInBackground: true,
-  });
+  } = useGetPoliciesWithLoading(false, tenantID, 'page');
 
   const {
     data: providersData,
@@ -175,13 +172,13 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
     }));
   }, [policiesData]);
 
-  const { mutate: createPolicy } = useCreatePolicy(false, {
-    onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to create Policy"),
-    onSuccess: () => {
+  const { mutate: createPolicy } = useCreatePolicyWithLoading(
+    false,
+    () => {
       policiesRefetch();
-      toast.success("Policy created successfully")
     },
-  });
+    'dialog'
+  );
 
   const { mutate: editPolicy } = useEditPolicy(false, {
     onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to edit Policy"),

@@ -29,7 +29,7 @@ import {
 import { MultiSelect } from "../ui/MultiSelect";
 import { AuditSecretData, filterSchema, FilterSchema } from "./Audit.interfaces";
 import useGetAuditProviders from "@/services/audit/queries/useGetAuditProviders";
-import useGetPolicies from "@/services/audit/queries/useGetPolicies";
+import useGetPoliciesWithLoading from "@/services/audit/queries/useGetPoliciesWithLoading";
 import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 import { IUserData } from "@/types";
 import { useMemo, useState, useEffect } from "react";
@@ -265,13 +265,10 @@ const FilterDialogForm = (
     }
   );
 
-  const { data: policies, isLoading: isLoadingPolicies } = useGetPolicies(
+  const { data: policies, isLoading: isLoadingPolicies } = useGetPoliciesWithLoading(
     false,
     authUser?.tenantId || '',
-    {
-      enabled: isFiltersDialogOpen,
-      staleTime: 20 * ONE_SECOND_IN_MILLISECONDS,
-    }
+    'dialog'
   );
 
   const isLoadingFilters = isLoadingSecrets || isLoadingProviders || isLoadingPolicies;
