@@ -5,7 +5,6 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { DataProvider, DataTable } from "@/components/ui/DataProvider";
-import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import useGetDashboarSecretTable from "@/services/audit/queries/useGetDashboarSecretTable";
 import { AuditSecretTableData } from "./Audit.interfaces";
@@ -17,6 +16,7 @@ import { Input } from "../ui/input";
 import saveAs from "file-saver";
 import { Separator } from "@/components/ui/separator";
 import { formatDate } from "@/utils/dateUtils";
+import { AUDIT_PAGE_QUERY_REFETCH_INTERVAL, AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants";
 
 interface AuditSecretTableProps {
   listenerID: string;
@@ -57,7 +57,8 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
     isRefetchError: isRefetchErrorSecretTableData,
     error: secretTableDataError,
   } = useGetDashboarSecretTable(false, listenerID || '', searchParams, {
-    refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
+    staleTime: AUDIT_QUERY_STALE_TIME,
+    refetchInterval: AUDIT_PAGE_QUERY_REFETCH_INTERVAL,
     refetchIntervalInBackground: true,
     enabled: !!listenerID
   });

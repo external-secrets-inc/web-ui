@@ -1,3 +1,4 @@
+import { AUDIT_PAGE_QUERY_REFETCH_INTERVAL, AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants"
 import { AuditBarChartCard } from "@/components/audit/AuditBarChartCard"
 import { ChartConfig } from "@/components/ui/chart"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -18,7 +19,11 @@ interface Props {
 
 function AuditChartProblems({ listenerID } : Props) {
 
-  const { data, error, isLoading } = useGetAuditProblemStats(false, listenerID || '', {enabled: !!listenerID})
+  const { data, error, isLoading } = useGetAuditProblemStats(false, listenerID || '', {
+    staleTime: AUDIT_QUERY_STALE_TIME,
+    refetchInterval: AUDIT_PAGE_QUERY_REFETCH_INTERVAL,
+    enabled: !!listenerID,
+  })
   const total = data?.reduce((acc, { amount }) => acc + amount, 0) ?? 0
 
   return (

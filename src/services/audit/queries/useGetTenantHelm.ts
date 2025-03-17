@@ -23,7 +23,7 @@ const useGetTenantHelm = <T = Manifest>(
   const finalMock = isMocked || mock;
 
   return useQuery<T, AxiosError<ApiHttpError>>({
-    queryKey: ['useGetTenantHelm', listenerId, version, ],
+    queryKey: ["audit", 'useGetTenantHelm', listenerId, version, ],
     queryFn: ({ signal }) => getTenantHelm(finalMock, signal, version, listenerId),
     ...options,
   });

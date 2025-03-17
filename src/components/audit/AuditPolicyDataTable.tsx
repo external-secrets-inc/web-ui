@@ -10,11 +10,10 @@ import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
-import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import { DataProvider, DataTable } from "../ui/DataProvider";
-import useGetPoliciesWithLoading from "@/services/audit/queries/useGetPoliciesWithLoading";
+import useGetPolicies from "@/services/audit/queries/useGetPolicies";
 import useGetAuditProviders from "@/services/audit/queries/useGetAuditProviders";
-import useCreatePolicyWithLoading from "@/services/audit/mutations/useCreatePolicyWithLoading";
+import useCreatePolicy from "@/services/audit/mutations/useCreatePolicy";
 import useDeletePolicy from "@/services/audit/mutations/useDeletePolicy";
 import PolicyDialogForm from "./PolicyDialogForm";
 import { AssignProvidersDialog } from "./AssignProvidersDialog";
@@ -22,6 +21,7 @@ import useAssignProviderPolicy from "@/services/audit/mutations/useAssignProvide
 import useUnassignProviderPolicy from "@/services/audit/mutations/useUnassignProviderPolicy";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import useEditPolicy, { EditPolicyVariables } from "@/services/audit/mutations/useEditPolicy";
+import { AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants";
 
 interface PolicyTableMeta {
   renderRowActions?: (row: PolicyTableData) => React.ReactNode;
@@ -151,14 +151,13 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
     isError: isErrorPolicies,
     isRefetchError: isRefetchErrorPolicies,
     error: policiesError
-  } = useGetPoliciesWithLoading(false, tenantID, 'page');
+  } = useGetPolicies(false, tenantID, { staleTime: AUDIT_QUERY_STALE_TIME }, 'page');
 
   const {
     data: providersData,
     isLoading: isLoadingProviders,
   } = useGetAuditProviders(false, listenerID || '', {
-    refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
-    refetchIntervalInBackground: true,
+    staleTime: AUDIT_QUERY_STALE_TIME,
     enabled: !!listenerID
   });
 
@@ -172,10 +171,12 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
     }));
   }, [policiesData]);
 
-  const { mutate: createPolicy } = useCreatePolicyWithLoading(
+  const { mutate: createPolicy } = useCreatePolicy(
     false,
-    () => {
-      policiesRefetch();
+    {
+      onSuccess: () => {
+        policiesRefetch();
+      }
     },
     'dialog'
   );

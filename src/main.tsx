@@ -29,6 +29,7 @@ import { SubscriptionProvider } from '@/context/SubscriptionContext';
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext';
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LoadingProvider } from '@/context/LoadingContext';
+import { LayoutProvider } from '@/context/LayoutContext';
 
 // Configure QueryClient with better retry and error behavior
 const queryClient = new QueryClient({
@@ -196,8 +197,10 @@ if (rootElement) {
           <QueryClientProvider client={queryClient}>
             <LoadingProvider>
               <TooltipProvider delayDuration={300} skipDelayDuration={300}>
-                <Main />
-                <Toaster />
+                <LayoutProvider>
+                  <Main />
+                  <Toaster />
+                </LayoutProvider>
               </TooltipProvider>
             </LoadingProvider>
           </QueryClientProvider>

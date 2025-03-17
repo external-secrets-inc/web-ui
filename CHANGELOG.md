@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.0](https://github.com/external-secrets-inc/web-ui/compare/v0.11.1...v0.12.0) (2025-03-03)
+
+
+### Features
+
+* adds gke support ([#292](https://github.com/external-secrets-inc/web-ui/issues/292)) ([eeee1b1](https://github.com/external-secrets-inc/web-ui/commit/eeee1b15026a748d0d35c1155268e7756ad9eb03))
+
 ## [0.11.1](https://github.com/external-secrets-inc/web-ui/compare/v0.11.0...v0.11.1) (2025-02-25)
 
 
