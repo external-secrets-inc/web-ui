@@ -5,6 +5,8 @@ import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
 import { useAuditMock } from '@/services/audit/context/AuditMockContext';
 import { LineageData } from "@/components/audit/Audit.interfaces";
+import { useLoading } from '@/context/LoadingContext';
+import { useEffect } from 'react';
 
 const getLineagePath = async (
   mock: boolean,
@@ -84,20 +86,53 @@ const getLineagePath = async (
   return response.data;
 }
 
+/**
+ * Hook to fetch lineage path data with loading state management
+ *
+ * @param mock Whether to use mock data
+ * @param secretID The secret ID to get lineage for
+ * @param options Optional query options
+ * @param loadingType Where to show loading state: 'page', 'dialog', or 'none'
+ * @returns Query result with loading state automatically handled
+ */
 const useGetLineagePath = <T = LineageData>(
   mock: boolean,
   secretID: string,
-  options?: Omit<UseQueryOptions<LineageData, AxiosError<ApiHttpError>, T>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<LineageData, AxiosError<ApiHttpError>, T>, 'queryKey' | 'queryFn'>,
+  loadingType: 'page' | 'dialog' | 'none' = 'none' // Default to 'none' to maintain backward compatibility
 ) => {
   const { isMocked } = useAuditMock(mock);
+  const { setPageLoading, setDialogLoading } = useLoading();
 
-  return useQuery({
+  // Create result
+  const result = useQuery({
     queryKey: ["audit", "useGetLineagePaths", secretID],
     queryFn: ({ signal }) => {
       return getLineagePath(isMocked, signal, secretID)
     },
     ...options,
   });
+
+  // Handle loading state
+  useEffect(() => {
+    const isLoading = result.isLoading || result.isFetching;
+
+    if (loadingType === 'page') {
+      setPageLoading(isLoading);
+    } else if (loadingType === 'dialog') {
+      setDialogLoading(isLoading);
+    }
+
+    return () => {
+      if (loadingType === 'page') {
+        setPageLoading(false);
+      } else if (loadingType === 'dialog') {
+        setDialogLoading(false);
+      }
+    };
+  }, [result.isLoading, result.isFetching, loadingType, setPageLoading, setDialogLoading]);
+
+  return result;
 };
 
 export default useGetLineagePath;

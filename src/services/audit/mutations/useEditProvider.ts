@@ -6,6 +6,8 @@ import { ApiHttpError } from "@/types";
 import { EditProviderPayload } from "@/components/audit/Audit.interfaces";
 import { mockNetworkResponseDelay } from "../mocks/mockData";
 import { useAuditMock } from "../context/AuditMockContext";
+import { useLoading } from '@/context/LoadingContext';
+import { useEffect } from 'react';
 
 export interface EditProviderVariables {
   providerID: string;
@@ -40,19 +42,51 @@ const editProvider = async (mock: boolean, { providerID, payload }: EditProvider
   return response.data;
 }
 
+/**
+ * Hook to edit a provider with loading state management
+ *
+ * @param mock Whether to use mock data
+ * @param options Optional mutation options
+ * @param loadingType Where to show loading state: 'page', 'dialog', or 'none'
+ * @returns Mutation result with loading state automatically handled
+ */
 const useEditProvider = (
   mock: boolean,
-  options?: Omit<UseMutationOptions<string, AxiosError<ApiHttpError>, EditProviderVariables>, 'mutationKey' | 'mutationFn'>
+  options?: Omit<UseMutationOptions<string, AxiosError<ApiHttpError>, EditProviderVariables>, 'mutationKey' | 'mutationFn'>,
+  loadingType: 'page' | 'dialog' | 'none' = 'none' // Default to 'none' to maintain backward compatibility
 ) => {
   const { isMocked } = useAuditMock(mock);
+  const { setPageLoading, setDialogLoading } = useLoading();
 
-  return useMutation({
+  // Create result
+  const result = useMutation({
     mutationKey: ["useEditProvider", isMocked],
     mutationFn: (variables: EditProviderVariables) => {
       return editProvider(isMocked, variables);
     },
     ...options,
   });
+
+  // Handle loading state
+  useEffect(() => {
+    const isLoading = result.isPending;
+
+    if (loadingType === 'page') {
+      setPageLoading(isLoading);
+    } else if (loadingType === 'dialog') {
+      setDialogLoading(isLoading);
+    }
+
+    return () => {
+      if (loadingType === 'page') {
+        setPageLoading(false);
+      } else if (loadingType === 'dialog') {
+        setDialogLoading(false);
+      }
+    };
+  }, [result.isPending, loadingType, setPageLoading, setDialogLoading]);
+
+  return result;
 };
 
 export default useEditProvider;

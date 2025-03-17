@@ -3,6 +3,8 @@ import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError, Subscription } from "@/types";
 import { AxiosError } from "axios";
+import { useLoading } from '@/context/LoadingContext';
+import { useEffect } from 'react';
 
 interface ApiSubscriptionFeature {
   name: string;
@@ -33,10 +35,21 @@ const getSubscriptions = async (signal: AbortSignal) => {
   }));
 };
 
+/**
+ * Hook to fetch subscriptions with loading state management
+ *
+ * @param options Optional query options
+ * @param loadingType Where to show loading state: 'page', 'dialog', or 'none'
+ * @returns Query result with loading state automatically handled
+ */
 const useGetSubscriptions = (
-  options?: Omit<UseQueryOptions<Subscription[], AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<Subscription[], AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>,
+  loadingType: 'page' | 'dialog' | 'none' = 'none' // Default to 'none' to maintain backward compatibility
 ) => {
-  return useQuery({
+  const { setPageLoading, setDialogLoading } = useLoading();
+
+  // Create result
+  const result = useQuery({
     queryKey: ["useGetSubscriptions"],
     queryFn: ({ signal }) => getSubscriptions(signal),
     // Allow data to be stale for 1 hour to avoid unnecessary re-fetches and
@@ -47,6 +60,27 @@ const useGetSubscriptions = (
     staleTime: 60 * 60 * 1000,
     ...options,
   });
+
+  // Handle loading state
+  useEffect(() => {
+    const isLoading = result.isLoading;
+
+    if (loadingType === 'page') {
+      setPageLoading(isLoading);
+    } else if (loadingType === 'dialog') {
+      setDialogLoading(isLoading);
+    }
+
+    return () => {
+      if (loadingType === 'page') {
+        setPageLoading(false);
+      } else if (loadingType === 'dialog') {
+        setDialogLoading(false);
+      }
+    };
+  }, [result.isLoading, loadingType, setPageLoading, setDialogLoading]);
+
+  return result;
 };
 
 export default useGetSubscriptions;

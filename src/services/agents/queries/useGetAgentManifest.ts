@@ -3,6 +3,8 @@ import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError, Manifest } from "@/types";
 import { AxiosError } from "axios";
+import { useLoading } from '@/context/LoadingContext';
+import { useEffect } from 'react';
 
 const getManifest = async (signal:  AbortSignal, agentId: string, version: string = "latest") => {
   const headers = await getAuthHeaders();
@@ -10,18 +12,52 @@ const getManifest = async (signal:  AbortSignal, agentId: string, version: strin
   return response.data;
 }
 
+/**
+ * Hook to fetch agent manifest with loading state management
+ *
+ * @param id The agent ID to fetch manifest for
+ * @param version The version of the manifest to fetch (defaults to "latest")
+ * @param options Optional query options
+ * @param loadingType Where to show loading state: 'page', 'dialog', or 'none'
+ * @returns Query result with loading state automatically handled
+ */
 const useGetAgentManifest = <T = Manifest>(
   id: string,
   version: string = "latest",
-  options?: Omit<UseQueryOptions<Manifest, AxiosError<ApiHttpError>, T>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<Manifest, AxiosError<ApiHttpError>, T>, 'queryKey' | 'queryFn'>,
+  loadingType: 'page' | 'dialog' | 'none' = 'none' // Default to 'none' to maintain backward compatibility
 ) => {
-  return useQuery({
+  const { setPageLoading, setDialogLoading } = useLoading();
+
+  // Create result
+  const result = useQuery({
     queryKey: ["useGetAgentManifest", id],
     queryFn: ({signal}) => {
       return getManifest(signal, id, version)
     },
     ...options,
   });
+
+  // Handle loading state
+  useEffect(() => {
+    const isLoading = result.isLoading;
+
+    if (loadingType === 'page') {
+      setPageLoading(isLoading);
+    } else if (loadingType === 'dialog') {
+      setDialogLoading(isLoading);
+    }
+
+    return () => {
+      if (loadingType === 'page') {
+        setPageLoading(false);
+      } else if (loadingType === 'dialog') {
+        setDialogLoading(false);
+      }
+    };
+  }, [result.isLoading, loadingType, setPageLoading, setDialogLoading]);
+
+  return result;
 };
 
 export default useGetAgentManifest;

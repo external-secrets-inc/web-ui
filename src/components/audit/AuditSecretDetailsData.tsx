@@ -57,7 +57,8 @@ const HistoryAccordion = <T extends object, H extends { timestamp: string }>({
     mock: boolean,
     secretId: string,
     itemId: string,
-    options?: { enabled?: boolean, staleTime?: number }
+    options?: { enabled?: boolean, staleTime?: number },
+    loadingType?: 'page' | 'dialog' | 'none'
   ) => { data: H[] | undefined; isLoading: boolean };
   getItemId: (item: T) => string;
 }) => {
@@ -72,7 +73,8 @@ const HistoryAccordion = <T extends object, H extends { timestamp: string }>({
     {
       staleTime: AUDIT_QUERY_STALE_TIME,
       enabled: isOpen,
-    }
+    },
+    'dialog'
   );
 
   // Prevent default accordion behavior to handle async data loading first time
@@ -359,7 +361,7 @@ const AuditSecretDetailsData = ({ className, secretData, setSecretId }: {
   } = useGetAuditSecretExport(false, secretData.id || '', {
     staleTime: AUDIT_QUERY_STALE_TIME,
     enabled: shouldFetch,
-  });
+  }, 'dialog');
 
   useEffect(() => {
     if (exportSecretDataError) {

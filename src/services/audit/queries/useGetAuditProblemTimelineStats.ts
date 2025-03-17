@@ -6,6 +6,8 @@ import { ApiHttpError } from "@/types";
 import { UseQueryOptions, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { useAuditMock } from '@/services/audit/context/AuditMockContext';
+import { useLoading } from '@/context/LoadingContext';
+import { useEffect } from 'react';
 
 interface QueryOptions {
   startDate: string;
@@ -29,18 +31,53 @@ const getAuditProblemTimelineStats = async (mock: boolean, listenerID: string, o
   return response.data;
 }
 
+/**
+ * Hook to get audit problem timeline stats with loading state management
+ *
+ * @param mock Whether to use mock data
+ * @param listenerID The ID of the listener
+ * @param options Query parameters including startDate, endDate, and timeUnit
+ * @param queryOptions Optional query options
+ * @param loadingType Where to show loading state: 'page', 'dialog', or 'none'
+ * @returns Query result with loading state automatically handled
+ */
 const useGetAuditProblemTimelineStats = (
   mock: boolean,
   listenerID: string,
   options: QueryOptions,
-  queryOptions?: Omit<UseQueryOptions<AuditTimelineEntry[], AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
+  queryOptions?: Omit<UseQueryOptions<AuditTimelineEntry[], AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>,
+  loadingType: 'page' | 'dialog' | 'none' = 'page' // Default to 'page' as recommended in updates.md
 ) => {
   const { isMocked } = useAuditMock(mock);
-  return useQuery({
+  const { setPageLoading, setDialogLoading } = useLoading();
+
+  // Create result
+  const result = useQuery({
     queryKey: ["audit", 'useGetAuditProblemTimelineStats', isMocked, options.startDate, options.endDate],
     queryFn: ({ signal }) => getAuditProblemTimelineStats(isMocked, listenerID, options, signal),
     ...queryOptions,
   });
+
+  // Handle loading state
+  useEffect(() => {
+    const isLoading = result.isPending;
+
+    if (loadingType === 'page') {
+      setPageLoading(isLoading);
+    } else if (loadingType === 'dialog') {
+      setDialogLoading(isLoading);
+    }
+
+    return () => {
+      if (loadingType === 'page') {
+        setPageLoading(false);
+      } else if (loadingType === 'dialog') {
+        setDialogLoading(false);
+      }
+    };
+  }, [result.isPending, loadingType, setPageLoading, setDialogLoading]);
+
+  return result;
 }
 
 export default useGetAuditProblemTimelineStats;
