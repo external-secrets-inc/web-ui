@@ -159,7 +159,7 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
   } = useGetAuditProviders(false, listenerID || '', {
     staleTime: AUDIT_QUERY_STALE_TIME,
     enabled: !!listenerID
-  });
+  }, 'page');
 
   const policies = useMemo(() => {
     if (!policiesData) return []
@@ -187,7 +187,7 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
       policiesRefetch();
       toast.success("Policy edited successfully")
     },
-  });
+  }, 'dialog');
 
   const { mutate: deletePolicy } = useDeletePolicy(false, {
     onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to delete Policy"),
@@ -195,15 +195,15 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
       policiesRefetch();
       toast.success("Policy deleted successfully")
     },
-  });
+  }, 'dialog');
 
   const { mutateAsync: assignProvider } = useAssignProviderPolicy(false, {
     onError: (error) => handleDefaultApiHttpError(error, "Failed to assign provider"),
-  });
+  }, 'dialog');
 
   const { mutateAsync: unassignProvider } = useUnassignProviderPolicy(false, {
     onError: (error) => handleDefaultApiHttpError(error, "Failed to unassign provider"),
-  });
+  }, 'dialog');
 
   const performCreate = (payload: CreatePolicyPayload) => {
     payload.tenantID = tenantID;

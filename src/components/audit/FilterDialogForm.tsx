@@ -253,7 +253,8 @@ const FilterDialogForm = (
     {
       staleTime: AUDIT_QUERY_STALE_TIME,
       enabled: isFiltersDialogOpen,
-    }
+    },
+    'dialog'
   );
 
   const { data: providers, isLoading: isLoadingProviders } = useGetAuditProviders(
