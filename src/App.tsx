@@ -6,7 +6,7 @@ const App = () => {
   return (
       <>
         <AppTopBar />
-        <main className="container mx-auto text-left flex flex-col py-6 md:py-11">
+        <main className="container mx-auto text-left flex flex-col py-6 md:pt-11 pb-20">
           <ExpirySubscriptionBanner />
           <Outlet />
         </main>
