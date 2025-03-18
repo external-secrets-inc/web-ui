@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export type ListenerStatus = "PENDING" | "OFFLINE" | "ACTIVE";
+export type ListenerStatus = "pending" | "offline" | "active";
 
 export const filterSchema = z.object({
   providerIDs: z.array(z.string()),
@@ -159,7 +159,7 @@ export type EditProviderPayload = Omit<CreateProviderPayload, "listenerID" | "te
 
 export interface CreateTenantListenerPayload {
   name: string;
-  tags: {
+  tags?: {
     [key: string]: string;
   };
 }

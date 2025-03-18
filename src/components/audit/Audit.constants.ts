@@ -3,8 +3,9 @@ import type { TimeRangeOption } from './Audit.interfaces';
 import { ONE_MINUTE_IN_SECONDS, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 
 export const LISTENER_STATUS: Record<string, ListenerStatus> = {
-  PENDING_INSTALLATION: 'PENDING',
-  OFFLINE: 'OFFLINE',
+  PENDING_INSTALLATION: 'pending',
+  OFFLINE: 'offline',
+  ACTIVE: 'active',
 } as const;
 
 export const TIME_RANGES: TimeRangeOption[] = [
