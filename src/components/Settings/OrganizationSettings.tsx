@@ -1,4 +1,3 @@
-import { trackSignedOut } from '@/analytics';
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -13,11 +12,10 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { deleteAccount, getAccountData, updateAccountData } from '@/services/account/accountService';
+import { useSignOut } from '@/hooks/useSignOut';
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect, useRef, useState } from 'react';
-import useSignOut from 'react-auth-kit/hooks/useSignOut';
 import { useForm } from "react-hook-form";
-import { useNavigate } from 'react-router-dom';
 import { toast } from "sonner";
 import { z } from "zod";
 import SettingsSection from './SettingsSection';
@@ -40,7 +38,6 @@ type DeleteFormSchemaType = z.infer<ReturnType<typeof deleteFormSchema>>;
 
 const OrganizationSettings: React.FC = () => {
   const signOut = useSignOut();
-  const navigate = useNavigate();
 
   const [accountData, setAccountData] = useState({
     contact_email: "",
@@ -82,8 +79,7 @@ const OrganizationSettings: React.FC = () => {
         deleteForm.reset({
           tenant_name: "",
         });
-      } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
-
+      } catch {
         toast.error('Failed to load organization data');
       }
     };
@@ -102,8 +98,7 @@ const OrganizationSettings: React.FC = () => {
       toast.success('Organization details updated successfully');
       setAccountData((prev) => ({ ...prev, ...dataToSend }));
       form.reset(values);
-    } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
-
+    } catch {
       toast.error('Failed to update Organization details');
     }
   }
@@ -113,11 +108,8 @@ const OrganizationSettings: React.FC = () => {
       await deleteAccount();
       toast('Organization deleted');
       setIsDeleteDialogOpen(false);
-      signOut();
-      trackSignedOut(false);
-      navigate('/login');
-    } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
-
+      signOut({ reason: 'account_deleted' });
+    } catch {
       toast.error('Failed to delete Organization');
     }
   }
