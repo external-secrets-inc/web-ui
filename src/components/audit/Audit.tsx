@@ -244,8 +244,6 @@ export default function Audit({ tenantListener, auditListener }: AuditProps) {
     color: "text-gray-500"
   };
 
-  console.log(auditListener)
-
   return (
     <div className="space-y-8">
       {auditListener.status === LISTENER_STATUS.PENDING_INSTALLATION && (
@@ -322,10 +320,9 @@ export default function Audit({ tenantListener, auditListener }: AuditProps) {
         </div>
 
         <TabsContent value="dashboard" className="data-[state=active]:grid grid-cols-1 gap-4">
-          <div className="flex items-center justify-between pt-4">
-            <div className="flex flex-wrap items-center justify-between gap-2 w-full">
-              <h2 className="font-bold">Analytics</h2>
-              <ToggleGroup
+          <div className="flex flex-wrap items-center justify-between gap-2 w-full pt-4">
+            <h2 className="font-bold">Analytics</h2>
+            <ToggleGroup
               variant="outline"
               type="single"
               value={String(currentToggledTimeRange)}
@@ -337,8 +334,6 @@ export default function Audit({ tenantListener, auditListener }: AuditProps) {
                 </ToggleGroupItem>
               ))}
             </ToggleGroup>
-            </div>
-
           </div>
 
           <div className="grid grid-cols-[repeat(auto-fit,minmax(min(416px,100%),1fr))] gap-4">
@@ -366,10 +361,9 @@ export default function Audit({ tenantListener, auditListener }: AuditProps) {
               </>
             ) : null}
           </div>
-
-            <AuditSecretTable
-              listenerID={auditListener.listenerID}
-            />
+          <AuditSecretTable
+            listenerID={auditListener.listenerID}
+          />
         </TabsContent>
 
         <TabsContent value="providers" className="space-y-4">
