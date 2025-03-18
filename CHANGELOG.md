@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.13.0](https://github.com/external-secrets-inc/web-ui/compare/v0.12.0...v0.13.0) (2025-03-18)
+
+
+### Features
+
+* add aws form ([#297](https://github.com/external-secrets-inc/web-ui/issues/297)) ([f17ea62](https://github.com/external-secrets-inc/web-ui/commit/f17ea620187f6f77ab442f291f0e8c25e9736a16))
+* add keyvault form ([#299](https://github.com/external-secrets-inc/web-ui/issues/299)) ([9e420a9](https://github.com/external-secrets-inc/web-ui/commit/9e420a95fb3e94afaa2b58fbfb02ebbcb218db71))
+* add support to aws parameter store ([#304](https://github.com/external-secrets-inc/web-ui/issues/304)) ([7c42827](https://github.com/external-secrets-inc/web-ui/commit/7c42827468dc0e7ef56501980face795b4aa39de))
+* audit tabbed navigation ([#303](https://github.com/external-secrets-inc/web-ui/issues/303)) ([0b0da7d](https://github.com/external-secrets-inc/web-ui/commit/0b0da7d87a39f4841281c3b0c2947b276b78b759))
+* refactor audit initial setup ([#302](https://github.com/external-secrets-inc/web-ui/issues/302)) ([7101f4c](https://github.com/external-secrets-inc/web-ui/commit/7101f4c8aff36ef8459d0e795fdd88a8c4bc6490))
+
+
+### Bug Fixes
+
+* audit fetching behavior ([#301](https://github.com/external-secrets-inc/web-ui/issues/301)) ([d15de8e](https://github.com/external-secrets-inc/web-ui/commit/d15de8edc8b0bb312f39ab6b26cc336d227c4cfe))
+* remove connection strings from config ([dd739cd](https://github.com/external-secrets-inc/web-ui/commit/dd739cd54cfce6efd62db60fb19e638afc41ab8f))
+* remove connection strings from keyvault config ([#307](https://github.com/external-secrets-inc/web-ui/issues/307)) ([dd739cd](https://github.com/external-secrets-inc/web-ui/commit/dd739cd54cfce6efd62db60fb19e638afc41ab8f))
+
 ## [0.12.0](https://github.com/external-secrets-inc/web-ui/compare/v0.11.1...v0.12.0) (2025-03-03)
 
 
