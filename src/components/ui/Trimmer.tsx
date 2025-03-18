@@ -82,20 +82,24 @@ const Trimmer = React.forwardRef<HTMLSpanElement, TrimmerProps>(({
     // Memoize component choice to prevent unnecessary re-renders
     const Component = React.useMemo(() => asChild ? Slot : "span", [asChild])
 
-    // Memoize classes to prevent recalculation on every render
+    // Memoize classes and style to prevent recalculation on every render
     // `lineClamp` and `className` are deps because they should trigger a re-render when they change, as they affect the truncation behavior
-    const classes = React.useMemo(() => cn(
-      "max-w-[stretch] inline",
-      lineClamp === 1 && "truncate",
-      lineClamp > 1 && `line-clamp-[${lineClamp}]`,
-      className
-    ), [lineClamp, className])
+    const { classes, style } = React.useMemo(() => ({
+      classes: cn(
+        "max-w-[stretch]",
+        lineClamp === 1 && "truncate inline",
+        lineClamp > 1 && "line-clamp-[--lines] hyphens-auto",
+        className
+      ),
+      style: lineClamp > 1 ? { '--lines': lineClamp } as React.CSSProperties : undefined
+    }), [lineClamp, className])
 
     // Memoize the content to prevent unnecessary re-renders
     const truncatedContent = React.useMemo(() => (
       <Component
         ref={mergeRefs(measurementRef, ref)}
         className={classes}
+        style={style}
         onMouseEnter={() => {
           if (disableTooltip) return
           // We should always check overflow on hover to handle if tooltip is needed

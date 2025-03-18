@@ -1,6 +1,8 @@
 import { trackListenerInstallDialogOpened } from "@/analytics";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import {
   API_DOMAIN,
   ONE_MINUTE_IN_SECONDS,
@@ -13,7 +15,7 @@ import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { ApiHttpError, IUserData } from "@/types";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { AxiosError } from "axios";
-import { LucideAlertCircle } from "lucide-react";
+import { LucideAlertCircle, Circle } from "lucide-react";
 import { useEffect, useState } from "react";
 import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 import { useSearchParams } from "react-router-dom";
@@ -55,6 +57,24 @@ const getTimeRangeFromDays = (days: number | null): TimeRange => {
   if (!range) return null;
   return range.label;
 };
+
+const STATUS_CONFIG = {
+  [LISTENER_STATUS.ACTIVE]: {
+    label: "Active",
+    variant: "success",
+    color: "text-green-500"
+  },
+  [LISTENER_STATUS.OFFLINE]: {
+    label: "Offline",
+    variant: "destructive",
+    color: "text-red-500"
+  },
+  [LISTENER_STATUS.PENDING_INSTALLATION]: {
+    label: "Pending Installation",
+    variant: "warning",
+    color: "text-orange-500"
+  }
+} as const;
 
 export default function Audit({ tenantListener, auditListener }: AuditProps) {
   const authUser = useAuthUser<IUserData>();
@@ -218,9 +238,14 @@ export default function Audit({ tenantListener, auditListener }: AuditProps) {
     return tenantHelmData?.manifest || "";
   };
 
+  const getStatusConfig = (status: string) => STATUS_CONFIG[status] ?? {
+    label: "Unknown",
+    variant: "secondary",
+    color: "text-gray-500"
+  };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-8">
       {auditListener.status === LISTENER_STATUS.PENDING_INSTALLATION && (
         <Alert
           className="flex gap-2 items-center justify-between flex-wrap"
@@ -272,63 +297,89 @@ export default function Audit({ tenantListener, auditListener }: AuditProps) {
         </Alert>
       )}
 
-      <div className="flex items-center justify-between pt-4">
-        <div className="flex items-center gap-2">
-          <h2 className="font-bold">Analytics</h2>
+      <Tabs defaultValue="dashboard" className="w-full">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <TabsList>
+            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+            <TabsTrigger value="providers">Providers</TabsTrigger>
+            <TabsTrigger value="policies">Policies</TabsTrigger>
+          </TabsList>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Listener Status:</span>
+            <Badge
+              variant={getStatusConfig(auditListener.status).variant}
+              className="flex items-center gap-2"
+            >
+              <Circle
+                className={`w-2 h-2 animate-pulse ${getStatusConfig(auditListener.status).color}`}
+                fill="currentColor"
+              />
+              {getStatusConfig(auditListener.status).label}
+            </Badge>
+          </div>
         </div>
-        <ToggleGroup
-          variant="outline"
-          type="single"
-          value={String(currentToggledTimeRange)}
-          onValueChange={(value) => handleTimeRangeChange(Number(value))}
-        >
-          {TIME_RANGES.map(({ days, label }) => (
-            <ToggleGroupItem key={days} className="w-12" value={String(days)}>
-              {label}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-      </div>
 
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(416px,100%),1fr))] gap-4 mt-6">
-        {currentToggledTimeRange === 0 ? (
-          <>
-            <AuditChartProviders listenerID={tenantListener.id} />
-            <AuditChartProblems listenerID={tenantListener.id} />
-          </>
-        ) : chartsStartDate && chartsEndDate ? (
-          <>
-            <AuditTimelineProviders
-              listenerID={tenantListener.id}
-              timeRange={getTimeRangeFromDays(currentToggledTimeRange)}
-              startDate={chartsStartDate}
-              endDate={chartsEndDate}
-              timeUnit={timeUnit}
-            />
-            <AuditTimelineProblems
-              listenerID={tenantListener.id}
-              timeRange={getTimeRangeFromDays(currentToggledTimeRange)}
-              startDate={chartsStartDate}
-              endDate={chartsEndDate}
-              timeUnit={timeUnit}
-            />
-          </>
-        ) : null}
-      </div>
+        <TabsContent value="dashboard" className="data-[state=active]:grid grid-cols-1 gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 w-full pt-4">
+            <h2 className="font-bold">Analytics</h2>
+            <ToggleGroup
+              variant="outline"
+              type="single"
+              value={String(currentToggledTimeRange)}
+              onValueChange={(value) => handleTimeRangeChange(Number(value))}
+            >
+              {TIME_RANGES.map(({ days, label }) => (
+                <ToggleGroupItem key={days} className="w-12" value={String(days)}>
+                  {label}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          </div>
 
-      <div className="grid grid-cols-1 gap-4">
-        <AuditPolicyDataTable
-          tenantID={authUser?.tenantId ?? ""}
-          listenerID={auditListener.listenerID}
-        />
-        <AuditProviderDataTable
-          tenantID={auditListener.tenantID}
-          listenerID={auditListener.listenerID}
-        />
-        <AuditSecretTable
-          listenerID={auditListener.listenerID}
-        />
-      </div>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(416px,100%),1fr))] gap-4">
+            {currentToggledTimeRange === 0 ? (
+              <>
+                <AuditChartProviders listenerID={tenantListener.id} />
+                <AuditChartProblems listenerID={tenantListener.id} />
+              </>
+            ) : chartsStartDate && chartsEndDate ? (
+              <>
+                <AuditTimelineProviders
+                  listenerID={tenantListener.id}
+                  timeRange={getTimeRangeFromDays(currentToggledTimeRange)}
+                  startDate={chartsStartDate}
+                  endDate={chartsEndDate}
+                  timeUnit={timeUnit}
+                />
+                <AuditTimelineProblems
+                  listenerID={tenantListener.id}
+                  timeRange={getTimeRangeFromDays(currentToggledTimeRange)}
+                  startDate={chartsStartDate}
+                  endDate={chartsEndDate}
+                  timeUnit={timeUnit}
+                />
+              </>
+            ) : null}
+          </div>
+          <AuditSecretTable
+            listenerID={auditListener.listenerID}
+          />
+        </TabsContent>
+
+        <TabsContent value="providers" className="space-y-4">
+          <AuditProviderDataTable
+            tenantID={auditListener.tenantID}
+            listenerID={auditListener.listenerID}
+          />
+        </TabsContent>
+
+        <TabsContent value="policies" className="space-y-4">
+          <AuditPolicyDataTable
+            tenantID={authUser?.tenantId ?? ""}
+            listenerID={auditListener.listenerID}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

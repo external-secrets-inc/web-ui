@@ -129,19 +129,17 @@ const AuditWrapper = () => {
 
   return (
     <AuditMockProvider>
-      <div className="space-y-4">
-        <AppPageHeaderPortal>
-          <RefreshButton queryKey={['audit']}>
-            Refresh Data
-          </RefreshButton>
-        </AppPageHeaderPortal>
-        <AuditFilterProvider>
-          <Audit
-            tenantListener={tenantListener!}
-            auditListener={auditListener!}
-          />
-        </AuditFilterProvider>
-      </div>
+      <AppPageHeaderPortal>
+        <RefreshButton queryKey={['audit']}>
+          Refresh Data
+        </RefreshButton>
+      </AppPageHeaderPortal>
+      <AuditFilterProvider>
+        <Audit
+          tenantListener={tenantListener!}
+          auditListener={auditListener!}
+        />
+      </AuditFilterProvider>
     </AuditMockProvider>
   );
 };
