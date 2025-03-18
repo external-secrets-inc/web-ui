@@ -51,6 +51,13 @@ type TableActions = {
 }
 
 /**
+ * Scroll behavior options for tables
+ */
+type ScrollBehavior = 'default' | 'infiniteScroll'
+
+
+
+/**
  * Configuration options for the DataProvider.
  * @template TData - Type of data items being displayed
  */
@@ -94,6 +101,13 @@ type ProviderConfig<TData extends object> = {
   getRowId?: ((row: TData) => string) | undefined
 
   /**
+   * Scroll behavior mode for the table
+   * @default 'default'
+   */
+  scrollBehavior?: ScrollBehavior
+  containerHeight?: number
+
+  /**
    * Configuration options from `@tanstack/react-table`
    * @see {@link https://tanstack.com/table/v8/docs/api/core/table#options Table Options API}
    */
@@ -120,6 +134,8 @@ type ProviderConfig<TData extends object> = {
 type ProviderContextValue<TData extends object> = TableState<TData> &
   TableActions & {
     table: ReturnType<typeof useReactTable<TData>>
+    scrollBehavior: ScrollBehavior
+    containerHeight?: number
   }
 
 /**
@@ -155,7 +171,9 @@ function useDataProvider<TData extends object>({
   getRowId,
   tableOptions = {},
   isLoading = false,
-  emptyMessage = "No data available"
+  emptyMessage = "No data available",
+  scrollBehavior = 'default',
+  containerHeight = 400
 }: ProviderConfig<TData>) {
   // State
   const [sorting, setSorting] = React.useState<SortingState>([initialSort])
@@ -220,8 +238,10 @@ function useDataProvider<TData extends object>({
     setSorting,
     setGlobalFilter,
     // Table
-    table
-  }), [safeData, columns, sorting, globalFilter, table, isLoading, emptyMessage]) // Only add State and Table as dependencies
+    table,
+    scrollBehavior,
+    containerHeight
+  }), [safeData, columns, sorting, globalFilter, table, isLoading, emptyMessage, scrollBehavior, containerHeight]) // Only add State and Table as dependencies
 }
 
 /**
@@ -368,10 +388,15 @@ interface DataTableProps<TMeta = any> extends React.HTMLAttributes<HTMLDivElemen
  * Provides sorting, loading states, and empty states handling.
  * Supports row click handlers and additional metadata configuration for things
  * like custom actions within cells.
+ *
+ * With scrollBehavior set to 'virtualScroll', it implements virtual scrolling
+ * to only render rows that are visible in the viewport, improving performance for large datasets.
  */
 const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
   ({ className, onRowClick, rowsAppend, meta, ...props }, ref) => {
-    const { table, isLoading, emptyMessage } = React.useContext(DataProviderContext)
+    const { table, isLoading, emptyMessage, scrollBehavior } = React.useContext(DataProviderContext)
+    // Container reference for the scrollable table div
+    const tableContainerRef = React.useRef<HTMLDivElement | null>(null)
 
     // Memoized to prevent unnecessary re-renders and potential infinite loops
     const tableOptions = React.useMemo(() => ({
@@ -381,8 +406,150 @@ const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
 
     table.setOptions(tableOptions);
 
+    // For virtual scrolling
+    const { rows } = table.getRowModel()
+
+    // For infinite scrolling implementation
+    const [visibleRowCount, setVisibleRowCount] = React.useState(20); // Initial number of rows to display
+    const tableRef = React.useRef<HTMLDivElement | null>(null);
+
+    // For tracking filter changes
+    const [prevFilter, setPrevFilter] = React.useState<string>('');
+    const [prevRowsLength, setPrevRowsLength] = React.useState<number>(0);
+
+    // Reset visible row count only when filter actually changes or data source changes
+    React.useEffect(() => {
+      const currentFilter = table.getState().globalFilter as string || '';
+
+      // Check if filter or data source actually changed
+      if (scrollBehavior === 'infiniteScroll' &&
+          (currentFilter !== prevFilter || rows.length !== prevRowsLength)) {
+        // Reset to initial count when the filter actually changes or row count changes
+        setVisibleRowCount(20);
+
+        // Update our tracking state
+        setPrevFilter(currentFilter);
+        setPrevRowsLength(rows.length);
+      }
+    }, [table.getState().globalFilter, rows.length, scrollBehavior, prevFilter, prevRowsLength]);
+
+    // Handle scroll events to detect when user reaches bottom of the table
+    React.useEffect(() => {
+      if (scrollBehavior !== 'infiniteScroll' || !window) return;
+
+      const handleScroll = () => {
+        if (!tableRef.current) return;
+
+        // Get the scroll position and dimensions to determine if we're near the bottom
+        const { scrollTop, clientHeight, scrollHeight } = document.documentElement;
+
+        // If we're close to the bottom (within 200px) and not all rows are visible
+        if (scrollTop + clientHeight >= scrollHeight - 200 && visibleRowCount < rows.length) {
+          // Load more rows (increment by 20, not exceeding the total)
+          setVisibleRowCount(prev => Math.min(prev + 20, rows.length));
+        }
+      };
+
+      // Add scroll event listener
+      window.addEventListener('scroll', handleScroll);
+
+      // Clean up
+      return () => window.removeEventListener('scroll', handleScroll);
+    }, [scrollBehavior, rows.length, visibleRowCount]);
+
+    // Get the visible rows for infinite scrolling
+    const visibleRows = React.useMemo(() => {
+      if (scrollBehavior === 'infiniteScroll') {
+        return rows.slice(0, visibleRowCount);
+      }
+      return rows;
+    }, [rows, visibleRowCount, scrollBehavior]);
+
+    // Default table rendering
+    const renderDefaultTable = () => (
+      <TableBody>
+        {isLoading ? (
+          <TableRow>
+            <TableCell colSpan={table.getAllColumns().length}>
+              <div className="flex justify-center items-center h-5">
+                <Loader />
+              </div>
+            </TableCell>
+          </TableRow>
+        ) : table?.getRowModel()?.rows?.length === 0 ? (
+          <TableRow>
+            <TableCell colSpan={table.getAllColumns().length}>
+              <div className="flex justify-center items-center h-5">
+                <div className="text-sm text-muted-foreground">{emptyMessage}</div>
+              </div>
+            </TableCell>
+          </TableRow>
+        ) : (
+          <>
+            {/* If infinite scroll is enabled, use visibleRows instead of all rows */}
+            {(scrollBehavior === 'infiniteScroll' ? visibleRows : table?.getRowModel()?.rows)?.map((row) => (
+              <TableRow
+                key={row.id}
+                onClick={() => onRowClick?.(row.original)}
+                className={onRowClick && "cursor-pointer hover:bg-muted/50"}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+            {/* Show loading indicator and row count information for infinite scroll */}
+            {scrollBehavior === 'infiniteScroll' && (
+              <TableRow>
+                <TableCell colSpan={table.getAllColumns().length}>
+                  <div className="flex justify-center items-center py-3">
+                    {visibleRowCount < rows.length ? (
+                      <>
+                        <Loader className="h-5 w-5 animate-spin" />
+                        <span className="ml-2 text-sm text-muted-foreground">
+                          Showing {visibleRowCount} of {rows.length} rows - Scroll to load more
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">
+                        {rows.length > 0 ?
+                          `Showing all ${rows.length} rows` :
+                          'No matching results found'}
+                      </span>
+                    )}
+                  </div>
+                </TableCell>
+              </TableRow>
+            )}
+            {rowsAppend}
+          </>
+        )}
+      </TableBody>
+    )
+
+
+
+
+
     return (
-      <div ref={ref} className={cn("rounded-md border", className)} {...props}>
+      <div
+        ref={(el) => {
+          // Assign to both refs
+          if (typeof ref === 'function') {
+            ref(el)
+          } else if (ref) {
+            ref.current = el
+          }
+          if (el) {
+            tableContainerRef.current = el
+            tableRef.current = el
+          }
+        }}
+        className={cn("rounded-md border", className)}
+        {...props}
+      >
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -414,43 +581,7 @@ const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
-            { isLoading ?
-              <TableRow>
-                <TableCell colSpan={table.getAllColumns().length}>
-                  <div className="flex justify-center items-center h-5">
-                    <Loader />
-                  </div>
-                </TableCell>
-              </TableRow>
-
-            : table?.getRowModel()?.rows?.length === 0 ?
-              <TableRow>
-                <TableCell colSpan={table.getAllColumns().length}>
-                  <div className="flex justify-center items-center h-5">
-                    <div className="text-sm text-muted-foreground">{emptyMessage}</div>
-                  </div>
-                </TableCell>
-              </TableRow>
-
-            : <>
-                {table?.getRowModel()?.rows?.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    onClick={() => onRowClick?.(row.original)}
-                    className={onRowClick && "cursor-pointer hover:bg-muted/50"}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-                {rowsAppend}
-              </>
-            }
-          </TableBody>
+          {renderDefaultTable()}
         </Table>
       </div>
     )

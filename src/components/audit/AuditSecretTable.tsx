@@ -287,12 +287,18 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
         </div>
       </div>
 
+      {/*
+        Using virtual scrolling for the secrets table for better performance with large datasets.
+        This renders only the rows that are visible in the viewport and dynamically loads/unloads rows
+        as the user scrolls, which significantly improves performance and reduces DOM elements.
+      */}
       <DataProvider
         data={listenerSecretTableData}
         columns={columns}
         initialSort={{ id: "lastRotation", desc: true }}
         isLoading={isLoadingSecretTableData}
         emptyMessage={getEmptyMessage()}
+        scrollBehavior="infiniteScroll"
       >
         <DataTable onRowClick={(row) => setSelectedSecretId(row.id)} />
       </DataProvider>
