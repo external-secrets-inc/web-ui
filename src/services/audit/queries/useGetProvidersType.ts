@@ -44,9 +44,7 @@ const getProvidersTypes = async (
         "eventHubNamespace": {"type": "string", "required": true},
         "eventHubName": {"type": "string", "required": true},
         "storageEndpoint": {"type": "string", "required": true},
-        "storageContainerName": {"type": "string", "required": true},
-        "eventHubConnectionString": {"type": "string", "required": false},
-        "storageAccountConnectionString": {"type": "string", "required": false}
+        "storageContainerName": {"type": "string", "required": true}
       }
     } as AddProviderFormSchema;
   }
