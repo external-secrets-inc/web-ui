@@ -147,7 +147,7 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
     return providersData;
   }, [providersData]);
 
-  const { mutate: createProvider } = useCreateAuditProvider(false, {
+  const { mutateAsync: createProvider } = useCreateAuditProvider(false, {
     onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to create Provider"),
     onSuccess: () => {
       providersRefetch();
@@ -155,7 +155,7 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
     }
   });
 
-  const { mutate: editProvider } = useEditProvider(false, {
+  const { mutateAsync: editProvider } = useEditProvider(false, {
     onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to edit Provider"),
     onSuccess: () => {
       providersRefetch();
@@ -169,31 +169,36 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
       providersRefetch();
       toast.success("Provider deleted successfully")
     },
-  })
+  });
 
-  const performCreate = (payload: CreateProviderPayload) => {
+  const performCreate = async (payload: CreateProviderPayload) => {
     payload.tenantID = tenantID;
     payload.listenerID = listenerID;
-    createProvider(payload)
+    await createProvider(payload);
   }
 
-  const performEdit = (editPayload: EditProviderVariables) => {
-    editProvider(editPayload);
+  const performEdit = async (editPayload: EditProviderVariables) => {
+    await editProvider(editPayload);
   }
 
   const performDelete = (providerId: string) => {
     deleteProvider({ id: providerId });
   }
 
-  const handleSubmit = (payload: CreateProviderPayload) => {
-    if (selectedProviderId) {
-      const { name, backendIdentifier, backendType, config } = { ...payload };
-      const editPayload = { providerID: selectedProviderId, payload: { name, backendIdentifier, backendType, config } };
-      performEdit(editPayload);
-    } else {
-      performCreate(payload);
+  const handleSubmit = async (payload: CreateProviderPayload) => {
+    try {
+      if (selectedProviderId) {
+        const { name, backendIdentifier, backendType, config } = { ...payload };
+        const editPayload = { providerID: selectedProviderId, payload: { name, backendIdentifier, backendType, config } };
+        await performEdit(editPayload);
+      } else {
+        await performCreate(payload);
+      }
+      handleAddProviderDialogOpenChange(false);
+    } catch (error) {
+      // Let the form component handle the error display
+      throw error;
     }
-    handleAddProviderDialogOpenChange(false);
   }
 
   useEffect(() => {
