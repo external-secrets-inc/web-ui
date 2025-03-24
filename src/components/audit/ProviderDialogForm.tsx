@@ -36,10 +36,17 @@ import {
 import useGetProvidersTypes from '@/services/audit/queries/useGetProvidersType';
 import { handleDefaultApiHttpError } from '@/services/servicesHelpers';
 import { Switch } from '@/components/ui/switch';
+import { createSlug, isValidSlug } from '@/utils/slugify';
+import { Loader } from '@/components/ui/Loader';
+import { cn } from '@/lib/utils';
 
 const baseSchema = z.object({
   providerName: z.string().min(1, { message: "Name is required." }),
-  backendIdentifier: z.string().min(1, { message: "Identifier is required." }),
+  backendIdentifier: z.string()
+    .min(1, { message: "Identifier is required." })
+    .refine((val) => isValidSlug(val), {
+      message: "Identifier must contain only lowercase letters, numbers, hyphens, and underscores."
+    }),
   providerType: z.string().min(1, { message: "Type is required." }),
 });
 
@@ -155,12 +162,14 @@ const ProviderDialogForm = ({
 }: {
   selectedProviderId: string;
   providerForm: AddProviderFormValues;
-  onSubmit: (payload: CreateProviderPayload) => void;
+  onSubmit: (payload: CreateProviderPayload) => Promise<void>;
   onCancel: () => void;
   open: boolean;
 }) => {
   const [formSchemaData, setFormSchema] = useState<AddProviderFormSchema>({});
   const [selectedFormType, setSelectedFormType] = useState<string>(providerForm.providerType);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isIdentifierManuallyEdited, setIsIdentifierManuallyEdited] = useState(false);
 
   const { data: providersTypeData, isLoading: isLoadingProvidersTypes, isError: isErrorProvidersTypes, error: providersTypesError } = useGetProvidersTypes(true);
 
@@ -243,47 +252,75 @@ const ProviderDialogForm = ({
     const defaultValues = getDefaultValues(providerType);
     form.reset({ ...defaultValues, ...initialValues });
     setSelectedFormType(providerType);
+    setIsIdentifierManuallyEdited(false);
   }, [form, getDefaultValues]);
 
   const handleFormTypeChange = (type: string) => {
     resetFormWithType(type, form.getValues());
   };
 
-  const handleSubmit = (formValues: Record<string, string | boolean | File | number>) => {
-    const { providerName, providerType, backendIdentifier, ...customFields } = formValues;
+  const handleProviderNameChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: ControllerRenderProps<AddProviderFormValues, "providerName">
+  ) => {
+    const value = e.target.value;
+    field.onChange(e);
+    if (!selectedProviderId && !isIdentifierManuallyEdited) {
+      form.setValue("backendIdentifier", createSlug(value));
+    }
+  };
 
-    const config = Object.entries(customFields).reduce<Record<string, string>>((acc, [key, value]) => {
-      if (typeof value === "boolean") {
-        acc[key] = value ? "true" : "false";
-      } else if (value instanceof File) {
-        acc[key] = value.name;
-      } else if (typeof value === "number") {
-        acc[key] = value.toString();
-      } else if (typeof value === "string") {
-        acc[key] = value;
-      }
-      return acc;
-    }, {});
+  const handleBackendIdentifierChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: ControllerRenderProps<AddProviderFormValues, "backendIdentifier">
+  ) => {
+    const value = e.target.value;
+    field.onChange(value);
+    setIsIdentifierManuallyEdited(true);
+  };
 
-    onSubmit({
-      listenerID: "",
-      tenantID: "",
-      name: String(providerName),
-      backendIdentifier: String(backendIdentifier),
-      backendType: String(providerType).toUpperCase(),
-      config: config,
-    });
-    resetFormWithType(providerForm.providerType, providerForm);
-  }
+  const handleSubmit = async (formValues: Record<string, string | boolean | File | number>) => {
+    setIsSubmitting(true);
+
+    try {
+      const { providerName, providerType, backendIdentifier, ...customFields } = formValues;
+
+      const config = Object.entries(customFields).reduce<Record<string, string>>((acc, [key, value]) => {
+        if (typeof value === "boolean") {
+          acc[key] = value ? "true" : "false";
+        } else if (value instanceof File) {
+          acc[key] = value.name;
+        } else if (typeof value === "number") {
+          acc[key] = value.toString();
+        } else if (typeof value === "string") {
+          acc[key] = value;
+        }
+        return acc;
+      }, {});
+
+      await onSubmit({
+        listenerID: "",
+        tenantID: "",
+        name: String(providerName),
+        backendIdentifier: String(backendIdentifier),
+        backendType: String(providerType).toUpperCase(),
+        config: config,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleCancel = useCallback(() => {
     onCancel();
     resetFormWithType(providerForm.providerType, providerForm);
+    setIsIdentifierManuallyEdited(false);
   }, [onCancel, providerForm, resetFormWithType]);
 
   useEffect(() => {
     if (!open) {
       resetFormWithType(providerForm.providerType, providerForm);
+      setIsIdentifierManuallyEdited(false);
     }
   }, [open, providerForm, resetFormWithType]);
 
@@ -308,7 +345,12 @@ const ProviderDialogForm = ({
               <FormItem>
                 <FormLabel>Name</FormLabel>
                 <FormControl>
-                  <Input disabled={Boolean(selectedProviderId)} placeholder="Enter Name" {...field} />
+                  <Input
+                    disabled={Boolean(selectedProviderId)}
+                    placeholder="Enter Name"
+                    {...field}
+                    onChange={(e) => handleProviderNameChange(e, field)}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -321,7 +363,12 @@ const ProviderDialogForm = ({
               <FormItem>
                 <FormLabel>Identifier</FormLabel>
                 <FormControl>
-                  <Input disabled={Boolean(selectedProviderId)} placeholder="Enter Identifier" {...field} />
+                  <Input
+                    disabled={Boolean(selectedProviderId)}
+                    placeholder="Enter Identifier"
+                    {...field}
+                    onChange={(e) => handleBackendIdentifierChange(e, field)}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -397,10 +444,16 @@ const ProviderDialogForm = ({
               aria-keyshortcuts="Escape"
               variant={"secondary"}
               onClick={handleCancel}
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
-            <Button type="submit">Submit</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              <span className={cn(isSubmitting && "opacity-0")}>Submit</span>
+              {isSubmitting && (
+                <Loader className="absolute" />
+              )}
+            </Button>
           </DialogFooter>
         </form>
       </Form>
