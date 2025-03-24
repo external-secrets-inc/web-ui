@@ -1,6 +1,5 @@
 import { useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
-import slugify from "slugify";
 import {
   FormControl,
   FormField,
@@ -11,6 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { APP_DOMAIN_STRIPPED } from "@/constants";
+import { createSlug } from "@/utils/slugify";
 
 const SignupOrganizationInfoStep = ({ onSubmit }: { onSubmit: () => void }) => {
   const { handleSubmit, setValue, control } = useFormContext();
@@ -23,9 +23,7 @@ const SignupOrganizationInfoStep = ({ onSubmit }: { onSubmit: () => void }) => {
     const value = e.target.value;
     setValue("organizationName", value);
     if (!isURLManuallyEdited) {
-      let slugifiedValue = slugify(value, { lower: true, strict: true });
-      slugifiedValue = slugifiedValue.replace(/[_\s]/g, "-");
-      setValue("organizationURL", slugifiedValue);
+      setValue("organizationURL", createSlug(value));
     }
   };
 
