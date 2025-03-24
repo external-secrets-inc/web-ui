@@ -186,19 +186,14 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
   }
 
   const handleSubmit = async (payload: CreateProviderPayload) => {
-    try {
-      if (selectedProviderId) {
-        const { name, backendIdentifier, backendType, config } = { ...payload };
-        const editPayload = { providerID: selectedProviderId, payload: { name, backendIdentifier, backendType, config } };
-        await performEdit(editPayload);
-      } else {
-        await performCreate(payload);
-      }
-      handleAddProviderDialogOpenChange(false);
-    } catch (error) {
-      // Let the form component handle the error display
-      throw error;
+    if (selectedProviderId) {
+      const { name, backendIdentifier, backendType, config } = { ...payload };
+      const editPayload = { providerID: selectedProviderId, payload: { name, backendIdentifier, backendType, config } };
+      await performEdit(editPayload);
+    } else {
+      await performCreate(payload);
     }
+    handleAddProviderDialogOpenChange(false);
   }
 
   useEffect(() => {
