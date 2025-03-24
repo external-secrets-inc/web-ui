@@ -64,7 +64,6 @@ export function AssignProvidersDialog({
             placeholder="Select providers..."
             onValueChange={setSelectedProviders}
             value={selectedProviders}
-            animation={0}
             defaultValue={currentAssignedProviders}
           />
         )}

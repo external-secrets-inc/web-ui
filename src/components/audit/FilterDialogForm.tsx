@@ -167,7 +167,6 @@ const MultiSelectFilter = ({
   label,
   options,
   placeholder,
-  maxCount = 1,
 }: {
   formControl: Control<FilterSchema>;
   name: ArrayKeys;
@@ -177,7 +176,6 @@ const MultiSelectFilter = ({
     value: string;
   }[];
   placeholder: string;
-  maxCount?: number;
 }) => (
   <FormField
     control={formControl}
@@ -191,8 +189,8 @@ const MultiSelectFilter = ({
           value={field.value}
           defaultValue={field.value}
           placeholder={placeholder}
-          variant="inverted"
-          maxCount={maxCount}
+          variant="default"
+          maxCount="auto"
         />
       </FormItem>
     )}
@@ -355,7 +353,7 @@ const FilterDialogForm = (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="grid gap-4">
+              <div className="grid gap-4 grid-cols-1">
                 {/* Provider Filter */}
                 <MultiSelectFilter
                   key={"provider" + resetKey}
@@ -417,7 +415,6 @@ const FilterDialogForm = (
                       name="duplicateIDs"
                       options={filterOptions.secretsNames}
                       placeholder="Any Duplicate"
-                      maxCount={0}
                     />
                   )}
                 </div>
@@ -440,7 +437,6 @@ const FilterDialogForm = (
                       name="accessorNames"
                       options={filterOptions.accessorsNames}
                       placeholder="Any Accessor"
-                      maxCount={0}
                     />
                   )}
                 </div>
