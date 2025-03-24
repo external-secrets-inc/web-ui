@@ -39,9 +39,9 @@ const getProvidersTypes = async (
         "region": {"type": "string", "required": true},
         "queue-url": {"type": "string", "required": true}
       },
-      "KEYVAULT": {
+      "AZURE_KEYVAULT": {
         "vaultURL": {"type": "string", "required": true},
-        "eventHubNamespace": {"type": "string", "required": true},
+        "eventHubNamespaceHost": {"type": "string", "required": true},
         "eventHubName": {"type": "string", "required": true},
         "storageEndpoint": {"type": "string", "required": true},
         "storageContainerName": {"type": "string", "required": true}
