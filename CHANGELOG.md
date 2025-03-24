@@ -1,5 +1,52 @@
 # Changelog
 
+## [0.13.0](https://github.com/external-secrets-inc/web-ui/compare/v0.12.0...v0.13.0) (2025-03-18)
+
+
+### Features
+
+* add aws form ([#297](https://github.com/external-secrets-inc/web-ui/issues/297)) ([f17ea62](https://github.com/external-secrets-inc/web-ui/commit/f17ea620187f6f77ab442f291f0e8c25e9736a16))
+* add keyvault form ([#299](https://github.com/external-secrets-inc/web-ui/issues/299)) ([9e420a9](https://github.com/external-secrets-inc/web-ui/commit/9e420a95fb3e94afaa2b58fbfb02ebbcb218db71))
+* add support to aws parameter store ([#304](https://github.com/external-secrets-inc/web-ui/issues/304)) ([7c42827](https://github.com/external-secrets-inc/web-ui/commit/7c42827468dc0e7ef56501980face795b4aa39de))
+* audit tabbed navigation ([#303](https://github.com/external-secrets-inc/web-ui/issues/303)) ([0b0da7d](https://github.com/external-secrets-inc/web-ui/commit/0b0da7d87a39f4841281c3b0c2947b276b78b759))
+* refactor audit initial setup ([#302](https://github.com/external-secrets-inc/web-ui/issues/302)) ([7101f4c](https://github.com/external-secrets-inc/web-ui/commit/7101f4c8aff36ef8459d0e795fdd88a8c4bc6490))
+
+
+### Bug Fixes
+
+* audit fetching behavior ([#301](https://github.com/external-secrets-inc/web-ui/issues/301)) ([d15de8e](https://github.com/external-secrets-inc/web-ui/commit/d15de8edc8b0bb312f39ab6b26cc336d227c4cfe))
+* remove connection strings from config ([dd739cd](https://github.com/external-secrets-inc/web-ui/commit/dd739cd54cfce6efd62db60fb19e638afc41ab8f))
+* remove connection strings from keyvault config ([#307](https://github.com/external-secrets-inc/web-ui/issues/307)) ([dd739cd](https://github.com/external-secrets-inc/web-ui/commit/dd739cd54cfce6efd62db60fb19e638afc41ab8f))
+
+## [0.12.0](https://github.com/external-secrets-inc/web-ui/compare/v0.11.1...v0.12.0) (2025-03-03)
+
+
+### Features
+
+* adds gke support ([#292](https://github.com/external-secrets-inc/web-ui/issues/292)) ([eeee1b1](https://github.com/external-secrets-inc/web-ui/commit/eeee1b15026a748d0d35c1155268e7756ad9eb03))
+
+## [0.11.1](https://github.com/external-secrets-inc/web-ui/compare/v0.11.0...v0.11.1) (2025-02-25)
+
+
+### Bug Fixes
+
+* should use accessor name instead of id ([#286](https://github.com/external-secrets-inc/web-ui/issues/286)) ([2d6e998](https://github.com/external-secrets-inc/web-ui/commit/2d6e9983601319c8c87c1d65b5131b1baf58d56b))
+
+## [0.11.0](https://github.com/external-secrets-inc/web-ui/compare/v0.10.0...v0.11.0) (2025-02-11)
+
+
+### Features
+
+* :mag: block all crawlers from finding our app ([#275](https://github.com/external-secrets-inc/web-ui/issues/275)) ([977f1e8](https://github.com/external-secrets-inc/web-ui/commit/977f1e86bdd62e8f9a9f2ea156deea13f160b0de))
+* ✨ Lineage 🌲 ([#265](https://github.com/external-secrets-inc/web-ui/issues/265)) ([795092f](https://github.com/external-secrets-inc/web-ui/commit/795092f52839fdf57d1efb59b41a3e7a7b3dc3f4))
+* Add download secret to individual secret ([#279](https://github.com/external-secrets-inc/web-ui/issues/279)) ([a5a2048](https://github.com/external-secrets-inc/web-ui/commit/a5a204863021e4c3b27ec384541477041f355a15))
+* install listener with helm chart ([#270](https://github.com/external-secrets-inc/web-ui/issues/270)) ([bc2624f](https://github.com/external-secrets-inc/web-ui/commit/bc2624fb141775a24bec7c2ef2ef0eec08c0e91c))
+
+
+### Bug Fixes
+
+* audit and lineage general fixes and responsiveness improvements ([#280](https://github.com/external-secrets-inc/web-ui/issues/280)) ([d85784a](https://github.com/external-secrets-inc/web-ui/commit/d85784a16b57c376a277dfeb7cc8c0e4c1327738))
+
 ## [0.10.0](https://github.com/external-secrets-inc/web-ui/compare/v0.9.0...v0.10.0) (2025-01-27)
 
 

@@ -5,7 +5,6 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { DataProvider, DataTable } from "@/components/ui/DataProvider";
-import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import useGetDashboarSecretTable from "@/services/audit/queries/useGetDashboarSecretTable";
 import { AuditSecretTableData } from "./Audit.interfaces";
@@ -17,6 +16,7 @@ import { Input } from "../ui/input";
 import saveAs from "file-saver";
 import { Separator } from "@/components/ui/separator";
 import { formatDate } from "@/utils/dateUtils";
+import { AUDIT_PAGE_QUERY_REFETCH_INTERVAL, AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants";
 
 interface AuditSecretTableProps {
   listenerID: string;
@@ -57,7 +57,8 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
     isRefetchError: isRefetchErrorSecretTableData,
     error: secretTableDataError,
   } = useGetDashboarSecretTable(false, listenerID || '', searchParams, {
-    refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
+    staleTime: AUDIT_QUERY_STALE_TIME,
+    refetchInterval: AUDIT_PAGE_QUERY_REFETCH_INTERVAL,
     refetchIntervalInBackground: true,
     enabled: !!listenerID
   });
@@ -221,16 +222,16 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between pt-4">
-        <h2 className="font-bold w-auto mb-2">All Secrets</h2>
+      <div className="flex flex-wrap items-center justify-between pt-4 gap-2">
+        <h2 className="font-bold w-auto">Secrets</h2>
 
-        <div className="flex gap-2">
-          <div className="relative flex gap-2 items-center">
+        <div className="flex gap-2 flex-wrap-reverse">
+          <div className="relative flex gap-2 items-center flex-1 basis-32">
             <Input
               placeholder="Search..."
               value={searchInputValue}
               onChange={(e) => handleSearchInputChange(e)}
-              className="max-w-48 pr-16"
+              className="pr-16"
             />
             {searchInputValue && (
               <Button
@@ -250,39 +251,37 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
             <LucideSearch className="absolute right-3 text-muted-foreground" />
           </div>
 
-          <Button
-            size="icon"
-            variant="outline"
-            className="self-center"
-            aria-label="Download"
-            title="Download"
-            onClick={() => {handleExportSecretsTable(listenerSecretTableData?? [])}}
-          >
-            <LucideDownload />
-          </Button>
-
-          <Dialog
-            open={isFiltersDialogOpen}
-            onOpenChange={setIsFiltersDialogOpen}
-          >
-            <DialogTrigger asChild>
-              <Button
-                size="icon"
-                variant="outline"
-                className="self-center min-[260px]:self-end relative"
-                aria-label="Filters"
-                title="Filters"
-              >
-                <LucideFilter />
-                {hasAppliedFilters() && <LucideCircle className="absolute -top-1 -right-1 !size-2.5 stroke-0 fill-orange-500" />}
-              </Button>
-            </DialogTrigger>
-            <FilterDialogForm
-              initialValues={currentFilters}
-              onSubmit={handleFilterChange}
-              listenerID={listenerID}
-            />
-          </Dialog>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {handleExportSecretsTable(listenerSecretTableData?? [])}}
+            >
+              <LucideDownload />
+              Export CSV
+            </Button>
+            <Dialog
+              open={isFiltersDialogOpen}
+              onOpenChange={setIsFiltersDialogOpen}
+            >
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="relative"
+                  aria-label="Filters"
+                  title="Filters"
+                >
+                  <LucideFilter />
+                  Filters
+                  {hasAppliedFilters() && <LucideCircle className="absolute -top-1 -right-1 !size-2.5 stroke-0 fill-orange-500" />}
+                </Button>
+              </DialogTrigger>
+              <FilterDialogForm
+                initialValues={currentFilters}
+                onSubmit={handleFilterChange}
+                listenerID={listenerID}
+              />
+            </Dialog>
+          </div>
         </div>
       </div>
 

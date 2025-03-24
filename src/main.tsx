@@ -28,6 +28,7 @@ import { Loader } from "@/components/ui/Loader";
 import { SubscriptionProvider } from '@/context/SubscriptionContext';
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext';
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { LayoutProvider } from '@/context/LayoutContext';
 
 const queryClient = new QueryClient()
 
@@ -185,8 +186,10 @@ if (rootElement) {
         <ThemeProvider storageKey="ui-theme">
           <QueryClientProvider client={queryClient}>
             <TooltipProvider delayDuration={300} skipDelayDuration={300}>
-              <Main />
-              <Toaster />
+              <LayoutProvider>
+                <Main />
+                <Toaster />
+              </LayoutProvider>
             </TooltipProvider>
           </QueryClientProvider>
         </ThemeProvider>

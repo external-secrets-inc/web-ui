@@ -37,7 +37,7 @@ const useGetAuditProblemTimelineStats = (
 ) => {
   const { isMocked } = useAuditMock(mock);
   return useQuery({
-    queryKey: ['audit', 'problem', 'timeline', isMocked, options.startDate, options.endDate],
+    queryKey: ["audit", 'useGetAuditProblemTimelineStats', isMocked, options.startDate, options.endDate],
     queryFn: ({ signal }) => getAuditProblemTimelineStats(isMocked, listenerID, options, signal),
     ...queryOptions,
   });

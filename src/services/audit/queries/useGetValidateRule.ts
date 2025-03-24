@@ -48,7 +48,7 @@ const useGetValidateRule = (
   const { isMocked } = useAuditMock(mock);
 
   return useQuery({
-    queryKey: ["useGetValidateRule", executeOn, isMocked],
+    queryKey: ["audit", "useGetValidateRule", executeOn, isMocked],
     queryFn: ({ signal }) => {
       return getValidateRule(isMocked, executeOn, signal)
     },

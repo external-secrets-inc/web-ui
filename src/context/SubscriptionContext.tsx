@@ -1,10 +1,12 @@
 import { createContext, useContext, useEffect } from 'react';
 import useGetSubscriptions from "@/services/subscriptions/queries/useGetSubscriptions";
 import { Subscription } from '@/types';
+import { ONE_SECOND_IN_MILLISECONDS } from '@/constants';
 
 interface SubscriptionContextValue {
   subscriptions: Subscription[] | undefined;
   isLoading: boolean;
+  error: Error | null;
   hasFeature: (featureName: string) => boolean;
   getExpiryDate: () => string | undefined;
 }
@@ -17,7 +19,9 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     isLoading,
     error,
     isError
-  } = useGetSubscriptions();
+  } = useGetSubscriptions({
+    staleTime: ONE_SECOND_IN_MILLISECONDS * 60 * 60 * 24, // 24 hours
+  });
 
   useEffect(() => {
     if (!isError) return;
@@ -27,8 +31,10 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const value: SubscriptionContextValue = {
     subscriptions,
     isLoading,
+    error: isError ? error : null,
     // TODO: Temporary solution to check if the user has access to a given named feature. Tenant Manager should be responsible for this, not the client. #172
     hasFeature: (featureName: string) => {
+      if (error) return false;
       return subscriptions?.some(subscription =>
         subscription.features.some(feature => feature.name === featureName)
       ) ?? false;

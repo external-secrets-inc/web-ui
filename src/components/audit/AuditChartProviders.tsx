@@ -3,6 +3,7 @@ import { ChartConfig } from "@/components/ui/chart"
 import useGetAuditProviderStats from "@/services/audit/queries/useGetAuditProviderStats"
 import { mockLastUpdate } from "@/services/audit/mocks/mockData"
 import { Skeleton } from "@/components/ui/skeleton"
+import { AUDIT_PAGE_QUERY_REFETCH_INTERVAL, AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants"
 
 const BASE_CHART_CONFIG = {
   amount: {
@@ -16,7 +17,11 @@ interface Props {
 }
 
 function AuditChartProviders({ listenerID }: Props) {
-  const { data, error, isLoading } = useGetAuditProviderStats(false, listenerID || '', {enabled: !!listenerID})
+  const { data, error, isLoading } = useGetAuditProviderStats(false, listenerID || '', {
+    staleTime: AUDIT_QUERY_STALE_TIME,
+    refetchInterval: AUDIT_PAGE_QUERY_REFETCH_INTERVAL,
+    enabled: !!listenerID,
+  })
   const total = data?.reduce((acc, { amount }) => acc + amount, 0) ?? 0
 
   return (

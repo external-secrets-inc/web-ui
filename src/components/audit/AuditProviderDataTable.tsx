@@ -3,7 +3,6 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { LucideEdit, LucideMoreVertical, LucidePlus, LucideTrash2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { DataProvider, DataTable } from "../ui/DataProvider";
-import { ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import ProviderDialogForm from "./ProviderDialogForm.tsx";
 import { AddProviderFormValues, CreateProviderPayload, ProviderTableData } from "./Audit.interfaces";
@@ -18,6 +17,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction" // TODO[cfviotti]: We should not import components from non generic stuff! This should be a generic component, or re-implemented here.
 import useEditProvider, { EditProviderVariables } from "@/services/audit/mutations/useEditProvider";
 import useGetProvidersTypes from "@/services/audit/queries/useGetProvidersType";
+import { AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants.ts";
 
 interface ProviderTableMeta {
   renderRowActions?: (row: ProviderTableData) => React.ReactNode;
@@ -45,7 +45,9 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
     })
   ], [columnHelper])
 
-  const { data: providersTypeData, isLoading: isLoadingProvidersTypes, isError: isErrorProvidersTypes } = useGetProvidersTypes(true);
+  const { data: providersTypeData, isLoading: isLoadingProvidersTypes, isError: isErrorProvidersTypes } = useGetProvidersTypes(true, {
+    staleTime: AUDIT_QUERY_STALE_TIME,
+  });
 
   const isValidProviderType: { (row: ProviderTableData): boolean } = (row) => {
     if (isErrorProvidersTypes) {
@@ -134,8 +136,7 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
     isError: isErrorProviders,
     isRefetchError: isRefetchErrorProviders,
     error: providersError } = useGetAuditProviders(false, listenerID || '', {
-      refetchInterval: 20 * ONE_SECOND_IN_MILLISECONDS,
-      refetchIntervalInBackground: true,
+      staleTime: AUDIT_QUERY_STALE_TIME,
       enabled: !!listenerID
     }
     );
@@ -213,14 +214,9 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
         <h2 className="font-bold">Providers</h2>
         <Dialog open={isAddProviderDialogOpen} onOpenChange={handleAddProviderDialogOpenChange}>
           <DialogTrigger asChild>
-            <Button
-              size="icon"
-              variant="outline"
-              className="self-center min-[260px]:self-end"
-              aria-label="Add Provider"
-              title="Add Provider"
-            >
+            <Button variant="outline">
               <LucidePlus />
+              Add Provider
             </Button>
           </DialogTrigger>
           <ProviderDialogForm

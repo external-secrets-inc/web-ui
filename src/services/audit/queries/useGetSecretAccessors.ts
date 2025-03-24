@@ -30,7 +30,7 @@ const useGetSecretAccessors = (
   const { isMocked } = useAuditMock(mock);
 
   return useQuery({
-    queryKey: ["useGetSecretAccessors", isMocked],
+    queryKey: ["audit", "useGetSecretAccessors", isMocked],
     queryFn: ({ signal }) => getSecretAccessors(isMocked, secretID, signal),
     ...options,
   });

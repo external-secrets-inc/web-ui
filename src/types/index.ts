@@ -22,6 +22,10 @@ export interface Bash {
   bash: string
 }
 
+export interface Helm {
+  helm: string
+}
+
 export interface ApiWrapperOptions {
   defaultError: string;
   suppressToast?: boolean;

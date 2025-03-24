@@ -23,10 +23,11 @@ import { Loader } from "@/components/ui/Loader";
 import useGetSecretPolicyLogs from "@/services/audit/queries/useGetSecretPolicyLogs";
 import useGetSecretAccessorLogs from "@/services/audit/queries/useGetSecretAccessorLogs";
 import { Trimmer } from "@/components/ui/Trimmer";
-import useExportAuditSecrets from "@/services/audit/queries/useExportAuditSecret";
+import useGetAuditSecretExport from "@/services/audit/queries/useGetAuditSecretExport";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { Button } from "../ui/button";
 import saveAs from "file-saver";
+import { AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants";
 
 const POLICY_STATUS_COLORS = {
   compliant: "text-success",
@@ -40,12 +41,13 @@ const POLICY_STATUS_BADGE_VARIANTS = {
   error: "destructive",
 } as const;
 
-const HistoryAccordion = <T extends { id: string }, H extends { timestamp: string }>({
+const HistoryAccordion = <T extends object, H extends { timestamp: string }>({
   item,
   secretId,
   renderTrigger,
   renderHistoryItem,
   useHistoryQuery,
+  getItemId,
 }: {
   item: T;
   secretId: string;
@@ -55,17 +57,22 @@ const HistoryAccordion = <T extends { id: string }, H extends { timestamp: strin
     mock: boolean,
     secretId: string,
     itemId: string,
-    options?: { enabled?: boolean }
+    options?: { enabled?: boolean, staleTime?: number }
   ) => { data: H[] | undefined; isLoading: boolean };
+  getItemId: (item: T) => string;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const itemId = getItemId(item);
 
   // Only fetch data when accordion is open to prevent unnecessary requests on panel load
   const { data: historyData, isLoading: isLoadingHistory } = useHistoryQuery(
     false,
     secretId,
-    item.id,
-    { enabled: isOpen }
+    itemId,
+    {
+      staleTime: AUDIT_QUERY_STALE_TIME,
+      enabled: isOpen,
+    }
   );
 
   // Prevent default accordion behavior to handle async data loading first time
@@ -88,11 +95,11 @@ const HistoryAccordion = <T extends { id: string }, H extends { timestamp: strin
       type="single"
       collapsible
       // Only set accordion value when data exists to ensure correct height calculation
-      value={historyData && isOpen ? item.id : undefined}
+      value={historyData && isOpen ? itemId : undefined}
       // Manual state handling for the async control
       onValueChange={() => {}}
     >
-      <AccordionItem value={item.id} className="border rounded-lg overflow-clip">
+      <AccordionItem value={itemId} className="border rounded-lg overflow-clip">
         <AccordionTrigger
           className="hover:no-underline bg-muted/40 hover:bg-muted/75 py-3 px-4 relative flex items-center justify-between w-full"
           onClick={handleTriggerClick}
@@ -133,7 +140,7 @@ const HistoryAccordion = <T extends { id: string }, H extends { timestamp: strin
   );
 };
 
-const HistorySection = <T extends { id: string }, H extends { timestamp: string }>({
+const HistorySection = <T extends object, H extends { timestamp: string }>({
   title,
   icon,
   items,
@@ -141,7 +148,8 @@ const HistorySection = <T extends { id: string }, H extends { timestamp: string 
   useHistoryQuery,
   renderTrigger,
   renderHistoryItem,
-  emptyMessage = "No history available"
+  emptyMessage = "No history available",
+  getItemId,
 }: {
   title: string;
   icon: React.ReactNode;
@@ -156,6 +164,7 @@ const HistorySection = <T extends { id: string }, H extends { timestamp: string 
   renderTrigger: (item: T) => React.ReactNode;
   renderHistoryItem: (historyItem: H) => React.ReactNode;
   emptyMessage?: string;
+  getItemId: (item: T) => string;
 }) => {
   return (
     <section aria-label={title} className="space-y-2 p-6">
@@ -168,12 +177,13 @@ const HistorySection = <T extends { id: string }, H extends { timestamp: string 
         <div className="space-y-2">
           {items.map(item => (
             <HistoryAccordion
-              key={item.id}
+              key={getItemId(item)}
               item={item}
               secretId={secretId}
               useHistoryQuery={useHistoryQuery}
               renderTrigger={renderTrigger}
               renderHistoryItem={renderHistoryItem}
+              getItemId={getItemId}
             />
           ))}
         </div>
@@ -262,6 +272,7 @@ const SectionSecretPolicies = ({
         </Badge>
       </>
     )}
+    getItemId={(policy) => policy.id}
   />
 );
 
@@ -329,6 +340,7 @@ const SectionSecretAccessors = ({
         <Trimmer>{formatDate(log.timestamp, { format: 'readableDate' })}</Trimmer>
       </Badge>
     )}
+    getItemId={(accessor) => accessor.name}
   />
 );
 
@@ -337,14 +349,16 @@ const AuditSecretDetailsData = ({ className, secretData, setSecretId }: {
   secretData: AuditSecretData;
   setSecretId: (id: string) => void;
 }) => {
+  const [shouldFetch, setShouldFetch] = useState(false);
+
   const {
     data: exportSecretData,
     isLoading: isLoadingExportSecretData,
     isFetching: isFetchingExportSecretData,
-    isError: isErrorExportSecretData,
     error: exportSecretDataError,
-  } = useExportAuditSecrets(false, secretData.id || '', {
-    enabled: !!secretData.id
+  } = useGetAuditSecretExport(false, secretData.id || '', {
+    staleTime: AUDIT_QUERY_STALE_TIME,
+    enabled: shouldFetch,
   });
 
   useEffect(() => {
@@ -354,33 +368,43 @@ const AuditSecretDetailsData = ({ className, secretData, setSecretId }: {
         `Error while fetching to export secret data`
       );
     }
-  }, [exportSecretDataError, isErrorExportSecretData]);
+  }, [exportSecretDataError]);
+
+  const createAndSaveFile = (data: [string, string, string]) => {
+    const [content, fileName, fileType] = data;
+    const file = new File([content], fileName, { type: fileType });
+    saveAs(file);
+  };
+
+  useEffect(() => {
+    if (exportSecretData && shouldFetch) {
+      createAndSaveFile(exportSecretData);
+      setShouldFetch(false);
+    }
+  }, [exportSecretData, shouldFetch]);
 
   const handleExportSecret = () => {
-    if(!exportSecretData) return
-    const file = new File([exportSecretData[0]], exportSecretData[1], { type: exportSecretData[2] });
-    saveAs(file);
-  }
+    setShouldFetch(true);
+  };
 
   return (
     <section aria-label="Details" className={cn("min-h-0 grid grid-rows-[auto_1fr] bg-background relative flex-1", className)}>
-      <div className="px-6 py-4 border-b">
-        <div className="flex items-center flex-wrap gap-2 font-bold">
+      <div className="px-6 py-4 border-b flex items-center flex-wrap gap-2 font-bold min-w-0">
+        <div className="flex items-center gap-2 flex-1 min-w-0 basis-48 max-w-fit">
           <LucideSquareAsterisk className="size-6 text-primary" />
-          {secretData.name || "Unnamed Secret"}
-          <Badge variant="outline">{secretData.providerName}</Badge>
-          <Button
-              size="icon"
-              variant="outline"
-              className="self-center"
-              aria-label="Download"
-              title="Download"
-              onClick={() => {handleExportSecret()}}
-              disabled={isLoadingExportSecretData || isFetchingExportSecretData || !exportSecretData}
-            >
-              <LucideDownload />
-            </Button>
+          <Trimmer lineClamp={2}>{secretData.name || "Unnamed Secret"}</Trimmer>
         </div>
+        <Badge variant="outline" className="mr-auto">{secretData.providerName}</Badge>
+        <Button
+          className="lg:mr-6"
+          size="sm"
+          variant="outline"
+          onClick={handleExportSecret}
+          disabled={isLoadingExportSecretData || isFetchingExportSecretData}
+        >
+          {(isLoadingExportSecretData || isFetchingExportSecretData) ? <Loader /> : <LucideDownload />}
+          Export
+        </Button>
       </div>
 
       <div className="pb-20 overflow-auto divide-y">

@@ -36,7 +36,7 @@ const useGetTenantListeners = <T = TenantListener[]>(
   const { isMocked } = useAuditMock(mock);
 
   return useQuery({
-    queryKey: ["useGetTenantListeners", isMocked],
+    queryKey: ["audit", "useGetTenantListeners", isMocked],
     queryFn: ({ signal }) => {
       return getTenantListeners(isMocked, signal)
     },

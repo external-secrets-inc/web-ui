@@ -31,7 +31,7 @@ const useGetAuditProviders = (
   const { isMocked } = useAuditMock(mock);
 
   return useQuery({
-    queryKey: ["useGetAuditProviders", isMocked],
+    queryKey: ["audit", "useGetAuditProviders", isMocked],
     queryFn: ({ signal }) => getAuditProviders(isMocked, listenerID, signal),
     ...options,
   });

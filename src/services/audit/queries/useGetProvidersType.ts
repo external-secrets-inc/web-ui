@@ -13,6 +13,12 @@ const getProvidersTypes = async (
 ) => {
   if (mock) {
     return {
+      "GKE": {
+        "project-id": { "type": "string", "required": true },
+        "location": { "type": "string", "required": true },
+        "cluster": { "type": "string", "required": true },
+        "subscription": { "type": "string", "required": true }
+      },
       "GCP": {
         "project-id": { "type": "string", "required": true },
         "topic": { "type": "string", "required": true },
@@ -24,6 +30,21 @@ const getProvidersTypes = async (
         "vaultVersion": { "type": "string", "required": false, "default": "v2" },
         "socketHost": { "type": "string", "required": false, "default": "0.0.0.0" },
         "socketPort": { "type": "number", "required": false, "default": 8000}
+      },
+      "AWS_SECRETS_MANAGER": {
+        "region": {"type": "string", "required": true},
+        "queue-url": {"type": "string", "required": true}
+      },
+      "AWS_PARAMETER_STORE": {
+        "region": {"type": "string", "required": true},
+        "queue-url": {"type": "string", "required": true}
+      },
+      "AZURE_KEYVAULT": {
+        "vaultURL": {"type": "string", "required": true},
+        "eventHubNamespaceHost": {"type": "string", "required": true},
+        "eventHubName": {"type": "string", "required": true},
+        "storageEndpoint": {"type": "string", "required": true},
+        "storageContainerName": {"type": "string", "required": true}
       }
     } as AddProviderFormSchema;
   }
@@ -40,7 +61,7 @@ const useGetProvidersTypes = (
   const { isMocked } = useAuditMock(mock);
 
   return useQuery({
-    queryKey: ["useGetProvidersTypes", isMocked],
+    queryKey: ["audit", "useGetProvidersTypes", isMocked],
     queryFn: ({ signal }) => {
       return getProvidersTypes(isMocked, signal)
     },

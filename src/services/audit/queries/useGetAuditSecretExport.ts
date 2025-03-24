@@ -6,7 +6,7 @@ import { AxiosError } from "axios";
 import { mockNetworkResponseDelay } from "../mocks/mockData";
 import { useAuditMock } from '@/services/audit/context/AuditMockContext';
 
-const exportAuditSecrets = async (
+const auditSecretExport = async (
   mock: boolean,
   secretID: string,
   signal: AbortSignal,
@@ -21,7 +21,7 @@ const exportAuditSecrets = async (
   return response.data;
 }
 
-const useExportAuditSecrets = (
+const useGetAuditSecretExport = (
   mock: boolean,
   secretID: string,
   options?: Omit<UseQueryOptions<[string, string, string], AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
@@ -29,10 +29,10 @@ const useExportAuditSecrets = (
   const { isMocked } = useAuditMock(mock);
 
   return useQuery({
-    queryKey: ["useExportAuditSecrets", isMocked],
-    queryFn: ({ signal }) => exportAuditSecrets(isMocked, secretID, signal),
+    queryKey: ["audit", "useGetAuditSecretExport", secretID, isMocked],
+    queryFn: ({ signal }) => auditSecretExport(isMocked, secretID, signal),
     ...options,
   });
 };
 
-export default useExportAuditSecrets;
+export default useGetAuditSecretExport;
