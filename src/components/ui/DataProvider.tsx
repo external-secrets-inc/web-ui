@@ -54,7 +54,7 @@ type TableActions = {
  * Configuration options for the DataProvider.
  * @template TData - Type of data items being displayed
  */
-type ProviderConfig<TData extends object> = {
+export type ProviderConfig<TData extends object> = {
   /**
    * Array of data items to display
    * @see {@link https://tanstack.com/table/v8/docs/api/core/table#data Data API}
