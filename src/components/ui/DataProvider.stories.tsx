@@ -63,7 +63,8 @@ const DataProviderExample = (args: ProviderConfig<User>) => {
   return (
     <DataProvider<User> {...args}>
       <div className="space-y-4">
-        <div className="flex justify-between items-center gap-2">
+        <div className="flex justify-between items-center gap-4">
+          <strong>Users</strong>
           <div className="flex gap-2">
             <DataSearch />
             <DataSort />
@@ -80,7 +81,8 @@ const CustomRowIdExample = (args: ProviderConfig<UserWithCustomId>) => {
   return (
     <DataProvider<UserWithCustomId> {...args}>
       <div className="space-y-4">
-        <div className="flex justify-between items-center gap-2">
+        <div className="flex justify-between items-center gap-4">
+          <strong>Users with email as unique ID</strong>
           <div className="flex gap-2">
             <DataSearch />
             <DataSort />
