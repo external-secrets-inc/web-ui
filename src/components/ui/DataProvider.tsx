@@ -64,13 +64,15 @@ export type ProviderConfig<TData extends object> = {
   /**
    * Column definitions for the table. Memoizing this array is recomended by
    * react-table.
+   * You also must use `tanstack-table` column definitions for it to properly work.
+   * `createColumnHelper` is your friend.
    * @see
    * {@link https://tanstack.com/table/v8/docs/api/core/table#columns Column API}
    */
   columns: ColumnDef<TData, any>[] // eslint-disable-line @typescript-eslint/no-explicit-any
 
   /**
-   * Initial sort configuration
+   * Initial sort configuration for defining which column to sort by and in which direction when first rendering the table
    * @default{ id: 'id', desc: false }
    */
   initialSort?: SortConfig
@@ -109,10 +111,17 @@ export type ProviderConfig<TData extends object> = {
     | 'onSortingChange'
     | 'onGlobalFilterChange'
   >
+
+  /**
+   * Children to render inside the DataProvider. Usually a `DataTable` or `DataGrid` component, but can be anything your heart desires. That's the beauty of `tanstack-table` headless nature.
+   */
+  children: React.ReactNode
+
 } & (
   | { getRowId: (row: TData) => string }
   | { data: Array<TData & WithId> }
 )
+
 /**
  * Combined type for all values provided by the DataProvider context.
  * Merges state, actions and the table instance for full control.
@@ -236,7 +245,7 @@ function DataProvider<TData extends object>({
 }: ProviderConfig<TData> & { children: React.ReactNode }) {
   return (
     <DataProviderContext.Provider
-      value={useDataProvider(config) as unknown as ProviderContextValue<object>} // TODO[cfviotti]: Fix type assertion (and every other `any` that's here. PS: It's harder than it looks)
+      value={useDataProvider(config as ProviderConfig<TData>) as unknown as ProviderContextValue<object>} // TODO[cfviotti]: Fix type assertion (and every other `any` that's here. PS: It's harder than it looks)
     >
       {children}
     </DataProviderContext.Provider>
