@@ -55,7 +55,13 @@ This project uses:
   - `TODO:` Visual testing should be automatically triggered on PRs. We should properly configure CI steps for it
   - Component documentation is published to Chromatic for online view
   - Manual publish: `npm run chromatic` (requires `CHROMATIC_PROJECT_TOKEN` retrieved from [Chromatic](https://www.chromatic.com/))
-
+  - Our Chromatic project ID is `qtkdyngiqi`
+  - Access our Storybook online:
+    - Latest main branch: https://main-qtkdyngiqi.chromatic.com
+    - Specific branch: https://<branch>-qtkdyngiqi.chromatic.com (when published from within a branch)
+    - Specific commit: https://<commithash>-qtkdyngiqi.chromatic.com (when published from within a specific commit)
+  - Note: For branches with special characters or long names, they will be sanitized (e.g., `feature/fix-bug` becomes `feature-fix-bug`)
+  - Check their [Permalinks](https://www.chromatic.com/docs/permalinks/) docs page for reference
 
 ### Commit/PR Guidelines
 This project follows [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
