@@ -1,66 +1,76 @@
 # esi-web-ui
-Web ui (Portal) for managing external-secrets-inc
+Web UI (Portal) for managing external-secrets-inc
 
-# Running
-Fire up with:
-- `make dev`
-- profit
+## Prerequisites
+- Node.js (version specified in `./nvmrc` file. We recommend using a node version manager like [nvm](https://github.com/nvm-sh/nvm) or [fnm]https://github.com/Schniz/fnm))
+- npm
+- make
+- gcloud (for helm deployment operations)
 
----
+## Environment Setup
+Copy `.env.example` to `.env` and configure the required environment variables:
+```bash
+cp .env.example .env
+```
+See `.env.example` for detailed configuration options.
 
-# Contributing
-Please do commits following [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) approach.
-There is a github action that will prevent your commit if you dont do it!
-Run `make setup` in order to install pre-commit checks to prevent that from happening
+## Quick Start
+```bash
+# Install dependencies and setup pre-commit hooks
+make setup
 
-# (Default placeholder readme from `npm create vite@latest` with TS + SWC below)
-# React + TypeScript + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+# Start development server
+make dev
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## Development
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+### Available Commands
+```bash
+# Development
+make dev          # Start development server
+make install      # Install dependencies
+make build        # Build for production
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+# Component Development
+npm run storybook    # Start Storybook
+npm run build-storybook  # Build Storybook
+npm run chromatic    # Publish to Chromatic (requires CHROMATIC_PROJECT_TOKEN)
+
+# Helm Operations
+make helm.login   # Login to helm registry
+make helm.push    # Push helm chart to registry
 ```
+
+### UI Component Development
+
+We maintain a proto Design System in `src/components/ui/` (also refer the README file under `./ui` folder):
+- Shadcn components (installed via `npx shadcn@latest add`)
+- Custom components (PascalCase naming)
+- All components use Tailwind styling
+
+This project uses:
+- [Storybook](https://storybook.js.org/) for component development and documentation (can be run locally)
+- [Chromatic](https://www.chromatic.com/) for visual testing and component documentation (for online view)
+  - `TODO:` Visual testing should be automatically triggered on PRs. We should properly configure CI steps for it
+  - Component documentation is published to Chromatic for online view
+  - Manual publish: `npm run chromatic` (requires `CHROMATIC_PROJECT_TOKEN` retrieved from [Chromatic](https://www.chromatic.com/))
+
+
+### Commit/PR Guidelines
+This project follows [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
+- Commits and PRs must follow the conventional commits format especially for release PRs
+- If you're on VScode we recommend the [Conventional Commits Extension](https://marketplace.cursorapi.com/items?itemName=vivaxy.vscode-conventional-commits)
+
+### Production Release Process
+This project uses an automated release bot that:
+- Monitors PRs for conventional commit messages
+- Automatically creates/edits a release PR when commits are merged to `main`
+- Updates semver numbers based on commit types
+- Requires manual approval for release PRs
+
+## Deployment
+The project is deployed via Helm charts:
+- Charts are stored in `deploy/charts/web-ui`
+- Registry: `us-central1-docker.pkg.dev/external-secrets-inc-registry/internal/charts`
+- Push new chart: `make helm.push` (requires gcloud authentication)
