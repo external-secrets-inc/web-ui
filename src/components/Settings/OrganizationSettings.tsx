@@ -26,10 +26,10 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { FeatureItemDeleteAction } from "../FeatureCollection/FeatureItemDeleteAction";
 import { AUDIT_QUERY_STALE_TIME } from "../audit/Audit.constants";
-import { AxiosError } from "axios";
-import { ApiHttpError } from "@/types";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { Dialog, DialogTrigger } from "../ui/dialog";
+import { createUserData, deleteUserData, updateUserData, useListUsersData } from "@/services/users/usersService";
+import { CreateUserDataPayload, UpdateUserDataPayload } from "@/services/users/Users.interface";
 
 const formSchema = z.object({
   contact_email: z.string().email({ message: "Invalid email address" }),
@@ -197,59 +197,61 @@ const OrganizationSettings: React.FC = () => {
   const {
     data: usersData,
     refetch: usersRefetch,
-    isLoading: isLoadingPolicies,
+    isLoading: isLoadingUsers,
     isError: isErrorUsers,
     isRefetchError: isRefetchErrorUsers,
     error: usersError
-  } = useGetUsers(false, accountData?.tenant_id, {
+  } = useListUsersData(false, {
     staleTime: AUDIT_QUERY_STALE_TIME,
   });
 
-  const users = useMemo(() => {
+  const users: UsersManagementTableData[] = useMemo(() => {
     if (!usersData) return []
 
     // Transform the API response to include the required id dataProvider field
-    return usersData.map(user => ({
-      ...user,
+    return usersData.users.filter(user => user.is_active).map(user => ({
       id: user.id,
+      name: user.name,
+      email: user.email,
+      tenantID: accountData?.tenant_id,
+      permissions: ["Read", "Write"]
     }));
   }, [usersData]);
 
-  const { mutate: createUser } = useCreateUser(false, {
-    onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to create User"),
-    onSuccess: () => {
-      usersRefetch();
-      toast.success("User created successfully")
-    },
-  });
-
-  const { mutate: editUser } = useEditUser(false, {
-    onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to edit User"),
-    onSuccess: () => {
-      usersRefetch();
-      toast.success("User edited successfully")
-    },
-  });
-
-  const { mutate: deleteUser } = useDeleteUser(false, {
-    onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to delete User"),
-    onSuccess: () => {
-      usersRefetch();
-      toast.success("User deleted successfully")
-    },
-  });
-
-  const performCreate = (payload: CreateUserPayload) => {
-    payload.tenantID = accountData?.tenant_id;
-    createUser(payload)
+  const performCreate = async (createPayload: CreateUserDataPayload) => {
+    if (createPayload) {
+      try {
+        await createUserData(createPayload);
+        usersRefetch()
+        toast.success('User created successfully');
+      } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
+        toast.error('Failed to create user');
+      }
+    }
   };
 
-  const performEdit = (editPayload: EditUserPayload) => {
-    editUser(editPayload);
+  const performEdit = async (userID: string, updatePayload: UpdateUserDataPayload) => {
+    if (updatePayload) {
+      try {
+        await updateUserData(userID, updatePayload);
+        usersRefetch()
+        toast.success('User created successfully');
+      } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
+        toast.error('Failed to create user');
+      }
+    }
   };
 
-  const performDelete = (policyID: string) => {
-    deleteUser({ id: policyID });
+  const performDelete = async (userID: string) => {
+    if (userID) {
+      try {
+        await deleteUserData(userID);
+        usersRefetch()
+        toast.success('User created successfully');
+      } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
+        toast.error('Failed to create user');
+      }
+    }
   };
 
   useEffect(() => {
@@ -263,11 +265,11 @@ const OrganizationSettings: React.FC = () => {
     setSelectedUserId("");
   };
 
-  const handleAddUserSubmit = (payload: CreateUserPayload) => {
+  const handleAddUserSubmit = (payload: CreateUserDataPayload) => {
     if (selectedUserId) {
-      const { name, executeOn, engine, rule } = { ...payload };
-      const editPayload = { policyID: selectedUserId, payload: { name, executeOn, engine, rule } };
-      performEdit(editPayload);
+      const { name } = { ...payload };
+      const editPayload = { name: name };
+      performEdit(selectedUserId, editPayload);
     } else {
       performCreate(payload);
     }
@@ -380,7 +382,7 @@ const OrganizationSettings: React.FC = () => {
             data={users}
             columns={usersManagementColumns}
             initialSort={{ id: 'name', desc: false }}
-            isLoading={isLoadingPolicies}
+            isLoading={isLoadingUsers}
           >
             <DataTable
               meta={usersManagementTableMeta}
@@ -396,12 +398,13 @@ const OrganizationSettings: React.FC = () => {
                 Add User
               </Button>
             </DialogTrigger>
-            <UserDialogForm
+            <p> Coming soon... </p>
+            {/* <UserDialogForm
               selectedUserId={selectedUserId}
               userForm={userForm}
               onSubmit={handleAddUserSubmit}
               onCancel={() => { handleAddUserDialogOpenChange(false) }}
-            />
+            /> */}
           </Dialog>
         </>
       ),
