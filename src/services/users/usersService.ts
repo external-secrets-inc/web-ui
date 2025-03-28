@@ -1,10 +1,8 @@
 import { getAuthHeaders } from '@/services/auth/authHelpers';
 import { apiWrapper } from '@/services/servicesHelpers';
-import { ApiWrapperOptions, ApiHttpError } from '@/types';
+import { ApiWrapperOptions } from '@/types';
 import axiosInstance from '../axiosConfig';
-import { CreateUserDataPayload, ListUsersResponse, UpdateUserDataPayload } from './Users.interface';
-import { UseQueryOptions, useQuery } from "@tanstack/react-query";
-import { AxiosError } from "axios";
+import { CreateUserDataPayload, UpdateUserDataPayload } from './Users.interface';
 
 
 // Fetch user data
@@ -46,34 +44,3 @@ export async function deleteUserData(userId: string, options: Partial<ApiWrapper
     return response.data;
   }, { defaultError: 'Failed to delete user details', ...options });
 }
-
-// Get users
-const listUsersData = async (mock: boolean, signal: AbortSignal,): Promise<ListUsersResponse> => {
-  if (mock) {
-    return {
-      "users": [],
-    };
-  }
-
-  const headers = await getAuthHeaders();
-  const response = await axiosInstance.get(`/api/users/`, {
-    headers,
-    signal,
-  });
-  return response.data;
-};
-
-export const useListUsersData = <T = ListUsersResponse>(
-  mock: boolean,
-  options?: Omit<UseQueryOptions<ListUsersResponse, AxiosError<ApiHttpError>, T>, 'queryKey' | 'queryFn'>
-) => {
-  const isMocked = mock;
-
-  return useQuery({
-    queryKey: ["useListUsersData", isMocked],
-    queryFn: ({ signal }) => {
-      return listUsersData(isMocked, signal)
-    },
-    ...options,
-  });
-};

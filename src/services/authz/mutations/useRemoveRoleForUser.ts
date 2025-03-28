@@ -5,11 +5,8 @@ import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
 
 interface RemoveRoleForUserPayload {
-  subject: string,
-  resource: string,
-  action: string,
-  attr: string,
-  context: any
+  role: string,
+  token: string
 }
 
 const removeRoleForUser = async (mock: boolean, payload: RemoveRoleForUserPayload): Promise<number> => {

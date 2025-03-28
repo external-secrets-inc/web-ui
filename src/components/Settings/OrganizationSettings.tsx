@@ -28,8 +28,15 @@ import { FeatureItemDeleteAction } from "../FeatureCollection/FeatureItemDeleteA
 import { AUDIT_QUERY_STALE_TIME } from "../audit/Audit.constants";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { Dialog, DialogTrigger } from "../ui/dialog";
-import { createUserData, deleteUserData, updateUserData, useListUsersData } from "@/services/users/usersService";
-import { CreateUserDataPayload, UpdateUserDataPayload } from "@/services/users/Users.interface";
+import { createUserData, deleteUserData, updateUserData } from "@/services/users/usersService";
+import useListUsersWithRoles from "@/services/users/queries/useListUsersWithRoles";
+import { CreateUserDataPayload, UpdateUserDataPayload, UserForm } from "@/services/users/Users.interface";
+import { Badge } from "@/components/ui/badge"
+import UserDialogForm from "./UserDialogForm";
+import { AxiosError } from "axios";
+import { ApiHttpError } from "@/types";
+import useAddRoleForUserByID from "@/services/authz/mutations/useAddRoleForUserByID";
+import useRemoveRoleForUserByID from "@/services/authz/mutations/useRemoveRoleForUserByID";
 
 const formSchema = z.object({
   contact_email: z.string().email({ message: "Invalid email address" }),
@@ -51,17 +58,11 @@ interface UsersManagementTableData {
   tenantID: string;
   name: string;
   email: string;
-  permissions: string[];
+  roles: string[];
 }
 
 interface UsersManagementTableMeta {
   renderRowActions?: (row: UsersManagementTableData) => React.ReactNode;
-}
-
-export interface UserForm {
-  name: string;
-  email: string;
-  permissions: string[];
 }
 
 const OrganizationSettings: React.FC = () => {
@@ -126,9 +127,23 @@ const OrganizationSettings: React.FC = () => {
       header: 'Email',
       cell: info => <strong>{info.getValue()}</strong>
     }),
-    columnHelper.accessor('permissions', {
-      header: 'Permissions',
-      cell: info => info.getValue()?.join(" ; ") || ""
+    columnHelper.accessor('roles', {
+      header: 'Roles',
+      cell: info => {
+        const roles = info.getValue() as string[] | undefined;
+
+        if (!roles || roles.length === 0) return null;
+
+        return (
+          <div className="flex flex-wrap gap-2">
+            {roles.map(role => (
+              <Badge key={role} variant="secondary">
+                {role}
+              </Badge>
+            ))}
+          </div>
+        );
+      }
     }),
     columnHelper.display({
       id: 'actions',
@@ -160,9 +175,9 @@ const OrganizationSettings: React.FC = () => {
             <DropdownMenuItem
               onSelect={(e) => {
                 e.preventDefault();
-                // setSelectedUserId(row.id);
-                // setUserForm({ name: row.name, engine: row.engine, executeOn: row.executeOn, sample: "", rule: isBase64(row.rule) ? atob(row.rule) : row.rule });
-                // setIsAddUserDialogOpen(true);
+                setSelectedUserId(row.id);
+                setUserForm({ name: row.name, email: row.email, roles: row.roles });
+                setIsAddUserDialogOpen(true);
               }}
             >
               <LucideEdit className="mr-2" />
@@ -189,7 +204,8 @@ const OrganizationSettings: React.FC = () => {
   const defaultUserFormValues = {
     name: "",
     email: "",
-    permissions: [],
+    password: "",
+    roles: [],
   };
   const [userForm, setUserForm] = useState<UserForm>(defaultUserFormValues);
   const [selectedUserId, setSelectedUserId] = useState<string>("");
@@ -201,7 +217,7 @@ const OrganizationSettings: React.FC = () => {
     isError: isErrorUsers,
     isRefetchError: isRefetchErrorUsers,
     error: usersError
-  } = useListUsersData(false, {
+  } = useListUsersWithRoles(false, {
     staleTime: AUDIT_QUERY_STALE_TIME,
   });
 
@@ -214,7 +230,7 @@ const OrganizationSettings: React.FC = () => {
       name: user.name,
       email: user.email,
       tenantID: accountData?.tenant_id,
-      permissions: ["Read", "Write"]
+      roles: user.roles
     }));
   }, [usersData]);
 
@@ -235,7 +251,7 @@ const OrganizationSettings: React.FC = () => {
       try {
         await updateUserData(userID, updatePayload);
         usersRefetch()
-        toast.success('User created successfully');
+        toast.success('User edited successfully');
       } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
         toast.error('Failed to create user');
       }
@@ -247,7 +263,7 @@ const OrganizationSettings: React.FC = () => {
       try {
         await deleteUserData(userID);
         usersRefetch()
-        toast.success('User created successfully');
+        toast.success('User deleted successfully');
       } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
         toast.error('Failed to create user');
       }
@@ -265,16 +281,80 @@ const OrganizationSettings: React.FC = () => {
     setSelectedUserId("");
   };
 
-  const handleAddUserSubmit = (payload: CreateUserDataPayload) => {
+  const { mutateAsync: addRole } = useAddRoleForUserByID(false, {
+    onError: (error) => handleDefaultApiHttpError(error, "Failed to assign role"),
+  });
+
+  const { mutateAsync: removeRole } = useRemoveRoleForUserByID(false, {
+    onError: (error) => handleDefaultApiHttpError(error, "Failed to unassign role"),
+  });
+
+  const handleAddUserSubmit = async (payload: UserForm) => {
     if (selectedUserId) {
-      const { name } = { ...payload };
-      const editPayload = { name: name };
-      performEdit(selectedUserId, editPayload);
+      try {
+        // Handle basic user info update
+        const { name, password } = { ...payload };
+        const editPayload = {
+          name: name,
+          ...(password && password.trim() !== "" ? { password } : {})
+        };
+        await performEdit(selectedUserId, editPayload);
+
+        // Handle role assignments
+        const currentUser = users.find(u => u.id === selectedUserId);
+        if (!currentUser) return;
+
+        const currentRoles = currentUser.roles || [];
+        const newRoles = payload.roles || [];
+
+        const rolesToRemove = currentRoles.filter(
+          role => !newRoles.includes(role)
+        );
+
+        const rolesToAdd = newRoles.filter(
+          role => !currentRoles.includes(role)
+        );
+
+        // Execute all role mutations in parallel
+        const mutations = [
+          ...rolesToRemove.map(role =>
+            removeRole({ user_id: selectedUserId, role })
+          ),
+          ...rolesToAdd.map(role =>
+            addRole({ user_id: selectedUserId, role })
+          )
+        ];
+
+        await Promise.all(mutations);
+        await usersRefetch();
+
+        // Show success message for role changes
+        if (rolesToAdd.length > 0 || rolesToRemove.length > 0) {
+          const messages: string[] = [];
+          if (rolesToAdd.length > 0) {
+            messages.push(`${rolesToAdd.length} role${rolesToAdd.length !== 1 ? 's' : ''} assigned`);
+          }
+          if (rolesToRemove.length > 0) {
+            messages.push(`${rolesToRemove.length} role${rolesToRemove.length !== 1 ? 's' : ''} removed`);
+          }
+          toast.success(messages.join(' and '));
+        }
+      } catch (error) {
+        handleDefaultApiHttpError(error as AxiosError<ApiHttpError>, "Failed to update user and roles");
+      }
     } else {
-      performCreate(payload);
+      // Handle new user creation
+      if (!payload.password) return;
+
+      const userCreatePayload: CreateUserDataPayload = {
+        name: payload.name,
+        email: payload.email,
+        password: payload.password,
+      };
+      performCreate(userCreatePayload);
     }
     handleAddUserDialogOpenChange(false);
-  }
+  };
 
   async function handleSaveSection(values: FormSchemaType) {
     const dataToSend = {
@@ -399,12 +479,12 @@ const OrganizationSettings: React.FC = () => {
               </Button>
             </DialogTrigger>
             <p> Coming soon... </p>
-            {/* <UserDialogForm
+            <UserDialogForm
               selectedUserId={selectedUserId}
               userForm={userForm}
               onSubmit={handleAddUserSubmit}
               onCancel={() => { handleAddUserDialogOpenChange(false) }}
-            /> */}
+            />
           </Dialog>
         </>
       ),
