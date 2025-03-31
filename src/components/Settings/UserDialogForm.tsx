@@ -21,6 +21,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { MultiSelect } from "@/components/ui/MultiSelect";
+import NewPasswordField from "../Auth/fields/NewPasswordField";
 
 const getSchema = (selectedUserId: string | null) => {
   return z.object({
@@ -29,7 +30,9 @@ const getSchema = (selectedUserId: string | null) => {
     password: selectedUserId
       ? z.string().optional()
       : z.string().min(1, { message: "Password is required." }),
-    roles: z.array(z.string()).min(0),
+    roles: selectedUserId
+      ? z.array(z.string()).min(0)
+      : z.array(z.string()).optional(),
   });
 };
 
@@ -72,7 +75,7 @@ const UserDialogForm = ({ selectedUserId, userForm, onSubmit, onCancel }: {
         <DialogDescription />
       </DialogHeader>
       <Form {...form}>
-        <form autoComplete="off" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
           <FormField
             control={form.control}
             name="name"
@@ -80,7 +83,7 @@ const UserDialogForm = ({ selectedUserId, userForm, onSubmit, onCancel }: {
               <FormItem>
                 <FormLabel>Name</FormLabel>
                 <FormControl>
-                  <Input autoComplete="off" placeholder="Enter Name" {...field} />
+                  <Input placeholder="Enter Name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -93,25 +96,15 @@ const UserDialogForm = ({ selectedUserId, userForm, onSubmit, onCancel }: {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input disabled={Boolean(selectedUserId)} autoComplete="off" placeholder="Enter email" {...field} />
+                  <Input disabled={Boolean(selectedUserId)} placeholder="Enter email" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <Input type="password" autoComplete="off" placeholder="Enter password" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {!selectedUserId &&
+            <NewPasswordField submittedWithErrors={false} />
+          }
           {Boolean(selectedUserId) &&
             <FormField
               control={form.control}

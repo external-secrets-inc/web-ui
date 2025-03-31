@@ -478,7 +478,6 @@ const OrganizationSettings: React.FC = () => {
                 Add User
               </Button>
             </DialogTrigger>
-            <p> Coming soon... </p>
             <UserDialogForm
               selectedUserId={selectedUserId}
               userForm={userForm}
