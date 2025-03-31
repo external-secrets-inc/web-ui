@@ -184,7 +184,7 @@ const OrganizationSettings: React.FC = () => {
               Edit User
             </DropdownMenuItem>
             <FeatureItemDeleteAction
-              featureType={"Audit User"}
+              featureType={"User"}
               featureID={row.id}
               featureName={row.name}
               onDelete={() => { performDelete(row.id) }}
@@ -224,7 +224,7 @@ const OrganizationSettings: React.FC = () => {
   const users: UsersManagementTableData[] = useMemo(() => {
     if (!usersData) return []
 
-    // Transform the API response to include the required id dataProvider field
+    // Filter out inactive users and map them to the table data structure
     return usersData.users.filter(user => user.is_active).map(user => ({
       id: user.id,
       name: user.name,
@@ -455,7 +455,7 @@ const OrganizationSettings: React.FC = () => {
       ),
     },
     {
-      title: 'Contact Information',
+      title: 'User Management',
       content: (
         <>
           <DataProvider

@@ -5,27 +5,27 @@ import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
 import { PolicyPayload } from "../Authz.interfaces";
 
-const createPolicy = async (mock: boolean, payload: PolicyPayload): Promise<number> => {
+const deleteAuthzPolicy = async (mock: boolean, payload: PolicyPayload): Promise<number> => {
   if (mock) {
     return 200
   }
 
   const headers = await getAuthHeaders();
-  const response = await axiosInstance.post(`/api/authz/policies`, payload, { headers });
+  const response = await axiosInstance.delete(`/api/authz/policies`, { headers, data: payload });
   return response.status;
 };
 
-const usePostCreatePolicy = (
+const useDeleteAuthzPolicy = (
   mock: boolean,
   options?: Omit<UseMutationOptions<number, AxiosError<ApiHttpError>, PolicyPayload>, 'mutationKey' | 'mutationFn'>
 ) => {
   const isMocked = mock;
 
   return useMutation({
-    mutationKey: ["usePostCreatePolicy", isMocked],
-    mutationFn: (variables: PolicyPayload) => createPolicy(isMocked, variables),
+    mutationKey: ["useDeleteAuthzPolicy", isMocked],
+    mutationFn: (variables: PolicyPayload) => deleteAuthzPolicy(isMocked, variables),
     ...options,
   });
 };
 
-export default usePostCreatePolicy;
+export default useDeleteAuthzPolicy;
