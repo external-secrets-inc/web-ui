@@ -9,7 +9,6 @@ interface CheckUserPermissionPayload {
   resource: string,
   action: string,
   attr: string,
-  context: any
 }
 
 interface CheckUserPermissionResponse {

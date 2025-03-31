@@ -232,7 +232,7 @@ const OrganizationSettings: React.FC = () => {
       tenantID: accountData?.tenant_id,
       roles: user.roles
     }));
-  }, [usersData]);
+  }, [usersData, accountData]);
 
   const performCreate = async (createPayload: CreateUserDataPayload) => {
     if (createPayload) {
