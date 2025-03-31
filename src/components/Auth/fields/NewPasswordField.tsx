@@ -16,7 +16,7 @@ const NewPasswordField = forwardRef<HTMLInputElement, NewPasswordFieldProps>(
     const [password, setPassword] = useState(getValues("password"));
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [passwordValidations, setPasswordValidations] = useState({
-      length: password.length >= passwordMinLengthValue,
+      length: password?.length >= passwordMinLengthValue,
       uppercase: regexIsUppercase.test(password),
       number: regexIsNumber.test(password),
       specialChar: regexIsSpecialCharacter.test(password),
@@ -24,7 +24,7 @@ const NewPasswordField = forwardRef<HTMLInputElement, NewPasswordFieldProps>(
 
     useEffect(() => {
       setPasswordValidations({
-        length: password.length >= passwordMinLengthValue,
+        length: password?.length >= passwordMinLengthValue,
         uppercase: regexIsUppercase.test(password),
         number: regexIsNumber.test(password),
         specialChar: regexIsSpecialCharacter.test(password),

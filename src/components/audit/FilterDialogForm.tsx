@@ -189,7 +189,6 @@ const MultiSelectFilter = ({
           value={field.value}
           defaultValue={field.value}
           placeholder={placeholder}
-          variant="default"
           maxCount="auto"
         />
       </FormItem>
