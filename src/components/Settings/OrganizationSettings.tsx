@@ -59,6 +59,7 @@ interface UsersManagementTableData {
   name: string;
   email: string;
   roles: string[];
+  isActive: boolean;
 }
 
 interface UsersManagementTableMeta {
@@ -121,27 +122,53 @@ const OrganizationSettings: React.FC = () => {
   const usersManagementColumns = useMemo(() => [
     columnHelper.accessor('name', {
       header: 'Name',
-      cell: info => <strong>{info.getValue()}</strong>
+      cell: info => {
+        const isActive = info.row.original.isActive;
+        return (
+          <strong className={!isActive ? 'dark:text-gray-600 text-gray-400 ' : ''}>
+            {info.getValue()}
+          </strong>
+        );
+      }
     }),
     columnHelper.accessor('email', {
       header: 'Email',
-      cell: info => <strong>{info.getValue()}</strong>
+      cell: info => {
+        const isActive = info.row.original.isActive;
+        return (
+          <strong className={!isActive ? 'dark:text-gray-600 text-gray-400 ' : ''}>
+            {info.getValue()}
+          </strong>
+        );
+      }
     }),
     columnHelper.accessor('roles', {
       header: 'Roles',
       cell: info => {
+        const isActive = info.row.original.isActive;
         const roles = info.getValue() as string[] | undefined;
 
         if (!roles || roles.length === 0) return null;
 
         return (
           <div className="flex flex-wrap gap-2">
-            {roles.map(role => (
+            {roles.sort().map(role => (
               <Badge key={role} variant="secondary">
-                {role}
+                <p className={!isActive ? 'dark:text-gray-600 text-gray-400 ' : ''}>{role}</p>
               </Badge>
             ))}
           </div>
+        );
+      }
+    }),
+    columnHelper.accessor('isActive', {
+      header: 'Status',
+      cell: info => {
+        const isActive = info.getValue() as boolean;
+        return (
+          <Badge variant={isActive ? "success" : "destructive"}>
+            {isActive ? "Active" : "Inactive"}
+          </Badge>
         );
       }
     }),
@@ -225,12 +252,13 @@ const OrganizationSettings: React.FC = () => {
     if (!usersData) return []
 
     // Filter out inactive users and map them to the table data structure
-    return usersData.users.filter(user => user.is_active).map(user => ({
+    return usersData.users.map(user => ({
       id: user.id,
       name: user.name,
       email: user.email,
       tenantID: accountData?.tenant_id,
-      roles: user.roles
+      roles: user.roles,
+      isActive: user.is_active
     }));
   }, [usersData, accountData]);
 

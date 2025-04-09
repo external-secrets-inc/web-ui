@@ -37,8 +37,8 @@ const getSchema = (selectedUserId: string | null) => {
 };
 
 // TODO[iurisevero]: get roles from api, seens weird to hardcode them in frontend
-const rolesArray = ["created_user_reader", "created_user_getter", "signup_user_admin"];
-const rolesOptions = rolesArray.map(x => ({ label: x, value: x.toLowerCase() }));
+const rolesArray = ["created_user_reader", "created_user_getter", "signup_user_admin", "reader", "getter", "writer", "admin"];
+const rolesOptions = rolesArray.sort().map(x => ({ label: x, value: x.toLowerCase() }));
 
 const UserDialogForm = ({ selectedUserId, userForm, onSubmit, onCancel }: {
   selectedUserId: string; userForm: UserForm; onSubmit: (payload: UserForm) => void; onCancel: () => void;
