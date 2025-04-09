@@ -20,7 +20,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import SettingsSection from './SettingsSection';
 import { Skeleton } from '@/components/ui/skeleton';
-import { LucideEdit, LucideMoreVertical, LucidePlus, LucideTrash2 } from "lucide-react";
+import { LucideCheck, LucideEdit, LucideMoreVertical, LucidePlus, LucideTrash2, LucideX } from "lucide-react";
 import { DataProvider, DataTable } from "../ui/DataProvider";
 import { createColumnHelper } from "@tanstack/react-table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
@@ -125,7 +125,7 @@ const OrganizationSettings: React.FC = () => {
       cell: info => {
         const isActive = info.row.original.isActive;
         return (
-          <strong className={!isActive ? 'dark:text-gray-600 text-gray-400 ' : ''}>
+          <strong className={!isActive ? 'text-muted-foreground' : ''}>
             {info.getValue()}
           </strong>
         );
@@ -136,7 +136,7 @@ const OrganizationSettings: React.FC = () => {
       cell: info => {
         const isActive = info.row.original.isActive;
         return (
-          <strong className={!isActive ? 'dark:text-gray-600 text-gray-400 ' : ''}>
+          <strong className={!isActive ? 'text-muted-foreground' : ''}>
             {info.getValue()}
           </strong>
         );
@@ -152,9 +152,9 @@ const OrganizationSettings: React.FC = () => {
 
         return (
           <div className="flex flex-wrap gap-2">
-            {roles.sort().map(role => (
+            {roles.map(role => (
               <Badge key={role} variant="secondary">
-                <p className={!isActive ? 'dark:text-gray-600 text-gray-400 ' : ''}>{role}</p>
+                <p className={!isActive ? 'text-muted-foreground' : ''}>{role}</p>
               </Badge>
             ))}
           </div>
@@ -165,11 +165,13 @@ const OrganizationSettings: React.FC = () => {
       header: 'Status',
       cell: info => {
         const isActive = info.getValue() as boolean;
-        return (
-          <Badge variant={isActive ? "success" : "destructive"}>
-            {isActive ? "Active" : "Inactive"}
-          </Badge>
-        );
+        return <div className='flex justify-center'>
+          {isActive ? (
+            <LucideCheck className="text-success" />
+            ) : (
+              <LucideX className="items-center text-destructive"/>
+            )}
+        </div>
       }
     }),
     columnHelper.display({
