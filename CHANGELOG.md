@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.1](https://github.com/external-secrets-inc/web-ui/compare/v0.14.0...v0.14.1) (2025-04-09)
+
+
+### Bug Fixes
+
+* add inactive users to table; add other existent roles to role options ([#318](https://github.com/external-secrets-inc/web-ui/issues/318)) ([5c7963e](https://github.com/external-secrets-inc/web-ui/commit/5c7963e8cd647191b6c7c1461583e6ff999b5d83))
+
 ## [0.14.0](https://github.com/external-secrets-inc/web-ui/compare/v0.13.0...v0.14.0) (2025-03-31)
 
 
