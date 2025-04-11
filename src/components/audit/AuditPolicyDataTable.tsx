@@ -96,11 +96,11 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
               onSelect={(e) => {
                 e.preventDefault();
                 setSelectedPolicyId(row.policyID);
-                setPolicyForm({ 
-                  name: row.name, 
-                  engine: row.engine, 
-                  executeOn: row.executeOn, 
-                  sample: "", 
+                setPolicyForm({
+                  name: row.name,
+                  engine: row.engine,
+                  executeOn: row.executeOn,
+                  sample: "",
                   rule: isBase64(row.rule) ? atob(row.rule) : row.rule,
                   triggers: row.triggers || []
                 });
@@ -178,6 +178,10 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
     return policiesData.map(policy => ({
       ...policy,
       id: policy.policyID,
+      triggers: policy.triggers.map(trigger => ({
+        ...trigger,
+        id: Math.random().toString()
+      })),
     }));
   }, [policiesData]);
 
@@ -312,6 +316,11 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
           <PolicyDialogForm
             selectedPolicyId={selectedPolicyId}
             policyForm={policyForm}
+            destinations={[
+              { name: "Destination 1", identifier: "dest-1" },
+              { name: "Destination 2", identifier: "dest-2" },
+              { name: "Destination 3", identifier: "dest-3" },
+            ]}
             onSubmit={handleSubmit}
             onCancel={() => { handleAddPolicyDialogOpenChange(false) }}
           />

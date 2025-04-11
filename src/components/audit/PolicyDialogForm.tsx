@@ -4,20 +4,24 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CreatePolicyPayload, PolicyForm } from './Audit.interfaces';
+import { CreatePolicyPayload, PolicyForm, PolicyTriggerForm } from './Audit.interfaces';
 import { MultiSelect } from '@/components/ui/MultiSelect';
 import { CodeTextarea } from '@/components/ui/CodeTextarea';
 import useGetValidateRule from '@/services/audit/queries/useGetValidateRule';
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import usePostValidateRule from "@/services/audit/mutations/usePostValidateRule";
 import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { LucidePlus, LucideTrash } from "lucide-react";
+import { DataProvider, DataTable } from "@/components/ui/DataProvider";
+import PolicyTriggerDialogForm, { TriggerFormData } from "./PolicyTriggerDialogForm";
+import { createColumnHelper } from "@tanstack/react-table";
 
 const baseSchema = z.object({
   name: z.string().min(1, { message: "Name is required." }),
@@ -40,12 +44,30 @@ const tabValues = {
   }
 };
 
-const PolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel }: {
-  selectedPolicyId: string; policyForm: PolicyForm; onSubmit: (payload: CreatePolicyPayload) => void; onCancel: () => void;
+const triggerConditionsOptions: Record<string, { label: string; value: string }> = {
+  "EvaluatedCompliant": { label: "Evaluated as Compliant", value: "EvaluatedCompliant" },
+  "EvaluatedNonCompliant": { label: "Evaluated as Non-Compliant", value: "EvaluatedNonCompliant" },
+  "UpdatedToCompliant": { label: "Updated to Compliant", value: "UpdatedToCompliant" },
+  "UpdatedToNonCompliant": { label: "Updated to Non-Compliant", value: "UpdatedToNonCompliant" },
+};
+
+// TODO[iurisevero]: Remove this after destinations is implemented
+type Destination = {
+  identifier: string;
+  name: string;
+};
+
+interface PolicyTriggerTableMeta {
+  renderRowActions?: (row: PolicyTriggerForm) => React.ReactNode;
+}
+
+const PolicyDialogForm = ({ selectedPolicyId, policyForm, destinations, onSubmit, onCancel }: {
+  selectedPolicyId: string; policyForm: PolicyForm; destinations: Destination[], onSubmit: (payload: CreatePolicyPayload) => void; onCancel: () => void;
 }) => {
   const [isCompliant, setIsCompliant] = useState<null | boolean>(null);
   const form = useForm({ resolver: zodResolver(baseSchema), defaultValues: policyForm });
   const [internalTab, setInternalTab] = useState(tabValues.configuration.key);
+  const [isAddTriggerDialogOpen, setIsAddTriggerDialogOpen] = useState(false);
 
   const onTabChange = (value: string) => {
     setInternalTab(value);
@@ -126,6 +148,73 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel }: 
 
     await onSubmit(policyPayload);
     resetForm();
+  };
+
+  const destinationMap: Record<string, { label: string; value: string }> = useMemo(() => {
+    return destinations.reduce((acc, { identifier, name }) => {
+      acc[identifier] = {
+        label: name,
+        value: identifier,
+      };
+      return acc;
+    }, {} as Record<string, { label: string; value: string }>);
+  }, [destinations]);
+
+  const columnHelper = createColumnHelper<PolicyTriggerForm>();
+
+  const triggerColumns = useMemo(() => [
+    columnHelper.accessor('destinationIdentifiers', {
+      header: 'Destinations',
+      cell: info => {
+        const identifiers: string[] = info.getValue();
+        return identifiers
+          .map(id => destinationMap[id]?.label || id)
+          .join(", ");
+      },
+    }),
+    columnHelper.accessor('condition', {
+      header: 'Condition',
+      cell: info => triggerConditionsOptions[info.getValue()]?.label || info.getValue(),
+    }),
+    columnHelper.accessor('waitForCycles', {
+      header: 'Wait for Cycles',
+      cell: info => info.getValue(),
+    }),
+    columnHelper.display({
+      id: 'actions',
+      cell: props => (
+        <div className='flex justify-end'>
+          {(props.table.options.meta as PolicyTriggerTableMeta)?.renderRowActions?.(props.row.original)}
+        </div>
+      )
+    })
+  ], [columnHelper, destinationMap]);
+
+  const handleAddTrigger = (newTrigger: TriggerFormData) => {
+    console.log("New Trigger Data submitted:", newTrigger);
+    const currentTriggers = form.getValues("triggers") || [];
+    form.setValue("triggers", [...currentTriggers, newTrigger]);
+    setIsAddTriggerDialogOpen(false);
+  };
+
+  const handleDeleteTrigger = (id: string) => {
+    const currentTriggers = form.getValues("triggers") || [];
+    const updatedTriggers = currentTriggers.filter(trigger => trigger.id !== id);
+    form.setValue("triggers", updatedTriggers);
+  }
+
+  const policyTriggerTableMeta: PolicyTriggerTableMeta = {
+    renderRowActions: (row) => (
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleDeleteTrigger(row.id)}
+        >
+          <LucideTrash className="w-4 h-4 mr-1" />
+        </Button>
+      </div>
+    )
   };
 
   return (
@@ -274,6 +363,32 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, onSubmit, onCancel }: 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Triggers</FormLabel>
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-semibold">Configured Triggers</h4>
+                      <Dialog open={isAddTriggerDialogOpen} onOpenChange={setIsAddTriggerDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            <LucidePlus className="w-4 h-4 mr-1" />
+                            Add Trigger
+                          </Button>
+                        </DialogTrigger>
+                        <PolicyTriggerDialogForm
+                          destinationOptions={Object.values(destinationMap)}
+                          conditionsOptions={Object.values(triggerConditionsOptions)}
+                          onSubmit={handleAddTrigger}
+                          onCancel={() => setIsAddTriggerDialogOpen(false)}
+                        />
+                      </Dialog>
+                    </div>
+
+                    <DataProvider
+                      data={field.value ?? []}
+                      columns={triggerColumns}
+                      isLoading={false}
+                      emptyMessage="No triggers configured"
+                    >
+                      <DataTable meta={policyTriggerTableMeta} />
+                    </DataProvider>
                   </FormItem>
                 )}
               />

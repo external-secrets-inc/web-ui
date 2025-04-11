@@ -88,6 +88,15 @@ export interface TimeRangeOption {
   label: TimeRange;
 }
 
+export interface PolicyTriggerForm {
+  id: string
+  destinationIdentifiers: string[];
+  condition: string;
+  waitForCycles: number;
+}
+
+export type PolicyTrigger = Omit<PolicyTriggerForm, "id">
+
 export interface PolicyTableData {
   id: string;
   policyID: string;
@@ -106,7 +115,7 @@ export interface PolicyTableData {
   };
   engine: string;
   rule: string;
-  triggers: string[];
+  triggers: PolicyTriggerForm[];
 }
 
 export interface CreatePolicyPayload {
@@ -115,7 +124,7 @@ export interface CreatePolicyPayload {
   engine: string;
   executeOn: string[];
   rule: string;
-  triggers: string[];
+  triggers: PolicyTrigger[];
 }
 
 export type EditPolicyPayload = Omit<CreatePolicyPayload, "tenantID">
@@ -126,7 +135,7 @@ export interface PolicyForm {
   executeOn: string[];
   sample: string;
   rule: string;
-  triggers: string[];
+  triggers: PolicyTriggerForm[];
 }
 
 export interface ProviderTableData {
