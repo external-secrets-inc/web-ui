@@ -106,6 +106,7 @@ export interface PolicyTableData {
   };
   engine: string;
   rule: string;
+  triggers: string[];
 }
 
 export interface CreatePolicyPayload {
@@ -114,6 +115,7 @@ export interface CreatePolicyPayload {
   engine: string;
   executeOn: string[];
   rule: string;
+  triggers: string[];
 }
 
 export type EditPolicyPayload = Omit<CreatePolicyPayload, "tenantID">
@@ -124,6 +126,7 @@ export interface PolicyForm {
   executeOn: string[];
   sample: string;
   rule: string;
+  triggers: string[];
 }
 
 export interface ProviderTableData {

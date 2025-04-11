@@ -96,7 +96,14 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
               onSelect={(e) => {
                 e.preventDefault();
                 setSelectedPolicyId(row.policyID);
-                setPolicyForm({ name: row.name, engine: row.engine, executeOn: row.executeOn, sample: "", rule: isBase64(row.rule) ? atob(row.rule) : row.rule });
+                setPolicyForm({ 
+                  name: row.name, 
+                  engine: row.engine, 
+                  executeOn: row.executeOn, 
+                  sample: "", 
+                  rule: isBase64(row.rule) ? atob(row.rule) : row.rule,
+                  triggers: row.triggers || []
+                });
                 setIsAddPolicyDialogOpen(true);
               }}
             >
@@ -137,7 +144,8 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
     engine: "rego",
     executeOn: [],
     sample: "",
-    rule: "",
+    rule: "package main\nimport rego.v1 \n\ndefault allow := false",
+    triggers: []
   };
   const [policyForm, setPolicyForm] = useState<PolicyForm>(defaultFormValues);
   const [isAssignProvidersDialogOpen, setIsAssignProvidersDialogOpen] = useState(false);
@@ -220,8 +228,8 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
 
   const handleSubmit = (payload: CreatePolicyPayload) => {
     if (selectedPolicyId) {
-      const { name, executeOn, engine, rule } = { ...payload };
-      const editPayload = { policyID: selectedPolicyId, payload: { name, executeOn, engine, rule } };
+      const { name, executeOn, engine, rule, triggers } = { ...payload };
+      const editPayload = { policyID: selectedPolicyId, payload: { name, executeOn, engine, rule, triggers } };
       performEdit(editPayload);
     } else {
       performCreate(payload);
