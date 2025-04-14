@@ -180,7 +180,7 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
       id: policy.policyID,
       triggers: policy.triggers.map(trigger => ({
         ...trigger,
-        id: Math.random().toString()
+        id: crypto.randomUUID(),
       })),
     }));
   }, [policiesData]);

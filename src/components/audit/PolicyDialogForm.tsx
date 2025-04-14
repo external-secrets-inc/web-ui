@@ -4,9 +4,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, Dialog, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CreatePolicyPayload, PolicyForm, PolicyTriggerForm } from './Audit.interfaces';
+import { CreatePolicyPayload, PolicyForm, PolicyTriggerTableData } from './Audit.interfaces';
 import { MultiSelect } from '@/components/ui/MultiSelect';
 import { CodeTextarea } from '@/components/ui/CodeTextarea';
 import useGetValidateRule from '@/services/audit/queries/useGetValidateRule';
@@ -20,7 +20,7 @@ import { AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LucidePlus, LucideTrash } from "lucide-react";
 import { DataProvider, DataTable } from "@/components/ui/DataProvider";
-import PolicyTriggerDialogForm, { TriggerFormData } from "./PolicyTriggerDialogForm";
+import PolicyTriggerDialogForm from "./PolicyTriggerDialogForm";
 import { createColumnHelper } from "@tanstack/react-table";
 
 const baseSchema = z.object({
@@ -58,7 +58,7 @@ type Destination = {
 };
 
 interface PolicyTriggerTableMeta {
-  renderRowActions?: (row: PolicyTriggerForm) => React.ReactNode;
+  renderRowActions?: (row: PolicyTriggerTableData) => React.ReactNode;
 }
 
 const PolicyDialogForm = ({ selectedPolicyId, policyForm, destinations, onSubmit, onCancel }: {
@@ -160,7 +160,7 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, destinations, onSubmit
     }, {} as Record<string, { label: string; value: string }>);
   }, [destinations]);
 
-  const columnHelper = createColumnHelper<PolicyTriggerForm>();
+  const columnHelper = createColumnHelper<PolicyTriggerTableData>();
 
   const triggerColumns = useMemo(() => [
     columnHelper.accessor('destinationIdentifiers', {
@@ -168,7 +168,7 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, destinations, onSubmit
       cell: info => {
         const identifiers: string[] = info.getValue();
         return identifiers
-          .map(id => destinationMap[id]?.label || id)
+          .map(identifier => destinationMap[identifier]?.label || identifier)
           .join(", ");
       },
     }),
@@ -190,8 +190,7 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, destinations, onSubmit
     })
   ], [columnHelper, destinationMap]);
 
-  const handleAddTrigger = (newTrigger: TriggerFormData) => {
-    console.log("New Trigger Data submitted:", newTrigger);
+  const handleAddTrigger = (newTrigger: PolicyTriggerTableData) => {
     const currentTriggers = form.getValues("triggers") || [];
     form.setValue("triggers", [...currentTriggers, newTrigger]);
     setIsAddTriggerDialogOpen(false);
@@ -206,13 +205,34 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, destinations, onSubmit
   const policyTriggerTableMeta: PolicyTriggerTableMeta = {
     renderRowActions: (row) => (
       <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => handleDeleteTrigger(row.id)}
-        >
-          <LucideTrash className="w-4 h-4 mr-1" />
-        </Button>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+            >
+              <LucideTrash className="w-4 h-4 mr-1" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-fit overflow-auto">
+            <DialogHeader>
+              <DialogTitle>Delete trigger</DialogTitle>
+              <DialogDescription>
+                This action can't be undone and will delete this trigger
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button type="button" variant="secondary">
+                  Cancel
+                </Button>
+              </DialogClose>
+              <DialogClose asChild>
+                <Button variant={"destructive"} onClick={() => handleDeleteTrigger(row.id)}>Delete</Button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     )
   };
@@ -237,164 +257,167 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, destinations, onSubmit
                 <TabsTrigger key={key} value={key}>{label}</TabsTrigger>
               ))}
             </TabsList>
-            <TabsContent className="data-[state=active]:grid min-h-0" value={tabValues.configuration.key} >
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input disabled={Boolean(selectedPolicyId)} placeholder="Enter Name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="engine"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Engine</FormLabel>
-                    <FormControl>
-                      <Select
-                        value={field.value}
-                        onValueChange={selectedPolicyId ? undefined : field.onChange}
-                        disabled={Boolean(selectedPolicyId)}
-                      >
-                        <SelectTrigger >
-                          <SelectValue placeholder="Select the rule engine" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="rego">Rego</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="executeOn"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Execute On</FormLabel>
-                    <FormControl>
-                      <MultiSelect
-                        options={executeOnOptions}
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        placeholder="Select actions"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="sample"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Sample</FormLabel>
-                    <FormControl>
-                      <CodeTextarea
-                        language="json"
-                        placeholder="Enter JSON sample"
-                        className="min-h-52"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="rule"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center justify-between">
-                      <FormLabel>Rule</FormLabel>
-                      <Button
-                        type="button"
-                        onClick={performValidateRule}
-                        disabled={!executeOn.length || !sample || !rule}
-                        variant="secondary"
-                      >
-                        Validate Rule
-                      </Button>
-                    </div>
-                    <FormControl>
-                      <CodeTextarea
-                        language="rego"
-                        placeholder="Enter Rego rule"
-                        className="min-h-52"
-                        {...field}
-                      />
-                    </FormControl>
-                    {(isCompliant !== null || isValidateError) && (
-                      <div className="mt-4">
-                        <Alert
-                          className={`w-full text-center text-sm ${(isCompliant === null && !isValidateError) ? "invisible" : ""}`}
-                          variant={isValidateError ? "destructive" : isCompliant ? "success" : "warning"}
+            <div className="relative min-h-[515px] sm:min-h-[615px] md:min-h-[715px]">
+              <TabsContent className="data-[state=active]:grid min-h-0" value={tabValues.configuration.key} >
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input disabled={Boolean(selectedPolicyId)} placeholder="Enter Name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="engine"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Engine</FormLabel>
+                      <FormControl>
+                        <Select
+                          value={field.value}
+                          onValueChange={selectedPolicyId ? undefined : field.onChange}
+                          disabled={Boolean(selectedPolicyId)}
                         >
-                          <AlertDescription>
-                            {isCompliant
-                              ? "This sample would be compliant!"
-                              : isValidateError
-                                ? validateErrorMessage
-                                : "This sample would NOT be compliant!"}
-                          </AlertDescription>
-                        </Alert>
-                      </div>
-                    )}
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </TabsContent>
-            <TabsContent className="data-[state=active]:grid min-h-0" value={tabValues.triggers.key}>
-              <FormField
-                control={form.control}
-                name="triggers"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Triggers</FormLabel>
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold">Configured Triggers</h4>
-                      <Dialog open={isAddTriggerDialogOpen} onOpenChange={setIsAddTriggerDialogOpen}>
-                        <DialogTrigger asChild>
-                          <Button variant="outline" size="sm">
-                            <LucidePlus className="w-4 h-4 mr-1" />
-                            Add Trigger
-                          </Button>
-                        </DialogTrigger>
-                        <PolicyTriggerDialogForm
-                          destinationOptions={Object.values(destinationMap)}
-                          conditionsOptions={Object.values(triggerConditionsOptions)}
-                          onSubmit={handleAddTrigger}
-                          onCancel={() => setIsAddTriggerDialogOpen(false)}
+                          <SelectTrigger >
+                            <SelectValue placeholder="Select the rule engine" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="rego">Rego</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="executeOn"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Execute On</FormLabel>
+                      <FormControl>
+                        <MultiSelect
+                          options={executeOnOptions}
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          placeholder="Select actions"
                         />
-                      </Dialog>
-                    </div>
-
-                    <DataProvider
-                      data={field.value ?? []}
-                      columns={triggerColumns}
-                      isLoading={false}
-                      emptyMessage="No triggers configured"
-                    >
-                      <DataTable meta={policyTriggerTableMeta} />
-                    </DataProvider>
-                  </FormItem>
-                )}
-              />
-            </TabsContent>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="sample"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Sample</FormLabel>
+                      <FormControl>
+                        <CodeTextarea
+                          language="json"
+                          placeholder="Enter JSON sample"
+                          className="min-h-52"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="rule"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="flex items-center justify-between">
+                        <FormLabel>Rule</FormLabel>
+                        <Button
+                          type="button"
+                          onClick={performValidateRule}
+                          disabled={!executeOn.length || !sample || !rule}
+                          variant="secondary"
+                          className="mt-2"
+                        >
+                          Validate Rule
+                        </Button>
+                      </div>
+                      <FormControl>
+                        <CodeTextarea
+                          language="rego"
+                          placeholder="Enter Rego rule"
+                          className="min-h-52"
+                          {...field}
+                        />
+                      </FormControl>
+                      {(isCompliant !== null || isValidateError) && (
+                        <div className="mt-4">
+                          <Alert
+                            className={`w-full text-center text-sm ${(isCompliant === null && !isValidateError) ? "invisible" : ""}`}
+                            variant={isValidateError ? "destructive" : isCompliant ? "success" : "warning"}
+                          >
+                            <AlertDescription>
+                              {isCompliant
+                                ? "This sample would be compliant!"
+                                : isValidateError
+                                  ? validateErrorMessage
+                                  : "This sample would NOT be compliant!"}
+                            </AlertDescription>
+                          </Alert>
+                        </div>
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </TabsContent>
+              <TabsContent className="data-[state=active]:grid min-h-0 absolute top-0 left-0 w-full" value={tabValues.triggers.key}>
+                <FormField
+                  control={form.control}
+                  name="triggers"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Triggers</FormLabel>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold">Configured Triggers</h4>
+                        <Dialog open={isAddTriggerDialogOpen} onOpenChange={setIsAddTriggerDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <LucidePlus className="w-4 h-4 mr-1" />
+                              Add Trigger
+                            </Button>
+                          </DialogTrigger>
+                          <PolicyTriggerDialogForm
+                            destinationOptions={Object.values(destinationMap)}
+                            conditionsOptions={Object.values(triggerConditionsOptions)}
+                            onSubmit={handleAddTrigger}
+                            onCancel={() => setIsAddTriggerDialogOpen(false)}
+                          />
+                        </Dialog>
+                      </div>
+                      <DataProvider
+                        data={field.value ?? []}
+                        columns={triggerColumns}
+                        getRowId={row => row.id}
+                        isLoading={false}
+                        emptyMessage="No triggers configured"
+                      >
+                        <DataTable meta={policyTriggerTableMeta} />
+                      </DataProvider>
+                    </FormItem>
+                  )}
+                />
+              </TabsContent>
+            </div>
           </Tabs>
-          <DialogFooter className="flex items-center justify-between gap-4 pt-4">
+          <DialogFooter className="flex items-center justify-between gap-2 pt-2">
             <Button
               type="button"
               aria-keyshortcuts="Escape"

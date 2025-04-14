@@ -20,16 +20,15 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { MultiSelect } from "@/components/ui/MultiSelect";
 import { z } from "zod";
-import { PolicyTriggerForm } from "./Audit.interfaces";
+import { PolicyTriggerTableData } from "./Audit.interfaces";
 
 const schema = z.object({
-  id: z.string(),
   destinationIdentifiers: z.array(z.string()).min(1, "Select at least one destination"),
   condition: z.string().min(1, "Select a condition"),
   waitForCycles: z.coerce.number().min(0, "Must be a non-negative number"),
 });
 
-export type TriggerFormData = z.infer<typeof schema>;
+type TriggerFormData = z.infer<typeof schema>;
 
 const PolicyTriggerDialogForm = ({
   destinationOptions,
@@ -39,7 +38,7 @@ const PolicyTriggerDialogForm = ({
 }: {
   destinationOptions: { label: string; value: string }[];
   conditionsOptions: { label: string; value: string }[];
-  onSubmit: (data: TriggerFormData) => void;
+  onSubmit: (data: PolicyTriggerTableData) => void;
   onCancel: () => void;
 }) => {
   const form = useForm<TriggerFormData>({
@@ -51,16 +50,23 @@ const PolicyTriggerDialogForm = ({
     },
   });
 
-  const handleSubmit = async (data: PolicyTriggerForm) => {
-    console.log("Policy Trigger Form Data submitted:", data);
-    data.id = Math.random().toString();
-    onSubmit(data);
-    form.reset({
-      destinationIdentifiers: [],
-      condition: "",
-      waitForCycles: 0,
-    });
+  const handleSubmit = async (data: TriggerFormData) => {
+    const isValid = await form.trigger();
+    if (!isValid) return;
+
+    const newTableData: PolicyTriggerTableData = {
+      ...data,
+      id: crypto.randomUUID(),
+      waitForCycles: Number(data.waitForCycles)
+    }
+    onSubmit(newTableData);
+    form.reset();
   };
+
+  const handleCancel = () => {
+    onCancel()
+    form.reset();
+  }
 
   return (
     <DialogContent className="w-[max(50%,640px)] max-w-[calc(100%-theme(spacing.12))] max-h-[calc(100%-theme(spacing.12))] overflow-auto grid-rows-[auto_minmax(100px,1fr)_auto] grid-cols-[minmax(100%,1fr)]">
@@ -69,7 +75,7 @@ const PolicyTriggerDialogForm = ({
         <DialogDescription>Define a new trigger configuration.</DialogDescription>
       </DialogHeader>
       <Form {...form}>
-        <form onSubmit={() => { console.log("Teste"); const ret = form.handleSubmit(handleSubmit); console.log(ret) }} className="space-y-4">
+        <div className="space-y-4">
           <FormField
             control={form.control}
             name="destinationIdentifiers"
@@ -135,17 +141,23 @@ const PolicyTriggerDialogForm = ({
               type="button"
               variant="secondary"
               aria-keyshortcuts="Escape"
-              onClick={onCancel}
+              onClick={handleCancel}
             >
               Cancel
             </Button>
             <div className="flex gap-4">
-              <Button type="submit">
+              <Button
+                type="button"
+                onClick={() => {
+                  const data = form.getValues()
+                  handleSubmit(data);
+                }}
+              >
                 Save
               </Button>
             </div>
           </DialogFooter>
-        </form>
+        </div>
       </Form>
     </DialogContent>
   );
