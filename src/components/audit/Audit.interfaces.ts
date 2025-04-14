@@ -275,3 +275,16 @@ export interface AccessorDetails {
 export interface SecretAccessors {
   [key: string]: AccessorDetails[];
 }
+
+export interface DestinationsDataTable {
+  _id: string;
+  tenantID: string;
+  destinationID: string;
+  name: string;
+  identifier: string;
+  type: string;
+  config: {
+    [key: string]: string | undefined;
+  };
+  deleted_at?: string;
+}

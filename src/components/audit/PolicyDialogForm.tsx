@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, Dialog, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CreatePolicyPayload, PolicyForm, PolicyTriggerTableData } from './Audit.interfaces';
+import { CreatePolicyPayload, DestinationsDataTable, PolicyForm, PolicyTriggerTableData } from '@/components/audit/Audit.interfaces';
 import { MultiSelect } from '@/components/ui/MultiSelect';
 import { CodeTextarea } from '@/components/ui/CodeTextarea';
 import useGetValidateRule from '@/services/audit/queries/useGetValidateRule';
@@ -23,11 +23,18 @@ import { DataProvider, DataTable } from "@/components/ui/DataProvider";
 import PolicyTriggerDialogForm from "./PolicyTriggerDialogForm";
 import { createColumnHelper } from "@tanstack/react-table";
 
+const policyTriggerFormSchema = z.object({
+  destinationIdentifiers: z.array(z.string()).min(1, "Select at least one destination"),
+  condition: z.string().min(1, "Select a condition"),
+  waitForCycles: z.coerce.number().min(0, "Must be a non-negative number"),
+});
+
 const baseSchema = z.object({
   name: z.string().min(1, { message: "Name is required." }),
   engine: z.string().min(1, { message: "Engine is required." }),
   executeOn: z.array(z.string()).min(1, { message: "At least one action is required." }),
   rule: z.string().min(1, { message: "Rule is required." }),
+  triggers: z.array(policyTriggerFormSchema).optional(),
 });
 
 const executeOnArray = ["Read", "Update", "Result", "Create", "Delete", "RBACCreate", "RBACUpdate", "RBACDelete"];
@@ -51,18 +58,12 @@ const triggerConditionsOptions: Record<string, { label: string; value: string }>
   "UpdatedToNonCompliant": { label: "Updated to Non-Compliant", value: "UpdatedToNonCompliant" },
 };
 
-// TODO[iurisevero]: Remove this after destinations is implemented
-type Destination = {
-  identifier: string;
-  name: string;
-};
-
 interface PolicyTriggerTableMeta {
   renderRowActions?: (row: PolicyTriggerTableData) => React.ReactNode;
 }
 
-const PolicyDialogForm = ({ selectedPolicyId, policyForm, destinations, onSubmit, onCancel }: {
-  selectedPolicyId: string; policyForm: PolicyForm; destinations: Destination[], onSubmit: (payload: CreatePolicyPayload) => void; onCancel: () => void;
+const PolicyDialogForm = ({ selectedPolicyId, policyForm, isLoadingDestinations, destinations, onSubmit, onCancel }: {
+  selectedPolicyId: string; policyForm: PolicyForm; isLoadingDestinations: boolean, destinations: DestinationsDataTable[], onSubmit: (payload: CreatePolicyPayload) => void; onCancel: () => void;
 }) => {
   const [isCompliant, setIsCompliant] = useState<null | boolean>(null);
   const form = useForm({ resolver: zodResolver(baseSchema), defaultValues: policyForm });
@@ -137,6 +138,7 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, destinations, onSubmit
   }, [executeOn, sample, rule])
 
   const handleSubmit = async (formValues: PolicyForm) => {
+    console.log("Policy dialog form handle submit: ", formValues)
     const policyPayload = {
       tenantID: "",
       name: formValues.name,
@@ -191,6 +193,7 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, destinations, onSubmit
   ], [columnHelper, destinationMap]);
 
   const handleAddTrigger = (newTrigger: PolicyTriggerTableData) => {
+    console.log("handleAddTrigger newTrigger: ", newTrigger)
     const currentTriggers = form.getValues("triggers") || [];
     form.setValue("triggers", [...currentTriggers, newTrigger]);
     setIsAddTriggerDialogOpen(false);
@@ -389,7 +392,11 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, destinations, onSubmit
                         <h4 className="font-semibold">Configured Triggers</h4>
                         <Dialog open={isAddTriggerDialogOpen} onOpenChange={setIsAddTriggerDialogOpen}>
                           <DialogTrigger asChild>
-                            <Button variant="outline" size="sm">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={isLoadingDestinations}
+                            >
                               <LucidePlus className="w-4 h-4 mr-1" />
                               Add Trigger
                             </Button>

@@ -22,6 +22,7 @@ import useUnassignProviderPolicy from "@/services/audit/mutations/useUnassignPro
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import useEditPolicy, { EditPolicyVariables } from "@/services/audit/mutations/useEditPolicy";
 import { AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants";
+import useGetDestinations from "@/services/audit/queries/useGetDestinations";
 
 interface PolicyTableMeta {
   renderRowActions?: (row: PolicyTableData) => React.ReactNode;
@@ -231,6 +232,7 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
   };
 
   const handleSubmit = (payload: CreatePolicyPayload) => {
+    console.log("Policy handle submit payload: ", payload)
     if (selectedPolicyId) {
       const { name, executeOn, engine, rule, triggers } = { ...payload };
       const editPayload = { policyID: selectedPolicyId, payload: { name, executeOn, engine, rule, triggers } };
@@ -302,6 +304,31 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
     setSelectedProviders([]);
   };
 
+
+  const {
+    data: destinationsData,
+    isLoading: isLoadingDestinations,
+    isError: isErrorDestinations,
+    error: destinationsError
+  } = useGetDestinations(false, {
+    staleTime: AUDIT_QUERY_STALE_TIME,
+  });
+
+  const destinations = useMemo(() => {
+    if (!destinationsData) return []
+
+    // Transform the API response to include the required id dataProvider field
+    return destinationsData.map(destination => ({
+      ...destination,
+      id: destination.destinationID,
+    }));
+  }, [destinationsData]);
+
+  useEffect(() => {
+    if (!(destinationsError)) return;
+    handleDefaultApiHttpError(destinationsError, "Error while fetching destinations");
+  }, [destinationsError, isErrorDestinations]);
+
   return (
     <>
       <div className="flex items-center justify-between pt-4">
@@ -316,11 +343,8 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
           <PolicyDialogForm
             selectedPolicyId={selectedPolicyId}
             policyForm={policyForm}
-            destinations={[
-              { name: "Destination 1", identifier: "dest-1" },
-              { name: "Destination 2", identifier: "dest-2" },
-              { name: "Destination 3", identifier: "dest-3" },
-            ]}
+            isLoadingDestinations={isLoadingDestinations}
+            destinations={destinations}
             onSubmit={handleSubmit}
             onCancel={() => { handleAddPolicyDialogOpenChange(false) }}
           />
