@@ -88,6 +88,22 @@ export interface TimeRangeOption {
   label: TimeRange;
 }
 
+export const triggerConditionsMap: Record<string, { label: string; value: string }> = {
+  "EvaluatedCompliant": { label: "Evaluated as Compliant", value: "EvaluatedCompliant" },
+  "EvaluatedNonCompliant": { label: "Evaluated as Non-Compliant", value: "EvaluatedNonCompliant" },
+  "UpdatedToCompliant": { label: "Updated to Compliant", value: "UpdatedToCompliant" },
+  "UpdatedToNonCompliant": { label: "Updated to Non-Compliant", value: "UpdatedToNonCompliant" },
+};
+
+export interface PolicyTriggerTableData {
+  id: string
+  destinationIdentifiers: string[];
+  condition: string;
+  waitForCycles: number;
+}
+
+export type PolicyTrigger = Omit<PolicyTriggerTableData, "id">
+
 export interface PolicyTableData {
   id: string;
   policyID: string;
@@ -106,6 +122,7 @@ export interface PolicyTableData {
   };
   engine: string;
   rule: string;
+  triggers: PolicyTriggerTableData[];
 }
 
 export interface CreatePolicyPayload {
@@ -114,6 +131,7 @@ export interface CreatePolicyPayload {
   engine: string;
   executeOn: string[];
   rule: string;
+  triggers: PolicyTrigger[];
 }
 
 export type EditPolicyPayload = Omit<CreatePolicyPayload, "tenantID">
@@ -124,6 +142,7 @@ export interface PolicyForm {
   executeOn: string[];
   sample: string;
   rule: string;
+  triggers: PolicyTriggerTableData[];
 }
 
 export interface ProviderTableData {
@@ -262,4 +281,17 @@ export interface AccessorDetails {
 
 export interface SecretAccessors {
   [key: string]: AccessorDetails[];
+}
+
+export interface DestinationsDataTable {
+  _id: string;
+  tenantID: string;
+  destinationID: string;
+  name: string;
+  identifier: string;
+  type: string;
+  config: {
+    [key: string]: string | undefined;
+  };
+  deleted_at?: string;
 }
