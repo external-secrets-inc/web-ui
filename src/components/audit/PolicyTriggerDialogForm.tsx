@@ -28,7 +28,7 @@ const schema = z.object({
   waitForCycles: z.coerce.number().min(0, "Must be a non-negative number"),
 });
 
-export type TriggerFormData = z.infer<typeof schema>;
+type TriggerFormData = z.infer<typeof schema>;
 
 const PolicyTriggerDialogForm = ({
   destinationOptions,

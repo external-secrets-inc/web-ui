@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { CreatePolicyPayload, PolicyForm, PolicyTableData } from "./Audit.interfaces";
+import { CreatePolicyPayload, PolicyForm, PolicyTableData, PolicyTriggerTableData, triggerConditionsMap } from "./Audit.interfaces";
 import { createColumnHelper } from "@tanstack/react-table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
-import { LucideMoreVertical, LucidePlus, LucideTrash2, LucideUsers, LucideAlertCircle, LucideEdit } from "lucide-react";
+import { LucideMoreVertical, LucidePlus, LucideTrash2, LucideUsers, LucideAlertCircle, LucideEdit, LucideCircleHelp } from "lucide-react";
 import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction" // TODO: We should not import components from non generic stuff! This should be a generic component, or re-implemented here.
 import { Button } from "../ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
@@ -19,7 +19,7 @@ import PolicyDialogForm from "./PolicyDialogForm";
 import { AssignProvidersDialog } from "./AssignProvidersDialog";
 import useAssignProviderPolicy from "@/services/audit/mutations/useAssignProviderPolicy";
 import useUnassignProviderPolicy from "@/services/audit/mutations/useUnassignProviderPolicy";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import useEditPolicy, { EditPolicyVariables } from "@/services/audit/mutations/useEditPolicy";
 import { AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants";
 import useGetDestinations from "@/services/audit/queries/useGetDestinations";
@@ -29,6 +29,40 @@ interface PolicyTableMeta {
 }
 
 export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantID: string; listenerID: string }) {
+  const {
+    data: destinationsData,
+    isLoading: isLoadingDestinations,
+    isError: isErrorDestinations,
+    error: destinationsError
+  } = useGetDestinations(false, {
+    staleTime: AUDIT_QUERY_STALE_TIME,
+  });
+
+  const destinations = useMemo(() => {
+    if (!destinationsData) return []
+
+    // Transform the API response to include the required id dataProvider field
+    return destinationsData.map(destination => ({
+      ...destination,
+      id: destination.destinationID,
+    }));
+  }, [destinationsData]);
+
+  const destinationsMap: Record<string, { label: string; value: string }> = useMemo(() => {
+    return destinations.reduce((acc, { identifier, name }) => {
+      acc[identifier] = {
+        label: name,
+        value: identifier,
+      };
+      return acc;
+    }, {} as Record<string, { label: string; value: string }>);
+  }, [destinations]);
+
+  useEffect(() => {
+    if (!(destinationsError)) return;
+    handleDefaultApiHttpError(destinationsError, "Error while fetching destinations");
+  }, [destinationsError, isErrorDestinations]);
+
   const columnHelper = createColumnHelper<PolicyTableData>();
 
   const columns = useMemo(() => [
@@ -58,6 +92,37 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
         </div>
       )
     }),
+    columnHelper.accessor('triggers', {
+      header: 'Triggers',
+      cell: (info) => {
+        const triggers: PolicyTriggerTableData[] = info.getValue() ?? [];
+
+        if (triggers.length === 0) {
+          return <span className="text-muted-foreground">None</span>;
+        }
+
+        return (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center gap-2">
+                  <span>
+                    {triggers.length} trigger{triggers.length > 1 ? 's' : ''}
+                  </span>
+                  <LucideCircleHelp className="h-4 w-4 text-orange-500" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs whitespace-pre-wrap text-left">
+                {triggers.map((trigger) => {
+                  const destinationLabels = trigger.destinationIdentifiers.map(id => destinationsMap[id]?.label || id);
+                  return `• ${destinationLabels.join(", ")} → ${triggerConditionsMap[trigger.condition]?.label || trigger.condition}`;
+                }).join("\n")}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        );
+      }
+    }),
     columnHelper.display({
       id: 'actions',
       cell: props => (
@@ -66,7 +131,7 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
         </div>
       )
     })
-  ], [columnHelper]);
+  ], [columnHelper, destinationsMap]);
 
   function isBase64(str: string): boolean {
     try {
@@ -232,7 +297,6 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
   };
 
   const handleSubmit = (payload: CreatePolicyPayload) => {
-    console.log("Policy handle submit payload: ", payload)
     if (selectedPolicyId) {
       const { name, executeOn, engine, rule, triggers } = { ...payload };
       const editPayload = { policyID: selectedPolicyId, payload: { name, executeOn, engine, rule, triggers } };
@@ -304,31 +368,6 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
     setSelectedProviders([]);
   };
 
-
-  const {
-    data: destinationsData,
-    isLoading: isLoadingDestinations,
-    isError: isErrorDestinations,
-    error: destinationsError
-  } = useGetDestinations(false, {
-    staleTime: AUDIT_QUERY_STALE_TIME,
-  });
-
-  const destinations = useMemo(() => {
-    if (!destinationsData) return []
-
-    // Transform the API response to include the required id dataProvider field
-    return destinationsData.map(destination => ({
-      ...destination,
-      id: destination.destinationID,
-    }));
-  }, [destinationsData]);
-
-  useEffect(() => {
-    if (!(destinationsError)) return;
-    handleDefaultApiHttpError(destinationsError, "Error while fetching destinations");
-  }, [destinationsError, isErrorDestinations]);
-
   return (
     <>
       <div className="flex items-center justify-between pt-4">
@@ -344,7 +383,7 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
             selectedPolicyId={selectedPolicyId}
             policyForm={policyForm}
             isLoadingDestinations={isLoadingDestinations}
-            destinations={destinations}
+            destinationsMap={destinationsMap}
             onSubmit={handleSubmit}
             onCancel={() => { handleAddPolicyDialogOpenChange(false) }}
           />

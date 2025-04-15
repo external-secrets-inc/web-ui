@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, Dialog, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CreatePolicyPayload, DestinationsDataTable, PolicyForm, PolicyTriggerTableData } from '@/components/audit/Audit.interfaces';
+import { CreatePolicyPayload, PolicyForm, PolicyTriggerTableData, triggerConditionsMap } from '@/components/audit/Audit.interfaces';
 import { MultiSelect } from '@/components/ui/MultiSelect';
 import { CodeTextarea } from '@/components/ui/CodeTextarea';
 import useGetValidateRule from '@/services/audit/queries/useGetValidateRule';
@@ -51,19 +51,17 @@ const tabValues = {
   }
 };
 
-const triggerConditionsOptions: Record<string, { label: string; value: string }> = {
-  "EvaluatedCompliant": { label: "Evaluated as Compliant", value: "EvaluatedCompliant" },
-  "EvaluatedNonCompliant": { label: "Evaluated as Non-Compliant", value: "EvaluatedNonCompliant" },
-  "UpdatedToCompliant": { label: "Updated to Compliant", value: "UpdatedToCompliant" },
-  "UpdatedToNonCompliant": { label: "Updated to Non-Compliant", value: "UpdatedToNonCompliant" },
-};
-
 interface PolicyTriggerTableMeta {
   renderRowActions?: (row: PolicyTriggerTableData) => React.ReactNode;
 }
 
-const PolicyDialogForm = ({ selectedPolicyId, policyForm, isLoadingDestinations, destinations, onSubmit, onCancel }: {
-  selectedPolicyId: string; policyForm: PolicyForm; isLoadingDestinations: boolean, destinations: DestinationsDataTable[], onSubmit: (payload: CreatePolicyPayload) => void; onCancel: () => void;
+const PolicyDialogForm = ({ selectedPolicyId, policyForm, isLoadingDestinations, destinationsMap, onSubmit, onCancel }: {
+  selectedPolicyId: string;
+  policyForm: PolicyForm;
+  isLoadingDestinations: boolean,
+  destinationsMap: Record<string, { label: string; value: string }>,
+  onSubmit: (payload: CreatePolicyPayload) => void;
+  onCancel: () => void;
 }) => {
   const [isCompliant, setIsCompliant] = useState<null | boolean>(null);
   const form = useForm({ resolver: zodResolver(baseSchema), defaultValues: policyForm });
@@ -80,6 +78,7 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, isLoadingDestinations,
 
   const resetForm = () => {
     form.reset(policyForm);
+    setInternalTab(tabValues.configuration.key)
   }
 
   const handleCancel = () => {
@@ -138,7 +137,6 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, isLoadingDestinations,
   }, [executeOn, sample, rule])
 
   const handleSubmit = async (formValues: PolicyForm) => {
-    console.log("Policy dialog form handle submit: ", formValues)
     const policyPayload = {
       tenantID: "",
       name: formValues.name,
@@ -152,16 +150,6 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, isLoadingDestinations,
     resetForm();
   };
 
-  const destinationMap: Record<string, { label: string; value: string }> = useMemo(() => {
-    return destinations.reduce((acc, { identifier, name }) => {
-      acc[identifier] = {
-        label: name,
-        value: identifier,
-      };
-      return acc;
-    }, {} as Record<string, { label: string; value: string }>);
-  }, [destinations]);
-
   const columnHelper = createColumnHelper<PolicyTriggerTableData>();
 
   const triggerColumns = useMemo(() => [
@@ -170,13 +158,13 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, isLoadingDestinations,
       cell: info => {
         const identifiers: string[] = info.getValue();
         return identifiers
-          .map(identifier => destinationMap[identifier]?.label || identifier)
+          .map(identifier => destinationsMap[identifier]?.label || identifier)
           .join(", ");
       },
     }),
     columnHelper.accessor('condition', {
       header: 'Condition',
-      cell: info => triggerConditionsOptions[info.getValue()]?.label || info.getValue(),
+      cell: info => triggerConditionsMap[info.getValue()]?.label || info.getValue(),
     }),
     columnHelper.accessor('waitForCycles', {
       header: 'Wait for Cycles',
@@ -190,10 +178,9 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, isLoadingDestinations,
         </div>
       )
     })
-  ], [columnHelper, destinationMap]);
+  ], [columnHelper, destinationsMap]);
 
   const handleAddTrigger = (newTrigger: PolicyTriggerTableData) => {
-    console.log("handleAddTrigger newTrigger: ", newTrigger)
     const currentTriggers = form.getValues("triggers") || [];
     form.setValue("triggers", [...currentTriggers, newTrigger]);
     setIsAddTriggerDialogOpen(false);
@@ -402,8 +389,8 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, isLoadingDestinations,
                             </Button>
                           </DialogTrigger>
                           <PolicyTriggerDialogForm
-                            destinationOptions={Object.values(destinationMap)}
-                            conditionsOptions={Object.values(triggerConditionsOptions)}
+                            destinationOptions={Object.values(destinationsMap)}
+                            conditionsOptions={Object.values(triggerConditionsMap)}
                             onSubmit={handleAddTrigger}
                             onCancel={() => setIsAddTriggerDialogOpen(false)}
                           />
@@ -412,9 +399,9 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, isLoadingDestinations,
                       <DataProvider
                         data={field.value ?? []}
                         columns={triggerColumns}
-                        getRowId={row => row.id}
                         isLoading={false}
                         emptyMessage="No triggers configured"
+                        initialSort={{ id: 'destinationIdentifiers', desc: false }}
                       >
                         <DataTable meta={policyTriggerTableMeta} />
                       </DataProvider>
@@ -436,7 +423,7 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, isLoadingDestinations,
             <div className="flex gap-4">
               <Button
                 type="submit"
-                disabled={!name || !executeOn.length || !sample || !rule || isCompliant === null}
+                disabled={!name || !executeOn.length || !sample || !rule || (isCompliant === null && !selectedPolicyId)}
               >
                 Submit
               </Button>

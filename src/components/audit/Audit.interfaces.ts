@@ -88,6 +88,13 @@ export interface TimeRangeOption {
   label: TimeRange;
 }
 
+export const triggerConditionsMap: Record<string, { label: string; value: string }> = {
+  "EvaluatedCompliant": { label: "Evaluated as Compliant", value: "EvaluatedCompliant" },
+  "EvaluatedNonCompliant": { label: "Evaluated as Non-Compliant", value: "EvaluatedNonCompliant" },
+  "UpdatedToCompliant": { label: "Updated to Compliant", value: "UpdatedToCompliant" },
+  "UpdatedToNonCompliant": { label: "Updated to Non-Compliant", value: "UpdatedToNonCompliant" },
+};
+
 export interface PolicyTriggerTableData {
   id: string
   destinationIdentifiers: string[];
