@@ -292,7 +292,13 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
         isLoading={isLoadingSecretTableData}
         emptyMessage={getEmptyMessage()}
       >
-        <DataTable onRowClick={(row) => setSelectedSecretId(row.id)} />
+        {/* Using virtualization to only render visible rows in the DOM */}
+        <DataTable
+          onRowClick={(row) => setSelectedSecretId(row.id)}
+          virtualized={true} /* Enable virtualization for better performance */
+          rowHeight={64}
+          overscanRows={15}
+        />
       </DataProvider>
 
       <AuditSecretDetails

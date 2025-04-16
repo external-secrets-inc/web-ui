@@ -15,12 +15,12 @@ interface AuditMockContextType {
 }
 
 const AuditMockContext = createContext<AuditMockContextType>({
-  mockSource: 'api',
+  mockSource: 'mock',
   setMockSource: () => {}
 });
 
 export function AuditMockProvider({ children }: { children: ReactNode }) {
-  const [mockSource, setMockSource] = useState<MockSource>('hooks');
+  const [mockSource, setMockSource] = useState<MockSource>('mock');
 
   return (
     <AuditMockContext.Provider value={{ mockSource, setMockSource }}>

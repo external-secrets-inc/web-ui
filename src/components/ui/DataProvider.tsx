@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils"
 import { type ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, type SortingState, useReactTable, type TableOptions } from "@tanstack/react-table"
+import { useVirtualizer } from "@tanstack/react-virtual"
 import { LucideArrowDown, LucideArrowDownNarrowWide, LucideArrowUp, LucideArrowUpNarrowWide, LucideChevronsUpDown, LucideSearch } from "lucide-react"
 import * as React from "react"
 import { Button } from "./button"
@@ -261,7 +262,11 @@ const DataSearch = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
     const { globalFilter, setGlobalFilter } = React.useContext(DataProviderContext)
 
     return (
-      <div ref={ref} className={cn("relative", className)} {...props}>
+      <div
+        className={cn("rounded-md border", className)}
+        {...props}
+        ref={ref}
+      >
         <Input
           placeholder="Search..."
           value={globalFilter}
@@ -364,12 +369,18 @@ DataGrid.displayName = "DataGrid"
  * Props for the DataTable component
  */
 interface DataTableProps<TMeta = any> extends React.HTMLAttributes<HTMLDivElement> { // eslint-disable-line @typescript-eslint/no-explicit-any
-  /** Optional click handler for table rows */
-  onRowClick?: (row: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
-  /** Optional content to append after the table rows */
-  rowsAppend?: React.ReactNode;
+  /** Optional function to handle row click events */
+  onRowClick?: (row: any) => void // eslint-disable-line @typescript-eslint/no-explicit-any
+  /** Optional content to append after the rows */
+  rowsAppend?: React.ReactNode
   /** Optional metadata to pass to the table */
-  meta?: TMeta;
+  meta?: TMeta
+  /** Enable virtualization to only render visible rows (for large datasets) */
+  virtualized?: boolean
+  /** Estimated height of each row in pixels (for virtualization) */
+  rowHeight?: number
+  /** Number of extra rows to render above/below visible area (for virtualization) */
+  overscanRows?: number
 }
 
 /**
@@ -379,8 +390,13 @@ interface DataTableProps<TMeta = any> extends React.HTMLAttributes<HTMLDivElemen
  * like custom actions within cells.
  */
 const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
-  ({ className, onRowClick, rowsAppend, meta, ...props }, ref) => {
+  ({ className, onRowClick, rowsAppend, meta, virtualized = false, rowHeight = 48, overscanRows = 10, ...props }, ref) => {
     const { table, isLoading, emptyMessage } = React.useContext(DataProviderContext)
+    // Create a ref for the table container that will be used for both forwarding and virtualization
+    const tableContainerRef = React.useRef<HTMLDivElement>(null);
+
+    // Forward the ref to our internal ref
+    React.useImperativeHandle(ref, () => tableContainerRef.current as HTMLDivElement);
 
     // Memoized to prevent unnecessary re-renders and potential infinite loops
     const tableOptions = React.useMemo(() => ({
@@ -390,8 +406,129 @@ const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
 
     table.setOptions(tableOptions);
 
+    // We're using the existing tableContainerRef for scrolling
+
+    // Create virtualizer with the table container as the scroll element
+    const { rows } = table.getRowModel();
+    const rowVirtualizer = virtualized ? useVirtualizer({
+      count: rows.length,
+      getScrollElement: () => tableContainerRef.current,
+      estimateSize: () => rowHeight,
+      overscan: overscanRows,
+      getItemKey: (index) => rows[index]?.id || `row-${index}`,
+      paddingStart: 48, // Add padding to prevent header overlap
+      debug: false // Disable debug mode for production
+    }) : null;
+
+    // Force the virtualizer to update when the component mounts
+    React.useEffect(() => {
+      if (virtualized && rowVirtualizer) {
+        // Add a CSS rule to handle virtualized rows
+        const styleEl = document.createElement('style');
+        styleEl.textContent = `
+          /* Table container styling */
+          .virtualized-table-container {
+            position: relative;
+            border-radius: 0.5rem;
+            max-height: 600px;
+            overflow-y: auto;
+          }
+
+          /* Header styling */
+          .virtualized-table-container thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: var(--background);
+            border-bottom: 1px solid var(--border);
+          }
+
+          .virtualized-table-container thead th {
+            background-color: var(--background);
+            padding: 1rem;
+            font-weight: 500;
+          }
+
+          /* No margin needed with paddingStart */
+
+          /* Virtualized row styling */
+          .virtualized-row {
+            position: absolute;
+            width: 100%;
+            left: 0;
+            top: 0;
+            display: flex;
+            align-items: center;
+            border-bottom: 10px solid var(--border);
+            transition: background-color 0.15s ease;
+            background-color: var(--background);
+          }
+
+
+          .virtualized-row .virtual-cell {
+            padding: 1rem;
+            vertical-align: middle;
+            height: 100%;
+            border-right: 1px solid var(--border);
+          }
+
+          .virtualized-row .virtual-cell:last-child {
+            border-right: none;
+          }
+
+          .virtualized-row:hover {
+            background-color: hsl(var(--muted) / 0.5) !important;
+            cursor: pointer;
+          }
+        `;
+        document.head.appendChild(styleEl);
+
+        // Force a recalculation of the virtualizer
+        const timer = setTimeout(() => {
+          rowVirtualizer.measure();
+        }, 100);
+
+        return () => {
+          clearTimeout(timer);
+          document.head.removeChild(styleEl);
+        };
+      }
+    }, [virtualized, rowVirtualizer]);
+
+    // Set up the table for virtualization
+    React.useEffect(() => {
+      if (virtualized) {
+        // Enable column sizing and resizing
+        table.setColumnSizing({});
+
+        // Force a re-render after a short delay to ensure proper column widths
+        const timer = setTimeout(() => {
+          table.setColumnSizing({...table.getState().columnSizing});
+        }, 100);
+
+        return () => clearTimeout(timer);
+      }
+    }, [table, virtualized]);
+
+    // Store the current implementation for debugging purposes
+    React.useEffect(() => {
+      if (virtualized && rowVirtualizer) {
+        // Add a class to the body to indicate virtualization is active
+        document.body.classList.add('virtualized-table-active');
+        return () => document.body.classList.remove('virtualized-table-active');
+      }
+    }, [virtualized, rowVirtualizer]);
+
     return (
-      <div ref={ref} className={cn("rounded-md border", className)} {...props}>
+      <div
+        ref={tableContainerRef}
+        className={cn("rounded-md border", virtualized && "virtualized-table-container", className)}
+        {...props}
+        style={{
+          maxHeight: virtualized ? '600px' : 'auto',
+          overflowY: virtualized ? 'auto' : 'visible'
+        }}
+      >
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -399,11 +536,13 @@ const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
+                    colSpan={header.colSpan}
+                    data-column-id={header.id}
+                    onClick={header.column.getToggleSortingHandler()}
                     className={cn(
                       header.column.getCanSort() && "cursor-pointer select-none",
                       "whitespace-nowrap"
                     )}
-                    onClick={header.column.getToggleSortingHandler()}
                   >
                     <div className="flex items-center gap-1">
                       {flexRender(header.column.columnDef.header, header.getContext())}
@@ -442,22 +581,101 @@ const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
                 </TableCell>
               </TableRow>
 
-            : <>
-                {table?.getRowModel()?.rows?.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    onClick={() => onRowClick?.(row.original)}
-                    className={onRowClick && "cursor-pointer hover:bg-muted/50"}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
+            : virtualized && rowVirtualizer ? (
+                // Simplified virtualization approach
+                <>
+
+                  {/* Create a single spacer row that establishes the full height */}
+                  <TableRow style={{ height: 0 }}>
+                    <TableCell colSpan={table.getAllColumns().length} style={{ padding: 0, border: 'none' }}>
+                      <div
+                        style={{
+                          height: `${rowVirtualizer.getTotalSize()}px`,
+                          visibility: 'hidden',
+                          position: 'relative',
+                          paddingTop: '10px' // Add padding to prevent header overlap
+                        }}
+                      />
+                    </TableCell>
                   </TableRow>
-                ))}
-                {rowsAppend}
-              </>
+
+                  {/* Only render the rows that are currently visible */}
+                  {rowVirtualizer.getVirtualItems().map(virtualRow => {
+                    const row = rows[virtualRow.index];
+                    if (!row) return null;
+
+                    // Create a row for each visible item
+                    return (
+                      <TableRow
+                        key={virtualRow.key}
+                        data-index={virtualRow.index}
+                        data-virtualrow="true"
+                        onClick={() => onRowClick?.(row.original)}
+                        className={cn(
+                          "virtualized-row",
+                          onRowClick ? "cursor-pointer hover:bg-muted/50" : ""
+                        )}
+                        style={{
+                          height: rowHeight,
+                          transform: `translateY(${virtualRow.start}px)`,
+                          position: 'absolute',
+                          width: '100%',
+                          left: 0,
+                          right: 0,
+                          willChange: 'transform',
+                          display: 'flex',
+                          alignItems: 'center'
+                        }}
+                      >
+                        {row.getVisibleCells().map(cell => {
+                          // Get column width from header
+                          const columnId = cell.column.id;
+                          const headerCell = document.querySelector(`th[data-column-id="${columnId}"]`);
+                          const width = headerCell ? headerCell.getBoundingClientRect().width : 'auto';
+
+                          return (
+                            <TableCell
+                              key={cell.id}
+                              className="p-4 virtual-cell"
+                              style={{
+                                width: typeof width === 'number' ? `${width}px` : width,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                display: 'flex',
+                                alignItems: 'center',
+                                height: '100%',
+                                borderRight: '1px solid var(--border)'
+                              }}
+                              data-column-id={columnId}
+                            >
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </TableCell>
+                          );
+                        })}
+                      </TableRow>
+                    );
+                  })}
+                  {rowsAppend}
+                  </>
+              ) : (
+                // Standard rendering for normal datasets
+                <>
+                  {table.getRowModel().rows.map((row) => (
+                    <TableRow
+                      key={row.id}
+                      onClick={() => onRowClick?.(row.original)}
+                      className={onRowClick && "cursor-pointer hover:bg-muted/50"}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                  {rowsAppend}
+                </>)
             }
           </TableBody>
         </Table>

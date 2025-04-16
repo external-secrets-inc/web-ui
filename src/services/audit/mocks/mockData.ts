@@ -75,73 +75,58 @@ export const getMockProblemTimelineStats = (startDate: string, endDate: string) 
 
 export const mockLastUpdate = formatDate(new Date(), { format: 'readableDate' });
 
-export const mockAuditSecretTableData: AuditSecretTableData[] = [
-  {
-    id: "9f8e7d6c-5b4a-3f2e-1d0c-9b8a7f6e5d4c",
-    name: "Solid Serpent",
-    provider: "e45c3621-5e2f-4996-91c8-9dec1a15f5fb",
-    providerName: "AWS Secrets Manager",
-    lastRotation: null,
-    compliantPoliciesAmount: 3,
-    policiesAmount: 4,
-    fullCompliant: false,
-    duplicatesAmount: 2,
-    lastAccess: "2024-06-29T12:00:00Z",
-    accessorsAmount: 2,
-  },
-  {
-    id: "1a2b3c4d-5e6f-7g8h-9i0j-k1l2m3n4o5p6",
-    name: "Liquid Cobra",
-    provider: "2a7b4de8-31c9-45d2-b656-92c8f6947f9d",
-    providerName: "GCP Secret Manager",
-    lastRotation: "2024-07-12T12:00:00Z",
-    compliantPoliciesAmount: 1,
-    policiesAmount: 3,
-    fullCompliant: false,
-    duplicatesAmount: 0,
-    lastAccess: "2023-11-30T12:00:00Z",
-    accessorsAmount: 2,
-  },
-  {
-    id: "6ba7b814-9dad-11d1-80b4-00c04fd430c8",
-    name: "Crying Wolf",
-    provider: "7f9e8d23-6c5b-4a3e-9f72-14d5a8b67c91",
-    providerName: "Kubernetes Secrets",
-    lastRotation: "2024-04-20T12:00:00Z",
-    compliantPoliciesAmount: 0,
-    policiesAmount: 0,
-    fullCompliant: true,
-    duplicatesAmount: 1,
-    lastAccess: "2024-02-01T12:00:00Z",
-    accessorsAmount: 1,
-  },
-  {
-    id: "7h8i9j0k-1l2m-3n4o-5p6q-7r8s9t0u1v2w",
-    name: "Raging Raven",
-    provider: "b3c2d1a4-8f7e-4d6c-9b5a-3e2f1c8d7b6a",
-    providerName: "Azure Key Vault",
-    lastRotation: "2024-03-31T12:00:00Z",
-    compliantPoliciesAmount: 3,
-    policiesAmount: 4,
-    fullCompliant: false,
-    duplicatesAmount: 2,
-    lastAccess: "2024-09-11T12:00:00Z",
-    accessorsAmount: 2,
-  },
-  {
-    id: "a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6",
-    name: "Screaming Mantis",
-    provider: "a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6",
-    providerName: "HashiCorp Vault",
-    lastRotation: "2023-12-25T12:00:00Z",
-    compliantPoliciesAmount: 3,
-    policiesAmount: 3,
-    fullCompliant: true,
-    duplicatesAmount: 2,
-    lastAccess: "2024-01-15T12:00:00Z",
-    accessorsAmount: 2,
-  },
-];
+/**
+ * Generates a specified number of mock secrets with realistic data
+ * @param count Number of secrets to generate
+ * @returns Array of mock secrets
+ */
+const generateMockSecrets = (count: number): AuditSecretTableData[] => {
+  const providers = [
+    { id: "e45c3621-5e2f-4996-91c8-9dec1a15f5fb", name: "AWS Secrets Manager" },
+    { id: "2a7b4de8-31c9-45d2-b656-92c8f6947f9d", name: "GCP Secret Manager" },
+    { id: "7f9e8d23-6c5b-4a3e-9f72-14d5a8b67c91", name: "Kubernetes Secrets" },
+    { id: "b3c2d1a4-8f7e-4d6c-9b5a-3e2f1c8d7b6a", name: "Azure Key Vault" },
+    { id: "a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6", name: "HashiCorp Vault" }
+  ];
+
+  const names = [
+    "Solid Serpent", "Liquid Cobra", "Crying Wolf", "Raging Raven", "Screaming Mantis",
+    "Silent Tiger", "Swift Eagle", "Mighty Lion", "Wise Owl", "Brave Bear"
+  ];
+
+  return Array.from({ length: count }, (_, index) => {
+    const provider = providers[Math.floor(Math.random() * providers.length)];
+    const name = names[Math.floor(Math.random() * names.length)];
+    const hasRotation = Math.random() > 0.3;
+    const lastRotation = hasRotation
+      ? new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString()
+      : null;
+    const lastAccess = new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString();
+    const policiesAmount = Math.floor(Math.random() * 5);
+    const compliantPoliciesAmount = Math.floor(Math.random() * (policiesAmount + 1));
+    const duplicatesAmount = Math.floor(Math.random() * 3);
+    const accessorsAmount = Math.floor(Math.random() * 5) + 1;
+
+    return {
+      id: `secret-${index + 1}-${Math.random().toString(36).substr(2, 9)}`,
+      name: `${name} ${index + 1}`,
+      provider: provider.id,
+      providerName: provider.name,
+      lastRotation,
+      compliantPoliciesAmount,
+      policiesAmount,
+      fullCompliant: compliantPoliciesAmount === policiesAmount,
+      duplicatesAmount,
+      lastAccess,
+      accessorsAmount,
+    };
+  });
+};
+
+// Default number of secrets to generate
+const DEFAULT_SECRETS_COUNT = 1000;
+
+export const mockAuditSecretTableData = generateMockSecrets(DEFAULT_SECRETS_COUNT);
 
 export const mockAuditSecretsData: AuditSecretData[] = [
   {
@@ -314,7 +299,6 @@ export const mockAuditSecretsData: AuditSecretData[] = [
     lastRotation: "2023-12-25T12:00:00Z",
   },
 ];
-
 
 export const mockPoliciesData = [
   {
