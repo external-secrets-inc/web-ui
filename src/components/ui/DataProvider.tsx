@@ -410,114 +410,59 @@ const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
 
     // Create virtualizer with the table container as the scroll element
     const { rows } = table.getRowModel();
-    const rowVirtualizer = virtualized ? useVirtualizer({
-      count: rows.length,
+    const rowVirtualizer = useVirtualizer({
+      // Set count to 0 if virtualization is disabled
+      count: virtualized ? rows.length : 0,
       getScrollElement: () => tableContainerRef.current,
       estimateSize: () => rowHeight,
       overscan: overscanRows,
-      getItemKey: (index) => rows[index]?.id || `row-${index}`,
+      // Safeguard getItemKey for count=0 or potential race conditions
+      getItemKey: (index) => (rows[index] ? rows[index].id : `placeholder-${index}`),
       paddingStart: 48, // Add padding to prevent header overlap
       debug: false // Disable debug mode for production
-    }) : null;
+    });
 
-    // Force the virtualizer to update when the component mounts
+    // Effect to add/remove dynamic styles needed for virtualization
     React.useEffect(() => {
-      if (virtualized && rowVirtualizer) {
-        // Add a CSS rule to handle virtualized rows
+      // Only add styles if virtualization is enabled
+      if (virtualized) {
         const styleEl = document.createElement('style');
+        styleEl.id = 'virtualized-table-styles'; // Add an ID for easier removal/checking
         styleEl.textContent = `
           /* Table container styling */
           .virtualized-table-container {
-            position: relative;
-            border-radius: 0.5rem;
-            max-height: 600px;
-            overflow-y: auto;
+            position: relative; /* Ensure relative positioning for absolute positioned rows */
           }
 
-          /* Header styling */
-          .virtualized-table-container thead {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            background-color: var(--background);
-            border-bottom: 1px solid var(--border);
-          }
-
-          .virtualized-table-container thead th {
-            background-color: var(--background);
-            padding: 1rem;
-            font-weight: 500;
-          }
-
-          /* No margin needed with paddingStart */
-
-          /* Virtualized row styling */
+          /* Virtual row styling */
           .virtualized-row {
             position: absolute;
-            width: 100%;
-            left: 0;
             top: 0;
-            display: flex;
-            align-items: center;
-            border-bottom: 10px solid var(--border);
-            transition: background-color 0.15s ease;
-            background-color: var(--background);
-          }
-
-
-          .virtualized-row .virtual-cell {
-            padding: 1rem;
-            vertical-align: middle;
-            height: 100%;
-            border-right: 1px solid var(--border);
-          }
-
-          .virtualized-row .virtual-cell:last-child {
-            border-right: none;
-          }
-
-          .virtualized-row:hover {
-            background-color: hsl(var(--muted) / 0.5) !important;
-            cursor: pointer;
+            left: 0;
+            width: 100%;
+            contain: content; /* Optimize rendering performance */
+            will-change: transform; /* Hint browser about potential transforms */
           }
         `;
-        document.head.appendChild(styleEl);
 
-        // Force a recalculation of the virtualizer
-        const timer = setTimeout(() => {
-          rowVirtualizer.measure();
-        }, 100);
+        // Avoid adding duplicate style elements if the effect runs multiple times
+        if (!document.getElementById(styleEl.id)) {
+          document.head.appendChild(styleEl);
+        }
 
+        // Cleanup function to remove the style element when the component unmounts or virtualization is disabled
         return () => {
-          clearTimeout(timer);
-          document.head.removeChild(styleEl);
+          const existingStyleEl = document.getElementById(styleEl.id);
+          if (existingStyleEl) {
+            document.head.removeChild(existingStyleEl);
+          }
         };
       }
-    }, [virtualized, rowVirtualizer]);
+      // No return/cleanup needed if not virtualized
+    }, [virtualized]); // Depend only on the virtualized flag
 
-    // Set up the table for virtualization
-    React.useEffect(() => {
-      if (virtualized) {
-        // Enable column sizing and resizing
-        table.setColumnSizing({});
-
-        // Force a re-render after a short delay to ensure proper column widths
-        const timer = setTimeout(() => {
-          table.setColumnSizing({...table.getState().columnSizing});
-        }, 100);
-
-        return () => clearTimeout(timer);
-      }
-    }, [table, virtualized]);
-
-    // Store the current implementation for debugging purposes
-    React.useEffect(() => {
-      if (virtualized && rowVirtualizer) {
-        // Add a class to the body to indicate virtualization is active
-        document.body.classList.add('virtualized-table-active');
-        return () => document.body.classList.remove('virtualized-table-active');
-      }
-    }, [virtualized, rowVirtualizer]);
+    // Get virtual items (will be empty if count is 0)
+    const virtualItems = rowVirtualizer.getVirtualItems();
 
     return (
       <div
@@ -600,7 +545,7 @@ const DataTable = React.forwardRef<HTMLDivElement, DataTableProps>(
                   </TableRow>
 
                   {/* Only render the rows that are currently visible */}
-                  {rowVirtualizer.getVirtualItems().map(virtualRow => {
+                  {virtualItems.map(virtualRow => {
                     const row = rows[virtualRow.index];
                     if (!row) return null;
 
