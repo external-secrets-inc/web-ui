@@ -27,7 +27,6 @@ import { FeatureItemDeleteAction } from "../FeatureCollection/FeatureItemDeleteA
 import { AUDIT_QUERY_STALE_TIME } from "../audit/Audit.constants";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { Dialog, DialogTrigger } from "../ui/dialog";
-import { deleteUserData } from "@/services/users/usersService";
 import useListUsersWithRoles from "@/services/users/queries/useListUsersWithRoles";
 import { CreateUserDataPayload, UpdateUserDataPayload, UserForm } from "@/services/users/Users.interface";
 import { Badge } from "@/components/ui/badge"
@@ -41,6 +40,7 @@ import useUpdateAccountData from "@/services/account/mutations/useUpdateAccountD
 import useDeleteAccountData from "@/services/account/mutations/useDeleteAccountData";
 import useUpdateUserData from "@/services/users/mutations/useUpdateUserData";
 import useCreateUserData from "@/services/users/mutations/useCreateUserData";
+import useDeleteUserData from "@/services/users/mutations/useDeleteUserData";
 
 const formSchema = z.object({
   contact_email: z.string().email({ message: "Invalid email address" }),
@@ -107,7 +107,18 @@ const OrganizationSettings: React.FC = () => {
       toast.success('User created successfully');
     },
     onError: () => {
-      toast.error('Failed to update profile');
+      toast.error('Failed to create user');
+    }
+  })
+
+  const { mutate: deleteUserData  } = useDeleteUserData({
+
+    onSuccess: () => {
+      usersRefetch()
+      toast.success('User deleted successfully');
+    },
+    onError: () => {
+      toast.error('Failed to delete user');
     }
   })
 
@@ -307,13 +318,7 @@ const OrganizationSettings: React.FC = () => {
 
   const performDelete = async (userID: string) => {
     if (userID) {
-      try {
-        await deleteUserData(userID);
-        usersRefetch()
-        toast.success('User deleted successfully');
-      } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
-        toast.error('Failed to create user');
-      }
+      deleteUserData(userID);
     }
   };
 
