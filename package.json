@@ -78,6 +78,7 @@
     "@storybook/react-vite": "^8.6.9",
     "@storybook/testing-library": "^0.2.1",
     "@storybook/types": "^8.6.9",
+    "@tanstack/react-query-devtools": "^5.74.4",
     "@types/dagre": "^0.7.52",
     "@types/file-saver": "^2.0.7",
     "@types/js-cookie": "^3.0.6",
