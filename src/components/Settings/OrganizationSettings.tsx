@@ -72,7 +72,7 @@ const OrganizationSettings: React.FC = () => {
   const signOut = useSignOut();
 
   const { data: accountData, isError: accountDataError, refetch: accountDataRefetch } = useGetAccountData()
-  const { mutate: updateAccountData } = useUpdateAccountData(false, {
+  const { mutate: updateAccountData } = useUpdateAccountData({
     onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Failed to update Organization details"),
     onSuccess: () => {
       toast.success('Organization details updated successfully');
@@ -80,7 +80,7 @@ const OrganizationSettings: React.FC = () => {
     }
   });
 
-  const { mutate: deleteAccount } = useDeleteAccountData(false, {
+  const { mutate: deleteAccount } = useDeleteAccountData({
     onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Failed to delete Organization"),
     onSuccess: () => {
       toast('Organization deleted');

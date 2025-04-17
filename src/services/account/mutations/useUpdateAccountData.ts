@@ -5,11 +5,7 @@ import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
 import { AccountDataUpdate } from "../Account.interfaces";
 
-const updateAccountData = async (mock: boolean, payload: AccountDataUpdate): Promise<number> => {
-  if (mock) {
-    return 200
-  }
-
+const updateAccountData = async (payload: AccountDataUpdate): Promise<number> => {
   const headers = await getAuthHeaders();
   const response = await axiosInstance.patch(`/api/account`, {
     email: payload.contact_email,
@@ -20,14 +16,12 @@ const updateAccountData = async (mock: boolean, payload: AccountDataUpdate): Pro
 };
 
 const useUpdateAccountData = (
-  mock: boolean,
   options?: Omit<UseMutationOptions<number, AxiosError<ApiHttpError>, AccountDataUpdate>, 'mutationKey' | 'mutationFn'>
 ) => {
-  const isMocked = mock;
 
   return useMutation({
-    mutationKey: ["useUpdateAccountData", isMocked],
-    mutationFn: (variables: AccountDataUpdate) => updateAccountData(isMocked, variables),
+    mutationKey: ["useUpdateAccountData"],
+    mutationFn: (variables: AccountDataUpdate) => updateAccountData(variables),
     ...options,
   });
 };
