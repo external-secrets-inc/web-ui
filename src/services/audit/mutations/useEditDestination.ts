@@ -30,7 +30,6 @@ export default function useEditDestination(
 ) {
   return useMutation({
     mutationFn: editDestination,
-    // Callbacks handled in component via mutateAsync
     ...options,
   });
 }

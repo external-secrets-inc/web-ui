@@ -42,22 +42,17 @@ const getDestination = async (
   return response.data;
 };
 
-// Hook to fetch a single destination by ID
 export default function useGetDestination(
-  destinationId: string | undefined, // Allow undefined to disable the query initially
+  destinationId: string | undefined,
   options?: Omit<UseQueryOptions<DestinationTableData, AxiosError<ApiHttpError>, DestinationTableData, (string | boolean | undefined)[]>, "queryKey" | "queryFn" | "enabled">
 ) {
-  // Default to not mocking unless context says otherwise
   const { isMocked } = useAuditMock(false);
   const queryKey = ["audit", "useGetDestination", destinationId, isMocked];
 
   return useQuery({
     queryKey,
-    // Only run the query if destinationId is truthy
     queryFn: ({ signal }) => getDestination(destinationId!, isMocked, signal),
-    // Keep data fresh as per standard audit pattern
     staleTime: AUDIT_QUERY_STALE_TIME,
-    // This query should only run when a destinationId is provided
     enabled: !!destinationId,
     ...options,
   });

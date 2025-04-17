@@ -113,22 +113,18 @@ export const DestinationDialogForm = ({ destinationID, onSuccess, onCancel }: De
 
   const { data: destinationTypes, isLoading: isLoadingTypes } = useGetDestinationTypes();
 
-  // Determine initial type based on fetched data or default for create
   const initialType = useMemo(() => fetchedDestination?.type || "", [fetchedDestination]);
   const [selectedType, setSelectedType] = useState<string>("");
   const [isIdentifierManuallyEdited, setIsIdentifierManuallyEdited] = useState(isEditing);
 
-  // Keep selected type in sync with fetched data when editing
   useEffect(() => {
     setSelectedType(initialType);
   }, [initialType]);
 
-  // Calculate the dynamic schema based on the *selected* type
   const dynamicSchema = useMemo(() => {
     return createDynamicSchema(destinationTypes?.[selectedType]);
   }, [destinationTypes, selectedType]);
 
-  // Calculate default values based on fetched data or type defaults
   const defaultValues = useMemo(() => {
     const destination = fetchedDestination;
 
@@ -181,7 +177,6 @@ export const DestinationDialogForm = ({ destinationID, onSuccess, onCancel }: De
     mode: 'onSubmit',
   });
 
-  // Reset form only when editing and the fetched data has settled
   useEffect(() => {
     if (isEditing && fetchedDestination) {
       if (!isFetchingDestination) {
@@ -190,7 +185,6 @@ export const DestinationDialogForm = ({ destinationID, onSuccess, onCancel }: De
     }
   }, [isEditing, fetchedDestination, form, defaultValues, isFetchingDestination]);
 
-  // Update identifier automatically based on name, unless manually edited or in edit mode
   const watchedName = form.watch("name");
   useEffect(() => {
     if (!isEditing && !isIdentifierManuallyEdited) {
@@ -201,7 +195,6 @@ export const DestinationDialogForm = ({ destinationID, onSuccess, onCancel }: De
     }
   }, [watchedName, isIdentifierManuallyEdited, isEditing, form]);
 
-  // Keep internal selectedType state synced with the form's type field value
   const watchedType = form.watch("type");
   useEffect(() => {
     if (watchedType !== selectedType) {
@@ -220,7 +213,6 @@ export const DestinationDialogForm = ({ destinationID, onSuccess, onCancel }: De
     },
   });
 
-  // Use mutateAsync for edit to await completion before UI updates
   const { mutateAsync: editMutateAsync } = useEditDestination();
 
   const onSubmit = async (data: DestinationFormValues) => {
@@ -273,7 +265,6 @@ export const DestinationDialogForm = ({ destinationID, onSuccess, onCancel }: De
     return Object.keys(destinationTypes);
   }, [destinationTypes]);
 
-  // Render loading state while fetching initial data for edit
   if (isEditing && isLoadingDestination) {
     return (
       <DialogContent className="flex items-center justify-center p-8">
@@ -282,7 +273,6 @@ export const DestinationDialogForm = ({ destinationID, onSuccess, onCancel }: De
     );
   }
 
-  // Render error state if fetching initial data failed
   if (isEditing && isErrorDestination) {
     return (
       <DialogContent>
@@ -300,7 +290,6 @@ export const DestinationDialogForm = ({ destinationID, onSuccess, onCancel }: De
     );
   }
 
-  // Dynamically renders config fields based on selected type schema
   const renderConfigFields = (fieldsSchema: DestinationTypeField[]) => {
     if (!fieldsSchema || fieldsSchema.length === 0) return null;
 
@@ -317,7 +306,7 @@ export const DestinationDialogForm = ({ destinationID, onSuccess, onCancel }: De
             <FormField
               key={fieldLabel}
               control={form.control}
-              name={fieldLabel} // Use label directly as field name (matches dynamic schema keys)
+              name={fieldLabel}
               render={({ field: formField }) => (
                 <FormItem>
                   <FormLabel>
@@ -373,12 +362,10 @@ export const DestinationDialogForm = ({ destinationID, onSuccess, onCancel }: De
         </DialogDescription>
       </DialogHeader>
 
-      {/* Show loader only when fetching types during create mode */}
       {isLoadingTypes && !isEditing && (
         <div className="flex items-center justify-center p-4"><Loader /></div>
       )}
 
-      {/* Render form only after types are loaded (for create) or specific destination is loaded (for edit) */}
       {(!isLoadingTypes || (isEditing && fetchedDestination)) && (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -394,7 +381,6 @@ export const DestinationDialogForm = ({ destinationID, onSuccess, onCancel }: De
                       {...field}
                       onChange={(e) => {
                         field.onChange(e);
-                        // Only auto-slugify during creation if not manually edited
                         if (!isEditing && !isIdentifierManuallyEdited) {
                           form.setValue("identifier", createSlug(e.target.value));
                         }
@@ -416,10 +402,9 @@ export const DestinationDialogForm = ({ destinationID, onSuccess, onCancel }: De
                     <Input
                       placeholder="Enter unique identifier"
                       {...field}
-                      disabled={isEditing} // Identifier is not editable after creation
+                      disabled={isEditing}
                       onChange={(e) => {
                         field.onChange(e);
-                        // Mark identifier as manually edited if changed during creation
                         if (!isEditing) {
                           setIsIdentifierManuallyEdited(true);
                         }
@@ -437,8 +422,7 @@ export const DestinationDialogForm = ({ destinationID, onSuccess, onCancel }: De
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Type</FormLabel>
-                  {/* Show loader only if types are loading AND we are creating */}
-                  {(isLoadingTypes && !isEditing) ? (
+                  {isLoadingTypes && !isEditing ? (
                     <Loader />
                   ) : (
                     <Select
@@ -447,7 +431,7 @@ export const DestinationDialogForm = ({ destinationID, onSuccess, onCancel }: De
                         setSelectedType(value);
                       }}
                       value={field.value}
-                      disabled={isEditing} // Type is not editable after creation
+                      disabled={isEditing}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -460,7 +444,6 @@ export const DestinationDialogForm = ({ destinationID, onSuccess, onCancel }: De
                             {type}
                           </SelectItem>
                         ))}
-                        {/* Ensure the selected type is shown even if disabled (e.g., deprecated type) */}
                         {isEditing && fetchedDestination && !availableTypes.includes(fetchedDestination.type) && (
                           <SelectItem key={fetchedDestination.type} value={fetchedDestination.type} disabled>
                             {fetchedDestination.type}
@@ -474,10 +457,8 @@ export const DestinationDialogForm = ({ destinationID, onSuccess, onCancel }: De
               )}
             />
 
-            {/* Render dynamic fields based on selected type */}
             {selectedType && destinationTypes?.[selectedType] && renderConfigFields(destinationTypes[selectedType])}
 
-            {/* Display form submission error */}
             {formError && (
               <div className="text-sm text-red-500">
                 {formError}
@@ -488,7 +469,6 @@ export const DestinationDialogForm = ({ destinationID, onSuccess, onCancel }: De
               <Button type="button" variant="outline" onClick={onCancel}>
                 Cancel
               </Button>
-              {/* Disable submit if submitting or if editing and no changes were made */}
               <Button type="submit" disabled={isSubmitting || (isEditing && !form.formState.isDirty)}>
                 {isSubmitting ? "Saving..." : isEditing ? "Update" : "Create"}
               </Button>
