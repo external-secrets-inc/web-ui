@@ -31,6 +31,7 @@ import AuditTimelineProviders from "./AuditTimelineProviders";
 import ListenerInstallDialogContent from "./ListenerInstallDialogContent";
 import { AuditSecretTable } from "./AuditSecretTable";
 import { formatDate } from "@/utils/dateUtils";
+import AuditDestinationDataTable from "./AuditDestinationDataTable";
 
 interface AuditProps {
   tenantListener: TenantListener;
@@ -303,6 +304,7 @@ export default function Audit({ tenantListener, auditListener }: AuditProps) {
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="providers">Providers</TabsTrigger>
             <TabsTrigger value="policies">Policies</TabsTrigger>
+            <TabsTrigger value="destinations">Destinations</TabsTrigger>
           </TabsList>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Listener Status:</span>
@@ -378,6 +380,10 @@ export default function Audit({ tenantListener, auditListener }: AuditProps) {
             tenantID={authUser?.tenantId ?? ""}
             listenerID={auditListener.listenerID}
           />
+        </TabsContent>
+
+        <TabsContent value="destinations" className="space-y-4">
+          <AuditDestinationDataTable/>
         </TabsContent>
       </Tabs>
     </div>
