@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -10,12 +10,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { getUserData, updateUserData } from '@/services/users/usersService';
+import { updateUserData } from '@/services/users/usersService';
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
 import { toast } from "sonner";
 import SettingsSection from './SettingsSection';
-import { BackendUserData, IUserData } from "@/types";
+import { IUserData } from "@/types";
 import { Skeleton } from '@/components/ui/skeleton';
+import useGetUserData from '@/services/users/queries/useGetUserData';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Cannot be empty" }),
@@ -25,7 +26,6 @@ type FormSchemaType = z.infer<typeof formSchema>;
 
 const ProfileSettings: React.FC = () => {
   const userId = useAuthUser<IUserData>()?.userId;
-  const [userData, setUserData] = useState<BackendUserData | null>(null);
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -33,25 +33,15 @@ const ProfileSettings: React.FC = () => {
     },
   });
 
-  // Fetch user data when the component mounts
+  const { data: userData, isError } = useGetUserData(userId || "", {
+    enabled: !!userId
+  });
+
   useEffect(() => {
-    const fetchData = async () => {
-      if (userId) {
-        try {
-          const data = await getUserData(userId);
-          setUserData(data);
-          form.reset({
-            name: data.name,
-          });
-        } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
-
-          toast.error('Failed to load profile data');
-        }
-      }
-    };
-
-    fetchData();
-  }, [userId]);
+    form.reset({
+      name: userData?.name,
+    });
+  }, [userData, form]);
 
   // Handle Save function
   async function handleSave(values: FormSchemaType) {
@@ -64,6 +54,10 @@ const ProfileSettings: React.FC = () => {
         toast.error('Failed to update profile');
       }
     }
+  }
+
+  if (isError) {
+    toast.error('Failed to load profile data');
   }
 
   const subsections = [

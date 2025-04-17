@@ -5,16 +5,6 @@ import axiosInstance from '../axiosConfig';
 import { CreateUserDataPayload, UpdateUserDataPayload } from './Users.interface';
 
 
-// Fetch user data
-export async function getUserData(userId: string, options: Partial<ApiWrapperOptions & { manualToken?: string }> = {}) {
-  const headers = await getAuthHeaders(options.manualToken);
-
-  return apiWrapper(async () => {
-    const response = await axiosInstance.get(`/api/users/${userId}`, { headers });
-    return response.data;
-  }, { defaultError: 'Failed to fetch user details', ...options });
-}
-
 // Update user data
 export async function updateUserData(userId: string, userData: UpdateUserDataPayload, options: Partial<ApiWrapperOptions> = {}) {
   const headers = await getAuthHeaders();

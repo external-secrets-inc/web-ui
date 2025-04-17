@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 import { secondsToMMSS } from "@/utils/datetimeFormating";
 import useAuthHeader from 'react-auth-kit/hooks/useAuthHeader'
-import { getUserData } from "@/services/users/usersService";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
 import { Navigate, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -14,6 +13,7 @@ import useSignOut from "react-auth-kit/hooks/useSignOut";
 import { trackSignedOut } from "@/analytics";
 import { Button } from "@/components/ui/button";
 import { ONE_MINUTE_IN_SECONDS, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
+import { getUserData } from "@/services/users/queries/useGetUserData";
 
 export function Verify() {
   const authUser = useAuthUser<IUserData>();
@@ -47,7 +47,7 @@ export function Verify() {
       if (!authHeader) return
       await validateVerificationCode(authUser.email, authUser.tenant, code)
       const [tokenType, token] = authHeader.split(" ")
-      const userData = await getUserData(authUser.userId, {manualToken: token})
+      const userData = await getUserData(undefined, authUser.userId)
 
       // TODO: Create a UserProvider to share user data across the application and eliminate duplicated code in LoginForm, SignUpForm and Verify components
       // https://github.com/external-secrets-inc/web-ui/issues/60

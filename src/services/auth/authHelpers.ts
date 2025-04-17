@@ -1,5 +1,5 @@
 import { login } from "@/services/auth/authService";
-import { getUserData } from "@/services/users/usersService";
+import { getUserData } from "@/services/users/queries/useGetUserData";
 import useSignIn from "react-auth-kit/hooks/useSignIn";
 
 export async function getAuthHeaders(manualToken?: string): Promise<{ [key: string]: string }> {
@@ -52,7 +52,7 @@ export const loginAndIdentifyUser = async ({
   try {
     const { token, tenantId, tenant, userId } = await login(email, password, tenantSlug, { suppressToast: true });
 
-    const userDetails = await getUserData(userId!, { manualToken: token });
+    const userDetails = await getUserData(undefined, userId!, token);
 
     const userState = {
       email,
