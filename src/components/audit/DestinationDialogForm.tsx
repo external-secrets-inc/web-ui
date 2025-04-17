@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DestinationTableData, CreateDestinationPayload, EditDestinationPayload, WebhookConfig } from './Audit.interfaces';
+import { DestinationTableData, CreateDestinationPayload, EditDestinationPayload, DestinationsWebhookConfig } from './Audit.interfaces';
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { useState, useEffect, useMemo } from "react";
 import { AxiosError } from "axios";
@@ -192,12 +192,12 @@ export const DestinationDialogForm = ({ destination, onSuccess, onCancel }: Dest
     // Extract base fields and gather dynamic fields into config
     const { name, identifier, type, ...dynamicFields } = data;
 
-    // Construct config payload ensuring keys match WebhookConfig
-    const configPayload: WebhookConfig = {
+    // Construct config payload ensuring keys match DestinationsWebhookConfig
+    const configPayload: DestinationsWebhookConfig = {
       url: String(dynamicFields["URL"] ?? ""), // Use the exact label from API response
       caBundle: String(dynamicFields["CA Bundle"] ?? ""), // Use the exact label
-      auth: (dynamicFields["Auth method"] ?? "NONE") as WebhookConfig['auth'], // Use the exact label
-      format: (dynamicFields["Event Format"] ?? "CLOUD_EVENTS") as WebhookConfig['format'], // Use the exact label
+      auth: (dynamicFields["Auth method"] ?? "NONE") as DestinationsWebhookConfig['auth'], // Use the exact label
+      format: (dynamicFields["Event Format"] ?? "CLOUD_EVENTS") as DestinationsWebhookConfig['format'], // Use the exact label
     };
     const submissionType = type; // Type is directly from validated data
 

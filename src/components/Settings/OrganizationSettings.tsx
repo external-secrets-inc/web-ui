@@ -11,7 +11,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { deleteAccount, getAccountData, updateAccountData } from '@/services/account/accountService';
 import { useSignOut } from '@/hooks/useSignOut';
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -20,7 +19,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import SettingsSection from './SettingsSection';
 import { Skeleton } from '@/components/ui/skeleton';
-import { LucideEdit, LucideMoreVertical, LucidePlus, LucideTrash2 } from "lucide-react";
+import { LucideCheck, LucideEdit, LucideMoreVertical, LucidePlus, LucideTrash2, LucideX } from "lucide-react";
 import { DataProvider, DataTable } from "../ui/DataProvider";
 import { createColumnHelper } from "@tanstack/react-table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
@@ -37,6 +36,9 @@ import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
 import useAddRoleForUserByID from "@/services/authz/mutations/useAddRoleForUserByID";
 import useRemoveRoleForUserByID from "@/services/authz/mutations/useRemoveRoleForUserByID";
+import useGetAccountData from "@/services/account/queries/useGetAccountData";
+import useUpdateAccountData from "@/services/account/mutations/useUpdateAccountData";
+import useDeleteAccountData from "@/services/account/mutations/useDeleteAccountData";
 
 const formSchema = z.object({
   contact_email: z.string().email({ message: "Invalid email address" }),
@@ -59,6 +61,7 @@ interface UsersManagementTableData {
   name: string;
   email: string;
   roles: string[];
+  isActive: boolean;
 }
 
 interface UsersManagementTableMeta {
@@ -68,13 +71,24 @@ interface UsersManagementTableMeta {
 const OrganizationSettings: React.FC = () => {
   const signOut = useSignOut();
 
-  const [accountData, setAccountData] = useState({
-    contact_email: "",
-    contact_name: "",
-    contact_phone: "",
-    tenant_name: "",
-    tenant_id: "",
+  const { data: accountData, isError: accountDataError, refetch: accountDataRefetch } = useGetAccountData()
+  const { mutate: updateAccountData } = useUpdateAccountData({
+    onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Failed to update Organization details"),
+    onSuccess: () => {
+      toast.success('Organization details updated successfully');
+      accountDataRefetch();
+    }
   });
+
+  const { mutate: deleteAccount } = useDeleteAccountData({
+    onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Failed to delete Organization"),
+    onSuccess: () => {
+      toast('Organization deleted');
+      setIsDeleteDialogOpen(false);
+      signOut({ reason: 'account_deleted' });
+    }
+  });
+
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -88,7 +102,7 @@ const OrganizationSettings: React.FC = () => {
   });
 
   const deleteForm = useForm<DeleteFormSchemaType>({
-    resolver: zodResolver(deleteFormSchema(accountData.tenant_name)),
+    resolver: zodResolver(deleteFormSchema(accountData?.tenant_name || "")),
     defaultValues: {
       tenant_name: "",
     },
@@ -96,40 +110,49 @@ const OrganizationSettings: React.FC = () => {
 
   // Fetch organization data when the component mounts
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await getAccountData();
-        setAccountData(data);
-        form.reset({
-          contact_email: data.contact_email || "",
-          contact_name: data.contact_name || "",
-          contact_phone: data.contact_phone || "",
-        });
-        deleteForm.reset({
-          tenant_name: "",
-        });
-      } catch {
-        toast.error('Failed to load organization data');
-      }
-    };
+    form.reset({
+      contact_email: accountData?.contact_email || "",
+      contact_name: accountData?.contact_name || "",
+      contact_phone: accountData?.contact_phone || "",
+    });
+    deleteForm.reset({
+      tenant_name: "",
+    });
+  }, [form, deleteForm, accountData]);
 
-    fetchData();
-  }, [form, deleteForm]);
+  if (accountDataError) {
+    toast.error('Failed to load organization data');
+  }
 
   const columnHelper = createColumnHelper<UsersManagementTableData>();
 
   const usersManagementColumns = useMemo(() => [
     columnHelper.accessor('name', {
       header: 'Name',
-      cell: info => <strong>{info.getValue()}</strong>
+      cell: info => {
+        const isActive = info.row.original.isActive;
+        return (
+          <strong className={!isActive ? 'text-muted-foreground' : ''}>
+            {info.getValue()}
+          </strong>
+        );
+      }
     }),
     columnHelper.accessor('email', {
       header: 'Email',
-      cell: info => <strong>{info.getValue()}</strong>
+      cell: info => {
+        const isActive = info.row.original.isActive;
+        return (
+          <strong className={!isActive ? 'text-muted-foreground' : ''}>
+            {info.getValue()}
+          </strong>
+        );
+      }
     }),
     columnHelper.accessor('roles', {
       header: 'Roles',
       cell: info => {
+        const isActive = info.row.original.isActive;
         const roles = info.getValue() as string[] | undefined;
 
         if (!roles || roles.length === 0) return null;
@@ -138,11 +161,24 @@ const OrganizationSettings: React.FC = () => {
           <div className="flex flex-wrap gap-2">
             {roles.map(role => (
               <Badge key={role} variant="secondary">
-                {role}
+                <p className={!isActive ? 'text-muted-foreground' : ''}>{role}</p>
               </Badge>
             ))}
           </div>
         );
+      }
+    }),
+    columnHelper.accessor('isActive', {
+      header: 'Status',
+      cell: info => {
+        const isActive = info.getValue() as boolean;
+        return <div className='flex justify-center'>
+          {isActive ? (
+            <LucideCheck className="text-success" />
+            ) : (
+              <LucideX className="items-center text-destructive"/>
+            )}
+        </div>
       }
     }),
     columnHelper.display({
@@ -225,12 +261,13 @@ const OrganizationSettings: React.FC = () => {
     if (!usersData) return []
 
     // Filter out inactive users and map them to the table data structure
-    return usersData.users.filter(user => user.is_active).map(user => ({
+    return usersData.users.map(user => ({
       id: user.id,
       name: user.name,
       email: user.email,
-      tenantID: accountData?.tenant_id,
-      roles: user.roles
+      tenantID: accountData?.tenant_id || "",
+      roles: user.roles,
+      isActive: user.is_active
     }));
   }, [usersData, accountData]);
 
@@ -361,26 +398,11 @@ const OrganizationSettings: React.FC = () => {
       ...values,
       contact_phone: values.contact_phone || "",
     };
-
-    try {
-      await updateAccountData(dataToSend);
-      toast.success('Organization details updated successfully');
-      setAccountData((prev) => ({ ...prev, ...dataToSend }));
-      form.reset(values);
-    } catch {
-      toast.error('Failed to update Organization details');
-    }
+    updateAccountData(dataToSend);
   }
 
   async function handleDeleteAccount() {
-    try {
-      await deleteAccount();
-      toast('Organization deleted');
-      setIsDeleteDialogOpen(false);
-      signOut({ reason: 'account_deleted' });
-    } catch {
-      toast.error('Failed to delete Organization');
-    }
+    deleteAccount();
   }
 
   const subsections = [
@@ -390,10 +412,11 @@ const OrganizationSettings: React.FC = () => {
         <>
           <div className='space-y-2'>
             <FormLabel>Tenant ID</FormLabel>
-            {accountData
-              ? <p className="text-sm text-muted-foreground">{accountData?.tenant_id}</p>
-              : <Skeleton className='h-5 w-[stretch] max-w-48' />
-            }
+            {accountDataError ? <p className="text-sm text-muted-foreground">---</p> : (
+              accountData
+                ? <p className="text-sm text-muted-foreground">{accountData?.tenant_id}</p>
+                : <Skeleton className='h-5 w-[stretch] max-w-48' />
+            )}
           </div>
         </>
       ),
@@ -506,7 +529,7 @@ const OrganizationSettings: React.FC = () => {
                 <AlertDialogTitle>Delete Organization</AlertDialogTitle>
                 <AlertDialogDescription>
                   Deleting this Organization will permanently remove all data associated with it in our database. This action is final and cannot be undone.
-                  <strong className='block mt-2'>To confirm you must type your Organization URL: <span className='text-foreground'>{accountData.tenant_name}</span></strong>
+                  <strong className='block mt-2'>To confirm you must type your Organization URL: <span className='text-foreground'>{accountData?.tenant_name}</span></strong>
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <Form {...deleteForm}>
@@ -524,7 +547,7 @@ const OrganizationSettings: React.FC = () => {
                             <Input
                               ref={inputRef}
                               autoFocus
-                              placeholder={accountData.tenant_name}
+                              placeholder={accountData?.tenant_name}
                               autoCapitalize="none"
                               {...restField}
                             />

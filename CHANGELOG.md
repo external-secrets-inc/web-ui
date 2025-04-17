@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.14.1](https://github.com/external-secrets-inc/web-ui/compare/v0.14.0...v0.14.1) (2025-04-09)
+
+
+### Bug Fixes
+
+* add inactive users to table; add other existent roles to role options ([#318](https://github.com/external-secrets-inc/web-ui/issues/318)) ([5c7963e](https://github.com/external-secrets-inc/web-ui/commit/5c7963e8cd647191b6c7c1461583e6ff999b5d83))
+
+## [0.14.0](https://github.com/external-secrets-inc/web-ui/compare/v0.13.0...v0.14.0) (2025-03-31)
+
+
+### Features
+
+* add basic setup of storybook ([#313](https://github.com/external-secrets-inc/web-ui/issues/313)) ([9ac70e2](https://github.com/external-secrets-inc/web-ui/commit/9ac70e27ddb8bb098f8bc42d28e00b8e7db88a69))
+* Add users management data table with add button ([#315](https://github.com/external-secrets-inc/web-ui/issues/315)) ([05a100b](https://github.com/external-secrets-inc/web-ui/commit/05a100b77c8ee137430ed5fbe5c075f2c2ca4de4))
+* improve provider form validation and slug handling ([#310](https://github.com/external-secrets-inc/web-ui/issues/310)) ([f5d6831](https://github.com/external-secrets-inc/web-ui/commit/f5d683181f079d2589ba9da80402409c6ae35eff))
+
+
+### Bug Fixes
+
+* fixed multiselect search ([#277](https://github.com/external-secrets-inc/web-ui/issues/277)) ([8096e02](https://github.com/external-secrets-inc/web-ui/commit/8096e022405a13f025958730871cbb6b4d10467d))
+* update keyvault configs ([#311](https://github.com/external-secrets-inc/web-ui/issues/311)) ([a7c85af](https://github.com/external-secrets-inc/web-ui/commit/a7c85afc7277941901cf5165f296e64632edbdd4))
+
 ## [0.13.0](https://github.com/external-secrets-inc/web-ui/compare/v0.12.0...v0.13.0) (2025-03-18)
 
 
