@@ -125,7 +125,9 @@ export default function AuditDestinationDataTable() {
 
   const handleAddDestinationDialogOpenChange = (isOpen: boolean) => {
     setIsAddDestinationDialogOpen(isOpen);
-    setSelectedDestinationId("");
+    if (!isOpen) {
+      setSelectedDestinationId("");
+    }
   };
 
   return (
@@ -134,16 +136,14 @@ export default function AuditDestinationDataTable() {
         <h2 className="font-bold">Destinations</h2>
         <Dialog open={isAddDestinationDialogOpen} onOpenChange={handleAddDestinationDialogOpenChange}>
           <DialogTrigger asChild>
-            <Button variant="outline">
+            <Button variant="outline" onClick={() => setSelectedDestinationId("")}>
               <LucidePlus />
               Add Destination
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DestinationDialogForm
-              destination={selectedDestinationId && destinationsData ?
-                destinationsData.find(d => d.destinationID === selectedDestinationId)
-                : undefined}
+              destinationID={selectedDestinationId || undefined}
               onSuccess={() => {
                 handleAddDestinationDialogOpenChange(false);
                 refetch();
