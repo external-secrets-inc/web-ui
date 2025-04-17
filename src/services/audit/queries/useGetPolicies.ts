@@ -10,7 +10,6 @@ import { useAuditMock } from '@/services/audit/context/AuditMockContext';
 // TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/119
 const getPolicies = async (
   mock: boolean,
-  tenantID: string,
   signal: AbortSignal,
 ) => {
   if (mock) {
@@ -19,20 +18,19 @@ const getPolicies = async (
   }
 
   const headers = await getAuthHeaders();
-  const response = await axiosInstance.get(`/api/policies?tenant_id=${tenantID}`, { headers, signal, backend: 'AUDIT_POC' });
+  const response = await axiosInstance.get(`/api/policies`, { headers, signal, backend: 'AUDIT_POC' });
   return response.data;
 }
 
 const useGetPolicies = (
   mock: boolean,
-  tenantID: string,
   options?: Omit<UseQueryOptions<PolicyTableData[], AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
 ) => {
   const { isMocked } = useAuditMock(mock);
 
   return useQuery({
     queryKey: ["audit", "useGetPolicies", isMocked],
-    queryFn: ({ signal }) => getPolicies(isMocked, tenantID, signal),
+    queryFn: ({ signal }) => getPolicies(isMocked, signal),
     ...options,
   });
 };

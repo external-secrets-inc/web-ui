@@ -283,15 +283,36 @@ export interface SecretAccessors {
   [key: string]: AccessorDetails[];
 }
 
-export interface DestinationsDataTable {
+export interface DestinationsWebhookConfig {
+  url: string;
+  caBundle?: string;
+  auth: "NONE" | "BASIC" | "TOKEN" | "OIDC";
+  format: "CLOUD_EVENTS";
+}
+
+export interface DestinationTableData {
   _id: string;
-  tenantID: string;
   destinationID: string;
+  tenantID: string;
   name: string;
   identifier: string;
   type: string;
-  config: {
-    [key: string]: string | undefined;
-  };
-  deleted_at?: string;
+  config: DestinationsWebhookConfig;
+  deletedAt: string | null;
+}
+
+export interface CreateDestinationPayload {
+  name: string;
+  identifier?: string;
+  type: string;
+  config: DestinationsWebhookConfig;
+}
+
+export type EditDestinationPayload = Partial<Omit<CreateDestinationPayload, 'identifier'>> & { identifier?: string };
+
+export interface DestinationForm {
+  name: string;
+  identifier: string;
+  type: string;
+  config: DestinationsWebhookConfig;
 }
