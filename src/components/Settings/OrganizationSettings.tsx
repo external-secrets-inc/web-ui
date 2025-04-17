@@ -27,7 +27,7 @@ import { FeatureItemDeleteAction } from "../FeatureCollection/FeatureItemDeleteA
 import { AUDIT_QUERY_STALE_TIME } from "../audit/Audit.constants";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { Dialog, DialogTrigger } from "../ui/dialog";
-import { createUserData, deleteUserData, updateUserData } from "@/services/users/usersService";
+import { createUserData, deleteUserData } from "@/services/users/usersService";
 import useListUsersWithRoles from "@/services/users/queries/useListUsersWithRoles";
 import { CreateUserDataPayload, UpdateUserDataPayload, UserForm } from "@/services/users/Users.interface";
 import { Badge } from "@/components/ui/badge"
@@ -39,6 +39,7 @@ import useRemoveRoleForUserByID from "@/services/authz/mutations/useRemoveRoleFo
 import useGetAccountData from "@/services/account/queries/useGetAccountData";
 import useUpdateAccountData from "@/services/account/mutations/useUpdateAccountData";
 import useDeleteAccountData from "@/services/account/mutations/useDeleteAccountData";
+import useUpdateUserData from "@/services/users/mutations/useUpdateUserData";
 
 const formSchema = z.object({
   contact_email: z.string().email({ message: "Invalid email address" }),
@@ -88,6 +89,17 @@ const OrganizationSettings: React.FC = () => {
       signOut({ reason: 'account_deleted' });
     }
   });
+
+  const { mutate: updateUserData } = useUpdateUserData({
+    onSuccess: () => {
+      usersRefetch()
+      toast.success('User edited successfully');
+    },
+    onError: () => {
+      toast.error('Failed to update profile');
+    }
+  })
+
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -283,15 +295,9 @@ const OrganizationSettings: React.FC = () => {
     }
   };
 
-  const performEdit = async (userID: string, updatePayload: UpdateUserDataPayload) => {
+  const performEdit = (updatePayload: UpdateUserDataPayload) => {
     if (updatePayload) {
-      try {
-        await updateUserData(userID, updatePayload);
-        usersRefetch()
-        toast.success('User edited successfully');
-      } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
-        toast.error('Failed to create user');
-      }
+      updateUserData(updatePayload);
     }
   };
 
@@ -328,56 +334,53 @@ const OrganizationSettings: React.FC = () => {
 
   const handleAddUserSubmit = async (payload: UserForm) => {
     if (selectedUserId) {
-      try {
-        // Handle basic user info update
-        const { name, password } = { ...payload };
-        const editPayload = {
-          name: name,
-          ...(password && password.trim() !== "" ? { password } : {})
-        };
-        await performEdit(selectedUserId, editPayload);
+      // Handle basic user info update
+      const { name, password } = { ...payload };
+      const editPayload = {
+        id: selectedUserId,
+        name: name,
+        ...(password && password.trim() !== "" ? { password } : {})
+      };
+      performEdit(editPayload);
 
-        // Handle role assignments
-        const currentUser = users.find(u => u.id === selectedUserId);
-        if (!currentUser) return;
+      // Handle role assignments
+      const currentUser = users.find(u => u.id === selectedUserId);
+      if (!currentUser) return;
 
-        const currentRoles = currentUser.roles || [];
-        const newRoles = payload.roles || [];
+      const currentRoles = currentUser.roles || [];
+      const newRoles = payload.roles || [];
 
-        const rolesToRemove = currentRoles.filter(
-          role => !newRoles.includes(role)
-        );
+      const rolesToRemove = currentRoles.filter(
+        role => !newRoles.includes(role)
+      );
 
-        const rolesToAdd = newRoles.filter(
-          role => !currentRoles.includes(role)
-        );
+      const rolesToAdd = newRoles.filter(
+        role => !currentRoles.includes(role)
+      );
 
-        // Execute all role mutations in parallel
-        const mutations = [
-          ...rolesToRemove.map(role =>
-            removeRole({ user_id: selectedUserId, role })
-          ),
-          ...rolesToAdd.map(role =>
-            addRole({ user_id: selectedUserId, role })
-          )
-        ];
+      // Execute all role mutations in parallel
+      const mutations = [
+        ...rolesToRemove.map(role =>
+          removeRole({ user_id: selectedUserId, role })
+        ),
+        ...rolesToAdd.map(role =>
+          addRole({ user_id: selectedUserId, role })
+        )
+      ];
 
-        await Promise.all(mutations);
-        await usersRefetch();
+      await Promise.all(mutations);
+      await usersRefetch();
 
-        // Show success message for role changes
-        if (rolesToAdd.length > 0 || rolesToRemove.length > 0) {
-          const messages: string[] = [];
-          if (rolesToAdd.length > 0) {
-            messages.push(`${rolesToAdd.length} role${rolesToAdd.length !== 1 ? 's' : ''} assigned`);
-          }
-          if (rolesToRemove.length > 0) {
-            messages.push(`${rolesToRemove.length} role${rolesToRemove.length !== 1 ? 's' : ''} removed`);
-          }
-          toast.success(messages.join(' and '));
+      // Show success message for role changes
+      if (rolesToAdd.length > 0 || rolesToRemove.length > 0) {
+        const messages: string[] = [];
+        if (rolesToAdd.length > 0) {
+          messages.push(`${rolesToAdd.length} role${rolesToAdd.length !== 1 ? 's' : ''} assigned`);
         }
-      } catch (error) {
-        handleDefaultApiHttpError(error as AxiosError<ApiHttpError>, "Failed to update user and roles");
+        if (rolesToRemove.length > 0) {
+          messages.push(`${rolesToRemove.length} role${rolesToRemove.length !== 1 ? 's' : ''} removed`);
+        }
+        toast.success(messages.join(' and '));
       }
     } else {
       // Handle new user creation

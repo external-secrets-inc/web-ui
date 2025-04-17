@@ -5,6 +5,7 @@ export interface CreateUserDataPayload {
 }
 
 export interface UpdateUserDataPayload {
+    id: string,
     name: string,
     password?: string,
 }

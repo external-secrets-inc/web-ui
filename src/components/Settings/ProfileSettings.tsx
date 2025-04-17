@@ -10,13 +10,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { updateUserData } from '@/services/users/usersService';
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
 import { toast } from "sonner";
 import SettingsSection from './SettingsSection';
 import { IUserData } from "@/types";
 import { Skeleton } from '@/components/ui/skeleton';
 import useGetUserData from '@/services/users/queries/useGetUserData';
+import useUpdateUserData from '@/services/users/mutations/useUpdateUserData';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Cannot be empty" }),
@@ -37,6 +37,16 @@ const ProfileSettings: React.FC = () => {
     enabled: !!userId
   });
 
+  const { mutate: updateUserData } = useUpdateUserData({
+    onSuccess: (_, variables) => {
+      toast.success('Profile updated successfully');
+      form.reset(variables);
+    },
+    onError: () => {
+      toast.error('Failed to update profile');
+    }
+  })
+
   useEffect(() => {
     form.reset({
       name: userData?.name,
@@ -46,13 +56,7 @@ const ProfileSettings: React.FC = () => {
   // Handle Save function
   async function handleSave(values: FormSchemaType) {
     if (userData) {
-      try {
-        await updateUserData(userData.id, values);
-        toast.success('Profile updated successfully');
-        form.reset(values);
-      } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
-        toast.error('Failed to update profile');
-      }
+      updateUserData({id: userData.id, ...values});
     }
   }
 
