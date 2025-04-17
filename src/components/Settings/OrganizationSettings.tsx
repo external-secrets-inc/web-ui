@@ -27,7 +27,7 @@ import { FeatureItemDeleteAction } from "../FeatureCollection/FeatureItemDeleteA
 import { AUDIT_QUERY_STALE_TIME } from "../audit/Audit.constants";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { Dialog, DialogTrigger } from "../ui/dialog";
-import { createUserData, deleteUserData } from "@/services/users/usersService";
+import { deleteUserData } from "@/services/users/usersService";
 import useListUsersWithRoles from "@/services/users/queries/useListUsersWithRoles";
 import { CreateUserDataPayload, UpdateUserDataPayload, UserForm } from "@/services/users/Users.interface";
 import { Badge } from "@/components/ui/badge"
@@ -40,6 +40,7 @@ import useGetAccountData from "@/services/account/queries/useGetAccountData";
 import useUpdateAccountData from "@/services/account/mutations/useUpdateAccountData";
 import useDeleteAccountData from "@/services/account/mutations/useDeleteAccountData";
 import useUpdateUserData from "@/services/users/mutations/useUpdateUserData";
+import useCreateUserData from "@/services/users/mutations/useCreateUserData";
 
 const formSchema = z.object({
   contact_email: z.string().email({ message: "Invalid email address" }),
@@ -100,6 +101,15 @@ const OrganizationSettings: React.FC = () => {
     }
   })
 
+  const { mutate: createUserData  } = useCreateUserData({
+    onSuccess: () => {
+      usersRefetch()
+      toast.success('User created successfully');
+    },
+    onError: () => {
+      toast.error('Failed to update profile');
+    }
+  })
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -285,13 +295,7 @@ const OrganizationSettings: React.FC = () => {
 
   const performCreate = async (createPayload: CreateUserDataPayload) => {
     if (createPayload) {
-      try {
-        await createUserData(createPayload);
-        usersRefetch()
-        toast.success('User created successfully');
-      } catch (error) { // eslint-disable-line @typescript-eslint/no-unused-vars
-        toast.error('Failed to create user');
-      }
+      createUserData(createPayload);
     }
   };
 
