@@ -1,20 +1,14 @@
 export const createSlug = (value: string): string => {
-  // First convert to lowercase and remove special characters except hyphens and underscores
-  let slug = value.toLowerCase().replace(/[^a-z0-9-_]/g, "");
+  // First convert to lowercase and replace spaces with hyphens
+  let slug = value.toLowerCase().replace(/\s+/g, '-');
 
-  // Replace consecutive hyphens or underscores with a single hyphen
+  // Then remove special characters except hyphens and underscores
+  slug = slug.replace(/[^a-z0-9-_]/g, "");
+
+  // Collapse consecutive hyphens/underscores
   slug = slug.replace(/[-_]+/g, "-");
-
-  // Remove leading/trailing hyphens and underscores
+  // Trim leading/trailing hyphens/underscores
   slug = slug.replace(/^[-_]+|[-_]+$/g, "");
-
-  // Ensure it starts and ends with a letter or number
-  if (!/^[a-z0-9]/.test(slug)) {
-    slug = "a" + slug;
-  }
-  if (!/[a-z0-9]$/.test(slug)) {
-    slug = slug + "a";
-  }
 
   return slug;
 };
