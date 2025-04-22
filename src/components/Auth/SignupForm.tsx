@@ -12,11 +12,10 @@ import { AxiosError, isAxiosError } from "axios";
 import { toast } from "sonner";
 import useSignup from "@/services/auth/mutations/useSignup";
 import { ApiHttpError } from "@/types";
-import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import useLoginAndIdentifyUser from "@/services/auth/mutations/useLoginAndIdentifyUser";
 import { LoginAndIdentifyParams, SignupPayload } from "@/services/auth/Auth.interfaces";
 
-const MAX_LOGIN_RETRIES = 6;
+const MAX_LOGIN_RETRIES = 4;
 
 const OrganizationInfoSchema = z.object({
   organizationName: zValidations.organizationName,
@@ -39,7 +38,6 @@ function SignupForm() {
   const navigate = useNavigate();
 
   const { mutate: loginAndIdentifyUser, isPending: isLoginPending } = useLoginAndIdentifyUser({
-    onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Failed to sign in"),
     onSuccess: (_, variables: LoginAndIdentifyParams) => {
       trackSignedIn(variables.tenantSlug);
       return navigate(`/${variables.tenantSlug}/agents`);
@@ -72,7 +70,6 @@ function SignupForm() {
 
         }
 
-        // TODO: would be nice to validate this live on the client while the user is typing. Couldn't get it to work.
         if (responseError?.includes("Field validation for 'Password' failed on the 'password_regex' tag")) {
           formMethods.setError("password", { type: "manual", message: "Invalid special character. Use only: _ ! @ # $ % ^ & * ( ) -" });
           return formMethods.setFocus("password"); // TODO: This is not working, need to investigate. Maybe because of being inside it's own component?

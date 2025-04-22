@@ -1,5 +1,5 @@
 import { LoginAndIdentifyParams } from "@/services/auth/Auth.interfaces";
-import { performLogin } from "@/services/auth/mutations/userPerformLogin";
+import { performLogin } from "@/services/auth/mutations/usePerformLogin";
 import { getUserData } from "@/services/users/usersService";
 import { ApiHttpError } from "@/types";
 import { useMutation, UseMutationOptions } from "@tanstack/react-query";
