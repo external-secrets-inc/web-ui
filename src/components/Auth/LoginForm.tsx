@@ -40,7 +40,7 @@ function LoginForm({ onStepChange, onOrganizationURLChange }: LoginFormProps) {
 
   const { mutate: loginAndIdentifyUser, isPending: isLoginPending } = useLoginAndIdentifyUser({
     onError: (error: AxiosError<ApiHttpError>) => {
-      const stockError = "Signup failed. Please try again.";
+      const stockError = "Login failed. Please try again.";
       if (isAxiosError(error)) {
         const responseError = error.response?.data?.errors?.error;
         if (responseError?.includes("invalid username/password")) {
