@@ -7,7 +7,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { resetPassword } from "@/services/forgotPassword/forgotPasswordService";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LucideLoader } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
@@ -20,6 +19,7 @@ import zValidations from "./fields/zValidations";
 import AppLogo from "@/components/AppLogo";
 import Cookies from 'js-cookie';
 import { APP_DOMAIN_STRIPPED } from "@/constants";
+import useResetPassword from "@/services/forgotPassword/mutations/useResetPassword";
 
 const ResetPasswordSchema = z.object({
   tenant: zValidations.organizationURL,
@@ -35,9 +35,17 @@ function ResetPasswordForm() {
   let [searchParams, _] = useSearchParams();
 
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState("");
   const [submittedWithErrors, setSubmittedWithErrors] = useState(false);
+
+  const { mutate: resetPassword, isPending: loading} = useResetPassword({
+    onSuccess: () => {
+      toast.success('Password updated successfully', { description: 'Please log in' });
+      Cookies.remove("forgotPasswordHelperOrganizationURL");
+      Cookies.remove("forgotPasswordHelperEmail");
+      navigate('/login')
+    }
+  });
 
   const newPasswordRef = useRef<HTMLInputElement>(null);
 
@@ -77,16 +85,7 @@ function ResetPasswordForm() {
   };
 
   async function onSubmit(values: ResetPasswordData) {
-    setLoading(true)
-    try {
-      await resetPassword(values.email, values.tenant, values.password, values.token)
-      toast.success('Password updated successfully', { description: 'Please log in' });
-      Cookies.remove("forgotPasswordHelperOrganizationURL");
-      Cookies.remove("forgotPasswordHelperEmail");
-      navigate('/login')
-    } finally {
-      setLoading(false)
-    }
+    resetPassword(values)
   }
 
   return (

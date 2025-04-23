@@ -22,6 +22,7 @@ import './index.css';
 import { DOCS_DOMAIN, IS_PROD } from "@/constants";
 import ListRotators from "@/components/rotators/ListRotators";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import AuditWrapper from "@/components/audit/AuditWrapper";
 import OrgRedirector from "./components/OrgRedirector";
 import { Loader } from "@/components/ui/Loader";
@@ -186,6 +187,7 @@ if (rootElement) {
         <ThemeProvider storageKey="ui-theme">
           <QueryClientProvider client={queryClient}>
             <TooltipProvider delayDuration={300} skipDelayDuration={300}>
+              {!IS_PROD && <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" position="left" />}
               <LayoutProvider>
                 <Main />
                 <Toaster />

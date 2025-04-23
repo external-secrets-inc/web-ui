@@ -8,7 +8,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { forgotPassword } from "@/services/forgotPassword/forgotPasswordService";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LucideLoader } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -20,6 +19,7 @@ import zValidations from "./fields/zValidations";
 import AppLogo from "@/components/AppLogo";
 import Cookies from 'js-cookie';
 import { APP_DOMAIN_STRIPPED, ONE_MINUTE_IN_SECONDS, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
+import useForgotPassword from "@/services/forgotPassword/mutations/useForgotPassword";
 
 const ForgotPasswordSchema = z.object({
   tenant: zValidations.organizationURL,
@@ -29,7 +29,6 @@ const ForgotPasswordSchema = z.object({
 type ForgotPasswordData = z.infer<typeof ForgotPasswordSchema>;
 
 function ForgotPassword() {
-  const [loading, setLoading] = useState(false)
   const [formError, setFormError] = useState("")
   const location = useLocation()
   const toastIdRef = useRef<string | number | null>(null);
@@ -37,6 +36,27 @@ function ForgotPassword() {
   const state = location.state as { organizationURL?: string; email?: string };
   const defaultTenant = state?.organizationURL || "";
   const defaultEmail = state?.email || "";
+
+  const { mutate: forgotPassword, isPending: loading } = useForgotPassword({
+    onSuccess: (_, variables: ForgotPasswordData) => {
+      // TODO: Remove these cookies when we are sending the necessary data from the token within the reset password email link
+      const tenMinutesFromNow = new Date(new Date().getTime() + 10 * ONE_MINUTE_IN_SECONDS * ONE_SECOND_IN_MILLISECONDS);
+      Cookies.set("forgotPasswordHelperOrganizationURL", variables.tenant, { expires: tenMinutesFromNow });
+      Cookies.set("forgotPasswordHelperEmail", variables.email, { expires: tenMinutesFromNow });
+
+      toastIdRef.current = toast.success('Check your email', {
+        description: 'We sent instructions to reset your password',
+        duration: Infinity,
+        cancel: {
+          label: 'Dismiss',
+          onClick: () => {},
+        },
+      });
+    },
+    onError: () => {
+      setFormError("Failed to start the reset password flow");
+    }
+  });
 
   const form = useForm<ForgotPasswordData>({
     resolver: zodResolver(ForgotPasswordSchema),
@@ -67,28 +87,7 @@ function ForgotPassword() {
   }, [location, defaultTenant, defaultEmail])
 
   async function onSubmit(values: ForgotPasswordData) {
-    setLoading(true)
-    setFormError("")
-    try {
-      await forgotPassword(values.email, values.tenant);
-      // TODO: Remove these cookies when we are sending the necessary data from the token within the reset password email link
-      const tenMinutesFromNow = new Date(new Date().getTime() + 10 * ONE_MINUTE_IN_SECONDS * ONE_SECOND_IN_MILLISECONDS);
-      Cookies.set("forgotPasswordHelperOrganizationURL", values.tenant, { expires: tenMinutesFromNow });
-      Cookies.set("forgotPasswordHelperEmail", values.email, { expires: tenMinutesFromNow });
-
-      toastIdRef.current = toast.success('Check your email', {
-        description: 'We sent instructions to reset your password',
-        duration: Infinity,
-        cancel: {
-          label: 'Dismiss',
-          onClick: () => {},
-        },
-      });
-    } catch (e) { // eslint-disable-line @typescript-eslint/no-unused-vars
-      setFormError("Failed to start the reset password flow")
-    } finally {
-      setLoading(false)
-    }
+    forgotPassword(values);
   }
 
   return (

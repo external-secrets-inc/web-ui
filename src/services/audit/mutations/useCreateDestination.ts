@@ -28,7 +28,7 @@ export default function useCreateDestination(
   return useMutation({
     mutationFn: createDestination,
     onSuccess: (data, variables, context) => {
-      queryClient.invalidateQueries({ queryKey: ["audit", "destinations"] });
+      queryClient.invalidateQueries({ queryKey: ["audit", "useGetDestinations"] });
       options?.onSuccess?.(data, variables, context);
     },
     ...options,

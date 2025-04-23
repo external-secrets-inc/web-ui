@@ -1,5 +1,4 @@
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/components/ui/input-otp";
-import { sendVerificationCode, validateVerificationCode } from "@/services/email/emailService";
 import { IUserData } from "@/types";
 import { useEffect, useMemo, useState } from "react";
 import useAuthUser from "react-auth-kit/hooks/useAuthUser";
@@ -14,6 +13,8 @@ import { trackSignedOut } from "@/analytics";
 import { Button } from "@/components/ui/button";
 import { ONE_MINUTE_IN_SECONDS, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import { getUserData } from "@/services/users/queries/useGetUserData";
+import useSendVerificationCode from "@/services/email/mutations/useSendVerificationCode";
+import useValidateVerificationCode from "@/services/email/mutations/useValidateVerificationCode";
 
 export function Verify() {
   const authUser = useAuthUser<IUserData>();
@@ -24,28 +25,18 @@ export function Verify() {
 
   const [resendCountdown, setResendCountdown] = useState<number>(ONE_MINUTE_IN_SECONDS);
   const [code, setCode] = useState<string>("")
-  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSignOut = () => {
-    signOut();
-    trackSignedOut(true);
-    navigate('/login');
-  };
+  const { mutate: sendVerificationCode } = useSendVerificationCode({
+    onSuccess: () => {
+      const requestedAt = new Date()
+      localStorage.setItem("lastCodeRequestedAt", requestedAt.toISOString())
+      setResendCountdown(ONE_MINUTE_IN_SECONDS)
+    },
+  })
+  const { mutate: validateVerificationCode, isPending: isLoading } = useValidateVerificationCode({
+    onSuccess: async () => {
+      if (!authHeader || !authUser) return
 
-  const calculateCountDown = (lastCodeRequestedAt: Date) => {
-    const now = new Date();
-
-    const diffInSeconds = Math.ceil((now.getTime() - lastCodeRequestedAt.getTime()) / ONE_SECOND_IN_MILLISECONDS);
-    const countDownStart = diffInSeconds > ONE_MINUTE_IN_SECONDS ? 0 : (ONE_MINUTE_IN_SECONDS - diffInSeconds)
-    return countDownStart
-  }
-
-  const handleSubmit = async (code: string) => {
-    if (!authUser) return;
-    setIsLoading(true)
-    try {
-      if (!authHeader) return
-      await validateVerificationCode(authUser.email, authUser.tenant, code)
       const [tokenType, token] = authHeader.split(" ")
       const userData = await getUserData(authUser.userId)
 
@@ -66,25 +57,41 @@ export function Verify() {
           userId: authUser.userId,
         },
       });
-      setIsLoading(false)
       if (isSignedIn) {
         localStorage.removeItem("lastCodeRequestedAt")
         toast.success("Welcome aboard! Your account is now active.")
         navigate("/")
       }
-    } catch {
+    },
+    onError: () => {
+      toast.error("Invalid verification code")
       setCode("")
-      setIsLoading(false)
     }
+  })
+
+  const handleSignOut = () => {
+    signOut();
+    trackSignedOut(true);
+    navigate('/login');
+  };
+
+  const calculateCountDown = (lastCodeRequestedAt: Date) => {
+    const now = new Date();
+
+    const diffInSeconds = Math.ceil((now.getTime() - lastCodeRequestedAt.getTime()) / ONE_SECOND_IN_MILLISECONDS);
+    const countDownStart = diffInSeconds > ONE_MINUTE_IN_SECONDS ? 0 : (ONE_MINUTE_IN_SECONDS - diffInSeconds)
+    return countDownStart
+  }
+
+  const handleSubmit = async (code: string) => {
+    if (!authUser || !authHeader) return;
+    validateVerificationCode({email: authUser.email, tenant: authUser.tenant, code})
   }
 
   const handleResend = () => {
     if (!authUser) return;
 
-    sendVerificationCode(authUser.email, authUser.tenant)
-    const requestedAt = new Date()
-    localStorage.setItem("lastCodeRequestedAt", requestedAt.toISOString())
-    setResendCountdown(ONE_MINUTE_IN_SECONDS)
+    sendVerificationCode({email:authUser.email, tenant: authUser.tenant})
   }
 
   const handleChangeCode = (input: string) => setCode(input)
@@ -95,17 +102,14 @@ export function Verify() {
     const lastCodeRequestedAtString = localStorage.getItem("lastCodeRequestedAt")
 
     if (!lastCodeRequestedAtString) {
-      sendVerificationCode(authUser.email, authUser.tenant)
-      const requestedAt = new Date()
-      localStorage.setItem("lastCodeRequestedAt", requestedAt.toISOString())
-      setResendCountdown(ONE_MINUTE_IN_SECONDS)
+      sendVerificationCode({email:authUser.email, tenant: authUser.tenant})
       return
     }
 
     const lastCodeRequestedAt = new Date(lastCodeRequestedAtString);
     setResendCountdown(calculateCountDown(lastCodeRequestedAt))
 
-  }, [authUser])
+  }, [authUser, sendVerificationCode])
 
   useEffect(() => {
     if (resendCountdown === 0) return;

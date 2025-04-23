@@ -1,7 +1,3 @@
-import { login } from "@/services/auth/authService";
-import { getUserData } from "@/services/users/queries/useGetUserData";
-import useSignIn from "react-auth-kit/hooks/useSignIn";
-
 export async function getAuthHeaders(manualToken?: string): Promise<{ [key: string]: string }> {
   const token = manualToken || await getTokenFromCookies();
   if (!token) {
@@ -33,59 +29,3 @@ async function getTokenFromCookies(maxRetries = 20, delay = 200): Promise<string
   }
   return null;
 }
-
-interface LoginAndIdentifyParams {
-  email: string;
-  password: string;
-  tenantSlug: string;
-  name?: string;
-  authKitSignIn: ReturnType<typeof useSignIn>;
-}
-
-export const loginAndIdentifyUser = async ({
-  email,
-  password,
-  tenantSlug,
-  name,
-  authKitSignIn,
-}: LoginAndIdentifyParams): Promise<boolean> => {
-  try {
-    const { token, tenantId, tenant, userId } = await login(email, password, tenantSlug, { suppressToast: true });
-
-    const userDetails = await getUserData(userId!, token);
-
-    const userState = {
-      email,
-      name: name || userDetails.name,
-      isActive: userDetails.is_active,
-      tenantId,
-      tenant,
-      userId,
-    };
-
-    const isSignedIn = authKitSignIn({
-      auth: {
-        token,
-        type: "Bearer",
-      },
-      userState,
-    });
-
-    if (isSignedIn) {
-      // Remove sensitive data and pass the rest to Segment
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { userId, email, name, ...segmentUserState } = userState;
-      try {
-        analytics.identify(userId as string, segmentUserState);
-      } catch (error) {
-        console.error("Segment identify call failed:", error);
-      }
-      return true;
-    }
-
-    return false;
-  } catch (error) {
-    console.error("Failed to login:", error);
-    throw error; // Rethrow the error to be caught by the caller
-  }
-};
