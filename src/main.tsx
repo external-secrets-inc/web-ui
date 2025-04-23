@@ -12,9 +12,9 @@ import { Toaster } from "@/components/ui/sonner";
 import { Verify } from "@/components/Verify";
 import authStore from "@/services/auth/authStore";
 import RequireAuth from '@auth-kit/react-router/RequireAuth';
-import * as React from "react";
+import { useEffect, StrictMode, Suspense } from 'react';
 import AuthProvider from 'react-auth-kit';
-import * as ReactDOM from "react-dom/client";
+import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { load, page } from './analytics';
 import App from './App';
@@ -30,6 +30,7 @@ import { SubscriptionProvider } from '@/context/SubscriptionContext';
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext';
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LayoutProvider } from '@/context/LayoutContext';
+import BodyPortal from '@/components/BodyPortal';
 
 const queryClient = new QueryClient()
 
@@ -132,9 +133,9 @@ const router = createBrowserRouter([
                 </>
               }
             />
-            <React.Suspense fallback={<Loader/>}>
+            <Suspense fallback={<Loader/>}>
               <AuditWrapper />
-            </React.Suspense>
+            </Suspense>
           </>
         )
       } : {},
@@ -159,7 +160,7 @@ const router = createBrowserRouter([
 ]);
 
 const Main = () => {
-  React.useEffect(() => {
+  useEffect(() => {
     if (IS_PROD) {
       load(); // Load Segment analytics on app load
 
@@ -181,21 +182,25 @@ const Main = () => {
 
 const rootElement = document.getElementById('root');
 if (rootElement) {
-  ReactDOM.createRoot(rootElement).render(
-    <React.StrictMode>
+  createRoot(rootElement).render(
+    <StrictMode>
       <AuthProvider store={authStore}>
         <ThemeProvider storageKey="ui-theme">
           <QueryClientProvider client={queryClient}>
             <TooltipProvider delayDuration={300} skipDelayDuration={300}>
-              {!IS_PROD && <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" position="left" />}
               <LayoutProvider>
                 <Main />
                 <Toaster />
               </LayoutProvider>
             </TooltipProvider>
+            {!IS_PROD && (
+              <BodyPortal>
+                <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" position="left" />
+              </BodyPortal>
+            )}
           </QueryClientProvider>
         </ThemeProvider>
       </AuthProvider>
-    </React.StrictMode>
+    </StrictMode>
   );
 }
