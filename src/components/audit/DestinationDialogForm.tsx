@@ -1,12 +1,14 @@
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DestinationTableData, CreateDestinationPayload, EditDestinationPayload, DestinationsWebhookConfig } from './Audit.interfaces';
+import { CreateDestinationPayload, EditDestinationPayload, DestinationsWebhookConfig } from './Audit.interfaces';
+import { toast } from "sonner";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { useState, useEffect, useMemo } from "react";
 import { AxiosError } from "axios";
@@ -14,21 +16,24 @@ import { ApiHttpError } from "@/types";
 import useCreateDestination from "@/services/audit/mutations/useCreateDestination";
 import useEditDestination from "@/services/audit/mutations/useEditDestination";
 import useGetDestinationTypes, { DestinationTypeField } from "@/services/audit/queries/useGetDestinationTypes";
+import useGetDestination from "@/services/audit/queries/useGetDestination";
 import { Loader } from "@/components/ui/Loader";
 import { Separator } from "@/components/ui/separator";
 import { createSlug, isValidSlug } from "@/utils/slugify";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { LucideAlertCircle } from "lucide-react";
 
 // Flattened form state interface
 interface DestinationFormValues {
   name: string;
   identifier: string;
   type: string;
-  // Dynamic fields will be added here directly
-  [key: string]: string | undefined | boolean | number; // Allow dynamic fields
+  [key: string]: string | undefined | boolean | number;
 }
 
+// Update props to accept destinationID
 interface DestinationDialogFormProps {
-  destination?: DestinationTableData;
+  destinationID?: string; // Use ID for fetching
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -75,11 +80,11 @@ const createDynamicSchema = (typeFields: DestinationTypeField[] | undefined) => 
             message: `${fieldLabel} is required.`
           });
         } else if (fieldSchema.type === 'string') {
-           fieldZodSchema = (fieldZodSchema as z.ZodString).min(1, { message: `${fieldLabel} is required.` });
+          fieldZodSchema = (fieldZodSchema as z.ZodString).min(1, { message: `${fieldLabel} is required.` });
         } else {
-             fieldZodSchema = fieldZodSchema.refine(val => val !== undefined && val !== null, {
-                 message: `${fieldLabel} is required.`
-             });
+          fieldZodSchema = fieldZodSchema.refine(val => val !== undefined && val !== null, {
+            message: `${fieldLabel} is required.`
+          });
         }
       } else {
         fieldZodSchema = fieldZodSchema.optional().nullable();
@@ -92,38 +97,68 @@ const createDynamicSchema = (typeFields: DestinationTypeField[] | undefined) => 
   return baseSchema.merge(z.object(dynamicPart));
 };
 
-export const DestinationDialogForm = ({ destination, onSuccess, onCancel }: DestinationDialogFormProps) => {
+export const DestinationDialogForm = ({ destinationID, onSuccess, onCancel }: DestinationDialogFormProps) => {
+  const isEditing = Boolean(destinationID);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const initialType = destination?.type || "";
-  const [selectedType, setSelectedType] = useState<string>(initialType);
-  const [isIdentifierManuallyEdited, setIsIdentifierManuallyEdited] = useState(!!destination);
+  const [formError, setFormError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+
+  const {
+    data: fetchedDestination,
+    isLoading: isLoadingDestination,
+    isError: isErrorDestination,
+    error: destinationError,
+    isFetching: isFetchingDestination,
+  } = useGetDestination(destinationID);
 
   const { data: destinationTypes, isLoading: isLoadingTypes } = useGetDestinationTypes();
 
-  // Calculate the dynamic part of the schema based on the selected type
+  const initialType = useMemo(() => fetchedDestination?.type || "", [fetchedDestination]);
+  const [selectedType, setSelectedType] = useState<string>("");
+  const [isIdentifierManuallyEdited, setIsIdentifierManuallyEdited] = useState(isEditing);
+
+  useEffect(() => {
+    setSelectedType(initialType);
+  }, [initialType]);
+
   const dynamicSchema = useMemo(() => {
     return createDynamicSchema(destinationTypes?.[selectedType]);
   }, [destinationTypes, selectedType]);
 
-  // Calculate default values in a flat structure
   const defaultValues = useMemo(() => {
+    const destination = fetchedDestination;
+
     const baseDefaults = {
-        name: destination?.name || "",
-        identifier: destination?.identifier || "",
-        type: initialType,
+      name: destination?.name || "",
+      identifier: destination?.identifier || "",
+      type: initialType,
     };
 
     let configDefaults: Record<string, string> = {};
-    if (destination?.config) {
-      configDefaults = Object.entries(destination.config).reduce((acc, [key, value]) => {
-        acc[key] = String(value ?? "");
-        return acc;
-      }, {} as Record<string, string>);
-    } else if (selectedType && destinationTypes?.[selectedType]) {
+
+    if (isEditing && destination?.config && initialType && destinationTypes?.[initialType]) {
+      // Map existing config using labels for edit mode
+      // TODO[cfviotti]: Ideally, API schema/data structure would align keys/labels to avoid this manual mapping.
+      const typeFields = destinationTypes[initialType];
+      typeFields.forEach((fieldSchema) => {
+        const label = fieldSchema.label;
+
+        let value: string | undefined;
+
+        // Map specific known config fields; extend if new config structures are added
+        if (label === "URL") { value = String(destination.config.url ?? ""); }
+        else if (label === "CA Bundle") { value = String(destination.config.caBundle ?? ""); }
+        else if (label === "Auth method") { value = String(destination.config.auth ?? ""); }
+        else if (label === "Event Format") { value = String(destination.config.format ?? ""); }
+
+        configDefaults[label] = value ?? fieldSchema.default ?? "";
+      });
+    } else if (!isEditing && selectedType && destinationTypes?.[selectedType]) {
+      // Use schema defaults when creating and type is selected
       const typeFields = destinationTypes[selectedType];
       configDefaults = typeFields.reduce((acc, fieldSchema) => {
         const isEnum = (fieldSchema.type === "enum" || fieldSchema.type === "string[]") && fieldSchema.values && fieldSchema.values.length > 0;
+        // Set default for required enums to the first option if no explicit default is provided
         if (fieldSchema.required && isEnum && !fieldSchema.default && fieldSchema.values && fieldSchema.values.length > 0) {
           acc[fieldSchema.label] = fieldSchema.values[0];
         } else {
@@ -132,10 +167,9 @@ export const DestinationDialogForm = ({ destination, onSuccess, onCancel }: Dest
         return acc;
       }, {} as Record<string, string>);
     }
-    // Merge base defaults with dynamic config defaults
     return { ...baseDefaults, ...configDefaults };
 
-  }, [destination, initialType, selectedType, destinationTypes]);
+  }, [isEditing, fetchedDestination, initialType, selectedType, destinationTypes]);
 
   const form = useForm<DestinationFormValues>({
     resolver: zodResolver(dynamicSchema),
@@ -143,29 +177,35 @@ export const DestinationDialogForm = ({ destination, onSuccess, onCancel }: Dest
     mode: 'onSubmit',
   });
 
+  useEffect(() => {
+    if (isEditing && fetchedDestination) {
+      if (!isFetchingDestination) {
+        form.reset(defaultValues);
+      }
+    }
+  }, [isEditing, fetchedDestination, form, defaultValues, isFetchingDestination]);
+
   const watchedName = form.watch("name");
   useEffect(() => {
-    if (!destination && !isIdentifierManuallyEdited) {
+    if (!isEditing && !isIdentifierManuallyEdited) {
       const trimmedName = watchedName.trim();
       if (trimmedName) {
         form.setValue("identifier", createSlug(trimmedName));
       }
     }
-  }, [watchedName, isIdentifierManuallyEdited, destination, form]);
+  }, [watchedName, isIdentifierManuallyEdited, isEditing, form]);
 
   const watchedType = form.watch("type");
   useEffect(() => {
-    // Update selected type state when form value changes
     if (watchedType !== selectedType) {
       setSelectedType(watchedType);
-      // Default values and schema will recalculate via useMemo, and form will reset via useEffect
     }
   }, [watchedType, selectedType]);
 
   const { mutate: createMutate } = useCreateDestination({
     onError: (error: AxiosError<ApiHttpError>) => {
-        handleDefaultApiHttpError(error, "Error while trying to create destination");
-        setIsSubmitting(false);
+      handleDefaultApiHttpError(error, "Error while trying to create destination");
+      setIsSubmitting(false);
     },
     onSuccess: () => {
       setIsSubmitting(false);
@@ -173,33 +213,21 @@ export const DestinationDialogForm = ({ destination, onSuccess, onCancel }: Dest
     },
   });
 
-  const { mutate: editMutate } = useEditDestination({
-    onError: (error: AxiosError<ApiHttpError>) => {
-        handleDefaultApiHttpError(error, "Error while trying to edit destination");
-        setIsSubmitting(false);
-    },
-    onSuccess: () => {
-      setIsSubmitting(false);
-      onSuccess();
-    },
-  });
+  const { mutateAsync: editMutateAsync } = useEditDestination();
 
-  // Use the validated flat data structure
   const onSubmit = async (data: DestinationFormValues) => {
     setIsSubmitting(true);
-    setError(null);
+    setFormError(null);
 
-    // Extract base fields and gather dynamic fields into config
     const { name, identifier, type, ...dynamicFields } = data;
 
-    // Construct config payload ensuring keys match DestinationsWebhookConfig
     const configPayload: DestinationsWebhookConfig = {
-      url: String(dynamicFields["URL"] ?? ""), // Use the exact label from API response
-      caBundle: String(dynamicFields["CA Bundle"] ?? ""), // Use the exact label
-      auth: (dynamicFields["Auth method"] ?? "NONE") as DestinationsWebhookConfig['auth'], // Use the exact label
-      format: (dynamicFields["Event Format"] ?? "CLOUD_EVENTS") as DestinationsWebhookConfig['format'], // Use the exact label
+      url: String(dynamicFields["URL"] ?? ""),
+      caBundle: String(dynamicFields["CA Bundle"] ?? ""),
+      auth: (dynamicFields["Auth method"] ?? "NONE") as DestinationsWebhookConfig['auth'],
+      format: (dynamicFields["Event Format"] ?? "CLOUD_EVENTS") as DestinationsWebhookConfig['format'],
     };
-    const submissionType = type; // Type is directly from validated data
+    const submissionType = type;
 
     try {
       const basePayload = {
@@ -208,27 +236,59 @@ export const DestinationDialogForm = ({ destination, onSuccess, onCancel }: Dest
         config: configPayload,
       };
 
-      if (destination) {
-        const editPayload: EditDestinationPayload = {
-          ...basePayload,
-        };
-        editMutate({
-          destinationID: destination.destinationID,
-          payload: editPayload
-        });
+      if (isEditing && destinationID) {
+        const editPayload: EditDestinationPayload = { ...basePayload };
+        await editMutateAsync({ destinationID: destinationID, payload: editPayload });
+
+        await queryClient.invalidateQueries({ queryKey: ["audit", "useGetDestinations"] });
+        await queryClient.invalidateQueries({ queryKey: ["audit", "useGetDestination", destinationID], refetchType: 'none' });
+
+        toast.success("Destination updated successfully");
+
+        setIsSubmitting(false);
+        onSuccess();
+
       } else {
-        const createPayload: CreateDestinationPayload = {
-          ...basePayload,
-          identifier: identifier,
-        };
+        const createPayload: CreateDestinationPayload = { ...basePayload, identifier: identifier };
         createMutate(createPayload);
       }
     } catch (error) {
-      console.error("Client-side error during submission:", error);
-      setError("An unexpected client-side error occurred during submission.");
+      toast.error("Error during submission");
+      handleDefaultApiHttpError(error as AxiosError<ApiHttpError>, "Error during submission");
+      setFormError("Failed to save changes.");
       setIsSubmitting(false);
     }
   };
+
+  const availableTypes = useMemo(() => {
+    if (!destinationTypes) return [];
+    return Object.keys(destinationTypes);
+  }, [destinationTypes]);
+
+  if (isEditing && isLoadingDestination) {
+    return (
+      <DialogContent className="flex items-center justify-center p-8">
+        <Loader size="lg" />
+      </DialogContent>
+    );
+  }
+
+  if (isEditing && isErrorDestination) {
+    return (
+      <DialogContent>
+        <Alert variant="destructive">
+          <LucideAlertCircle className="h-4 w-4" />
+          <AlertTitle>Error Fetching Destination</AlertTitle>
+          <AlertDescription>
+            {destinationError?.message || "Could not load destination details. Please try again."}
+          </AlertDescription>
+        </Alert>
+        <DialogFooter>
+          <Button variant="outline" onClick={onCancel}>Close</Button>
+        </DialogFooter>
+      </DialogContent>
+    );
+  }
 
   const renderConfigFields = (fieldsSchema: DestinationTypeField[]) => {
     if (!fieldsSchema || fieldsSchema.length === 0) return null;
@@ -246,7 +306,6 @@ export const DestinationDialogForm = ({ destination, onSuccess, onCancel }: Dest
             <FormField
               key={fieldLabel}
               control={form.control}
-              // Use label directly as field name (top-level)
               name={fieldLabel}
               render={({ field: formField }) => (
                 <FormItem>
@@ -294,134 +353,129 @@ export const DestinationDialogForm = ({ destination, onSuccess, onCancel }: Dest
     );
   };
 
-  const availableTypes = useMemo(() => {
-    if (!destinationTypes) return [];
-    return Object.keys(destinationTypes);
-  }, [destinationTypes]);
-
   return (
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>{destination ? "Edit Destination" : "Add Destination"}</DialogTitle>
+        <DialogTitle>{isEditing ? "Edit Destination" : "Add Destination"}</DialogTitle>
         <DialogDescription>
-          {destination ? "Update the destination configuration." : "Configure a new destination for audit triggers."}
+          {isEditing ? "Update the destination configuration." : "Configure a new destination for audit triggers."}
         </DialogDescription>
       </DialogHeader>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          {/* Name Field */}
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Name</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Enter destination name"
-                    {...field}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      if (!destination && !isIdentifierManuallyEdited) {
-                        form.setValue("identifier", createSlug(e.target.value));
-                      }
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+      {isLoadingTypes && !isEditing && (
+        <div className="flex items-center justify-center p-4"><Loader /></div>
+      )}
+
+      {(!isLoadingTypes || (isEditing && fetchedDestination)) && (
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter destination name"
+                      {...field}
+                      onChange={(e) => {
+                        field.onChange(e);
+                        if (!isEditing && !isIdentifierManuallyEdited) {
+                          form.setValue("identifier", createSlug(e.target.value));
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="identifier"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Identifier</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter unique identifier"
+                      {...field}
+                      disabled={isEditing}
+                      onChange={(e) => {
+                        field.onChange(e);
+                        if (!isEditing) {
+                          setIsIdentifierManuallyEdited(true);
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Type</FormLabel>
+                  {isLoadingTypes && !isEditing ? (
+                    <Loader />
+                  ) : (
+                    <Select
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        setSelectedType(value);
+                      }}
+                      value={field.value}
+                      disabled={isEditing}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select destination type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {availableTypes.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type}
+                          </SelectItem>
+                        ))}
+                        {isEditing && fetchedDestination && !availableTypes.includes(fetchedDestination.type) && (
+                          <SelectItem key={fetchedDestination.type} value={fetchedDestination.type} disabled>
+                            {fetchedDestination.type}
+                          </SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {selectedType && destinationTypes?.[selectedType] && renderConfigFields(destinationTypes[selectedType])}
+
+            {formError && (
+              <div className="text-sm text-red-500">
+                {formError}
+              </div>
             )}
-          />
 
-          {/* Identifier Field */}
-          <FormField
-            control={form.control}
-            name="identifier"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Identifier</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Enter unique identifier"
-                    {...field}
-                    disabled={!!destination}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      if (!destination) {
-                        setIsIdentifierManuallyEdited(true);
-                      }
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Type Field */}
-          <FormField
-            control={form.control}
-            name="type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Type</FormLabel>
-                {isLoadingTypes ? (
-                  <Loader />
-                ) : (
-                  <Select
-                    onValueChange={(value) => {
-                       field.onChange(value); // Update RHF state
-                       setSelectedType(value); // Update local state used for schema/defaults
-                    }}
-                    value={field.value}
-                    disabled={!!destination}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select destination type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {availableTypes.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
-                        </SelectItem>
-                      ))}
-                      {destination && !availableTypes.includes(destination.type) && (
-                         <SelectItem key={destination.type} value={destination.type} disabled>
-                           {destination.type}
-                         </SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                )}
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Render dynamic fields based on selectedType from *state* */}
-          {selectedType && destinationTypes?.[selectedType] && renderConfigFields(destinationTypes[selectedType])}
-
-          {/* Error Display */}
-          {error && (
-            <div className="text-sm text-red-500">
-              {error}
-            </div>
-          )}
-
-          {/* Dialog Footer */}
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onCancel}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : destination ? "Update" : "Create"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </Form>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={onCancel}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting || (isEditing && !form.formState.isDirty)}>
+                {isSubmitting ? "Saving..." : isEditing ? "Update" : "Create"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      )}
     </DialogContent>
   );
 };
