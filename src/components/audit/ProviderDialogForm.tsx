@@ -266,7 +266,10 @@ const ProviderDialogForm = ({
     const value = e.target.value;
     field.onChange(e);
     if (!selectedProviderId && !isIdentifierManuallyEdited) {
-      form.setValue("backendIdentifier", createSlug(value));
+      const trimmedValue = value.trim();
+      if (trimmedValue) {
+        form.setValue("backendIdentifier", createSlug(trimmedValue));
+      }
     }
   };
 

@@ -30,8 +30,6 @@ import { MultiSelect } from "../ui/MultiSelect";
 import { AuditSecretData, filterSchema, FilterSchema } from "./Audit.interfaces";
 import useGetAuditProviders from "@/services/audit/queries/useGetAuditProviders";
 import useGetPolicies from "@/services/audit/queries/useGetPolicies";
-import useAuthUser from "react-auth-kit/hooks/useAuthUser";
-import { IUserData } from "@/types";
 import { useMemo, useState, useEffect } from "react";
 import { useAuditFilter } from "./AuditFilterProvider";
 import { Loader } from "@/components/ui/Loader";
@@ -229,7 +227,6 @@ const FilterDialogForm = (
   const [resetKey, setResetKey] = useState(0);
   const [accessorsVisible, setAccessorsVisible] = useState(false);
   const [duplicatesVisible, setDuplicatesVisible] = useState(false);
-  const authUser = useAuthUser<IUserData>();
   const { handleFilterChange, isFiltersDialogOpen } = useAuditFilter();
 
   const form = useForm<FilterSchema>({
@@ -264,7 +261,6 @@ const FilterDialogForm = (
 
   const { data: policies, isLoading: isLoadingPolicies } = useGetPolicies(
     false,
-    authUser?.tenantId || '',
     {
       staleTime: AUDIT_QUERY_STALE_TIME,
       enabled: isFiltersDialogOpen,

@@ -225,7 +225,7 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
     isError: isErrorPolicies,
     isRefetchError: isRefetchErrorPolicies,
     error: policiesError
-  } = useGetPolicies(false, tenantID, {
+  } = useGetPolicies(false, {
     staleTime: AUDIT_QUERY_STALE_TIME,
   });
 
