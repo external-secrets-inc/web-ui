@@ -29,7 +29,8 @@ export default function useDeleteDestination(
   return useMutation({
     mutationFn: deleteDestination,
     onSuccess: (data, variables, context) => {
-      queryClient.invalidateQueries({ queryKey: ["audit", "destinations"] });
+      queryClient.invalidateQueries({ queryKey: ["audit", "useGetDestinations"] });
+      queryClient.invalidateQueries({ queryKey: ["audit", "useGetDestination", variables.destinationID] });
       options?.onSuccess?.(data, variables, context);
     },
     ...options,
