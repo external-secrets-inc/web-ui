@@ -33,7 +33,7 @@ export interface ApiWrapperOptions {
 
 
 export interface ApiHttpError {
-  errors: {body: string}
+  errors: {error: string, status: number, traceID: string}
 }
 
 export interface IUserData {
