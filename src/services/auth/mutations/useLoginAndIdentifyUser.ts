@@ -1,6 +1,6 @@
 import { LoginAndIdentifyParams } from "@/services/auth/Auth.interfaces";
 import { performLogin } from "@/services/auth/mutations/usePerformLogin";
-import { getUserData } from "@/services/users/usersService";
+import { getUserData } from "@/services/users/queries/useGetUserData";
 import { ApiHttpError } from "@/types";
 import { useMutation, UseMutationOptions } from "@tanstack/react-query";
 import { AxiosError } from "axios";
@@ -61,7 +61,7 @@ const loginAndIdentifyUser = async ({
   authKitSignIn,
 }: LoginAndIdentifyParams): Promise<boolean> => {
   const { token, tenantId, tenant, userId } = await performLogin({email, password, tenant: tenantSlug});
-  const userDetails = await getUserData(userId!, { manualToken: token });
+  const userDetails = await getUserData(userId!, token);
   
   const userState = buildUserState({
     email,
