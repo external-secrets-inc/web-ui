@@ -52,7 +52,7 @@ export const loginAndIdentifyUser = async ({
   try {
     const { token, tenantId, tenant, userId } = await login(email, password, tenantSlug, { suppressToast: true });
 
-    const userDetails = await getUserData(undefined, userId!, token);
+    const userDetails = await getUserData(userId!, token);
 
     const userState = {
       email,

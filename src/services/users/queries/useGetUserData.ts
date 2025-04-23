@@ -5,8 +5,7 @@ import { getAuthHeaders } from '@/services/auth/authHelpers';
 import axiosInstance from '@/services/axiosConfig';
 import { UserData } from '@/services/users/Users.interface';
 
-export const getUserData = async (signal: AbortSignal | undefined, userId: string, manualToken?: string): Promise<UserData> => {
-    console.log("manualToken", manualToken)
+export const getUserData = async (userId: string, manualToken?: string, signal?: AbortSignal): Promise<UserData> => {
     const headers = await getAuthHeaders(manualToken);
     const response = await axiosInstance.get(`/api/users/${userId}`, { headers, signal });
     return response.data;
@@ -20,7 +19,7 @@ const useGetUserData = <T = UserData>(
     return useQuery({
         queryKey: ["useGetUserData", userId],
         queryFn: ({ signal }) => {
-            return getUserData(signal, userId)
+            return getUserData(userId, undefined, signal)
         },
         ...options,
     });

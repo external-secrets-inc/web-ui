@@ -47,7 +47,7 @@ export function Verify() {
       if (!authHeader) return
       await validateVerificationCode(authUser.email, authUser.tenant, code)
       const [tokenType, token] = authHeader.split(" ")
-      const userData = await getUserData(undefined, authUser.userId)
+      const userData = await getUserData(authUser.userId)
 
       // TODO: Create a UserProvider to share user data across the application and eliminate duplicated code in LoginForm, SignUpForm and Verify components
       // https://github.com/external-secrets-inc/web-ui/issues/60
