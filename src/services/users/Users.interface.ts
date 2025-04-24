@@ -5,6 +5,7 @@ export interface CreateUserDataPayload {
 }
 
 export interface UpdateUserDataPayload {
+    id: string,
     name: string,
     password?: string,
 }
@@ -37,4 +38,12 @@ export interface UserForm {
   email: string;
   password?: string;
   roles?: string[];
+}
+
+
+export interface UserData {
+  id: string,
+  name: string,
+  email: string,
+  is_active: boolean,
 }
