@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.15.0](https://github.com/external-secrets-inc/web-ui/compare/v0.14.1...v0.15.0) (2025-04-24)
+
+
+### Features
+
+* add destinations ([#335](https://github.com/external-secrets-inc/web-ui/issues/335)) ([cad5443](https://github.com/external-secrets-inc/web-ui/commit/cad544343a53b81f48411978e2cfeb089be77a52))
+* add react-query to auth related requests ([#333](https://github.com/external-secrets-inc/web-ui/issues/333)) ([af56602](https://github.com/external-secrets-inc/web-ui/commit/af56602e21f74e7d3bfaec91fd64c83a39ae7841))
+* add triggers to policies ([#326](https://github.com/external-secrets-inc/web-ui/issues/326)) ([5f3f7e2](https://github.com/external-secrets-inc/web-ui/commit/5f3f7e2d3a35befcf8c890acb96c22da4308a919))
+* replace email service with react query ([#336](https://github.com/external-secrets-inc/web-ui/issues/336)) ([71a8870](https://github.com/external-secrets-inc/web-ui/commit/71a88703b1b2b555bb9bb671eff926781f7d65cb))
+* replace forgot password service with react query ([#337](https://github.com/external-secrets-inc/web-ui/issues/337)) ([bd719cc](https://github.com/external-secrets-inc/web-ui/commit/bd719cc461c9c443df5fc556b02766028879ef2a))
+* replace old account service with react-query ([#327](https://github.com/external-secrets-inc/web-ui/issues/327)) ([660a360](https://github.com/external-secrets-inc/web-ui/commit/660a36094de9127f14cd0258353e3e8158f29b76))
+* replace userService with react-query ([#339](https://github.com/external-secrets-inc/web-ui/issues/339)) ([055f14b](https://github.com/external-secrets-inc/web-ui/commit/055f14bcd9807cb9e792507eb0f858f33b535b45))
+
+
+### Bug Fixes
+
+* destinations edits and interactions ([#340](https://github.com/external-secrets-inc/web-ui/issues/340)) ([9506b5c](https://github.com/external-secrets-inc/web-ui/commit/9506b5c48f3ceeae1a426ac425c9acd08d3ebbe9))
+* root layout after introduction of react query dev tools ([#341](https://github.com/external-secrets-inc/web-ui/issues/341)) ([e66c8ed](https://github.com/external-secrets-inc/web-ui/commit/e66c8ed49c92fc9ef3d269128e7615e2a9869e12))
+* update user management table status text and text color ([#320](https://github.com/external-secrets-inc/web-ui/issues/320)) ([2058e24](https://github.com/external-secrets-inc/web-ui/commit/2058e2449a9e234fb9fe25de15fc020392445f01))
+
 ## [0.14.1](https://github.com/external-secrets-inc/web-ui/compare/v0.14.0...v0.14.1) (2025-04-09)
 
 
