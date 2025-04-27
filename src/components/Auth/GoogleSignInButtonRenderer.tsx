@@ -3,7 +3,7 @@ import { CredentialResponse } from '@react-oauth/google';
 
 interface GoogleSignInButtonRendererProps {
   onTokenReceived: (tokenResponse: CredentialResponse) => void; 
-  onError: (error: any) => void;
+  onError: (error: string | Error) => void;
 } 
 
 export const GoogleSignInButtonRenderer: React.FC<GoogleSignInButtonRendererProps> = ({ onTokenReceived, onError }) => {
@@ -18,9 +18,12 @@ export const GoogleSignInButtonRenderer: React.FC<GoogleSignInButtonRendererProp
     script.onload = () => {
       setIsScriptLoaded(true); 
     };
-    script.onerror = (error) => {
-      console.error('Failed to load Google Identity Services script:', error);
-      onError(error); 
+    // Correct type for script onerror handler
+    script.onerror = (event: string | Event) => {
+      console.error('Failed to load Google Identity Services script:', event);
+      // Extract a string message to pass to the onError prop
+      const errorMessage = typeof event === 'string' ? event : 'Failed to load Google Identity Services script.';
+      onError(errorMessage);
     };
     document.body.appendChild(script);
 
@@ -48,9 +51,10 @@ export const GoogleSignInButtonRenderer: React.FC<GoogleSignInButtonRendererProp
         callback: (credentialResponse: CredentialResponse) => {
           onTokenReceived(credentialResponse);
         },
-        error_callback: (error: any) => {
+        error_callback: (error: unknown) => {
           console.error('Google Sign-In error_callback:', error);
-          onError(error?.message || 'Google Sign-In failed during initialization or callback.');
+          const errorMessage = error instanceof Error ? error.message : typeof error === 'object' && error !== null && 'message' in error ? String(error.message) : 'Google Sign-In failed during initialization or callback.';
+          onError(errorMessage);
         },
       });
 

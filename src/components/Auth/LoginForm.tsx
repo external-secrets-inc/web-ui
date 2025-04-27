@@ -93,12 +93,22 @@ function LoginForm({ onStepChange, onOrganizationURLChange }: LoginFormProps) {
     setFormError(null);
 
     const formData = formMethods.getValues();
-    loginAndIdentifyUser({
-      email: data.email!,
-      password: data.password!,
-      tenantSlug: String(formData.organizationURL!),
-      authKitSignIn,
-    });
+    try {
+      await loginAndIdentifyUser({
+        email: data.email!,
+        password: data.password!,
+        tenantSlug: String(formData.organizationURL!),
+        authKitSignIn,
+      });
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setFormError(err.message);
+      } else if (typeof err === 'string') {
+        setFormError(err);
+      } else {
+        setFormError("An unexpected error occurred during login.");
+      }
+    }
   };
 
   const handleGoogleTokenResponse = async (credentialResponse: CredentialResponse) => {
@@ -145,15 +155,15 @@ function LoginForm({ onStepChange, onOrganizationURLChange }: LoginFormProps) {
         setGoogleError("Failed to sign in after Google authentication.");
       }
 
-    } catch (error) {
-      console.error("Google Sign-In Error:", error);
+    } catch (err: unknown) {
+      console.error("Google Sign-In Error:", err);
       let errorMessage = "An unexpected error occurred during Google Sign-In.";
-      if (error instanceof Error && error.message?.includes("inactive")) {
+      if (err instanceof Error && err.message?.includes("inactive")) {
         errorMessage = "Your account is inactive. Please contact support.";
-      } else if (isAxiosError(error)) {
-        errorMessage = error.response?.data?.errors?.error || "Failed to authenticate with Google.";
-      } else if (error instanceof Error) {
-        errorMessage = error.message;
+      } else if (isAxiosError(err)) {
+        errorMessage = err.response?.data?.errors?.error || "Failed to authenticate with Google.";
+      } else if (err instanceof Error) {
+        errorMessage = err.message;
       }
       setGoogleError(errorMessage);
       toast.error(errorMessage, { duration: 5000 });
@@ -200,7 +210,10 @@ function LoginForm({ onStepChange, onOrganizationURLChange }: LoginFormProps) {
           </div>
           <GoogleSignInButtonRenderer 
             onTokenReceived={handleGoogleTokenResponse} 
-            onError={(errMsg: any) => setGoogleError(errMsg?.message || 'Google Sign-In failed.')} 
+            onError={(error: string | Error) => {
+              const errorMessage = error instanceof Error ? error.message : error;
+              setGoogleError(errorMessage);
+            }} 
           />
         </>
       )}
