@@ -1,11 +1,11 @@
 import { useTheme } from "@/components/ThemeProvider";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"; // eslint-disable-line @typescript-eslint/no-unused-vars
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"; // eslint-disable-line @typescript-eslint/no-unused-vars
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect } from 'react';
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import * as z from "zod";
 import SettingsSection from './SettingsSection';
 
 const formSchema = z.object({
@@ -35,8 +35,7 @@ const AppearanceSettings: React.FC = () => {
     form.reset({ theme });
   }, [theme, form]);
 
-  async function handleSave(values: FormSchemaType) {
-    console.log('Appearance Settings:', values);
+  function handleSave(values: FormSchemaType) {
     setTheme(values.theme);
   }
 
