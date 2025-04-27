@@ -22,7 +22,6 @@ import './index.css';
 import { DOCS_DOMAIN, IS_PROD } from "@/constants";
 import ListRotators from "@/components/rotators/ListRotators";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import AuditWrapper from "@/components/audit/AuditWrapper";
 import OrgRedirector from "./components/OrgRedirector";
 import { Loader } from "@/components/ui/Loader";
@@ -30,7 +29,6 @@ import { SubscriptionProvider } from '@/context/SubscriptionContext';
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext';
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LayoutProvider } from '@/context/LayoutContext';
-import BodyPortal from '@/components/BodyPortal';
 
 const queryClient = new QueryClient()
 
@@ -193,11 +191,6 @@ if (rootElement) {
                 <Toaster />
               </LayoutProvider>
             </TooltipProvider>
-            {!IS_PROD && (
-              <BodyPortal>
-                <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" position="left" />
-              </BodyPortal>
-            )}
           </QueryClientProvider>
         </ThemeProvider>
       </AuthProvider>
