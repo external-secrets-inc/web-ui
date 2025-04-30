@@ -1,0 +1,8 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+When working with TypeScript files (.ts, .tsx):
+- Avoid using the `any` type.
+- Prioritize type safety by using specific and accurate types. If inferring a type is difficult, explore alternatives like generics, interfaces, importing from external resourcers, or type aliases before resorting to `any`.
