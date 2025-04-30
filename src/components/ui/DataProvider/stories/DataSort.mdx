@@ -1,0 +1,27 @@
+import { Meta, Canvas, Story, Controls, Primary, Description } from '@storybook/blocks';
+import * as DataSortStories from './DataSort.stories'; // Imports the CSF file
+
+<Meta of={DataSortStories} name="Documentation" />
+
+# DataSort Component
+
+<Description of={DataSortStories} />
+
+Provides a dropdown menu to select the sorting column and direction for data within the parent `<DataProvider>`.
+Uses the TanStack Table sorting state.
+
+It automatically discovers sortable columns (where `enableSorting` is not `false`) and allows the user to apply sorting.
+
+## Example
+
+<Canvas>
+    <Story of={DataSortStories.Default} />
+</Canvas>
+
+## Props
+
+<Controls />
+
+---
+
+**Note on Examples:** The story above uses a wrapper component that includes `<DataProvider>` and `<DataTable>` to demonstrate the sorting functionality. Key props passed to the provider in this example include `data`, `columns`, and `initialSort`. The `<Controls>` table shows props for the `<DataSort>` component itself.

@@ -1,0 +1,49 @@
+import { Meta, Canvas, Story, Controls, Primary, Description } from '@storybook/blocks';
+import * as DataProviderStories from './DataProvider.stories'; // Imports the CSF file
+
+<Meta of={DataProviderStories} name="Documentation" />
+
+# DataProvider Component
+
+<Description of={DataProviderStories} />
+
+The `DataProvider` component is the core context provider for managing and distributing table/grid state. It uses TanStack Table internally to handle data manipulation (sorting, filtering, pagination, selection) and exposes this state to its children (like `DataTable`, `DataGrid`, `DataSearch`, `DataSort`).
+
+**Key Responsibilities:**
+- Holds the primary data array (`data` prop).
+- Manages column definitions (`columns` prop).
+- Handles state for sorting, filtering, selection, etc.
+- Provides context access to child components.
+- Can optionally handle loading and empty states.
+
+## Basic Usage
+
+Wrap your data display components (`DataTable`, `DataGrid`) and control components (`DataSearch`, `DataSort`) with `DataProvider`. Pass the `data` and `columns` props.
+
+<Primary /> {/* Renders the first story ('Default') */}
+
+## Examples
+
+### Backend Filtering
+Demonstrates handling filtering externally (e.g., via API calls) by managing the `data` prop and providing a custom search input.
+
+<Canvas of={DataProviderStories.BackendFiltering} />
+
+### Custom Row ID
+Shows how to provide a `getRowId` function when the data objects don't have a standard `id` property, using `email` as the unique identifier.
+
+<Canvas of={DataProviderStories.CustomRowId} />
+
+### Loading State
+Demonstrates the appearance when the `isLoading` prop is true.
+
+<Canvas of={DataProviderStories.LoadingState} />
+
+### Empty State
+Shows the default and custom message (`emptyMessage` prop) when `data` is empty and `isLoading` is false.
+
+<Canvas of={DataProviderStories.EmptyState} />
+
+## Props
+
+<Controls />
