@@ -6,7 +6,7 @@ import AppLogo from '@/components/AppLogo';
 
 const AppTopBar: React.FC = () => {
   return (
-    <header className="sticky top-0 flex h-12 md:h-16 border-b bg-background z-10">
+    <header className="sticky top-0 flex h-[--topbar-height] border-b bg-background z-20">
       <div className="container flex flex-1 mx-auto items-center gap-6 md:gap-8">
         <nav className="font-medium flex flex-1 flex-row items-center gap-[inherit] text-sm">
           <SideNavMenu>
