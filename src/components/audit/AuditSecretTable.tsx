@@ -11,7 +11,7 @@ import FilterDialogForm from "./FilterDialogForm";
 import AuditSecretDetails from "./AuditSecretDetails";
 import { useAuditFilter } from "./AuditFilterProvider";
 import { useSearchParams } from "react-router-dom";
-import { Input } from "../ui/input";
+import { Input } from "@/components/ui/input";
 import saveAs from "file-saver";
 import { Separator } from "@/components/ui/separator";
 import { formatDate } from "@/utils/dateUtils";
