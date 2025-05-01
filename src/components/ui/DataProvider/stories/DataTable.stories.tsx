@@ -1,76 +1,37 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { DataProvider } from '../DataProviderContext';
 import { DataTable } from '../DataTable';
-import type { ColumnDef } from '@tanstack/react-table';
-import { createColumnHelper } from '@tanstack/react-table';
-import type { ProviderConfig, DataTableProps } from '../DataProvider.interfaces';
+import type { DataTableProps } from '../DataProvider.interfaces';
 import { Button } from '../../button';
 import { LucideEdit, LucideMoreVertical, LucideTrash2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../dropdown-menu';
-import { TableCell, TableRow } from '@/components/ui/table';
 import React from 'react';
+import {
+  type User,
+  type CommonStoryProps,
+  commonStoryArgs,
+  baseVirtualizationArgs,
+  createColumnsWithActions
+} from './stories.utils';
+import { TableCell } from '@/components/ui/table';
+import { TableRow } from '@/components/ui/table';
 
-// --- Data/Types/Helpers ---
-type User = {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-};
+/**
+ * Props combining Storybook needs with DataTable and DataProvider requirements.
+ * Handles type adaptation for both the onRowClick handler and meta object.
+ */
+type DataTableStoryProps = Omit<DataTableProps<User, object>, 'onRowClick'> &
+  { onRowClick?: (rowData: object) => void } &
+  CommonStoryProps<User> &
+  { meta?: object };
 
-const generateLargeDataset = (count: number): User[] => {
-  return Array.from({ length: count }, (_, i) => ({
-    id: i + 1,
-    name: `User ${i + 1}`,
-    email: `user${i+1}@example.com`,
-    role: i % 3 === 0 ? 'Admin' : i % 2 === 0 ? 'Editor' : 'Viewer'
-  }));
-};
-
-const largeDataset = generateLargeDataset(200);
-const mockUsers: User[] = generateLargeDataset(5); // Small dataset for non-virtualized stories
-
-const createUserColumns = () => {
-  const columnHelper = createColumnHelper<User>();
-  return [
-    columnHelper.accessor('name', { header: 'Name', cell: info => info.getValue() }),
-    columnHelper.accessor('email', { header: 'Email', cell: info => info.getValue() }),
-    columnHelper.accessor('role', { header: 'Role', cell: info => info.getValue() }),
-  ] as ColumnDef<User, unknown>[];
-};
-
-const createUserColumnsWithActions = () => {
-  const columnHelper = createColumnHelper<User>();
-  return [
-    ...createUserColumns(),
-    columnHelper.display({
-      id: 'actions',
-      cell: props => (
-        <div className='flex justify-end'>
-          {(props.table.options.meta as { renderRowActions?: (row: User) => React.ReactNode })?.renderRowActions?.(props.row.original)}
-        </div>
-      )
-    })
-  ] as ColumnDef<User, unknown>[];
-};
-// --- End Data/Types/Helpers ---
-
-// --- Wrapper ---
-// Explicitly type the wrapper for User data to ensure type safety
-// Use Omit to handle the conflicting onRowClick type signature between
-// DataTableProps<User, object> and the desired generic (rowData: object) signature for Storybook actions
-type DataTableWrapperProps = Omit<DataTableProps<User, object>, 'onRowClick'> &
-  { onRowClick?: (rowData: object) => void } & // Allow generic onRowClick for story interaction
-  // Pick standard Provider props required by the DataProvider
-  Pick<ProviderConfig<User>, 'data' | 'columns' | 'initialSort' | 'getRowId'> &
-  { meta?: object }; // Include meta for row actions
-
-const DataTableWrapper = (
-  // Destructure meta explicitly to pass it via tableOptions
-  // Ensure it's not in ...dataTableProps passed directly to DataTable
-  { data, columns, initialSort, getRowId, onRowClick, meta, ...dataTableProps }: DataTableWrapperProps
+/**
+ * Story wrapper that combines DataProvider and DataTable components.
+ * Handles proper typing of row click actions and meta object passing.
+ */
+const DataTableWithProvider = (
+  { data, columns, initialSort, getRowId, onRowClick, meta, ...dataTableProps }: DataTableStoryProps
 ) => {
-  // Define the correctly typed handler here to bridge the generic storybook action and the specific DataTable<User> prop
   const handleRowClick = React.useCallback((rowData: User) => {
       if (onRowClick) {
           onRowClick(rowData);
@@ -83,22 +44,13 @@ const DataTableWrapper = (
       columns={columns}
       initialSort={initialSort}
       getRowId={getRowId}
-      // Pass meta via tableOptions so it's accessible in column definitions
       tableOptions={{ meta }}
     >
-      {/* Optional: Add controls if needed for specific stories */}
-      {/* <div className="flex justify-end gap-2 mb-4">
-        <DataSearch />
-        <DataSort />
-      </div> */}
-      {/* Pass the correctly typed handleRowClick to DataTable, casting the generic action handler */}
       <DataTable {...dataTableProps} onRowClick={handleRowClick as (rowData: object) => void} />
     </DataProvider>
   );
 };
-// --- End Wrapper ---
 
-// --- Meta ---
 const meta = {
   title: 'UI/DataProvider/DataTable',
   component: DataTable,
@@ -106,126 +58,113 @@ const meta = {
     layout: 'centered',
   },
   argTypes: {
-    // Provider Props Category
     data: { table: { category: 'DataProvider Props' } },
     columns: { table: { category: 'DataProvider Props' } },
     initialSort: { table: { category: 'DataProvider Props' } },
   },
-} satisfies Meta<DataTableWrapperProps>;
+} satisfies Meta<DataTableStoryProps>;
 
 export default meta;
-type Story = StoryObj<DataTableWrapperProps>;
-// --- End Meta ---
+type Story = StoryObj<DataTableStoryProps>;
 
-// --- Stories ---
-
+/**
+ * Common configuration applied to all DataTable stories
+ */
+const baseStoryArgs = {
+  ...commonStoryArgs,
+  className: "w-[600px]",
+};
 
 export const RowClick: Story = {
-    render: DataTableWrapper,
+    render: DataTableWithProvider,
     name: "Feature: Row Click",
     args: {
-      data: mockUsers,
-      columns: createUserColumns(),
-      initialSort: { id: 'name', desc: false },
-      // Pass the generic handler, wrapper will adapt it
+      ...baseStoryArgs,
       onRowClick: (row: object) => { alert(`Clicked on ${JSON.stringify(row)}`); },
-      className: "w-[600px]"
     },
 };
 
 export const RowActions: Story = {
-  render: DataTableWrapper,
+  render: DataTableWithProvider,
   name: "Feature: Row Actions",
   args: {
-    data: mockUsers,
-    columns: createUserColumnsWithActions(),
-    initialSort: { id: 'name', desc: false },
-    meta: {
-      renderRowActions: (row: User) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon"><LucideMoreVertical /></Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem><LucideEdit className="mr-2" />Edit {row.name}</DropdownMenuItem>
-            <DropdownMenuItem><LucideTrash2 className="mr-2" />Delete {row.name}</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    },
-    className: "w-[600px]"
+    ...baseStoryArgs,
+    columns: createColumnsWithActions((row) => (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon"><LucideMoreVertical /></Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem><LucideEdit className="mr-2" />Edit {row.name}</DropdownMenuItem>
+          <DropdownMenuItem><LucideTrash2 className="mr-2" />Delete {row.name}</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    )),
   },
 };
 
 export const RowsAppend: Story = {
-    render: DataTableWrapper,
-    name: "Feature: Rows Append",
+    render: DataTableWithProvider,
+    name: "Feature: Custom Appended Row Rendering",
     args: {
-      data: mockUsers,
-      columns: createUserColumns(),
-      initialSort: { id: 'name', desc: false },
+      ...baseStoryArgs,
       rowsAppend: (
         <TableRow>
-            <TableCell colSpan={3} className="text-center text-muted-foreground p-4 font-semibold">
-                --- End of Data ---
-            </TableCell>
+          <TableCell colSpan={4} className="text-center p-4 bg-muted">
+            <div className="font-medium">Summary Row</div>
+            <div className="text-sm text-muted-foreground">This row is appended outside the table body.</div>
+          </TableCell>
         </TableRow>
-      ),
-      className: "w-[600px]"
+      )
     },
 };
 
+/**
+ * Primary story used in the docs - displayed at the top of the documentation.
+ * Demonstrates the recommended static virtualization mode.
+ */
 export const StaticVirtualization: Story = {
-  render: DataTableWrapper,
-  name: "Virtualization: Static",
+  render: DataTableWithProvider,
+  name: "Static Row Height Virtualization",
   args: {
-    data: largeDataset,
-    columns: createUserColumns(),
-    initialSort: { id: 'name', desc: false },
-    virtualizationMode: "static",
-    rowHeight: 40,
-    className: "h-[400px] w-[600px]",
+    ...baseVirtualizationArgs,
+    className: "w-[600px] h-[400px]",
+    virtualizationMode: 'static',
   },
 };
 
+/**
+ * Demonstrates dynamic virtualization which measures row heights at runtime.
+ * Less performant than static but supports variable height rows.
+ */
 export const DynamicVirtualization: Story = {
-  render: DataTableWrapper,
-  name: "Virtualization: Dynamic",
+  render: DataTableWithProvider,
+  name: "Dynamic Row Height Virtualization",
   args: {
-    data: largeDataset,
-    columns: createUserColumns(),
-    initialSort: { id: 'name', desc: false },
-    className: "h-[400px] w-[600px]",
-    virtualizationMode: "dynamic",
+    ...baseVirtualizationArgs,
+    className: "w-[600px] h-[400px]",
+    virtualizationMode: 'dynamic',
     virtualizerOptions: {
-      estimateSize: (index: number) => {
-        const role = largeDataset[index].role;
-        return role === 'Admin' ? 60 : role === 'Editor' ? 50 : 40;
-      }
+      estimateSize: () => 48,
+      overscan: 5,
     },
   },
 };
 
+/**
+ * Demonstrates window-based virtualization where the browser window is the scroll container.
+ * Useful for full-page tables integrated with the main page scroll.
+ */
 export const WindowVirtualization: Story = {
-  render: DataTableWrapper,
-  name: "Virtualization: Window",
+  render: DataTableWithProvider,
+  name: "Window Virtualization",
   args: {
-    data: largeDataset,
-    columns: createUserColumns(),
-    initialSort: { id: 'name', desc: false },
-    virtualizationMode: "static",
-    virtualizationContainer: "window",
-    rowHeight: 40,
-    // Example of setting offset via className: className="[--window-container-header-offset:64px]"
+    ...baseVirtualizationArgs,
+    className: "w-full [--window-container-header-offset:0px]",
+    virtualizationMode: 'static',
+    virtualizationContainer: 'window',
   },
   parameters: {
-    layout: 'fullscreen', // Necessary for window scroll to be testable
-    docs: { // Provide context within the story description
-        description: {
-            story: "Uses the browser window to scroll. May require setting `--window-container-header-offset` (see MDX Docs). View in Canvas mode."
-        }
-    }
+    layout: 'fullscreen',
   }
 };
-
-// --- End Stories ---

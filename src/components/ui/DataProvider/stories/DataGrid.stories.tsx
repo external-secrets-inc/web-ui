@@ -1,42 +1,22 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { DataProvider } from '../DataProviderContext';
 import { DataGrid } from '../DataGrid';
-import type { ColumnDef } from '@tanstack/react-table';
-import { createColumnHelper } from '@tanstack/react-table';
-import type { ProviderConfig, DataGridProps } from '../DataProvider.interfaces';
+import type { DataGridProps } from '../DataProvider.interfaces';
 import React from 'react';
+import {
+  type User,
+  type CommonStoryProps,
+  commonStoryArgs
+} from './stories.utils';
 
-// --- Data/Types/Helpers ---
-type User = {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-};
+type DataGridStoryProps = DataGridProps<User> & CommonStoryProps<User>;
 
-const mockUsers: User[] = [
-  { id: 1, name: 'John Doe', email: 'john@example.com', role: 'Admin' },
-  { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'User' },
-  { id: 3, name: 'Bob Johnson', email: 'bob@example.com', role: 'User' },
-];
-
-// Note: Columns are needed by DataProvider for context, even if DataGrid doesn't display them directly as headers.
-const createUserColumns = () => {
-  const columnHelper = createColumnHelper<User>();
-  return [
-    columnHelper.accessor('name', { header: 'Name' }),
-    columnHelper.accessor('email', { header: 'Email' }),
-    columnHelper.accessor('role', { header: 'Role' }),
-  ] as ColumnDef<User, unknown>[];
-};
-// --- End Data/Types/Helpers ---
-
-// --- Wrapper ---
-type DataGridWrapperProps = DataGridProps<User> &
-  Pick<ProviderConfig<User>, 'data' | 'columns' | 'initialSort' | 'getRowId'>;
-
-const DataGridWrapper = (
-  { data, columns, initialSort, getRowId, ...dataGridProps }: DataGridWrapperProps
+/**
+ * Story wrapper that combines DataProvider and DataGrid components.
+ * Bridges the gap between Storybook's generic interface and strongly typed components.
+ */
+const DataGridWithProvider = (
+  { data, columns, initialSort, getRowId, ...dataGridProps }: DataGridStoryProps
 ) => {
   return (
     <DataProvider<User>
@@ -45,44 +25,44 @@ const DataGridWrapper = (
       initialSort={initialSort}
       getRowId={getRowId}
     >
-      {/* Pass renderItem, casting it to the generic type expected by DataGridProps<object> */}
-      {/* The actual function passed in args uses the specific User type for correctness */}
-      <DataGrid {...dataGridProps} renderItem={dataGridProps.renderItem as (item: object) => React.ReactNode} />
+      <DataGrid
+        {...dataGridProps}
+        renderItem={dataGridProps.renderItem as (item: object) => React.ReactNode}
+      />
     </DataProvider>
   );
 };
-// --- End Wrapper ---
 
-// --- Meta ---
 const meta = {
   title: 'UI/DataProvider/DataGrid',
   component: DataGrid,
   parameters: {
     layout: 'centered',
-    // No docs description here - handled by DataGrid.mdx
   },
   argTypes: {
-    // DataProvider Parent Props Category
     data: { table: { category: 'DataProvider Props' } },
     columns: { table: { category: 'DataProvider Props' } },
     initialSort: { table: { category: 'DataProvider Props' } },
   }
-} satisfies Meta<DataGridWrapperProps>;
+} satisfies Meta<DataGridStoryProps>;
 
 export default meta;
-type Story = StoryObj<DataGridWrapperProps>;
-// --- End Meta ---
+type Story = StoryObj<DataGridStoryProps>;
 
-// --- Stories ---
+/**
+ * Common configuration for DataGrid stories
+ */
+const baseStoryArgs = {
+  ...commonStoryArgs,
+};
+
+/**
+ * Default grid layout displaying user cards in a responsive grid
+ */
 export const Default: Story = {
-  render: DataGridWrapper,
+  render: DataGridWithProvider,
   args: {
-    // ProviderConfig props
-    data: mockUsers,
-    columns: createUserColumns(),
-    initialSort: { id: 'name', desc: false },
-    // DataGridProps
-    // Ensure renderItem uses the specific User type within the story definition for type safety
+    ...baseStoryArgs,
     renderItem: (item: User) => {
         return (
           <div key={item.id} className="p-4 border rounded-lg w-full">
@@ -95,5 +75,4 @@ export const Default: Story = {
     className: "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-[800px]",
   },
 };
-// --- End Stories ---
 

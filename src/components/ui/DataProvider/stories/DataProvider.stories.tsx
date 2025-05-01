@@ -1,67 +1,42 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { DataProvider } from '../DataProviderContext';
 import { DataTable, DataSearch, DataSort } from '..';
-import { createColumnHelper, ColumnDef } from '@tanstack/react-table';
 import type { ProviderConfig } from '../DataProvider.interfaces';
 import { LucideSearch } from 'lucide-react';
 import { Input } from '../../input';
 import { useState, useCallback, useEffect } from 'react';
+import {
+  type User,
+  mockUsers,
+  userColumns,
+  commonStoryArgs
+} from './stories.utils';
+import { defineColumns } from '../DataProvider.utils';
 
-// Example types and data
-type User = {
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-};
-
+// Additional type for custom ID examples
 type UserWithCustomId = User & {
   customId: string;
 };
 
-const mockUsers: User[] = [
-  { id: 1, name: 'Context User 1', email: 'ctx1@example.com', role: 'Admin' },
-  { id: 2, name: 'Context User 2', email: 'ctx2@example.com', role: 'User' },
-];
+// Create custom columns for UserWithCustomId type
+const customIdColumns = defineColumns<UserWithCustomId>(helper => [
+  helper.accessor('name', {
+    header: 'Name',
+    cell: info => info.getValue(),
+    enableSorting: true
+  }),
+  helper.accessor('email', {
+    header: 'Email',
+    cell: info => info.getValue(),
+    enableSorting: true
+  }),
+  helper.accessor('role', {
+    header: 'Role',
+    cell: info => info.getValue(),
+    enableSorting: true
+  }),
+]);
 
-// Create column definitions
-const createUserColumns = () => {
-  const columnHelper = createColumnHelper<User>();
-  return [
-    columnHelper.accessor('name', {
-      header: 'Name',
-      cell: info => info.getValue(),
-    }),
-    columnHelper.accessor('email', {
-      header: 'Email',
-      cell: info => info.getValue(),
-    }),
-    columnHelper.accessor('role', {
-      header: 'Role',
-      cell: info => info.getValue(),
-    }),
-  ] as ColumnDef<User, unknown>[];
-};
-
-const createCustomIdColumns = () => {
-  const columnHelper = createColumnHelper<UserWithCustomId>();
-  return [
-    columnHelper.accessor('name', {
-      header: 'Name',
-      cell: info => info.getValue(),
-    }),
-    columnHelper.accessor('email', {
-      header: 'Email',
-      cell: info => info.getValue(),
-    }),
-    columnHelper.accessor('role', {
-      header: 'Role',
-      cell: info => info.getValue(),
-    }),
-  ] as ColumnDef<UserWithCustomId, unknown>[];
-};
-
-// Story component demonstrating external filtering with DataProvider
 const DataProviderBackendFilterExample = (args: ProviderConfig<User>) => {
   const [searchParams, setSearchParams] = useState(new URLSearchParams());
   const [searchInputValue, setSearchInputValue] = useState("");
@@ -121,7 +96,6 @@ const DataProviderBackendFilterExample = (args: ProviderConfig<User>) => {
   );
 };
 
-// Story component demonstrating DataProvider with a custom getRowId function
 const CustomRowIdExample = (args: ProviderConfig<UserWithCustomId>) => {
   return (
     <DataProvider<UserWithCustomId> {...args}>
@@ -153,9 +127,7 @@ type CustomIdStory = StoryObj<ProviderConfig<UserWithCustomId>>;
 
 export const Default: Story = {
   args: {
-    data: mockUsers,
-    columns: createUserColumns(),
-    initialSort: { id: 'name', desc: false },
+    ...commonStoryArgs,
   },
   render: (args: ProviderConfig<User>) => (
     <DataProvider {...args}>
@@ -169,9 +141,7 @@ export const Default: Story = {
 
 export const BackendFiltering: Story = {
   args: {
-    data: mockUsers,
-    columns: createUserColumns(),
-    initialSort: { id: 'name', desc: false },
+    ...commonStoryArgs,
   },
   render: DataProviderBackendFilterExample,
 };
@@ -179,7 +149,7 @@ export const BackendFiltering: Story = {
 export const CustomRowId: CustomIdStory = {
   args: {
     data: mockUsers.map(user => ({ ...user, customId: user.email })),
-    columns: createCustomIdColumns(),
+    columns: customIdColumns,
     initialSort: { id: 'name', desc: false },
     getRowId: (row: UserWithCustomId) => row.email,
   },
@@ -189,7 +159,7 @@ export const CustomRowId: CustomIdStory = {
 export const LoadingState: Story = {
   args: {
     data: [],
-    columns: createUserColumns(),
+    columns: userColumns,
     isLoading: true,
   },
   render: (args: ProviderConfig<User>) => (
@@ -205,7 +175,7 @@ export const LoadingState: Story = {
 export const EmptyState: Story = {
   args: {
     data: [],
-    columns: createUserColumns(),
+    columns: userColumns,
     isLoading: false,
     emptyMessage: "Custom empty message from Provider."
   },
@@ -218,7 +188,3 @@ export const EmptyState: Story = {
     </DataProvider>
   ),
 };
-
-// Story GridLayout moved to DataGrid.stories.tsx
-
-// Story Controls might be simplified or moved later
