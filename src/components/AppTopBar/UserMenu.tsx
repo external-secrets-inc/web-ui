@@ -84,7 +84,7 @@ const UserMenu: React.FC = () => {
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>Feature Flags</DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
-                {featureFlags.availableFlags.map((flag) => {
+                {featureFlags.toggleableFlags.map((flag) => {
                   const isEnabled = featureFlags.hasFeatureFlagEnabled(flag);
                   const isLocked = featureFlags.isLockedByEnv(flag);
                   const envValue = featureFlags.getEnvOverride(flag);
