@@ -1,11 +1,11 @@
 import { Meta, Canvas, Story, Controls, Primary, Description } from '@storybook/blocks';
-import * as DataTableStories from './DataTable.stories'; // Imports the CSF file
+import * as DataTableStories from './DataTable.stories';
 
-<Meta of={DataTableStories} name="Documentation" /> {/* Links MDX to CSF, sets sidebar name */}
+<Meta of={DataTableStories} name="Documentation" />
 
 # DataTable Component
 
-<Description of={DataTableStories} /> {/* Pulls description from CSF meta (if any) or use markdown */}
+<Description of={DataTableStories} />
 
 Renders data provided by the parent `<DataProvider>` in a standard HTML table format.
 
@@ -19,8 +19,8 @@ Renders data provided by the parent `<DataProvider>` in a standard HTML table fo
 ## Primary Story (Static Virtualization)
 This is the recommended and most performant virtualization mode for large datasets with fixed row heights.
 
-<Primary /> {/* Renders the first story ('StaticVirtualization' based on export order) */}
-<Controls /> {/* Shows ArgTypes table for the primary component */}
+<Primary />
+<Controls />
 
 ## Features
 
