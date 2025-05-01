@@ -2,7 +2,7 @@ import * as React from "react";
 import { LucideSearch } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { useData } from "./DataProviderContext"; // Accesses global filter state and setter
+import { useData } from "./DataProviderContext";
 
 /**
  * Provides a simple text input for global filtering within a DataProvider context.

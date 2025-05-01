@@ -4,17 +4,19 @@ import {
 } from '@tanstack/react-table';
 import type { RowData } from '@tanstack/react-table';
 
-// Define the type for the callback function the user will provide.
-// It receives the helper and should return an array of ColumnDef objects.
-// Using ReadonlyArray is good practice for inputs that shouldn't be mutated.
-// The internal 'any' allows the callback to return an array containing
-// ColumnDefs with different specific TValues (string, number, etc.) as produced
-// by the createColumnHelper methods.
+/**
+ * Callback function that builds column definitions using the TanStack Table helper.
+ * Returns an immutable array that may contain columns with various value types.
+ */
 type DefineColumnsCallback<TData extends RowData> = (
   helper: ReturnType<typeof createColumnHelper<TData>>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ) => ReadonlyArray<ColumnDef<TData, any>>; // Reverted back to 'any'
 
+/**
+ * The type expected by DataProvider components for column definitions.
+ */
+type DataProviderColumns<TData extends RowData> = ColumnDef<TData, unknown>[];
 
 /**
  * Utility to define columns for DataProvider, ensuring type safety via the TanStack Table helper
@@ -27,11 +29,9 @@ type DefineColumnsCallback<TData extends RowData> = (
  */
 export function defineColumns<TData extends RowData>(
   callback: DefineColumnsCallback<TData>
-): ColumnDef<TData, unknown>[] {
+): DataProviderColumns<TData> {
   const helper = createColumnHelper<TData>();
   const columns = callback(helper);
 
-  // Type assertion is necessary again to bridge the 'any' TValue from the callback's
-  // return array type to the 'unknown' TValue required by DataProvider.
-  return columns as ColumnDef<TData, unknown>[]; // Reinstated type assertion
+  return columns as DataProviderColumns<TData>;
 }

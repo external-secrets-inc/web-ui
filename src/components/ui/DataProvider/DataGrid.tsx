@@ -1,7 +1,7 @@
 import * as React from "react";
 import { type Row } from "@tanstack/react-table";
 import { cn } from "@/lib/utils";
-import { useData } from "./DataProviderContext"; // Assuming useData provides access to the table instance
+import { useData } from "./DataProviderContext";
 import { type DataGridProps } from "./DataProvider.interfaces";
 
 /**
