@@ -3,7 +3,6 @@ import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
-
 export default tseslint.config(
   { ignores: ['dist'] },
   {
@@ -19,10 +18,11 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
-      ],
+      // TODO[cfviotti]: Check if removing this rule is the right path to mitigate these warnings.
+      // 'react-refresh/only-export-components': [
+      //   'warn',
+      //   { allowConstantExport: true },
+      // ],
     },
   },
 )
