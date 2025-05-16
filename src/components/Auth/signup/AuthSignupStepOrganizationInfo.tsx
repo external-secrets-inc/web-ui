@@ -1,4 +1,4 @@
-import { AuthCommonFieldOrganizationURL, SignupData } from "@/components/Auth";
+import { AuthCommonFieldOrganizationURL } from "@/components/Auth";
 import {
   FormControl,
   FormField,
@@ -12,7 +12,7 @@ import { useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 
 export function AuthSignupStepOrganizationInfo() {
-  const { control, setValue } = useFormContext<SignupData>();
+  const { control, setValue } = useFormContext();
   const orgURLRef = useRef<HTMLInputElement | null>(null);
   const [isURLManuallyEdited, setIsURLManuallyEdited] = useState(false);
 

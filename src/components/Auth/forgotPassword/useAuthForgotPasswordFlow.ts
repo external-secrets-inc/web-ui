@@ -15,7 +15,7 @@ const ForgotPasswordSchema = z.object({
   email: authCommonZodSchemas.email,
 });
 
-export type ForgotPasswordData = z.infer<typeof ForgotPasswordSchema>;
+type ForgotPasswordData = z.infer<typeof ForgotPasswordSchema>;
 
 export function useAuthForgotPasswordFlow(defaultTenant: string = "", defaultEmail: string = "") {
   const [formError, setFormError] = useState<string>("");

@@ -19,7 +19,6 @@ export {
   AUTH_ERROR_MESSAGES,
   createAuthError,
 } from './common/authCommonErrorHandlers';
-export type { AuthError, AuthErrorType } from './common/authCommonErrorHandlers';
 
 export { AuthCommonFieldEmail } from './common/AuthCommonFieldEmail';
 export { AuthCommonFieldNewPassword } from './common/AuthCommonFieldNewPassword';
@@ -46,15 +45,11 @@ export { AuthSignupForm } from './signup/AuthSignupForm';
 export { AuthSignupStepCredentials } from './signup/AuthSignupStepCredentials';
 export { AuthSignupStepOrganizationInfo } from './signup/AuthSignupStepOrganizationInfo';
 export { useAuthSignupFlow } from './signup/useAuthSignupFlow';
-export type { SignupData } from './signup/useAuthSignupFlow';
 
 // Forgot Password
 export { AuthForgotPassword } from './forgotPassword/AuthForgotPassword';
 export { useAuthForgotPasswordFlow } from './forgotPassword/useAuthForgotPasswordFlow';
-export type { ForgotPasswordData } from './forgotPassword/useAuthForgotPasswordFlow';
 
 // Reset Password
 export { AuthResetPassword } from './resetPassword/AuthResetPassword';
 export { useAuthResetPasswordFlow } from './resetPassword/useAuthResetPasswordFlow';
-export type { ResetPasswordData } from './resetPassword/useAuthResetPasswordFlow';
-

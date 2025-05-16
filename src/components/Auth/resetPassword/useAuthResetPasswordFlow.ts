@@ -16,8 +16,8 @@ const ResetPasswordSchema = z.object({
   password: authCommonZodSchemas.newPassword,
 });
 
-export type ResetPasswordData = z.infer<typeof ResetPasswordSchema>;
-export type ResetPasswordField = keyof ResetPasswordData;
+type ResetPasswordData = z.infer<typeof ResetPasswordSchema>;
+type ResetPasswordField = keyof ResetPasswordData;
 
 interface UseResetPasswordFlowProps {
   defaultTenant?: string;

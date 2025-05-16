@@ -4,7 +4,7 @@ import { ApiHttpError } from "@/types";
 /**
  * Common error types that can occur during authentication flows
  */
-export type AuthErrorType =
+type AuthErrorType =
   'validation' |     // Field-specific validation failures
   'authentication' | // Auth-specific failures like invalid credentials
   'api' |            // Other API-returned errors
@@ -14,7 +14,7 @@ export type AuthErrorType =
 /**
  * Standardized error structure for auth flows
  */
-export interface AuthError {
+interface AuthError {
   type: AuthErrorType;
   message: string;
   field?: string;
