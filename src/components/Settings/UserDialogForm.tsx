@@ -21,7 +21,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { MultiSelect } from "@/components/ui/MultiSelect";
-import NewPasswordField from "../Auth/fields/NewPasswordField";
+import InputPassword from "@/components/ui/InputPassword";
 
 const getSchema = (selectedUserId: string | null) => {
   return z.object({
@@ -102,9 +102,27 @@ const UserDialogForm = ({ selectedUserId, userForm, onSubmit, onCancel }: {
               </FormItem>
             )}
           />
-          {!selectedUserId &&
-            <NewPasswordField submittedWithErrors={false} />
-          }
+          {!selectedUserId && (
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <InputPassword
+                      {...field}
+                      value={field.value || ''}
+                      newPasswordChecks
+                      showValidationErrors={false}
+                      placeholder="Enter new password"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
           {Boolean(selectedUserId) &&
             <FormField
               control={form.control}
