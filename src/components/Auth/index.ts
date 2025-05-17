@@ -38,6 +38,8 @@ export { AuthLoginStepCredentials } from './login/AuthLoginStepCredentials';
 export { AuthLoginStepOrganizationURL } from './login/AuthLoginStepOrganizationURL';
 export { useAuthLoginFlow } from './login/useAuthLoginFlow';
 export { useAuthLoginFormContext } from './login/AuthLoginForm';
+export { useAuthLoginWithGoogle } from './login/useAuthLoginWithGoogle';
+export { AuthLoginGoogleButton } from './login/AuthLoginGoogleButton';
 
 // Signup
 export { AuthSignup } from './signup/AuthSignup';

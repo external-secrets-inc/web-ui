@@ -3,13 +3,15 @@ import {
   AuthLoginStepCredentials,
   AuthLoginStepOrganizationURL,
   useAuthLoginFlow,
+  useAuthLoginWithGoogle,
 } from "@/components/Auth";
 import { Form } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
-import { Step, defineStepper } from "@stepperize/react";
+import { CredentialResponse, GoogleOAuthProvider } from "@react-oauth/google";
+import { defineStepper, Step } from "@stepperize/react";
 import { createContext, FC, useContext } from "react";
-import { Link } from "react-router-dom";
 import { UseFormReturn } from "react-hook-form";
+import { Link } from "react-router-dom";
 import { z } from "zod";
 
 const OrganizationURLSchema = z.object({
@@ -47,6 +49,8 @@ interface AuthLoginFormContextType {
   isProcessing: boolean;
   handleAttemptSubmit: (data: LoginFormShape) => void;
   formError: string | null;
+  googleError: string | null;
+  handleGoogleTokenResponse: (response: CredentialResponse) => void;
 }
 
 const AuthLoginFormContext = createContext<
@@ -64,7 +68,7 @@ export function useAuthLoginFormContext() {
 }
 
 const AuthLoginFormContent: FC = () => {
-  const { form, stepperMethods, handleAttemptSubmit, formError } =
+  const { form, stepperMethods, handleAttemptSubmit, formError, googleError } =
     useAuthLoginFormContext();
 
   return (
@@ -79,6 +83,9 @@ const AuthLoginFormContent: FC = () => {
             credentials: () => <AuthLoginStepCredentials />,
           })}
           {formError && <p className="text-sm text-destructive">{formError}</p>}
+          {googleError && (
+            <p className="text-sm text-destructive">{googleError}</p>
+          )}
         </form>
       </Form>
 
@@ -128,7 +135,10 @@ export function AuthLoginForm(props: AuthLoginFormProps) {
 
   const currentStep = stepperMethods.current;
 
-  const isProcessing = isLoadingCoreFlow;
+  const { handleGoogleTokenResponse, isGoogleLoading, googleError } =
+    useAuthLoginWithGoogle({ currentStep, form });
+
+  const isProcessing = isLoadingCoreFlow || isGoogleLoading;
 
   const contextValue = {
     form,
@@ -137,13 +147,19 @@ export function AuthLoginForm(props: AuthLoginFormProps) {
     isProcessing,
     handleAttemptSubmit,
     formError,
+    googleError,
+    handleGoogleTokenResponse,
   };
 
   return (
     <Scoped initialStep="organizationURL">
-      <AuthLoginFormContext.Provider value={contextValue}>
-        <AuthLoginFormContent />
-      </AuthLoginFormContext.Provider>
+      <GoogleOAuthProvider
+        clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ""}
+      >
+        <AuthLoginFormContext.Provider value={contextValue}>
+          <AuthLoginFormContent />
+        </AuthLoginFormContext.Provider>
+      </GoogleOAuthProvider>
     </Scoped>
   );
 }
