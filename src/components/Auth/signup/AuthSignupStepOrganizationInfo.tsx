@@ -1,4 +1,8 @@
-import { AuthCommonFieldOrganizationURL } from "@/components/Auth";
+import {
+  AuthCommonFieldOrganizationURL,
+  AuthCommonSubmitButton,
+  useAuthSignupFormContext,
+} from "@/components/Auth";
 import {
   FormControl,
   FormField,
@@ -13,6 +17,7 @@ import { useFormContext } from "react-hook-form";
 
 export function AuthSignupStepOrganizationInfo() {
   const { control, setValue } = useFormContext();
+  const { isProcessing } = useAuthSignupFormContext();
   const orgURLRef = useRef<HTMLInputElement | null>(null);
   const [isURLManuallyEdited, setIsURLManuallyEdited] = useState(false);
 
@@ -84,6 +89,13 @@ export function AuthSignupStepOrganizationInfo() {
         inputRef={orgURLRef}
         onFocus={handleOrganizationURLFocus}
         tabIndex={3}
+      />
+
+      <AuthCommonSubmitButton
+        className="w-full"
+        isLoading={isProcessing}
+        text="Next"
+        tabIndex={4}
       />
     </>
   );

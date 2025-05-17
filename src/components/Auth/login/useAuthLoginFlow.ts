@@ -25,7 +25,7 @@ const CredentialsSchema = z.object({
 
 type OrgURLData = z.infer<typeof OrganizationURLSchema>;
 type CredentialsData = z.infer<typeof CredentialsSchema>;
-export type LoginData = OrgURLData & CredentialsData;
+type LoginData = OrgURLData & CredentialsData;
 
 const loginSteps = [
   { id: "organizationURL", label: "Organization URL", schema: OrganizationURLSchema },

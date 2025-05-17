@@ -1,18 +1,15 @@
-import { trackLoginStepMovedBack } from "@/analytics";
 import {
-  AuthCommonSubmitButton,
   authCommonZodSchemas,
   AuthLoginStepCredentials,
   AuthLoginStepOrganizationURL,
   useAuthLoginFlow,
 } from "@/components/Auth";
-import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
-import { defineStepper } from "@stepperize/react";
-import { LucideArrowLeft } from "lucide-react";
-import { FC } from "react";
+import { Step, defineStepper } from "@stepperize/react";
+import { createContext, FC, useContext } from "react";
 import { Link } from "react-router-dom";
+import { UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 
 const OrganizationURLSchema = z.object({
@@ -35,26 +32,40 @@ const step2 = {
 };
 const { Scoped } = defineStepper(step1, step2);
 
-interface AuthLoginFormProps {
-  onStepChange: (step: string) => void;
-  onOrganizationURLChange: (tenantId: string) => void;
+type LoginFormShape = z.infer<typeof OrganizationURLSchema> &
+  z.infer<typeof CredentialsSchema>;
+
+interface AuthLoginFormContextType {
+  form: UseFormReturn<LoginFormShape>;
+  currentStep: Step;
+  stepperMethods: {
+    prev: () => void;
+    next: () => void;
+    switch: <T>(cases: Record<string, () => T>) => T;
+    current: Step;
+  };
+  isProcessing: boolean;
+  handleAttemptSubmit: (data: LoginFormShape) => void;
+  formError: string | null;
 }
 
-const AuthLoginFormContent: FC<AuthLoginFormProps> = ({
-  onStepChange,
-  onOrganizationURLChange,
-}) => {
-  const {
-    form,
-    stepperMethods,
-    handleAttemptSubmit,
-    formError,
-    isLoadingCoreFlow,
-  } = useAuthLoginFlow(onStepChange, onOrganizationURLChange);
+const AuthLoginFormContext = createContext<
+  AuthLoginFormContextType | undefined
+>(undefined);
 
-  const { prev } = stepperMethods;
+export function useAuthLoginFormContext() {
+  const context = useContext(AuthLoginFormContext);
+  if (!context) {
+    throw new Error(
+      "useAuthLoginFormContext must be used within a AuthLoginForm provider"
+    );
+  }
+  return context;
+}
 
-  const isProcessing = isLoadingCoreFlow;
+const AuthLoginFormContent: FC = () => {
+  const { form, stepperMethods, handleAttemptSubmit, formError } =
+    useAuthLoginFormContext();
 
   return (
     <>
@@ -64,41 +75,8 @@ const AuthLoginFormContent: FC<AuthLoginFormProps> = ({
           className="grid gap-4"
         >
           {stepperMethods.switch({
-            organizationURL: () => (
-              <>
-                <AuthLoginStepOrganizationURL />
-                <AuthCommonSubmitButton
-                  isLoading={isProcessing}
-                  text="Next"
-                  tabIndex={2}
-                />
-              </>
-            ),
-            credentials: () => (
-              <>
-                <AuthLoginStepCredentials />
-                <AuthCommonSubmitButton
-                  className="w-full"
-                  isLoading={isProcessing}
-                  text="Log In"
-                  tabIndex={3}
-                />
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => {
-                    prev();
-                    trackLoginStepMovedBack();
-                  }}
-                  disabled={isProcessing}
-                  className="self-start"
-                  tabIndex={4}
-                >
-                  <LucideArrowLeft />
-                  Change Organization
-                </Button>
-              </>
-            ),
+            organizationURL: () => <AuthLoginStepOrganizationURL />,
+            credentials: () => <AuthLoginStepCredentials />,
           })}
           {formError && <p className="text-sm text-destructive">{formError}</p>}
         </form>
@@ -109,7 +87,7 @@ const AuthLoginFormContent: FC<AuthLoginFormProps> = ({
         <Link
           to="/signup"
           className={cn(
-            isProcessing &&
+            useAuthLoginFormContext().isProcessing &&
               "pointer-events-none text-muted-foreground/50 no-underline",
             "underline text-foreground text-nowrap"
           )}
@@ -121,10 +99,51 @@ const AuthLoginFormContent: FC<AuthLoginFormProps> = ({
   );
 };
 
+interface AuthLoginFormProps {
+  /**
+   * Callback function invoked when the login flow progresses to a new step.
+   * This function is called by `AuthLoginForm` to notify its parent (`AuthLogin`)
+   * about changes to the current step, allowing the parent to update its UI accordingly.
+   * @param step The identifier of the new current step (e.g., "organizationURL", "credentials").
+   */
+  onStepChange: (step: string) => void;
+  /**
+   * Callback function invoked when the organization URL is successfully entered and validated.
+   * This function is called by `AuthLoginForm` to notify its parent (`AuthLogin`)
+   * of the validated organization URL, allowing the parent to update its UI or state.
+   * @param tenantId The validated organization URL (tenant identifier).
+   */
+  onOrganizationURLChange: (tenantId: string) => void;
+}
+
+// 9. Main Exported Component (which now also acts as the Provider)
 export function AuthLoginForm(props: AuthLoginFormProps) {
+  const {
+    form,
+    stepperMethods,
+    handleAttemptSubmit,
+    formError,
+    isLoadingCoreFlow,
+  } = useAuthLoginFlow(props.onStepChange, props.onOrganizationURLChange);
+
+  const currentStep = stepperMethods.current;
+
+  const isProcessing = isLoadingCoreFlow;
+
+  const contextValue = {
+    form,
+    currentStep,
+    stepperMethods,
+    isProcessing,
+    handleAttemptSubmit,
+    formError,
+  };
+
   return (
     <Scoped initialStep="organizationURL">
-      <AuthLoginFormContent {...props} />
+      <AuthLoginFormContext.Provider value={contextValue}>
+        <AuthLoginFormContent />
+      </AuthLoginFormContext.Provider>
     </Scoped>
   );
 }

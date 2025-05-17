@@ -31,7 +31,7 @@ const CredentialsSchema = z.object({
 
 type OrgInfoData = z.infer<typeof OrganizationInfoSchema>;
 type CredentialsData = z.infer<typeof CredentialsSchema>;
-export type SignupData = OrgInfoData & CredentialsData;
+type SignupData = OrgInfoData & CredentialsData;
 
 const signupSteps = [
   { id: "organizationInfo", label: "Organization Info", schema: OrganizationInfoSchema },
@@ -40,9 +40,7 @@ const signupSteps = [
 
 const { useStepper } = defineStepper(...signupSteps);
 
-export function useAuthSignupFlow(
-  onStepChange: (stepId: string) => void
-) {
+export function useAuthSignupFlow() {
   const [formError, setFormError] = useState<string | null>(null);
   const [shouldCheckTenant, setShouldCheckTenant] = useState<boolean>(false);
   const [tenantNameToCheckQuery, setTenantNameToCheckQuery] = useState<string>("");
@@ -126,7 +124,6 @@ export function useAuthSignupFlow(
   });
 
   const handleStepChange = useCallback(() => {
-    onStepChange(currentStep.id);
     setFormError(null);
     form.reset(form.getValues(), {
       keepValues: true,
@@ -137,7 +134,7 @@ export function useAuthSignupFlow(
       keepIsValid: false,
       keepSubmitCount: false
     });
-  }, [currentStep.id, onStepChange, form]);
+  }, [form]);
 
   useEffect(() => {
     handleStepChange();

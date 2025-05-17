@@ -37,7 +37,7 @@ export { AuthLoginForm } from './login/AuthLoginForm';
 export { AuthLoginStepCredentials } from './login/AuthLoginStepCredentials';
 export { AuthLoginStepOrganizationURL } from './login/AuthLoginStepOrganizationURL';
 export { useAuthLoginFlow } from './login/useAuthLoginFlow';
-export type { LoginData } from './login/useAuthLoginFlow';
+export { useAuthLoginFormContext } from './login/AuthLoginForm';
 
 // Signup
 export { AuthSignup } from './signup/AuthSignup';
@@ -45,6 +45,7 @@ export { AuthSignupForm } from './signup/AuthSignupForm';
 export { AuthSignupStepCredentials } from './signup/AuthSignupStepCredentials';
 export { AuthSignupStepOrganizationInfo } from './signup/AuthSignupStepOrganizationInfo';
 export { useAuthSignupFlow } from './signup/useAuthSignupFlow';
+export { useAuthSignupFormContext } from './signup/AuthSignupForm';
 
 // Forgot Password
 export { AuthForgotPassword } from './forgotPassword/AuthForgotPassword';
