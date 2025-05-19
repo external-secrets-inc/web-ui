@@ -77,7 +77,7 @@ export function useAuthSignupFlow() {
     onSuccess: (data: LoginResult, variables: LoginAndIdentifyParams) => {
       if (data.isSignedIn) {
         trackSignedIn(variables.tenantSlug);
-        navigate('/');
+        navigate('/verify', { state: { fromSignup: true } });
       } else {
         toast.success('Organization created, but login failed. Please try logging in manually.');
         navigate('/login');
