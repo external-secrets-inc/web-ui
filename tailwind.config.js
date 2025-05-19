@@ -130,6 +130,10 @@ module.exports = {
   					transform: 'translate(20%, -40%) rotate(340deg)'
   				}
   			},
+        'caret-blink': {
+          '0%,70%,100%': { opacity: 1 },
+          '20%,50%': { opacity: 0 },
+        },
 				'fade-in': {
 					from: { opacity: 0 },
 					to: { opacity: 1 },
@@ -147,6 +151,7 @@ module.exports = {
   			'bg-auth-blob-animation-2': 'bg-auth-blob-animation-2 20s infinite cubic-bezier(0.1, 0, 0.9, 1)',
 				'fade-in': 'fade-in 0.4s ease-in-out',
 				'fade-out': 'fade-out 0.4s ease-in-out',
+				'caret-blink': 'caret-blink 1.25s ease-in-out infinite',
   		}
   	}
   },
