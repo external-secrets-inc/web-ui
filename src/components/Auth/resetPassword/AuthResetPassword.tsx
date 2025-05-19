@@ -7,15 +7,22 @@ import {
   useAuthResetPasswordFlow,
 } from "@/components/Auth";
 import { Form } from "@/components/ui/form";
-import Cookies from "js-cookie";
 import { useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useLocation, useSearchParams, Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { LucideArrowLeft } from "lucide-react";
 
 export function AuthResetPassword() {
   const [searchParams] = useSearchParams();
+  const location = useLocation();
+
   const token = searchParams.get("token") || "";
-  const savedTenant = Cookies.get("forgotPasswordHelperOrganizationURL") || "";
-  const savedEmail = Cookies.get("forgotPasswordHelperEmail") || "";
+
+  const stateData = location.state as
+    | { tenant?: string; email?: string }
+    | undefined;
+  const tenantFromState = stateData?.tenant;
+  const emailFromState = stateData?.email;
 
   const {
     form,
@@ -28,17 +35,18 @@ export function AuthResetPassword() {
     tenantInputRef,
     emailInputRef,
   } = useAuthResetPasswordFlow({
-    defaultTenant: savedTenant,
-    defaultEmail: savedEmail,
+    defaultTenant: tenantFromState || "",
+    defaultEmail: emailFromState || "",
     token,
   });
 
   useEffect(
     function setInitialFormFieldFocus() {
-      if (!(savedTenant && savedEmail)) return tenantInputRef.current?.focus();
+      if (!tenantFromState && !emailFromState)
+        return tenantInputRef.current?.focus();
       newPasswordRef.current?.focus();
     },
-    [savedTenant, savedEmail, newPasswordRef, tenantInputRef]
+    [tenantFromState, emailFromState, newPasswordRef, tenantInputRef]
   );
 
   return (
@@ -76,6 +84,24 @@ export function AuthResetPassword() {
             text="Update Password"
             tabIndex={4}
           />
+
+          <Button
+            type="button"
+            variant="secondary"
+            asChild
+            tabIndex={5}
+          >
+            <Link
+              to="/login"
+              state={{
+                organizationURL: form.getValues("tenant"),
+                email: form.getValues("email"),
+              }}
+            >
+              <LucideArrowLeft />
+              Back to login
+            </Link>
+          </Button>
 
           {formError && <p className="text-sm text-destructive">{formError}</p>}
         </form>

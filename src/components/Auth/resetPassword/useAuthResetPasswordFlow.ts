@@ -2,7 +2,6 @@ import { authCommonZodSchemas, createAuthError } from "@/components/Auth";
 import useResetPassword from "@/services/forgotPassword/mutations/useResetPassword";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AxiosError } from "axios";
-import Cookies from 'js-cookie';
 import { useCallback, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -51,8 +50,6 @@ export function useAuthResetPasswordFlow({
   const { mutate: resetPassword, isPending: isLoading } = useResetPassword({
     onSuccess: () => {
       toast.success('Password updated successfully', { description: 'Please log in' });
-      Cookies.remove("forgotPasswordHelperOrganizationURL");
-      Cookies.remove("forgotPasswordHelperEmail");
       navigate('/login');
     },
     onError: (error: AxiosError) => {

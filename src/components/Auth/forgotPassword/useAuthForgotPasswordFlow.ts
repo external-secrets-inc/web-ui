@@ -1,10 +1,8 @@
 import { authCommonZodSchemas, createAuthError } from "@/components/Auth";
-import { ONE_MINUTE_IN_SECONDS, ONE_SECOND_IN_MILLISECONDS } from "@/constants";
 import useForgotPassword from "@/services/forgotPassword/mutations/useForgotPassword";
 import { ApiHttpError } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AxiosError } from "axios";
-import Cookies from 'js-cookie';
 import { useCallback, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -33,11 +31,7 @@ export function useAuthForgotPasswordFlow(defaultTenant: string = "", defaultEma
   });
 
   const { mutate: forgotPassword, isPending: isLoading } = useForgotPassword({
-    onSuccess: (_, variables: ForgotPasswordData) => {
-      const tenMinutesFromNow = new Date(new Date().getTime() + 10 * ONE_MINUTE_IN_SECONDS * ONE_SECOND_IN_MILLISECONDS);
-
-      Cookies.set("forgotPasswordHelperOrganizationURL", variables.tenant, { expires: tenMinutesFromNow });
-      Cookies.set("forgotPasswordHelperEmail", variables.email, { expires: tenMinutesFromNow });
+    onSuccess: () => {
 
       toastIdRef.current = toast.success('Check your email', {
         description: 'If an account matching your details was found, instructions to reset your password have been sent.',
