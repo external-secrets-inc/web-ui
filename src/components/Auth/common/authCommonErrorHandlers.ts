@@ -26,6 +26,7 @@ interface AuthError {
  */
 export const AUTH_ERROR_MESSAGES = {
   INVALID_CREDENTIALS: "Invalid email or password",
+  PASSWORD_RESET_REQUIRED: "You need to reset your password to continue",
   NETWORK_ERROR: "Network error. Please check your connection",
   UNEXPECTED_ERROR: "An unexpected error occurred",
   TENANT_TAKEN: "Organization URL already taken. Choose another one.",

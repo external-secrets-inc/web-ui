@@ -13,6 +13,7 @@ import useSignIn from "react-auth-kit/hooks/useSignIn";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
+import { toast } from "sonner";
 
 const OrganizationURLSchema = z.object({
   organizationURL: authCommonZodSchemas.organizationURL,
@@ -70,8 +71,19 @@ export function useAuthLoginFlow(
   );
 
   const { mutate: loginAndIdentifyUser, isPending: isLoginPending } = useLoginAndIdentifyUser({
-    onError: (error: AxiosError<ApiHttpError>) => {
+    onError: (error: AxiosError<ApiHttpError>, variables: LoginAndIdentifyParams) => {
       const authError = createAuthError(error);
+
+      if (error.response?.status === 403 && authError.message?.toLowerCase() === "password reset required") {
+        toast.info(AUTH_ERROR_MESSAGES.PASSWORD_RESET_REQUIRED);
+        navigate('/reset-password', {
+          state: {
+            tenant: variables.tenantSlug,
+            email: variables.email
+          }
+        });
+        return;
+      }
 
       if (authError.type === 'validation' && authError.field) {
         if (authError.field === 'email') {
