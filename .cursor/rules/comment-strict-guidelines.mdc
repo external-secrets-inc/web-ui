@@ -1,0 +1,272 @@
+---
+description: Instructs the AI to evaluate existing code comments and suggest refactoring (improved naming, abstractions) to make the code self-documenting, potentially removing the comment
+globs:
+alwaysApply: true
+---
+<comment_evaluation_and_refactoring_guidelines>
+
+  <interpretation_of_terms>
+    <summary>Interpretation of Imperative Keywords</summary>
+    <details>
+    Capitalized imperative keywords (MUST, SHOULD, MAY, etc.) used in this rule follow the definitions outlined in `.cursor/rules/writing-llm-rules.mdc`. This AI (Cursor) MUST adhere to these definitions when interpreting this rule.
+    </details>
+  </interpretation_of_terms>
+
+  <objective>
+  The ultimate objective of this rule is to achieve **maximally self-documenting code**. Code clarity through thoughtful naming, structure, and abstraction MUST be prioritized over the use of comments. Comments explaining implementation details ('what' the code does or 'how' it does it) are STRONGLY discouraged and MUST be treated as primary indicators that the code itself requires refactoring for improved clarity. Comments are to be reserved *only* for information that is genuinely impossible to convey clearly and unambiguously through the code itself.
+  </objective>
+
+  <core_principles>
+    <principle name="refactor_aggressively_before_commenting">
+      <summary>Prioritize Refactoring Over Commenting to Achieve Self-Documenting Code</summary>
+      <details>
+      - **Primary Mandate:** Before preserving any existing comment or adding any new comment that explains 'what' code does or 'how' it works, this AI (Cursor) MUST first **aggressively identify and propose refactoring opportunities**.
+      - **Refactoring Goals:** Refactoring efforts (e.g., improving variable/function names, extracting logic into well-named functions/methods, simplifying complex expressions, introducing clearly named intermediate variables) should aim to make the code directly communicate its intent, mechanism, and outcome without relying on comments.
+      - **Treat Comments as Signals:** The presence of a 'what' or 'how' comment is a strong signal that the associated code likely lacks sufficient clarity. Even if the code seems superficially understandable with the comment, this AI MUST actively seek refactorings that would render the comment obsolete. Minor refactoring gains that eliminate a comment are PREFERRED.
+      - **AI's Own Code:** If this AI generates code and then deems it necessary to add a 'what' or 'how' comment to explain its own output, this indicates the generated code itself is a candidate for immediate refactoring by the AI to improve its self-documenting nature.
+      </details>
+      <example title="Refactoring Mindset">
+        If a comment states `// Iterate through users and update their status`, this AI MUST NOT simply preserve the comment if the loop is understandable. Instead, it SHOULD consider:
+        1. Can the loop body be extracted into a function like `updateUserStatus(user)`?
+        2. Is the loop itself part of a larger operation that could be encapsulated in a function like `updateAllUserStatuses(users)`?
+        The goal is for the call site (e.g., `updateAllUserStatuses(activeUsers)`) to be self-explanatory.
+      </example>
+    </principle>
+
+    <principle name="comments_for_the_unutterable_in_code">
+      <summary>Reserve Comments for Information Genuinely Impossible to Convey Via Code</summary>
+      <details>
+      Comments SHOULD only be used to convey:
+        - The **'why'**: The rationale, intent, or non-obvious design choices that led to a particular implementation, especially if there are subtle trade-offs or historical reasons not evident from the code.
+        - **Necessary Warnings**: Critical information about potential pitfalls, side effects, or required precautions that developers must be aware of and that cannot be made obvious through code structure or naming alone.
+        - **TODOs**: Actionable reminders for future work.
+        - **Irreducible Complexity**: Explanations for genuinely complex algorithms or interactions with external systems where, despite best refactoring efforts, clarity cannot be fully achieved through code alone. This is an EXCEPTION and requires justification.
+        - **Formal Documentation**: Standardized documentation formats (e.g., TSDoc/JSDoc) for public APIs, types, and significant internal constructs, focusing on contract and intent.
+      </details>
+    </principle>
+  </core_principles>
+
+  <process_for_evaluating_existing_comments>
+    <summary>A systematic process for analyzing and acting upon comments already present in the codebase.</summary>
+    <step name="identify_comment_category">
+       <summary>Step 1: Categorize the Comment's Primary Purpose</summary>
+       <details>
+       This AI MUST first determine the main reason for the comment:
+        1.  **What/How Explanation**: Explains *what* the code is doing (e.g., `// set x to 10`) or *how* it achieves its result (e.g., `// loop through array using index`).
+        2.  **Why Rationale**: Explains the *intent* or *reasoning* behind a design choice or a piece of code (e.g., `// Using algorithm X for performance reasons despite Y`).
+        3.  **Warning/Caution**: Alerts developers to potential issues, side effects, or necessary precautions (e.g., `// Warning: changing this impacts module Z`).
+        4.  **TODO/Marker**: Indicates pending work (e.g., `// TODO: refactor this`).
+        5.  **Complex Logic Aid**: Attempts to clarify genuinely intricate algorithms or unavoidable external system complexities that are difficult to make self-documenting.
+        6.  **Historical/Obsolete**: Provides context no longer relevant or refers to code that has changed/been removed.
+        7.  **Formal Documentation**: Serves as TSDoc, JSDoc, or similar, for functions, classes, types, etc.
+       </details>
+    </step>
+
+    <step name="assess_code_clarity_and_refactor_potential">
+      <summary>Step 2: Evaluate Code Clarity and Identify Refactoring Opportunities</summary>
+      <details>
+      -   Regardless of the comment's initial category (especially for 'What/How Explanation'), this AI MUST critically evaluate the clarity of the associated code.
+      -   **Strict Glanceability Test**: Could another developer (or this AI) understand the *precise purpose, mechanism, and outcome* of the code block *instantly and unambiguously* **without** reading the comment? If the comment adds *any* clarification to the 'what' or 'how', refactoring to improve code clarity MUST be assumed necessary.
+      -   **Identify Refactorings**: This AI MUST actively look for specific refactoring possibilities:
+          -   Are variable, function, class, and module names optimally descriptive and unambiguous in their context?
+          -   Can a block of code be extracted into a new function/method with a name that clearly describes its purpose?
+          -   Can complex conditional logic or expressions be simplified or assigned to descriptively named intermediate variables?
+          -   Can obscure magic values be replaced with named constants?
+          -   **Broader Context Refactoring**: Can the code be improved by leveraging existing project-specific utility functions, helper methods, or established design patterns? Could duplicated or similar logic from other parts of the codebase be consolidated into a shared abstraction? Does the current structure (potentially across files) contribute to unclear code that could be improved through broader architectural adjustments?
+      </details>
+    </step>
+
+    <step name="determine_and_execute_action">
+      <summary>Step 3: Determine Action Based on Category, Clarity, and Refactoring</summary>
+      <action_scenarios>
+
+        <scenario name="comment_explains_what_or_how">
+          <condition>The comment's primary purpose is 'What/How Explanation'.</condition>
+          <action>
+          1.  **Mandatory First Action: Propose and Apply Refactoring:** This AI MUST identify and propose specific refactorings (as per Step 2) to make the code self-explanatory. The AI SHOULD then proceed to apply these refactorings if confident.
+          2.  **Default Consequent Action: Remove Comment:** After refactoring (or if the code is already deemed self-documenting after strict scrutiny), the comment MUST be removed as it has become redundant or was unnecessary.
+          3.  **Rare Exception (Irreducible Complexity):** Only if the underlying logic involves genuinely complex algorithms or unavoidable external system interactions that *cannot* be made clear through naming and structure, even after *multiple documented refactoring attempts and considerations*, MAY a concise explanatory comment be preserved or rephrased.
+              - If preserved under this exception, it SHOULD be in TSDoc/JSDoc format if applicable, focusing on the irreducible aspect.
+              - This AI MUST provide explicit justification if it proposes to keep such a comment, detailing why refactoring was insufficient.
+          </action>
+          <example title="Aggressive Refactoring to Eliminate 'What' Comment">
+            ```typescript
+            // Before: Comment explains 'what' and 'how'
+            // Loop through all the active products and if their price is greater than MIN_PRICE, add their ID to the list.
+            const MIN_PRICE = 10;
+            let expensiveProductIds = [];
+            for (const product of activeProducts) {
+              if (product.price > MIN_PRICE) { // Check price
+                expensiveProductIds.push(product.id); // Add ID
+              }
+            }
+
+            // AI Action:
+            // 1. Identify Refactoring: Extract logic into a function `getExpensiveProductIds`.
+            //    Rename variables for clarity if needed (e.g., `minimumPrice`).
+            //    Consider if `MIN_PRICE` or something similar is a project-wide constant that should be imported.
+            // 2. Propose/Apply Refactoring:
+            /**
+             * Filters a list of products and returns the IDs of those exceeding a specified price.
+             * @param products The list of products to filter.
+             * @param minimumPrice The price threshold.
+             * @returns An array of product IDs.
+             */
+            function getExpensiveProductIds(products: Product[], minimumPrice: number): string[] {
+              return products
+                .filter(product => product.price > minimumPrice)
+                .map(product => product.id);
+            }
+            // import { MIN_PRICE } from 'config/constants'; // Example of broader context
+            const MIN_PRICE = 10; // Or defined elsewhere, ideally consistently
+            const expensiveProductIds = getExpensiveProductIds(activeProducts, MIN_PRICE);
+            // 3. Remove Original Comment: The function name and TSDoc make it redundant.
+            ```
+          </example>
+        </scenario>
+
+        <scenario name="comment_is_why_rationale_or_warning">
+          <condition>The comment *purely* provides 'Why Rationale' or a necessary 'Warning/Caution' that is not evident from the code itself.</condition>
+          <action>
+            1.  **Attempt Refactor for Subtle 'Why':** Even for 'why' comments, this AI SHOULD first consider if any subtle refactoring (e.g., naming choices that hint at the rationale, or structural changes that make the 'why' more apparent through adherence to project patterns) could incorporate part of the 'why' into the code.
+            2.  **Preserve if Necessary:** If the rationale or warning cannot be made self-evident through code, the comment SHOULD be preserved.
+            3.  **Ensure Quality:** The AI SHOULD ensure the comment is clearly written, concise, and accurately conveys the necessary information.
+          </action>
+          <example title="Preserving a Necessary 'Why' Comment">
+            ```typescript
+            // This specific bitwise operation is a performance optimization
+            // for this critical path, trading some readability for speed.
+            // Verified against benchmarks X and Y.
+            const result = (value >> 2) & 0xFF;
+            // AI Action: Preserve comment. The 'why' (performance optimization rationale)
+            // is crucial and not obvious from the code itself.
+            ```
+          </example>
+        </scenario>
+
+        <scenario name="comment_is_todo_marker">
+          <condition>The comment is a `TODO`, `FIXME`, or similar actionable marker.</condition>
+          <action>
+            **Preserve Comment.** This AI SHOULD ensure the TODO is clear, actionable, and ideally includes context or an issue tracker reference if available.
+          </action>
+        </scenario>
+
+        <scenario name="comment_is_complex_logic_aid">
+          <condition>Comment attempts to clarify genuinely complex logic where refactoring alone is insufficient (see 'Rare Exception' in 'comment_explains_what_or_how').</condition>
+          <action>
+            1.  **Mandatory Step: Exhaust Refactoring First:** This AI MUST first aggressively attempt all reasonable refactoring options, including those considering broader project context.
+            2.  **If Clarity Still Lacking:** A concise comment focusing *only* on the most non-obvious aspects of the irreducible complexity MAY be preserved or added. It SHOULD prefer TSDoc/JSDoc format for this. The AI must be prepared to justify this decision.
+          </action>
+        </scenario>
+
+        <scenario name="comment_is_historical_or_obsolete">
+          <condition>The comment provides historical context no longer relevant to understanding the current code, or describes code that no longer exists or has significantly changed or was added by the AI noting changes request through prompt requests.</condition>
+          <action>
+            **Remove Comment.** Version control (e.g., Git history) is the appropriate place for historical information. Such comments clutter the current codebase.
+          </action>
+        </scenario>
+
+        <scenario name="comment_is_formal_documentation">
+           <condition>The comment is standard documentation (e.g., TSDoc/JSDoc) for a function, class, type, interface, or other significant code construct.</condition>
+           <action>
+           1.  **Preserve and Evaluate Quality:** Formal documentation, especially for exported APIs, classes, types, and complex internal logic, MUST be preserved.
+           2.  **Focus on Contract and Intent:** This AI MUST ensure such documentation focuses on the **external contract and intent** of the documented item. This includes:
+               - Its purpose and role ('why' it exists).
+               - Parameters (name, type, description, optionality, default values).
+               - Return values (type, description).
+               - Thrown exceptions or error conditions.
+               - Non-obvious behaviors, side effects, or usage constraints.
+               - `@deprecated` status if applicable.
+           3.  **Avoid Implementation Details:** Documentation SHOULD AVOID detailing *internal implementation steps* (the specific 'how') if that logic is, or can be made, clear through well-structured and well-named code. The goal is for documentation to remain accurate even if internal implementation is refactored, as long as the external contract is unchanged.
+           4.  **Ensure Comprehensiveness for Contract:** Detail necessary for a thorough understanding of the item's contract and usage MUST NOT be sacrificed for brevity.
+           5.  **Identify and Propose Improvements:** If existing formal documentation is missing crucial contract information, is overly simplistic, or excessively details internal logic that could be self-evident through refactoring (including broader contextual refactoring), this AI SHOULD propose or perform an expansion, refinement, or refactoring of the documentation and/or the associated code.
+           </action>
+           <example title="Refining TSDoc to Focus on Contract">
+            ```typescript
+            // Before: TSDoc overly focused on 'how'
+            /**
+             * Gets user data.
+             * It first makes a fetch call to /api/user/{id}.
+             * Then it parses the JSON.
+             * Then it extracts the name and email.
+             * @param userId The ID of the user.
+             * @returns The user object.
+             */
+            async function getUser(userId: string): Promise<User> { /* ... */ }
+
+            // AI Action: Refine TSDoc
+            /**
+             * Retrieves user data for the specified user ID.
+             *
+             * @param userId The unique identifier for the user.
+             * @returns A Promise that resolves to the User object containing name, email, and other relevant details.
+             * @throws {Error} If the user is not found or if there's a network issue.
+             */
+            async function getUser(userId: string): Promise<User> { /* ... */ }
+            // The implementation details (fetch, parse, extract) are part of the 'how' and
+            // can change; the contract (what it does, params, return, errors) is more stable.
+            ```
+           </example>
+        </scenario>
+      </action_scenarios>
+    </step>
+
+    <step name="propose_and_apply_changes">
+      <summary>Step 4: Formulate and Communicate Proposed Changes</summary>
+      <details>
+      - Based on the determined action, this AI MUST clearly state the proposed changes (refactoring, comment removal/modification/addition).
+      - If refactoring is proposed, specify what will be changed (e.g., "Rename variable `foo` to `bar`," "Extract lines X-Y into new function `baz`", "Refactor to use existing `ProjectUtils.calculatePrice` function").
+      - Provide concise reasoning, explicitly referencing the principles and scenarios from this rule (e.g., "Removing comment as it explains 'what' and the proposed refactoring to `extractPriceCalculation` makes the code self-explanatory, aligning with the `refactor_aggressively_before_commenting` principle and leveraging existing utilities.").
+      - This AI SHOULD proceed to apply the changes unless user confirmation is explicitly required for a major refactoring.
+      </details>
+    </step>
+  </process_for_evaluating_existing_comments>
+
+  <guidelines_for_adding_new_comments_or_documentation>
+    <summary>Rules to follow BEFORE this AI adds any new comment or documentation during code generation or modification.</summary>
+    <principle name="self_documentation_first_always">
+      <summary>Prioritize Self-Documenting Code Relentlessly</summary>
+      <details>
+      - Before generating ANY new comment (excluding essential formal documentation for new definitions as per below), this AI MUST first **exhaust all practical refactoring options** for the code it is generating or modifying to make it inherently self-explanatory.
+      - The AI MUST ask itself:
+          - "Can I improve naming, extract logic, or simplify structure locally so that no 'what' or 'how' comment would be needed?"
+          - "Am I fully leveraging existing project patterns, utilities, helper functions, or established architectural components? Could a broader refactoring (potentially across files or introducing new shared abstractions) enhance overall clarity and obviate the need for this comment?"
+      - The generation of 'what' or 'how' comments by this AI for its own code is a strong indication that the AI's generated code itself needs immediate refactoring for clarity, potentially including these broader considerations.
+      </details>
+    </principle>
+
+    <principle name="document_new_public_apis_and_contracts">
+      <summary>Provide Comprehensive, Contract-Focused Documentation for New Definitions</summary>
+      <details>
+      - This AI **MUST** add comprehensive formal documentation (e.g., TSDoc/JSDoc) for:
+        - Newly created exported functions, classes, types, interfaces.
+        - Newly created React components (props, state if complex, purpose).
+        - Newly created custom hooks (parameters, return values, purpose).
+        - Other significant, non-trivial internal types or functions that form a clear contract or abstraction layer.
+      - This documentation MUST focus on the **contract and intent** (as detailed in `scenario name="comment_is_formal_documentation"` under the evaluation process). It MUST explain the purpose ('why' it exists, its role), parameters, return values, and any crucial usage notes, side effects, or non-obvious behaviors.
+      - Documentation SHOULD AVOID detailing internal implementation steps if that logic can be made clear through the code itself.
+      </details>
+    </principle>
+
+    <principle name="justify_all_other_new_comments_strictly">
+      <summary>Strictly Justify Any New Inline or Explanatory Comments</summary>
+      <details>
+      - Inline comments explaining 'what' or 'how' are **almost never acceptable** and their addition by this AI implies a failure to produce self-documenting code.
+      - If, after exhausting all refactoring options (including broader contextual ones), this AI believes a comment is still necessary for reasons other than formal API documentation, it MUST fall into one of the categories from `<principle name="comments_for_the_unutterable_in_code">` (i.e., 'why' rationale, warning, irreducible complexity).
+      - Such comments MUST be concise and targeted.
+      - The AI SHOULD be prepared to justify why the information could not be conveyed through code refactoring.
+      </details>
+    </principle>
+
+    <principle name="adhere_to_style_conventions">
+      <summary>Follow Established Comment Style Conventions</summary>
+      <details>
+      - Use `//` for single-line and most inline comments.
+      - Use `/** ... */` for multi-line formal documentation blocks (TSDoc/JSDoc).
+      - Ensure all comments and documentation are grammatically correct, clearly written, and add genuine value.
+      </details>
+    </principle>
+  </guidelines_for_adding_new_comments_or_documentation>
+
+</comment_evaluation_and_refactoring_guidelines>
+
