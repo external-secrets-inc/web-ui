@@ -58,6 +58,8 @@ export function useAuthSignupFlow() {
       email: "",
       password: "",
     },
+    mode: "onSubmit",
+    reValidateMode: "onChange",
   });
 
   const {
@@ -134,11 +136,11 @@ export function useAuthSignupFlow() {
       keepIsValid: false,
       keepSubmitCount: false
     });
-  }, [form]);
+  }, [form, setFormError]);
 
   useEffect(() => {
     handleStepChange();
-  }, [handleStepChange]);
+  }, [currentStep.id, handleStepChange]);
 
   useEffect(() => {
     if (!shouldCheckTenant || isCheckingTenant) {

@@ -54,6 +54,8 @@ export function useAuthLoginFlow(
       email: "",
       password: "",
     },
+    mode: "onSubmit",
+    reValidateMode: "onChange",
   });
 
   const {

@@ -30,6 +30,8 @@ export function useAuthForgotPasswordFlow(defaultTenant: string = "", defaultEma
       email: defaultEmail,
       tenant: defaultTenant,
     },
+    mode: "onSubmit",
+    reValidateMode: "onChange",
   });
 
   const { mutate: forgotPassword, isPending: isLoading } = useForgotPassword({
