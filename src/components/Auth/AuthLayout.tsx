@@ -29,10 +29,22 @@ export function AuthLayout() {
           <h1 className="hidden sm:block text-base font-bold text-white lg:text-3xl xl:text-5xl lg:max-w-[310px] xl:max-w-[480px]">
             Your seamless secrets management journey starts here
           </h1>
-          <div
-            className="absolute inset-0 bg-[100%_auto] bg-center animate-bg-auth-hero-scroll motion-reduce:animate-none -z-10 border-transparent border-8 bg-clip-padding rounded-[inherit] opacity-95 dark:opacity-75"
-            style={{ backgroundImage: `url('${BGAuthHero}')` }}
-          />
+          <div className="absolute inset-0 overflow-hidden border-transparent border-8 bg-clip-padding rounded-[inherit] opacity-95 dark:opacity-75 -z-10">
+            <div className="animate-bg-auth-hero-scroll motion-reduce:animate-none">
+              <img
+                src={BGAuthHero}
+                alt=""
+                role="presentation"
+                className="w-full"
+              />
+              <img
+                src={BGAuthHero}
+                alt=""
+                role="presentation"
+                className="w-full"
+              />
+            </div>
+          </div>
         </aside>
 
         <div className="flex flex-col gap-6 items-center justify-between p-8 pb-12 lg:p-14 flex-1">
@@ -46,12 +58,14 @@ export function AuthLayout() {
         <div className="absolute inset-0 translate-z-0">
           <img
             src={BGBlob1}
-            alt="Background Blob 1"
+            alt=""
+            role="presentation"
             className="absolute bottom-0 left-0 animate-bg-auth-blob-animation-1 motion-reduce:animate-none"
           />
           <img
             src={BGBlob2}
-            alt="Background Blob 2"
+            alt=""
+            role="presentation"
             className="absolute top-0 right-0 animate-bg-auth-blob-animation-2 motion-reduce:animate-none"
           />
         </div>
