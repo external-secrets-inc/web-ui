@@ -4,6 +4,12 @@ globs: *tsx,*ts
 alwaysApply: false
 ---
 <typescript_typesafety_guidelines>
+  <interpretation_of_terms>
+    <term_definition_source>
+    Capitalized imperative keywords (MUST, SHOULD, etc.) used in this rule follow the definitions outlined in `.cursor/rules/writing-llm-rules.mdc`.
+    </term_definition_source>
+  </interpretation_of_terms>
+
   <objective>
   Write highly type-safe TypeScript code. Avoid constructs that weaken type safety (`any`, excessive assertions) and leverage TypeScript's features to ensure correctness and prevent runtime type errors.
   </objective>
@@ -12,23 +18,26 @@ alwaysApply: false
     <principle name="avoid_any">
       <summary>Strictly Avoid `any`</summary>
       <details>
-      - The `any` type opts out of type checking for the affected variable or expression. Its use defeats the purpose of TypeScript and should be avoided almost entirely.
+      - The `any` type opts out of type checking for the affected variable or expression. Its use defeats the purpose of TypeScript and MUST be avoided almost entirely.
       - It introduces potential runtime errors that TypeScript is designed to prevent.
       </details>
       <alternatives_to_any>
-        - **`unknown`**: Use `unknown` when a type is genuinely unknown. This forces type checking or type assertion before use, maintaining safety.
-        - **Generics**: Use generic type parameters (`<T>`) for functions or classes that can operate on various types while maintaining type relationships.
-        - **Specific Types**: Define interfaces, types, or import types from libraries. Be as specific as possible.
-        - **Union Types**: Use union types (`string | number`) when a value can be one of several known types.
-        - **Type Guards**: Use `typeof`, `instanceof`, or custom type predicates (`value is MyType`) to narrow down types within conditional blocks.
+        - **`unknown`**: `unknown` SHOULD be used when a type is genuinely unknown. This forces type checking or type assertion before use, maintaining safety.
+        - **Generics**: Generic type parameters (`<T>`) SHOULD be used for functions or classes that can operate on various types while maintaining type relationships.
+        - **Specific Types**: Interfaces, types, or imported types from libraries SHOULD be defined. Be as specific as possible.
+        - **Union Types**: Union types (`string | number`) SHOULD be used when a value can be one of several known types.
+        - **Type Guards**: `typeof`, `instanceof`, or custom type predicates (`value is MyType`) SHOULD be used to narrow down types within conditional blocks.
       </alternatives_to_any>
-      <example title="Using unknown instead of any">
+      <bad_example title="Using any loses type safety">
         ```typescript
         // Bad: Loses type safety
         function processData(data: any) {
           console.log(data.possiblyNonExistentProperty); // Potential runtime error
         }
-
+        ```
+      </bad_example>
+      <good_example title="Using unknown forces type checking">
+        ```typescript
         // Good: Forces type checking
         function processDataSafe(data: unknown) {
           if (typeof data === 'object' && data !== null && 'requiredProperty' in data) {
@@ -41,32 +50,56 @@ alwaysApply: false
           }
         }
         ```
-      </example>
+      </good_example>
     </principle>
 
     <principle name="prefer_specific_types">
       <summary>Use Specific Types over Primitives for Identifiers/States</summary>
       <details>
-      - Avoid using plain `string` or `number` for entity IDs, status codes, or specific named values.
-      - Use `enum`, string literal unions (`'open' | 'closed'`), or branded types to increase type safety and prevent accidental mixing of different kinds of IDs or states.
+      - Plain `string` or `number` MUST NOT be used for entity IDs, status codes, or specific named values where a more specific type is appropriate.
+      - `enum`, string literal unions (`'open' | 'closed'`), or branded types SHOULD be used to increase type safety and prevent accidental mixing of different kinds of IDs or states.
       </details>
-      <example title="Using string literal union for status">
+      <bad_example title="Using plain string for status is less safe">
         ```typescript
         // Less Safe: Any string is assignable
-        type Status = string;
-        const orderStatus: Status = "shipped"; // Typo like "shippd" would be allowed
-
+        type Status = string; // Avoid using plain string for statuses
+        const orderStatus: Status = "shipped"; // Typo like "shippd" would be allowed by 'Status' type
+        ```
+      </bad_example>
+      <good_example title="Using string literal union for status enhances safety">
+        ```typescript
         // More Safe: Only specific strings allowed
         type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
         const currentStatus: OrderStatus = 'shipped'; // Typo like "shippd" causes a compile error
         ```
-      </example>
+      </good_example>
+      <good_example title="Using Branded Types for distinct IDs">
+        ```typescript
+        // Even Better (Example of Branded Type for IDs):
+        type UserId = string & { readonly __brand: 'UserId' };
+        type ProductId = string & { readonly __brand: 'ProductId' };
+
+        function createUserId(id: string): UserId {
+          return id as UserId;
+        }
+
+        function createProductId(id: string): ProductId {
+          return id as ProductId;
+        }
+
+        const userId = createUserId("user-123");
+        const productId = createProductId("prod-456");
+
+        // function processItem(id: UserId) { /* ... */ }
+        // processItem(productId); // Compile error: Type 'ProductId' is not assignable to type 'UserId'.
+        ```
+      </good_example>
     </principle>
 
     <principle name="leverage_utility_types">
       <summary>Utilize Built-in Utility Types</summary>
       <details>
-      - Use utility types like `Partial<T>`, `Readonly<T>`, `Pick<T, K>`, `Omit<T, K>`, `Record<K, T>`, `NonNullable<T>`, etc., to create new types based on existing ones without manual duplication.
+      - Utility types like `Partial<T>`, `Readonly<T>`, `Pick<T, K>`, `Omit<T, K>`, `Record<K, T>`, `NonNullable<T>`, etc., SHOULD be used to create new types based on existing ones without manual duplication.
       - This improves maintainability and reduces errors.
       </details>
       <example title="Using Pick and Readonly">
@@ -93,16 +126,21 @@ alwaysApply: false
     <principle name="minimize_assertions">
       <summary>Minimize Type Assertions (`as` and `!`) </summary>
       <details>
-      - Type assertions (`value as Type`) tell the compiler "trust me, I know the type", bypassing static analysis. Overuse can hide errors.
-      - Use type assertions only when you have more information than the compiler and other methods (like type guards) are not feasible.
-      - The non-null assertion operator (`value!`) asserts that a value is not `null` or `undefined`. Use it sparingly and only when you are absolutely certain the value cannot be nullish at that point. Prefer explicit null checks or optional chaining (`?.`).
+      - Type assertions (`value as Type`) tell the compiler "trust me, I know the type", bypassing static analysis. Overuse can hide errors and MUST be minimized.
+      - Type assertions SHOULD only be used when you have more information than the compiler and other methods (like type guards) are not feasible.
+      - The non-null assertion operator (`value!`) asserts that a value is not `null` or `undefined`. It SHOULD be used sparingly and only when you are absolutely certain the value cannot be nullish at that point. Prefer explicit null checks or optional chaining (`?.`).
       </details>
-      <example title="Avoiding non-null assertion">
+      <bad_example title="Risky use of non-null assertions">
         ```typescript
         declare const user: { name?: string } | null;
 
         // Risky: Throws runtime error if user or user.name is null/undefined
         // const userNameLength = user!.name!.length;
+        ```
+      </bad_example>
+      <good_example title="Safer alternatives to non-null assertions">
+        ```typescript
+        declare const user: { name?: string } | null;
 
         // Safer: Use optional chaining and nullish coalescing
         const userNameLength = user?.name?.length ?? 0;
@@ -113,13 +151,13 @@ alwaysApply: false
             safeUserNameLength = user.name.length;
         }
         ```
-      </example>
+      </good_example>
     </principle>
 
      <principle name="use_type_predicates">
       <summary>Use Type Predicates for Custom Type Guards</summary>
       <details>
-      - When `typeof` or `instanceof` are insufficient for narrowing complex types, create custom type guard functions using the `parameterName is Type` return type annotation.
+      - When `typeof` or `instanceof` are insufficient for narrowing complex types, custom type guard functions using the `parameterName is Type` return type annotation SHOULD be created.
       - This allows TypeScript to correctly narrow the type within conditional blocks based on the function's return value.
       </details>
       <example title="Custom type guard with 'is'">
@@ -146,7 +184,7 @@ alwaysApply: false
     <principle name="type_file_naming">
       <summary>Use Specific Naming Convention for Type-Only Files</summary>
       <details>
-      - When creating files that exclusively contain TypeScript type definitions (interfaces, types, enums) related to a specific component, service, or module, use the naming pattern `[context].interfaces.ts`.
+      - When creating files that exclusively contain TypeScript type definitions (interfaces, types, enums) related to a specific component, service, or module, the naming pattern `[context].interfaces.ts` MUST be used.
       - This convention improves organization and makes it clear where type definitions reside.
       </details>
       <examples>
@@ -161,8 +199,8 @@ alwaysApply: false
       <details>
       - Highly generic or abstract code (e.g., reusable data providers, generic UI components like tables or lists, utility functions operating on diverse data structures) inherently presents greater typing challenges.
       - While aiming for maximum type safety is always the goal, recognize that achieving perfect, fully inferred type safety in these scenarios can be complex.
-      - Invest significant effort in designing robust generic types (`<T>`), interfaces, and using conditional types or type guards to make these abstractions as type-safe and inferable as possible.
-      - Explicit type annotations or carefully considered assertions (`as`) might be necessary more often than in domain-specific code, but should still be justified and minimized. Document complex generic type logic clearly.
+      - Significant effort SHOULD be invested in designing robust generic types (`<T>`), interfaces, and using conditional types or type guards to make these abstractions as type-safe and inferable as possible.
+      - Explicit type annotations or carefully considered assertions (`as`) MAY be necessary more often than in domain-specific code, but SHOULD still be justified and minimized. Complex generic type logic SHOULD be clearly documented.
       </details>
       <example title="Conceptual Example: Generic Data Table">
         ```typescript
