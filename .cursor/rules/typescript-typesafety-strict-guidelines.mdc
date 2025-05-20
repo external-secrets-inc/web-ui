@@ -1,5 +1,5 @@
 ---
-description:
+description: Strict guidelines for writing highly type-safe TypeScript code, focusing on avoiding `any`, leveraging specific types and utility types, minimizing assertions, and proper naming conventions
 globs: *tsx,*ts
 alwaysApply: false
 ---

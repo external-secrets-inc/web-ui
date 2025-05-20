@@ -1,6 +1,6 @@
 ---
-description:
-globs:
+description: Guidelines for creating effective and maintainable .mdc rule files for Cursor, covering structure, clarity, use of imperatives, examples, and overall best practices.
+globs: *.mdc
 alwaysApply: false
 ---
 <rule_writing_guidelines>
