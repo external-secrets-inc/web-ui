@@ -95,39 +95,39 @@ module.exports = {
   			},
   			'bg-auth-blob-animation-1': {
   				'0%': {
-  					transform: 'translate(-30%, 40%) rotate(-20deg)'
+  					transform: 'scale(5) translate(-30%, 40%) rotate(-20deg)'
   				},
   				'25%': {
-  					transform: 'translate(0%, 20%) skew(-15deg, -15deg) rotate(80deg)'
+  					transform: 'scale(5) translate(0%, 20%) skew(-15deg, -15deg) rotate(80deg)'
   				},
   				'50%': {
-  					transform: 'translate(30%, -10%) rotate(180deg)'
+  					transform: 'scale(5) translate(30%, -10%) rotate(180deg)'
   				},
   				'75%': {
-  					transform: 'translate(-30%, 40%) skew(15deg, 15deg) rotate(240deg)'
+  					transform: 'scale(5) translate(-30%, 40%) skew(15deg, 15deg) rotate(240deg)'
   				},
   				'100%': {
-  					transform: 'translate(-30%, 40%) rotate(-20deg)'
+  					transform: 'scale(5) translate(-30%, 40%) rotate(-20deg)'
   				}
   			},
   			'bg-auth-blob-animation-2': {
   				'0%': {
-  					transform: 'translate(20%, -40%) rotate(-20deg)'
+  					transform: 'scale(5) translate(20%, -40%) rotate(-20deg)'
   				},
   				'20%': {
-  					transform: 'translate(0%, 0%) skew(-15deg, -15deg) rotate(80deg)'
+  					transform: 'scale(5) translate(0%, 0%) skew(-15deg, -15deg) rotate(80deg)'
   				},
   				'40%': {
-  					transform: 'translate(-40%, 50%) rotate(180deg)'
+  					transform: 'scale(5) translate(-40%, 50%) rotate(180deg)'
   				},
   				'60%': {
-  					transform: 'translate(-20%, -20%) skew(15deg, 15deg) rotate(80deg)'
+  					transform: 'scale(5) translate(-20%, -20%) skew(15deg, 15deg) rotate(80deg)'
   				},
   				'80%': {
-  					transform: 'translate(10%, -30%) rotate(180deg)'
+  					transform: 'scale(5) translate(10%, -30%) rotate(180deg)'
   				},
   				'100%': {
-  					transform: 'translate(20%, -40%) rotate(340deg)'
+  					transform: 'scale(5) translate(20%, -40%) rotate(340deg)'
   				}
   			},
 				'fade-in': {

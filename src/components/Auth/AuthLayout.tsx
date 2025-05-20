@@ -1,5 +1,7 @@
 import BGAuthHero from "@/assets/bg-auth-hero.jpg";
 import BGNoise from "@/assets/bg-noise.png";
+import BGBlob1 from "@/assets/bg-blob-1.png";
+import BGBlob2 from "@/assets/bg-blob-2.png";
 import logoESIFullWhite from "@/assets/logo-esi-full-white.svg";
 import { WEBSITE_DOMAIN } from "@/constants";
 import { Link, Outlet } from "react-router-dom";
@@ -11,7 +13,7 @@ import { Link, Outlet } from "react-router-dom";
 export function AuthLayout() {
   return (
     <div className="p-2 lg:p-14 xl:p-20 min-h-dvh flex flex-col">
-      <div className="z-10 lg:w-full lg:flex-1 flex flex-col max-w-full lg:max-w-[1600px] m-auto lg:grid lg:grid-cols-[minmax(30%,60%)_minmax(auto,auto)] rounded-[32px] overflow-hidden backdrop-brightness-[2.75] dark:backdrop-brightness-75 dark:backdrop-contrast-200 bg-background/50 dark:bg-background/90">
+      <div className="z-10 lg:w-full lg:flex-1 flex flex-col max-w-full lg:max-w-[1600px] m-auto lg:grid lg:grid-cols-[minmax(30%,60%)_minmax(auto,auto)] rounded-[32px] overflow-hidden bg-background dark:bg-background/90">
         <aside className="relative contain-content p-8 py-6 sm:py-8 lg:p-16 xl:p-20 flex flex-col flex-0 gap-6 items-start justify-between rounded-[inherit]">
           <Link
             to={WEBSITE_DOMAIN}
@@ -41,12 +43,20 @@ export function AuthLayout() {
       </div>
 
       <div className="fixed inset-0 overflow-hidden bg-gradient-to-tl from-violet-400/60 to-violet-950 -z-10">
-        <div className="absolute inset-0 blur-[250px] translate-z-0">
-          <div className="absolute bottom-0 left-0 w-[700px] h-[700px] bg-violet-400 mix-blend-lighten rounded-full translate-x-[-30%] translate-y-[40%] animate-bg-auth-blob-animation-1 motion-reduce:animate-none" />
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-teal-200 rounded-full translate-x-[20%] translate-y-[-40%] animate-bg-auth-blob-animation-2 motion-reduce:animate-none" />
+        <div className="absolute inset-0 translate-z-0">
+          <img
+            src={BGBlob1}
+            alt="Background Blob 1"
+            className="absolute bottom-0 left-0 animate-bg-auth-blob-animation-1 motion-reduce:animate-none"
+          />
+          <img
+            src={BGBlob2}
+            alt="Background Blob 2"
+            className="absolute top-0 right-0 animate-bg-auth-blob-animation-2 motion-reduce:animate-none"
+          />
         </div>
         <div
-          className="absolute inset-0 bg-[length:150px] mix-blend-overlay"
+          className="absolute inset-0 bg-[length:150px]"
           style={{ backgroundImage: `url('${BGNoise}')` }}
         />
       </div>
