@@ -1,13 +1,28 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
+import { IS_PROD } from '@/constants';
 
-export type FeatureFlagName = 'lineage';
+export type FeatureFlagName =
+  | 'lineage'
+  | 'auditMockToggle';
 
 /**
  * List of all available feature flags in the application.
  * Add new flags here to make them available for toggling.
  */
-export const AVAILABLE_FEATURE_FLAGS: FeatureFlagName[] = ['lineage'];
+export const AVAILABLE_FEATURE_FLAGS: FeatureFlagName[] = [
+  'lineage',
+  'auditMockToggle',
+];
+
+/**
+ * Flags that should NEVER be enabled in production.
+ * Great for features only for our team to test with or features we don't want
+ * to ship to production yet.
+ */
+const PRODUCTION_BLOCKED_FLAGS: FeatureFlagName[] = [
+  'auditMockToggle',
+];
 
 /**
  * Parses the VITE_FEATURE_FLAGS environment variable to get flags that are
@@ -22,7 +37,6 @@ const getFeatureFlagsFromEnv = (): Record<string, boolean> => {
   return flagString.split(',').reduce((acc: Record<string, boolean>, pair: string) => {
     const [key, value] = pair.trim().split(':');
     if (key && value) {
-      // Support both true/false and on/off syntax
       acc[key.trim()] = value.trim().toLowerCase() === 'true' || value.trim().toLowerCase() === 'on';
     }
     return acc;
@@ -90,6 +104,12 @@ export interface FeatureFlagContextValue {
    * Returns undefined if the flag is not overridden by environment.
    */
   getEnvOverride: (feature: FeatureFlagName) => boolean | undefined;
+
+  /**
+   * List of feature flags that are relevant and potentially toggleable
+   * in the current environment (respects PRODUCTION_BLOCKED_FLAGS).
+   */
+  toggleableFlags: FeatureFlagName[];
 }
 
 /**
@@ -141,34 +161,42 @@ export const FeatureFlagProvider = ({ children }: { children: React.ReactNode })
     getFeaturesFromParams(location.search)
   ));
 
+  /** Checks if a feature flag is locked by environment variable. */
   const isLockedByEnv = useCallback((feature: FeatureFlagName): boolean => (
     envFlags[feature] !== undefined
   ), []);
 
+  /** Gets the environment override value for a feature flag, if it exists. */
   const getEnvOverride = useCallback((feature: FeatureFlagName): boolean | undefined => (
     envFlags[feature]
   ), []);
 
-  // Sync URL flags with our state
+  // Sync internal state (`urlFeatureFlags`) with URL params, handling potential mismatches.
   useEffect(() => {
     const currentFlags = getFeaturesFromParams(location.search);
 
-    // Only update if flags are different
     if (!areSetsEqual(currentFlags, urlFeatureFlags)) {
+      // If the URL has lost flags that we still have in state, restore them in the URL.
       if (urlFeatureFlags.size > 0 && currentFlags.size === 0) {
-        // Restore flags if they were lost
         const newParams = new URLSearchParams(location.search);
         newParams.set('features', Array.from(urlFeatureFlags).join(','));
         setSearchParams(newParams, { replace: true });
       } else {
-        // Update our state to match URL
         setUrlFeatureFlags(currentFlags);
       }
     }
   }, [location.search, setSearchParams, urlFeatureFlags]);
 
+  const toggleableFlags = IS_PROD
+    ? AVAILABLE_FEATURE_FLAGS.filter(flag => !PRODUCTION_BLOCKED_FLAGS.includes(flag))
+    : AVAILABLE_FEATURE_FLAGS;
+
+  /**
+   * Updates the 'features' URL search parameter based on the provided set of features.
+   * This keeps the URL in sync with the desired state of enabled flags.
+   */
   const updateUrlFeatureFlags = useCallback((features: Set<string>) => {
-    // Don't update if flags haven't changed
+    // Avoid unnecessary URL updates and potential history spam if the set hasn't changed.
     if (areSetsEqual(features, urlFeatureFlags)) return;
 
     const newParams = new URLSearchParams(location.search);
@@ -177,38 +205,58 @@ export const FeatureFlagProvider = ({ children }: { children: React.ReactNode })
     } else {
       newParams.delete('features');
     }
+    // Use { replace: true } to avoid adding excessive entries to the browser history.
     setSearchParams(newParams, { replace: true });
   }, [location.search, setSearchParams, urlFeatureFlags]);
 
+  /**
+   * Determines if a feature flag is active, respecting production blocks,
+   * environment variable overrides, and URL parameters.
+   */
   const hasFeatureFlagEnabled = useCallback((feature: FeatureFlagName): boolean => {
-    // Environment override takes precedence if set
+    // Immediately return false for blocked flags in production, regardless of other settings.
+    if (IS_PROD && PRODUCTION_BLOCKED_FLAGS.includes(feature)) {
+      return false;
+    }
+
+    // Environment variable overrides take highest precedence.
     const envValue = envFlags[feature];
     if (envValue !== undefined) return envValue;
 
-    // Otherwise use URL params
+    // If not overridden by environment, check if the flag is present in the URL parameters.
     return urlFeatureFlags.has(feature);
   }, [urlFeatureFlags]);
 
+  /**
+   * Enables a feature flag by adding it to the internal state and updating the URL,
+   * unless it's locked by an environment variable.
+   */
   const enableFeatureFlag = useCallback((feature: FeatureFlagName) => {
-    // Don't modify if locked by environment
+    // Cannot enable flags locked by environment variables.
     if (isLockedByEnv(feature)) return;
 
     setUrlFeatureFlags(prev => {
-      if (prev.has(feature)) return prev; // No change needed
+      if (prev.has(feature)) return prev;
       const next = new Set(prev).add(feature);
+      // Trigger URL update after state update.
       updateUrlFeatureFlags(next);
       return next;
     });
   }, [isLockedByEnv, updateUrlFeatureFlags]);
 
+  /**
+   * Disables a feature flag by removing it from the internal state and updating the URL,
+   * unless it's locked by an environment variable.
+   */
   const disableFeatureFlag = useCallback((feature: FeatureFlagName) => {
-    // Don't modify if locked by environment
+    // Cannot disable flags locked by environment variables.
     if (isLockedByEnv(feature)) return;
 
     setUrlFeatureFlags(prev => {
-      if (!prev.has(feature)) return prev; // No change needed
+      if (!prev.has(feature)) return prev;
       const next = new Set(prev);
       next.delete(feature);
+      // Trigger URL update after state update.
       updateUrlFeatureFlags(next);
       return next;
     });
@@ -222,6 +270,7 @@ export const FeatureFlagProvider = ({ children }: { children: React.ReactNode })
       availableFlags: AVAILABLE_FEATURE_FLAGS,
       isLockedByEnv,
       getEnvOverride,
+      toggleableFlags,
     }}>
       {children}
     </FeatureFlagContext.Provider>
