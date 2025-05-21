@@ -20,13 +20,12 @@ import { z } from "zod";
 import SettingsSection from './SettingsSection';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LucideCheck, LucideEdit, LucideMoreVertical, LucidePlus, LucideTrash2, LucideX } from "lucide-react";
-import { DataProvider, DataTable } from "../ui/DataProvider";
-import { createColumnHelper } from "@tanstack/react-table";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { DataProvider, DataTable, defineColumns } from "@/components/ui/DataProvider";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { FeatureItemDeleteAction } from "../FeatureCollection/FeatureItemDeleteAction";
 import { AUDIT_QUERY_STALE_TIME } from "../audit/Audit.constants";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
-import { Dialog, DialogTrigger } from "../ui/dialog";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import useListUsersWithRoles from "@/services/users/queries/useListUsersWithRoles";
 import { CreateUserDataPayload, UpdateUserDataPayload, UserForm } from "@/services/users/Users.interface";
 import { Badge } from "@/components/ui/badge"
@@ -101,7 +100,7 @@ const OrganizationSettings: React.FC = () => {
     }
   })
 
-  const { mutate: createUserData  } = useCreateUserData({
+  const { mutate: createUserData } = useCreateUserData({
     onSuccess: () => {
       usersRefetch()
       toast.success('User created successfully');
@@ -111,7 +110,7 @@ const OrganizationSettings: React.FC = () => {
     }
   })
 
-  const { mutate: deleteUserData  } = useDeleteUserData({
+  const { mutate: deleteUserData } = useDeleteUserData({
 
     onSuccess: () => {
       usersRefetch()
@@ -157,9 +156,7 @@ const OrganizationSettings: React.FC = () => {
     toast.error('Failed to load organization data');
   }
 
-  const columnHelper = createColumnHelper<UsersManagementTableData>();
-
-  const usersManagementColumns = useMemo(() => [
+  const usersManagementColumns = useMemo(() => defineColumns<UsersManagementTableData>(columnHelper => [
     columnHelper.accessor('name', {
       header: 'Name',
       cell: info => {
@@ -202,15 +199,15 @@ const OrganizationSettings: React.FC = () => {
       }
     }),
     columnHelper.accessor('isActive', {
-      header: 'Status',
+      header: 'Is Active',
       cell: info => {
         const isActive = info.getValue() as boolean;
         return <div className='flex justify-center'>
           {isActive ? (
             <LucideCheck className="text-success" />
-            ) : (
-              <LucideX className="items-center text-destructive"/>
-            )}
+          ) : (
+            <LucideX className="items-center text-destructive" />
+          )}
         </div>
       }
     }),
@@ -222,62 +219,43 @@ const OrganizationSettings: React.FC = () => {
         </div>
       )
     })
-  ], [columnHelper]);
+  ]), []);
 
   const usersManagementTableMeta: UsersManagementTableMeta = {
     renderRowActions: (row) => (
-      <div className="flex items-center gap-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(event) => event.stopPropagation()}
-            >
-              <LucideMoreVertical />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            onClick={(event) => event.stopPropagation()}
-            onCloseAutoFocus={(event) => event.preventDefault()}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
           >
-            <DropdownMenuItem
-              onSelect={(e) => {
-                e.preventDefault();
-                setSelectedUserId(row.id);
-                setUserForm({ name: row.name, email: row.email, roles: row.roles });
-                setIsAddUserDialogOpen(true);
-              }}
-            >
-              <LucideEdit className="mr-2" />
-              Edit User
+            <LucideMoreVertical />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem onClick={() => handleEditUser(row)}>
+            <LucideEdit className="mr-2" />
+            Edit User
+          </DropdownMenuItem>
+          <FeatureItemDeleteAction
+            featureType={"User"}
+            featureID={row.id}
+            featureName={row.name}
+            onDelete={() => { performDelete(row.id) }}
+          >
+            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+              <LucideTrash2 className="mr-2" />
+              Delete User
             </DropdownMenuItem>
-            <FeatureItemDeleteAction
-              featureType={"User"}
-              featureID={row.id}
-              featureName={row.name}
-              onDelete={() => { performDelete(row.id) }}
-            >
-              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                <LucideTrash2 className="mr-2" />
-                Delete User
-              </DropdownMenuItem>
-            </FeatureItemDeleteAction>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    )
+          </FeatureItemDeleteAction>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    ),
   };
 
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
-  const defaultUserFormValues = {
-    name: "",
-    email: "",
-    password: "",
-    roles: [],
-  };
-  const [userForm, setUserForm] = useState<UserForm>(defaultUserFormValues);
-  const [selectedUserId, setSelectedUserId] = useState<string>("");
+  const [userForm, setUserForm] = useState<UserForm>({ name: '', email: '', roles: [] });
 
   const {
     data: usersData,
@@ -317,9 +295,9 @@ const OrganizationSettings: React.FC = () => {
   };
 
   const performDelete = async (userID: string) => {
-    if (userID) {
-      deleteUserData(userID);
-    }
+    if (!accountData?.tenant_id) return;
+    await deleteUserData(userID);
+    await usersRefetch();
   };
 
   useEffect(() => {
@@ -329,8 +307,8 @@ const OrganizationSettings: React.FC = () => {
 
   const handleAddUserDialogOpenChange = (isOpen: boolean) => {
     setIsAddUserDialogOpen(isOpen);
-    setUserForm(defaultUserFormValues);
-    setSelectedUserId("");
+    setUserForm({ name: '', email: '', roles: [] });
+    setSelectedUserId(null);
   };
 
   const { mutateAsync: addRole } = useAddRoleForUserByID(false, {
@@ -416,6 +394,12 @@ const OrganizationSettings: React.FC = () => {
   async function handleDeleteAccount() {
     deleteAccount();
   }
+
+  const handleEditUser = (row: UsersManagementTableData) => {
+    setSelectedUserId(row.id);
+    setUserForm({ name: row.name, email: row.email, roles: row.roles });
+    setIsAddUserDialogOpen(true);
+  };
 
   const subsections = [
     {
@@ -514,7 +498,7 @@ const OrganizationSettings: React.FC = () => {
               </Button>
             </DialogTrigger>
             <UserDialogForm
-              selectedUserId={selectedUserId}
+              selectedUserId={selectedUserId || ""}
               userForm={userForm}
               onSubmit={handleAddUserSubmit}
               onCancel={() => { handleAddUserDialogOpenChange(false) }}

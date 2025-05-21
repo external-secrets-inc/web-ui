@@ -1,19 +1,18 @@
 import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { LucideEdit, LucideMoreVertical, LucidePlus, LucideTrash2 } from "lucide-react";
-import { Button } from "../ui/button";
-import { DataProvider, DataTable } from "../ui/DataProvider";
+import { Button } from "@/components/ui/button";
+import { DataProvider, DataTable, defineColumns } from "@/components/ui/DataProvider";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import ProviderDialogForm from "./ProviderDialogForm.tsx";
 import { AddProviderFormValues, CreateProviderPayload, ProviderTableData } from "./Audit.interfaces";
-import { createColumnHelper } from "@tanstack/react-table";
 import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
 import { toast } from "sonner";
 import useCreateAuditProvider from "@/services/audit/mutations/useCreateAuditProvider";
 import useDeleteAuditProvider from "@/services/audit/mutations/useDeleteAuditProvider";
 import useGetAuditProviders from "@/services/audit/queries/useGetAuditProviders";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction" // TODO[cfviotti]: We should not import components from non generic stuff! This should be a generic component, or re-implemented here.
 import useEditProvider, { EditProviderVariables } from "@/services/audit/mutations/useEditProvider";
 import useGetProvidersTypes from "@/services/audit/queries/useGetProvidersType";
@@ -24,9 +23,7 @@ interface ProviderTableMeta {
 }
 
 function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, listenerID: string }) {
-  const columnHelper = createColumnHelper<ProviderTableData>()
-
-  const columns = useMemo(() => [
+  const columns = useMemo(() => defineColumns<ProviderTableData>(columnHelper => [
     columnHelper.accessor('name', {
       header: 'Name',
       cell: info => <strong>{info.getValue()}</strong>
@@ -43,7 +40,7 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
         </div>
       )
     })
-  ], [columnHelper])
+  ]), []);
 
   const { data: providersTypeData, isLoading: isLoadingProvidersTypes, isError: isErrorProvidersTypes } = useGetProvidersTypes(true, {
     staleTime: AUDIT_QUERY_STALE_TIME,

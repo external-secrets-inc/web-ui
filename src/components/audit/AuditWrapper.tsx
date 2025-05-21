@@ -1,4 +1,4 @@
-import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LucideGem, LucideAlertCircle, LucideRefreshCw } from 'lucide-react';
 import Audit from './Audit';
 import { AuditMockProvider } from '@/services/audit/context/AuditMockContext';
