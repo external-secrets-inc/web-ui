@@ -39,7 +39,7 @@ export function AuthCommonFieldPassword<T extends FieldValues>({
       name={name}
       render={({ field }) => (
         <FormItem>
-          <div className="flex gap-2 justify-between items-center">
+          <div className="flex gap-2 justify-between items-end">
             <FormLabel>{label}</FormLabel>
             {withForgotPassword && (
               <Link
@@ -48,7 +48,7 @@ export function AuthCommonFieldPassword<T extends FieldValues>({
                   organizationURL: getValues("organizationURL"),
                   email: getValues("email"),
                 }}
-                className="text-sm underline leading-none"
+                className="text-sm underline leading-none text-end"
                 tabIndex={5}
               >
                 Forgot your password?

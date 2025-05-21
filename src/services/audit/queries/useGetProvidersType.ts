@@ -24,22 +24,22 @@ const getProvidersTypes = async (
         "topic": { "type": "string", "required": true },
         "subscription": { "type": "string", "required": true }
       },
-      "VAULT": {
+      "Vault": {
         "vaultAddress": { "type": "string", "required": true },
         "vaultBasePath": { "type": "string", "required": false, "default": "secret" },
         "vaultVersion": { "type": "string", "required": false, "default": "v2" },
         "socketHost": { "type": "string", "required": false, "default": "0.0.0.0" },
         "socketPort": { "type": "number", "required": false, "default": 8000}
       },
-      "AWS_SECRETS_MANAGER": {
+      "AWS Secrets Manager": {
         "region": {"type": "string", "required": true},
         "queue-url": {"type": "string", "required": true}
       },
-      "AWS_PARAMETER_STORE": {
+      "AWS Parameter Store": {
         "region": {"type": "string", "required": true},
         "queue-url": {"type": "string", "required": true}
       },
-      "AZURE_KEYVAULT": {
+      "Azure-KeyVault": {
         "vaultURL": {"type": "string", "required": true},
         "eventHubNamespaceHost": {"type": "string", "required": true},
         "eventHubName": {"type": "string", "required": true},

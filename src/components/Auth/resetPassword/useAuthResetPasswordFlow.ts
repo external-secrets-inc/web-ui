@@ -46,6 +46,8 @@ export function useAuthResetPasswordFlow({
       token: token,
       password: "",
     },
+    mode: "onSubmit",
+    reValidateMode: "onChange",
   });
 
   const { mutate: resetPassword, isPending: isLoading } = useResetPassword({

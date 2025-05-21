@@ -23,7 +23,7 @@ export function AuthLogin() {
 
   const description =
     stepId === "credentials" && orgUrl ? (
-      <span className="text-pretty text-sm text-muted-foreground">
+      <span className="text-pretty text-sm text-muted-foreground [overflow-wrap:anywhere]">
         {APP_DOMAIN_STRIPPED}/
         <strong className="text-foreground">{orgUrl}</strong>
       </span>
