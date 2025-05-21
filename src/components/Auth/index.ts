@@ -16,7 +16,7 @@ export {
 } from './common/authCommonZodSchemas';
 
 export {
-  AUTH_ERROR_MESSAGES,
+  AUTH_USER_MESSAGES,
   createAuthError,
 } from './common/authCommonErrorHandlers';
 

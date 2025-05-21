@@ -1,5 +1,5 @@
 import { trackSignedIn, trackSignupStepCompleted, trackSignupStepMovedBack } from "@/analytics";
-import { AUTH_ERROR_MESSAGES, authCommonZodSchemas, createAuthError } from "@/components/Auth";
+import { AUTH_USER_MESSAGES, authCommonZodSchemas, createAuthError } from "@/components/Auth";
 import { LoginAndIdentifyParams, SignupPayload } from "@/services/auth/Auth.interfaces";
 import type { LoginResult } from "@/services/auth/mutations/useLoginAndIdentifyUser";
 import useLoginAndIdentifyUser from "@/services/auth/mutations/useLoginAndIdentifyUser";
@@ -58,6 +58,8 @@ export function useAuthSignupFlow() {
       email: "",
       password: "",
     },
+    mode: "onSubmit",
+    reValidateMode: "onChange",
   });
 
   const {
@@ -134,11 +136,11 @@ export function useAuthSignupFlow() {
       keepIsValid: false,
       keepSubmitCount: false
     });
-  }, [form]);
+  }, [form, setFormError]);
 
   useEffect(() => {
     handleStepChange();
-  }, [handleStepChange]);
+  }, [currentStep.id, handleStepChange]);
 
   useEffect(() => {
     if (!shouldCheckTenant || isCheckingTenant) {
@@ -149,7 +151,7 @@ export function useAuthSignupFlow() {
       if (isTenantRegistered(tenantCheckResult)) {
         form.setError("organizationURL", {
           type: "manual",
-          message: AUTH_ERROR_MESSAGES.TENANT_TAKEN
+          message: AUTH_USER_MESSAGES.TENANT_TAKEN
         });
         setTimeout(() => { form.setFocus("organizationURL"); }, 0);
       } else if (isTenantAvailable(tenantCheckResult)) {
@@ -183,7 +185,7 @@ export function useAuthSignupFlow() {
       const formData = { ...form.getValues(), ...data };
 
       if (!formData.email || !formData.password || !formData.name || !formData.organizationName || !formData.organizationURL) {
-        setFormError(AUTH_ERROR_MESSAGES.MISSING_REQUIRED_FIELDS);
+        setFormError(AUTH_USER_MESSAGES.MISSING_REQUIRED_FIELDS);
         return;
       }
 

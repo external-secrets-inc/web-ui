@@ -1,0 +1,204 @@
+---
+description: Guidelines for creating effective and maintainable .mdc rule files for Cursor, covering structure, clarity, use of imperatives, examples, and overall best practices.
+globs: *.mdc
+alwaysApply: false
+---
+<rule_writing_guidelines>
+  <interpretation_of_terms>
+    <summary>Interpretation of Imperative Keywords Used Herein</summary>
+    <details>
+    The capitalized imperative keywords (MUST, SHOULD, MAY, etc.) used throughout this `writing-llm-rules.mdc` document adhere to the definitions provided within its own `<principle name="standardized_imperatives_rfc2119">`. This ensures self-consistency and serves as a direct example of the recommended practice for referencing imperative definitions.
+    </details>
+  </interpretation_of_terms>
+
+  <objective>
+  Create Cursor rules (.mdc files) that are maximally effective. Rules should be clearly structured using MDC format and descriptive XML tags, contain specific and actionable instructions, include illustrative examples, and clearly state their purpose to ensure LLMs can understand and follow them correctly.
+  </objective>
+
+  <principles>
+    <principle name="mdc_format">
+      <summary>Use Correct MDC Format</summary>
+      <details>
+      - Start EVERY rule file with a `---` block for metadata.
+      - Include a clear `description:` explaining the rule's purpose.
+      - Use `#` comments within the header for human-readable explanations.
+      - Set `alwaysApply: true` for general style or behavioral rules that should always be active. Use file/language filters or `alwaysApply: false` (requiring explicit @mention) for more specific rules.
+      </details>
+    </principle>
+
+    <principle name="xml_tags">
+      <summary>Structure with XML Tags (Anthropic Best Practice)</summary>
+      <details>
+      - Wrap the main content of the rule body in a descriptive top-level XML tag (e.g., `<commenting_guidelines>`, `<rule_writing_guidelines>`).
+      - Use specific XML tags to structure different parts of the rule, such as:
+        - `<objective>`: State the overall goal of the rule.
+        - `<instructions>`: Provide general directions.
+        - `<do>` / `<dont>`: List specific positive/negative constraints.
+        - `<guideline>` / `<principle>`: Define specific standards or concepts.
+        - `<example>` / `<good_example>` / `<bad_example>`: Provide concrete illustrations.
+        - `<context>`: Supply necessary background information.
+      - Use tag names that are descriptive and relevant to the content they enclose.
+      - Be consistent with tag usage within a rule.
+      - Nest tags appropriately for hierarchical information (`<outer><inner>...</inner></outer>`).
+      - Reference the content within tags when explaining (e.g., "Follow the steps in `<instructions>`").
+      </details>
+      <reference>See: https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/use-xml-tags</reference>
+    </principle>
+
+    <principle name="clarity_and_specificity">
+      <summary>Be Clear, Direct, and Specific</summary>
+      <details>
+      - Avoid ambiguity. Instructions should be explicit and leave little room for interpretation.
+      - Define terms or concepts if they might be unclear.
+      - Use strong, direct language (e.g., "ALWAYS", "NEVER", "ENSURE"). Specific imperative keywords like MUST, SHOULD are defined in a dedicated principle.
+      - Break down complex rules into smaller, manageable points or sub-tags.
+      </details>
+    </principle>
+
+    <principle name="standardized_imperatives_rfc2119">
+      <summary>Use Standardized Imperatives (RFC 2119) for Precision</summary>
+      <details>
+      - To convey precise levels of requirement, utilize the following keywords, capitalized as shown. These definitions apply when these keywords are used in ANY `.mdc` rule file within this workspace.
+        - **MUST / REQUIRED / SHALL**: An absolute requirement. Adherence is mandatory.
+        - **MUST NOT / SHALL NOT**: An absolute prohibition. Non-adherence is mandatory.
+        - **SHOULD / RECOMMENDED**: A strong recommendation. Deviations may exist if carefully justified, but the recommendation should generally be followed.
+        - **SHOULD NOT / NOT RECOMMENDED**: A strong discouragement. The practice is likely to have negative consequences and should generally be avoided unless there are compelling reasons.
+        - **MAY / OPTIONAL**: Truly optional. The action or item can be included or omitted without penalty and at the implementer's discretion.
+      - **Complements Other Strong Language:** The use of these RFC 2119 keywords is a tool for precision and complements, but does not replace, other forms of clear, strong, and direct language (e.g., "ALWAYS", "NEVER", "ENSURE IT IS CRITICAL THAT...").
+      - **Inclusion in Other Rules:** When creating or modifying other `.mdc` rule files that utilize these imperative keywords, a brief statement or reference SHOULD be included within them (e.g., in their preamble or a dedicated 'Interpretation of Terms' section). This statement should indicate that capitalized imperative keywords follow the definitions outlined in this (`writing-llm-rules.mdc`) document to ensure consistent interpretation across the rule set. This AI (Cursor) MUST assist in adding such a reference when helping to write or update other rules.
+      </details>
+      <reference>Based on RFC 2119: https://www.ietf.org/rfc/rfc2119.txt</reference>
+    </principle>
+
+    <principle name="actionability">
+      <summary>Ensure Rules are Actionable</summary>
+      <details>
+      - Rules SHOULD guide concrete actions or enforce specific coding patterns/styles.
+      - Focus on *how* the AI should behave or *what* output it should produce/avoid.
+      - Think in terms of programmable outcomes (Huntley's concept).
+      </details>
+      <reference>Inspired by: https://ghuntley.com/stdlib/</reference>
+    </principle>
+
+    <principle name="conciseness_and_focus">
+      <summary>Keep Rules Concise and Focused</summary>
+      <details>
+      - **Conciseness:** Rules MUST be kept as concise as possible. Aim for clarity and directness. While there's no hard limit, a good target is generally under 500 lines, as suggested by Cursor documentation.
+      - **Focus:** Each rule SHOULD focus on a single, well-defined aspect of behavior, style, or workflow. Avoid trying to address too many unrelated points in one rule.
+      - **Rationale:** Concise and focused rules are easier for the AI to understand, less likely to contain conflicting instructions, and easier to maintain and debug.
+      </details>
+      <reference>See: Cursor Documentation Best Practices (https://docs.cursor.com/context/rules)</reference>
+    </principle>
+
+    <principle name="examples">
+      <summary>Provide Illustrative Examples and Referenced Files</summary>
+      <details>
+      - Use examples extensively to demonstrate correct and incorrect application of the rule. This MUST include both `<good_example>` and `<bad_example>` where applicable.
+      - Place examples within clear `<example>`, `<good_example>`, or `<bad_example>` tags with descriptive `title` attributes.
+      - Make examples concise and directly relevant to the point they illustrate.
+      - **Referenced Files:** When a rule pertains to using a template, boilerplate, a specific file structure, or even references the logic/definitions within another rule, referencing files directly using the `@filename.ext` syntax (e.g., `@service-template.ts`, `@component-layout.tsx`, `@another-rule.mdc`) is highly RECOMMENDED. These referenced files are included as additional context when the rule is triggered, providing rich, concrete examples or necessary cross-references.
+      </details>
+      <reference>See: Cursor Documentation on Rule Structure and Examples (https://docs.cursor.com/context/rules)</reference>
+    </principle>
+
+    <principle name="rule_scoping_and_specificity">
+      <summary>Define Rule Scope and Specificity Carefully</summary>
+      <details>
+      - **Purposeful Scoping & Composability:** Each rule SHOULD address a well-defined concern. Complex topics or large concepts SHOULD be split into multiple, smaller, composable rules rather than one monolithic rule. This approach enhances clarity, maintainability, and focus, directly covering the need for appropriate granularity.
+      - **MDC Header Fields (Strict Adherence):** The MDC header (`--- ... ---`) for rule files has specific supported fields. When creating or modifying rules, this AI (Cursor) MUST strictly adhere to using ONLY the documented supported fields. As per current documentation (refer to link below), these primarily include:
+          - `description`: A brief explanation of the rule's purpose. This is especially important for `Agent Requested` rules.
+          - `globs`: File path patterns (e.g., `"**/*.ts"`, `"src/components/**"`) to trigger `Auto Attached` rules when matching files are referenced.
+          - `alwaysApply`: A boolean (`true` or `false`) to determine if the rule should always be included (`Always` type) or not (influencing `Manual`, `Agent Requested`, or `Auto Attached` types depending on other fields).
+          - _Note: Rule types like `Always`, `Auto Attached`, `Agent Requested`, and `Manual` are determined by combinations of these fields or their absence. Do not invent other header fields._
+      - **MDC Scoping Tools:** Utilize `globs` in the MDC header to restrict a rule's applicability to specific file types or paths. Use `alwaysApply: false` if a rule is highly specialized and should only be invoked via explicit `@mention` or if it's an `Agent Requested` or `Auto Attached` rule.
+      - **Review for Overlaps:** When creating a new rule or significantly modifying an existing one, this AI (Cursor) SHOULD, if appropriate and context suggests potential overlap, review the filenames and relevant content of other rules within the `.cursor/rules` directory. This helps to identify and avoid creating redundant or conflicting rules. The goal is a cohesive and non-contradictory rule set.
+      - **Distinctiveness:** When creating multiple rules, strive to make their primary objectives distinct. If scopes overlap (e.g., due to broad `globs` or general topics), ensure the guidance within each rule is complementary rather than contradictory. Minor overlaps are acceptable if the core focus of each rule is clear.
+      - **Context in Rules:** If a rule applies to very specific contexts (e.g., "only when refactoring React hooks"), this context MUST be clearly stated within the rule's objective or relevant principles.
+      </details>
+      <reference>For supported MDC header fields and rule types, always refer to the official Cursor documentation: https://docs.cursor.com/context/rules</reference>
+    </principle>
+
+    <principle name="stdlib_mindset_and_lifecycle">
+      <summary>Adopt a Standard Library Mindset and Embrace Iterative Refinement</summary>
+      <details>
+      - **Standard Components:** Treat rules as reusable components in a "standard library" for interacting with the AI. Aim to create rules that solve classes of problems or enforce consistent standards.
+      - **Living Documents:** Rules are living documents. Expect that the initial version of a rule may not be perfect. Iterative refinement is key.
+      - **Observation and Testing:** After creating or modifying a rule, observe the AI's behavior in response to it. If the AI does not adhere to the rule as intended, this is a signal that the rule likely needs refinement.
+      - **User-Initiated Refinement:** When a rule isn't working as expected, you (the user) SHOULD ask this AI (Cursor) to help review and improve it. For example: "Cursor, `some-rule.mdc` isn't being followed correctly. Can you review it against the guidelines in `writing-llm-rules.mdc` and suggest improvements to its clarity, specificity, or examples?"
+      - **AI Assistance in Refinement:** When asked to review or help refine another rule, this AI (Cursor) MUST use the principles outlined in this `writing-llm-rules.mdc` document as its guide for providing suggestions.
+      </details>
+      <reference>Inspired by: https://ghuntley.com/stdlib/</reference>
+    </principle>
+  </principles>
+
+  <common_pitfalls_and_antipatterns title="Common Pitfalls in Rule Writing">
+    <summary>Things to avoid for effective rule creation.</summary>
+    <pitfall name="vagueness">
+      <summary>Vague or Ambiguous Language</summary>
+      <description>Rules use unclear terms, lack specific actions, or leave too much room for interpretation.</description>
+      <bad_example title="Vague Rule">"Try to make comments nice."</bad_example>
+      <good_example title="Specific Rule (Conceptual)">"Comments explaining 'why' MUST be preserved. Comments explaining 'what' for simple code SHOULD be removed."</good_example>
+    </pitfall>
+    <pitfall name="problem_without_solution">
+      <summary>Stating a Problem, Not a Behavioral Guide</summary>
+      <description>Rule describes an undesirable situation but doesn't instruct the AI on how to act or what to do differently.</description>
+      <bad_example title="Problem, No Guide">"Sometimes the AI uses `any` too much in TypeScript."</bad_example>
+      <good_example title="Behavioral Guide (Conceptual)">"MUST NOT use the `any` type. If a type is unknown, `unknown` SHOULD be used. Provide justification if `any` is absolutely unavoidable."</good_example>
+    </pitfall>
+    <pitfall name="missing_examples">
+      <summary>Lack of Illustrative Examples</summary>
+      <description>Rule makes a statement but provides no concrete examples of good or bad application, making it harder for the AI to generalize.</description>
+      <bad_example title="No Examples">"Write JSDoc for functions." (Lacks detail on what a good JSDoc looks like in this context)</bad_example>
+      <good_example title="With Examples (Conceptual)">"Functions exported from modules MUST have JSDoc. Example: `/** ... */ export function MyFunc()...`"</good_example>
+    </pitfall>
+    <pitfall name="overly_broad_or_conflicting">
+      <summary>Too Many Concerns or Conflicting Guidance in One Rule</summary>
+      <description>A single rule attempts to govern too many disparate aspects of coding or behavior, potentially leading to internal conflicts or making the rule too complex to follow reliably.</description>
+      <bad_example title="Overly Broad Rule">"All code should be good, have comments, be fast, and use new features." (Too many distinct, high-level goals for one actionable rule)</bad_example>
+      <good_example title="Focused Rule (Conceptual)">"New functions SHOULD use arrow syntax unless a `this` context from a traditional function declaration is required." (Focused on a specific stylistic choice)</good_example>
+    </pitfall>
+  </common_pitfalls_and_antipatterns>
+
+  <example_rule_structure title="Example: Structure of a Good Rule (incorporating Imperative Reference)">
+    ```mdc
+    ---
+    # Header comment explaining purpose
+    description: Clear description of the rule's goal.
+    alwaysApply: true # Or false, or file filters
+    # filePattern: "**/*.js" # Example file pattern
+    ---
+
+    <my_custom_rule_guidelines>
+
+      <interpretation_of_terms>
+        <!-- This section is RECOMMENDED if using RFC 2119 Keywords -->
+        <term_definition_source>
+        Capitalized imperative keywords (MUST, SHOULD, etc.) used in this rule follow the definitions outlined in `.cursor/rules/writing-llm-rules.mdc`.
+        </term_definition_source>
+      </interpretation_of_terms>
+
+      <objective>
+      State the primary goal of this rule clearly. For instance, this rule MUST ensure all new JavaScript functions use arrow syntax where appropriate.
+      </objective>
+
+      <principle name="arrow_function_preference">
+        <summary>Prefer Arrow Functions</summary>
+        <details>
+        - New JavaScript functions SHOULD be written using arrow syntax (`const myFunc = () => {}`).
+        - Traditional function declarations (`function myFunc() {}`) MAY be used if access to the `arguments` object or a dynamic `this` context (e.g., in object methods that will be called with different `this` values) is specifically REQUIRED.
+        </details>
+        <good_example title="Preferred arrow function">
+          const add = (a, b) => a + b;
+        </good_example>
+        <bad_example title="Unnecessary traditional function">
+          function subtract(a, b) { return a - b; } // SHOULD be arrow function if no specific `this` needs.
+        </bad_example>
+      </principle>
+
+      <!-- Other relevant sections using descriptive tags -->
+
+    </my_custom_rule_guidelines>
+    ```
+  </example_rule_structure>
+
+</rule_writing_guidelines>

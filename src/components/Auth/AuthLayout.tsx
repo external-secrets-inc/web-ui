@@ -34,7 +34,7 @@ export function AuthLayout() {
         </aside>
 
         <div className="flex flex-col gap-6 items-center justify-between p-8 pb-12 lg:p-14 flex-1">
-          <main className="m-auto grid max-w-full w-[352px] gap-8">
+          <main className="m-auto grid max-w-[352px] w-full min-w-0 gap-8">
             <Outlet />
           </main>
         </div>
