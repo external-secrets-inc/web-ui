@@ -1,8 +1,7 @@
 import { useState, useMemo } from 'react';
-import { DataProvider, DataSearch, DataSort } from "@/components/ui/DataProvider";
+import { DataProvider, DataSearch, DataSort, defineColumns } from "@/components/ui/DataProvider";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { LucideLayoutGrid, LucideTableProperties } from "lucide-react";
-import { createColumnHelper } from "@tanstack/react-table";
 import { TransformedFeatureData, FeatureData, FeatureCollectionProps } from "./FeatureCollection.interfaces";
 import { STATUS_MAP } from "./FeatureCollection.constants";
 import { FeatureItemDialogProvider } from "./FeatureItemDialogProvider";
@@ -24,9 +23,8 @@ function FeatureCollection({
   performCreate,
 }: FeatureCollectionProps) {
   const [view, setView] = useState<"grid" | "table">("grid");
-  const columnHelper = useMemo(() => createColumnHelper<TransformedFeatureData>(), []);
 
-  const columns = useMemo(() => [
+  const columns = useMemo(() => defineColumns<TransformedFeatureData>(columnHelper => [
     columnHelper.accessor('index', {
       header: 'Index',
       enableSorting: true,
@@ -58,7 +56,7 @@ function FeatureCollection({
         </div>
       )
     })
-  ], [columnHelper]);
+  ]), []);
 
   const transformedFeatureData = useMemo(() => data.map((item: FeatureData, index: number) => ({
     id: item.id,
@@ -79,7 +77,7 @@ function FeatureCollection({
         applyCommand={applyCommand}
         onDeleteFeature={onDeleteFeature}
       />
-    )
+    )//
   };
 
   return (

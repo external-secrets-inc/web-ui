@@ -1,10 +1,9 @@
 import { useState, useMemo, useEffect } from "react";
-import { createColumnHelper } from "@tanstack/react-table";
 import { LucideAlertCircle, LucideCircle, LucideDownload, LucideFilter, LucideSearch, LucideX } from "lucide-react";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { DataProvider, DataTable } from "@/components/ui/DataProvider";
+import { DataProvider, DataTable, defineColumns } from "@/components/ui/DataProvider";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import useGetDashboarSecretTable from "@/services/audit/queries/useGetDashboarSecretTable";
 import { AuditSecretTableData } from "./Audit.interfaces";
@@ -12,7 +11,7 @@ import FilterDialogForm from "./FilterDialogForm";
 import AuditSecretDetails from "./AuditSecretDetails";
 import { useAuditFilter } from "./AuditFilterProvider";
 import { useSearchParams } from "react-router-dom";
-import { Input } from "../ui/input";
+import { Input } from "@/components/ui/input";
 import saveAs from "file-saver";
 import { Separator } from "@/components/ui/separator";
 import { formatDate } from "@/utils/dateUtils";
@@ -79,10 +78,8 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
     );
   }, [secretTableDataError, isErrorSecretTableData, isRefetchErrorSecretTableData]);
 
-  const columnHelper = createColumnHelper<AuditSecretTableData>();
-
   const columns = useMemo(
-    () => [
+    () => defineColumns<AuditSecretTableData>(columnHelper => [
       columnHelper.accessor("name", {
         header: "Secret",
         cell: (info) => <strong>{info.getValue() || "Unknown Secret Name"}</strong>,
@@ -130,12 +127,19 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
       columnHelper.accessor("policiesAmount", {
         header: "Policy compliance",
         cell: (info) => {
-          const nonCompliantPolicies = info.row.original.policiesAmount - info.row.original.compliantPoliciesAmount
-          const policiesAmountStr = info.row.original.compliantPoliciesAmount + "/" + info.row.original.policiesAmount
+          const policiesAmount = info.row.original.policiesAmount;
+          const compliantPoliciesAmount = info.row.original.compliantPoliciesAmount;
+
+          if (policiesAmount === null || compliantPoliciesAmount === null || policiesAmount === undefined || compliantPoliciesAmount === undefined) {
+            return "Unknown";
+          }
+
+          const nonCompliantPolicies = policiesAmount - compliantPoliciesAmount;
+          const policiesAmountStr = compliantPoliciesAmount + "/" + policiesAmount;
           return (
             <div className="flex gap-2 w-full items-center">
-              {info.getValue() !== null ? policiesAmountStr : "Unknown"
-              }{" "}
+              {policiesAmountStr}
+              {" "}
               {!info.row.original.fullCompliant && (
                 <Tooltip>
                   <TooltipTrigger>
@@ -150,8 +154,8 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
           );
         },
       }),
-    ],
-    [columnHelper]
+    ]),
+    []
   );
 
   useEffect(() => {
@@ -292,7 +296,12 @@ export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
         isLoading={isLoadingSecretTableData}
         emptyMessage={getEmptyMessage()}
       >
-        <DataTable onRowClick={(row) => setSelectedSecretId(row.id)} />
+        <DataTable
+          virtualizationMode="static"
+          virtualizationContainer="window"
+          onRowClick={(row) => setSelectedSecretId((row as AuditSecretTableData).id)}
+          className="[--window-container-header-offset:calc(var(--topbar-height)+theme(spacing.3))]" // Sticky table header below the topbar with a mt-3 gap
+        />
       </DataProvider>
 
       <AuditSecretDetails
