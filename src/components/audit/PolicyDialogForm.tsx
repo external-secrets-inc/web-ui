@@ -19,9 +19,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LucidePlus, LucideTrash } from "lucide-react";
-import { DataProvider, DataTable } from "@/components/ui/DataProvider";
+import { DataProvider, DataTable, defineColumns } from "@/components/ui/DataProvider";
 import PolicyTriggerDialogForm from "./PolicyTriggerDialogForm";
-import { createColumnHelper } from "@tanstack/react-table";
 
 const policyTriggerFormSchema = z.object({
   destinationIdentifiers: z.array(z.string()).min(1, "Select at least one destination"),
@@ -150,9 +149,7 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, isLoadingDestinations,
     resetForm();
   };
 
-  const columnHelper = createColumnHelper<PolicyTriggerTableData>();
-
-  const triggerColumns = useMemo(() => [
+  const triggerColumns = useMemo(() => defineColumns<PolicyTriggerTableData>(columnHelper => [
     columnHelper.accessor('destinationIdentifiers', {
       header: 'Destinations',
       cell: info => {
@@ -178,7 +175,7 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, isLoadingDestinations,
         </div>
       )
     })
-  ], [columnHelper, destinationsMap]);
+  ]), [destinationsMap]);
 
   const handleAddTrigger = (newTrigger: PolicyTriggerTableData) => {
     const currentTriggers = form.getValues("triggers") || [];
