@@ -1,0 +1,75 @@
+import { Meta, Canvas, Story, Controls, Primary, Description } from '@storybook/blocks';
+import * as DataTableStories from './DataTable.stories';
+
+<Meta of={DataTableStories} name="Documentation" />
+
+# DataTable Component
+
+<Description of={DataTableStories} />
+
+Renders data provided by the parent `<DataProvider>` in a standard HTML table format.
+
+**Features:**
+- Sorting (Click headers)
+- Row Selection (If `onRowClick` is provided)
+- Virtualization (Static, Dynamic, Window)
+- Sticky Header (Automatic for table scroll, configurable for window scroll)
+- Customizable row actions via `meta` prop
+
+## Primary Story (Static Virtualization)
+This is the recommended and most performant virtualization mode for large datasets with fixed row heights.
+
+<Primary />
+<Controls />
+
+## Features
+
+### Row Click Handling
+Demonstrates using the `onRowClick` prop to handle row clicks.
+
+<Canvas of={DataTableStories.RowClick} />
+
+### Row Actions
+Demonstrates adding a custom actions column using the `meta` prop passed to `DataTable`.
+
+In this example, actions for each row are accessible via a dropdown menu triggered by a kebab icon (`<LucideMoreVertical />`) in the rightmost column.
+
+<Canvas of={DataTableStories.RowActions} />
+
+### Appending Content
+Demonstrates using the `rowsAppend` prop to add content after the table body.
+
+<Canvas of={DataTableStories.RowsAppend} />
+
+## Virtualization Modes
+
+### 1. Static Mode (`virtualizationMode="static"`) - Recommended
+- All rows have the same fixed height (set via `rowHeight` prop).
+- Most performant option.
+- **Requires:** The `<DataTable>` or a parent must have a defined height (e.g., `h-[400px]`)
+
+<Canvas of={DataTableStories.StaticVirtualization} />
+
+### 2. Dynamic Mode (`virtualizationMode="dynamic"`)
+- Rows can have variable heights.
+- Requires `estimateSize` function via `virtualizerOptions` prop.
+- More flexible, slightly less performant.
+- **Requires:** The `<DataTable>` or a parent must have a defined height (e.g., `h-[400px]`)
+
+<Canvas of={DataTableStories.DynamicVirtualization} />
+
+### 3. Window Scrolling Mode (`virtualizationContainer="window"`)
+- Uses the browser window as the scroll container.
+- Useful for full-page tables.
+- Can be used with Static or Dynamic row heights.
+- Ignores `className` height on `<DataTable>`.
+#### Sticky Header Offset (Window Mode Specific)
+- Header isn't sticky by default (shares window scroll).
+- To make it sticky & account for fixed elements above (e.g., site header), set `--window-container-header-offset` CSS variable to their combined height.
+- Apply via `style` prop (`style={{ "--window-container-header-offset": "64px" }}`) or Tailwind arbitrary class (`className="[--window-container-header-offset:64px]"`) on `DataTable` or a parent.
+
+<Canvas of={DataTableStories.WindowVirtualization} />
+
+---
+
+**Note on Examples:** The stories above use a wrapper component that includes `<DataProvider>`. Key props passed to the provider in these examples include `data`, `columns`, and `initialSort`. The `<Controls>` table below shows props for the `<DataTable>` component itself.

@@ -1,0 +1,28 @@
+import { Meta, Canvas, Story, Controls, Primary, Description } from '@storybook/blocks';
+import * as DataSearchStories from './DataSearch.stories';
+
+<Meta of={DataSearchStories} name="Documentation" />
+
+# DataSearch Component
+
+<Description of={DataSearchStories} />
+
+Provides a search input that filters data within the parent `<DataProvider>`.
+Uses the TanStack Table global filter function.
+
+The component is a simple input field styled with a search icon.
+It automatically hooks into the DataProvider context to update the table's filtering state.
+
+## Example
+
+<Canvas>
+    <Story of={DataSearchStories.Default} />
+</Canvas>
+
+## Props
+
+<Controls />
+
+---
+
+**Note on Examples:** The story above uses a wrapper component that includes `<DataProvider>` and `<DataTable>` to demonstrate the search functionality. Key props passed to the provider in this example include `data` and `columns`. The `<Controls>` table shows props for the `<DataSearch>` component itself.
