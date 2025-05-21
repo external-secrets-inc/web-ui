@@ -1,4 +1,4 @@
-import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LucideGem, LucideAlertCircle, LucideRefreshCw } from 'lucide-react';
 import Audit from './Audit';
 import { AuditMockProvider } from '@/services/audit/context/AuditMockContext';
@@ -9,6 +9,8 @@ import useAuditSetup from "@/services/audit/hooks/useAuditSetup";
 import { Button } from "@/components/ui/button";
 import { useQueryClient, useIsFetching } from "@tanstack/react-query";
 import AppPageHeaderPortal from "@/components/AppPageHeaderPortal";
+import { useFeatureFlag } from "@/context/FeatureFlagContext";
+import AuditMockToggle from './AuditMockToggle';
 
 interface RefreshButtonProps {
   children: React.ReactNode;
@@ -57,6 +59,8 @@ const AuditWrapper = () => {
     tenantListener,
     auditListener
   } = useAuditSetup();
+
+  const showMockToggle = useFeatureFlag('auditMockToggle');
 
   if (isLoadingSubscriptions || isLoadingSetup) {
     return <Loader size="lg" className="flex-1 self-center" />;
@@ -130,9 +134,12 @@ const AuditWrapper = () => {
   return (
     <AuditMockProvider>
       <AppPageHeaderPortal>
-        <RefreshButton queryKey={['audit']}>
-          Refresh Data
-        </RefreshButton>
+        <div className="flex items-center gap-4">
+          {showMockToggle && <AuditMockToggle />}
+          <RefreshButton queryKey={['audit']}>
+            Refresh Data
+          </RefreshButton>
+        </div>
       </AppPageHeaderPortal>
       <AuditFilterProvider>
         <Audit

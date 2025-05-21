@@ -1,16 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
-import { CreatePolicyPayload, PolicyForm, PolicyTableData, PolicyTriggerTableData, triggerConditionsMap } from "./Audit.interfaces";
-import { createColumnHelper } from "@tanstack/react-table";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { PolicyForm, PolicyTableData, PolicyTriggerTableData, triggerConditionsMap, CreatePolicyPayload } from "./Audit.interfaces";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { LucideMoreVertical, LucidePlus, LucideTrash2, LucideUsers, LucideAlertCircle, LucideEdit, LucideCircleHelp } from "lucide-react";
 import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction" // TODO: We should not import components from non generic stuff! This should be a generic component, or re-implemented here.
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
-import { DataProvider, DataTable } from "../ui/DataProvider";
+import { DataProvider, DataTable, defineColumns } from "@/components/ui/DataProvider";
 import useGetPolicies from "@/services/audit/queries/useGetPolicies";
 import useGetAuditProviders from "@/services/audit/queries/useGetAuditProviders";
 import useCreatePolicy from "@/services/audit/mutations/useCreatePolicy";
@@ -63,9 +62,7 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
     handleDefaultApiHttpError(destinationsError, "Error while fetching destinations");
   }, [destinationsError, isErrorDestinations]);
 
-  const columnHelper = createColumnHelper<PolicyTableData>();
-
-  const columns = useMemo(() => [
+  const columns = useMemo(() => defineColumns<PolicyTableData>(columnHelper => [
     columnHelper.accessor('name', {
       header: 'Name',
       cell: info => <strong>{info.getValue()}</strong>
@@ -131,7 +128,7 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
         </div>
       )
     })
-  ], [columnHelper, destinationsMap]);
+  ]), [destinationsMap]);
 
   function isBase64(str: string): boolean {
     try {
