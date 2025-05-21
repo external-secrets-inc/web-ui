@@ -97,8 +97,8 @@ export type ProviderConfig<TData extends object> = {
     | 'state'
     | 'onSortingChange'
     | 'onGlobalFilterChange'
-    | 'onColumnSizingChange' // Added this since it's handled internally
-    | 'columnResizeMode'     // Added this since it's handled internally
+    | 'onColumnSizingChange'
+    | 'columnResizeMode'
   >;
 } & ({ getRowId: (row: TData) => string } | { data: Array<TData & WithId> });
 

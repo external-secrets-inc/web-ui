@@ -51,13 +51,12 @@ export const DataTable = React.forwardRef(
     const columns = table.getAllColumns();
     const headerGroups = table.getHeaderGroups();
 
-    // Use the virtualization hook
     const {
       isVirtualEnabled,
       virtualItems,
       paddingTop,
       paddingBottom,
-      getRowRef,
+      measureElementRefCallback,
     } = useVirtualization({
       virtualizationMode,
       virtualizationContainer,
@@ -152,12 +151,8 @@ export const DataTable = React.forwardRef(
                 return (
                   <TableRow
                     key={row.id}
-                    // The ref is passed to the useVirtualization hook.
-                    // It's used internally by the hook to measure row heights
-                    // when virtualizationMode is 'dynamic'.
-                    ref={getRowRef}
-                    data-index={virtualRow.index} // Keep data-index for debugging/styling
-                    // Apply static height if needed
+                    ref={measureElementRefCallback}
+                    data-index={virtualRow.index}
                     style={{ height: virtualizationMode === 'static' ? rowHeight : undefined }}
                     onClick={() => onRowClick?.(row.original)}
                     className={cn(

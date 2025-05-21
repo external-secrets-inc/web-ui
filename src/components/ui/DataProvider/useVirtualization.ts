@@ -10,6 +10,24 @@ import type { DataTableProps } from "./DataProvider.interfaces"; // Use existing
 const DEFAULT_ROW_HEIGHT = 40;
 const DEFAULT_OVERSCAN = 3;
 
+/**
+ * Workaround for potential React memoization issues with TanStack Virtual.
+ * Stores the virtualizer instance in a ref and updates it via useEffect
+ * to ensure `getVirtualItems()` uses the latest instance, potentially bypassing
+ * optimizations that might cause stale results. See TanStack/virtual#743.
+ * Also fixes related `react-hooks/exhaustive-deps` warnings.
+ *
+ * @param virtualizer The virtualizer instance from `useVirtualizer` or `useWindowVirtualizer`.
+ * @returns A stable ref object containing the latest virtualizer instance.
+ */
+function useMemoizedVirtualizerRef<T>(virtualizer: T): React.MutableRefObject<T> {
+  const virtualizerRef = useRef(virtualizer);
+  useEffect(() => {
+    virtualizerRef.current = virtualizer;
+  }, [virtualizer]);
+  return virtualizerRef;
+}
+
 // Define the props needed specifically for the virtualization hook
 // We extract only the relevant props from DataTableProps
 type UseVirtualizationProps<TData extends object> = Pick<
@@ -45,14 +63,16 @@ export function useVirtualization<TData extends object>({
   const isTableContainer = virtualizationContainer === 'table';
   const isWindowContainer = virtualizationContainer === 'window';
 
-  // Static mode: Fixed height improves performance by avoiding measurements
-  // Dynamic mode: Allows for variable row heights while maintaining smooth scrolling
   const { estimateSize: estimateSizeFn, overscan, ...restVirtualizerOptions } = virtualizerOptions || {};
 
-  const estimateSize = useCallback(
+  /**
+   * Creates a size estimation function based on virtualization mode.
+   * - Static mode: Returns fixed height for performance optimization.
+   * - Dynamic mode: Uses provided estimateSizeFn or falls back to default.
+   */
+  const createSizeEstimator = useCallback(
     (index: number) => {
       if (virtualizationMode === 'static') return rowHeight;
-      // Provide a sensible default if estimateSizeFn is missing in dynamic mode
       return estimateSizeFn?.(index) ?? DEFAULT_ROW_HEIGHT;
     },
     [virtualizationMode, rowHeight, estimateSizeFn]
@@ -61,7 +81,7 @@ export function useVirtualization<TData extends object>({
   const tableVirtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => scrollElementRef.current,
-    estimateSize: estimateSize,
+    estimateSize: createSizeEstimator,
     overscan: overscan ?? DEFAULT_OVERSCAN,
     enabled: isVirtualEnabled && isTableContainer,
     ...restVirtualizerOptions,
@@ -69,7 +89,7 @@ export function useVirtualization<TData extends object>({
 
   const windowVirtualizer = useWindowVirtualizer({
     count: rows.length,
-    estimateSize: estimateSize,
+    estimateSize: createSizeEstimator,
     overscan: overscan ?? DEFAULT_OVERSCAN,
     enabled: isVirtualEnabled && isWindowContainer,
     scrollMargin: scrollElementRef.current?.offsetTop ?? 0,
@@ -80,55 +100,61 @@ export function useVirtualization<TData extends object>({
 
   const rowVirtualizer = isWindowContainer ? windowVirtualizer : tableVirtualizer;
 
-  // --- Workaround based on TanStack/virtual#743 ---
-  // Store the virtualizer instance in a ref to potentially bypass React
-  // memoization optimizations that might cause getVirtualItems() to return
-  // stale or empty results. This fixes a `react-hooks/exhaustive-deps` error.
-  const virtualizerRef = useRef(rowVirtualizer);
-  // Ensure the ref is updated if the virtualizer instance changes
-  useEffect(() => {
-    virtualizerRef.current = rowVirtualizer;
-  }, [rowVirtualizer]);
-  // --- End Workaround ---
+  // Use the memoized ref workaround
+  const virtualizerRef = useMemoizedVirtualizerRef(rowVirtualizer);
 
-  // Access virtual items via the ref
   const virtualItems = isVirtualEnabled ? virtualizerRef.current.getVirtualItems() : [];
 
-  // Calculate "padding" for `<tr>` spacer elements to maintain table
-  // height and scroll position. This is necessary because regular HTML
-  // tables can't use the more common `position: absolute` + `transform`
-  // approach, due to several rendering limitations and CSS properties
-  // compatibility on them.
   let paddingTop = 0;
   let paddingBottom = 0;
 
-  if (isVirtualEnabled && virtualItems.length > 0) {
-    const totalSize = virtualizerRef.current.getTotalSize(); // Access via ref
+  /**
+   * Calculates the top and bottom padding required for spacer elements
+   * when using virtualization within a standard HTML table.
+   * This maintains layout integrity as rows scroll in and out of view.
+   *
+   * @param virtualItems - The current virtual items from the virtualizer.
+   * @param totalSize - The total estimated size of all items.
+   * @param scrollMargin - The scroll margin from the virtualizer options.
+   * @returns An object with `paddingTop` and `paddingBottom` values.
+   */
+  function calculateVirtualPadding(virtualItems: ReturnType<typeof virtualizerRef.current.getVirtualItems>, totalSize: number, scrollMargin: number) {
+    if (virtualItems.length === 0) {
+      return { paddingTop: 0, paddingBottom: 0 };
+    }
+
     const firstItem = virtualItems[0];
     const lastItem = virtualItems[virtualItems.length - 1];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const scrollMargin = (virtualizerRef.current.options as any).scrollMargin ?? 0; // Access via ref - TODO: [cfviotti] Figure out how to avoid `any`
 
-    // Top padding accounts for rows above the first visible item
-    paddingTop = Math.max(0, firstItem.start - scrollMargin);
-    // Bottom padding accounts for rows below the last visible item
-    paddingBottom = Math.max(0, totalSize - lastItem.end);
+    const paddingTop = Math.max(0, firstItem.start - scrollMargin);
+    const paddingBottom = Math.max(0, totalSize - lastItem.end);
+
+    return { paddingTop, paddingBottom };
   }
 
-  const getRowRef = useCallback((node: HTMLTableRowElement | null) => {
-    // Measure element using the virtualizer from the ref only in dynamic mode
+  if (isVirtualEnabled && virtualItems.length > 0) {
+    const totalSize = virtualizerRef.current.getTotalSize();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const scrollMargin = (virtualizerRef.current.options as any).scrollMargin ?? 0;
+
+    // Calculate padding using the extracted helper function
+    const calculatedPadding = calculateVirtualPadding(virtualItems, totalSize, scrollMargin);
+    paddingTop = calculatedPadding.paddingTop;
+    paddingBottom = calculatedPadding.paddingBottom;
+  }
+
+  const measureElementRefCallback = useCallback((node: HTMLTableRowElement | null) => {
     if (virtualizationMode === 'dynamic' && isVirtualEnabled && node) {
       virtualizerRef.current.measureElement(node);
     }
   // Depend on virtualizationMode and isVirtualEnabled. Ref access doesn't need dependency.
-  }, [virtualizationMode, isVirtualEnabled]);
+  }, [virtualizationMode, isVirtualEnabled, virtualizerRef]);
 
-  // Return values needed by DataTable for rendering
   return {
     isVirtualEnabled,
     virtualItems,
     paddingTop,
     paddingBottom,
-    getRowRef,
+    measureElementRefCallback,
   };
 }

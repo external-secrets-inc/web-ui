@@ -9,8 +9,10 @@ import {
 } from "@tanstack/react-table";
 import { type ProviderConfig, type DataProviderProps, type ProviderContextValue } from "./DataProvider.interfaces";
 
-// Initialize context with `null` for type safety. The `useData` hook will
-// handle checking for `null` and ensure the provider is present.
+/**
+ * Context for DataProvider values with proper null safety.
+ * The type explicitly includes null to enforce provider requirement checking.
+ */
 const DataProviderContext = React.createContext<ProviderContextValue<object> | null>(null);
 
 /**
@@ -28,27 +30,27 @@ const DataProviderContext = React.createContext<ProviderContextValue<object> | n
 function useDataProvider<TData extends object>({
   data,
   columns,
-  initialSort = { id: 'id', desc: false }, // Default sort configuration
+  initialSort = { id: 'id', desc: false },
   getRowId,
   tableOptions = {},
   isLoading = false,
-  emptyMessage = "No data available" // Default empty message
+  emptyMessage = "No data available"
 }: ProviderConfig<TData>) {
   // Separate state hooks enable independent updates and granular memoization
   const [sorting, setSorting] = React.useState<SortingState>([initialSort]);
-  const [globalFilter, setGlobalFilter] = React.useState(''); // Default filter state
+  const [globalFilter, setGlobalFilter] = React.useState('');
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
 
   // Data validation in useMemo prevents unnecessary re-renders and provides early error detection
   const safeData = React.useMemo((): TData[] => {
     if (!Array.isArray(data)) {
       console.error('[DataProvider] Expected data to be an array but received:', data, `(Type: ${typeof data})`);
-      return [] as TData[]; // Return empty array directly
+      return [] as TData[];
     }
     if (!getRowId && data.length > 0 && !('id' in data[0])) {
       console.error('[DataProvider] Data items must have an "id" property, or provide a getRowId function.');
     }
-    return data ?? ([] as TData[]); // Return empty array directly if data is null/undefined
+    return data ?? ([] as TData[]);
   }, [data, getRowId]);
 
   const table = useReactTable<TData>({
@@ -110,7 +112,6 @@ export function DataProvider<TData extends object>({
 export function useData<TData extends object = object>(): ProviderContextValue<TData> {
   const context = React.useContext(DataProviderContext);
   if (context === null) {
-    // Throw an error if the hook is used without a Provider parent
     throw new Error("useData must be used within a DataProvider");
   }
   // After the null check, TypeScript knows context is ProviderContextValue<object>.
