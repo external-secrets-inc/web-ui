@@ -18,6 +18,18 @@ const preview: Preview = {
         iframeHeight: 'auto',
       },
     },
+    options: {
+      storySort: {
+        order: [
+          'UI',
+          [
+            'DataProvider',
+            ['Documentation', '*', 'DataGrid', 'DataSearch', 'DataSort', 'DataTable']
+          ],
+          '*',
+        ],
+      },
+    },
   },
   decorators: [
     withThemeByClassName({

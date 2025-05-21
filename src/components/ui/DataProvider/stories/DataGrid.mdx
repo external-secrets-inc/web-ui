@@ -1,0 +1,28 @@
+import { Meta, Canvas, Story, Controls, Primary, Description } from '@storybook/blocks';
+import * as DataGridStories from './DataGrid.stories';
+
+<Meta of={DataGridStories} name="Documentation" />
+
+# DataGrid Component
+
+<Description of={DataGridStories} />
+
+Displays data from `<DataProvider>` in a flexible grid layout.
+Ideal for card-based views or other non-tabular representations.
+
+Requires a `renderItem` function prop to define how each data item is displayed.
+The `renderItem` function receives the original data item for the row.
+
+## Example
+
+<Canvas>
+    <Story of={DataGridStories.Default} />
+</Canvas>
+
+## Props
+
+<Controls />
+
+---
+
+**Note on Examples:** The story above uses a wrapper component that includes `<DataProvider>`. Key props passed to the provider in this example include `data`, `columns`, and `initialSort`. The `<Controls>` table shows props for the `<DataGrid>` component itself.
