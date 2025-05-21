@@ -36,6 +36,13 @@ export function useAuthVerifyFlow() {
   const [code, setCode] = useState("");
   const [error, setError] = useState<VerificationError | null>(null);
 
+  useEffect(
+    function redirectIfUserAlreadyActive() {
+      if (authUser?.isActive) return navigate("/");
+    },
+    [authUser, navigate]
+  );
+
   const { mutate: sendCode, isPending: isSendingCode } = useSendVerificationCode({
     onSuccess: () => {
       if (!authUser?.email || !authUser?.tenant) return;

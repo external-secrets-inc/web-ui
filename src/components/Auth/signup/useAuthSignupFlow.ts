@@ -1,5 +1,6 @@
 import { trackSignedIn, trackSignupStepCompleted, trackSignupStepMovedBack } from "@/analytics";
 import { AUTH_USER_MESSAGES, authCommonZodSchemas, createAuthError } from "@/components/Auth";
+import { IS_DEV } from "@/constants";
 import { LoginAndIdentifyParams, SignupPayload } from "@/services/auth/Auth.interfaces";
 import type { LoginResult } from "@/services/auth/mutations/useLoginAndIdentifyUser";
 import useLoginAndIdentifyUser from "@/services/auth/mutations/useLoginAndIdentifyUser";
@@ -79,7 +80,11 @@ export function useAuthSignupFlow() {
     onSuccess: (data: LoginResult, variables: LoginAndIdentifyParams) => {
       if (data.isSignedIn) {
         trackSignedIn(variables.tenantSlug);
-        navigate('/verify', { state: { fromSignup: true } });
+        if (IS_DEV) {
+          navigate('/');
+        } else {
+          navigate('/verify', { state: { fromSignup: true } });
+        }
       } else {
         toast.success('Organization created, but login failed. Please try logging in manually.');
         navigate('/login');
