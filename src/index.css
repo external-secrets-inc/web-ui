@@ -35,6 +35,12 @@
     --chart-5: 335 90% 65%;
     --chart-6: 210 90% 55%;
 
+    --topbar-height: theme(spacing.12);
+
+    @media screen(md) {
+      --topbar-height: theme(spacing.16);
+    }
+
     color-scheme: light;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
@@ -117,6 +123,9 @@
 
   ::-webkit-scrollbar-thumb {
     @apply rounded-full bg-border border border-transparent border-solid bg-clip-padding;
+  }
+  ::-webkit-scrollbar-corner {
+    @apply bg-transparent;
   }
 }
 

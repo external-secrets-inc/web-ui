@@ -1,16 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { DestinationTableData } from "./Audit.interfaces";
-import { createColumnHelper } from "@tanstack/react-table";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { LucideMoreVertical, LucidePlus, LucideTrash2, LucideEdit } from "lucide-react";
 import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
 import { toast } from "sonner";
-import { DataProvider, DataTable } from "../ui/DataProvider";
+import { DataProvider, DataTable, defineColumns } from "@/components/ui/DataProvider";
 import useGetDestinations from "@/services/audit/queries/useGetDestinations";
 import useDeleteDestination from "@/services/audit/mutations/useDeleteDestination";
 import { DestinationDialogForm } from "./DestinationDialogForm";
@@ -20,8 +19,7 @@ interface DestinationTableMeta {
 }
 
 export default function AuditDestinationDataTable() {
-  const columnHelper = createColumnHelper<DestinationTableData>();
-  const columns = useMemo(() => [
+  const columns = useMemo(() => defineColumns<DestinationTableData>(columnHelper => [
     columnHelper.accessor('name', {
       header: 'Name',
       cell: info => <strong>{info.getValue()}</strong>
@@ -38,7 +36,7 @@ export default function AuditDestinationDataTable() {
         </div>
       )
     })
-  ], [columnHelper]);
+  ]), []);
 
   const destinationTableMeta: DestinationTableMeta = {
     renderRowActions: (row) => (
@@ -86,7 +84,7 @@ export default function AuditDestinationDataTable() {
     )
   };
 
-  const [isAddDestinationDialogOpen, setIsAddDestinationDialogOpen] = useState(false);
+  const [isAddDestinationDialogOpen, setIsAddDestinationDialogOpen] = useState(false);//
   const [selectedDestinationId, setSelectedDestinationId] = useState<string>("");
 
   const {

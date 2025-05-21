@@ -25,7 +25,7 @@ import useGetSecretAccessorLogs from "@/services/audit/queries/useGetSecretAcces
 import { Trimmer } from "@/components/ui/Trimmer";
 import useGetAuditSecretExport from "@/services/audit/queries/useGetAuditSecretExport";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import saveAs from "file-saver";
 import { AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants";
 
