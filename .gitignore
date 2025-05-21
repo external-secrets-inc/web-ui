@@ -123,6 +123,10 @@ dist
 .vscode-test
 .vscode/
 
+# Cursor
+# Use .local.mdc rule files to define local non-versioned personal rules
+*.local.mdc
+
 # yarn v2
 .yarn/cache
 .yarn/unplugged

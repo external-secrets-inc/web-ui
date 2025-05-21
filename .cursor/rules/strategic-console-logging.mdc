@@ -1,0 +1,129 @@
+---
+description: Guidelines for strategically using and managing console.log statements for debugging, emphasizing removal before task completion and careful handling of sensitive data
+globs:
+alwaysApply: true
+---
+<console_log_management_guidelines>
+  <interpretation_of_terms>
+    <term_definition_source>
+    Capitalized imperative keywords (MUST, SHOULD, etc.) used in this rule follow the definitions outlined in `.cursor/rules/writing-llm-rules.mdc`.
+    </term_definition_source>
+  </interpretation_of_terms>
+
+  <objective>
+  Precisely control `console.log` statements in JavaScript/TypeScript code. Prioritize clean, production-ready code by removing temporary debug logs ONLY BEFORE OR NEAR a task completion. Simultaneously, leverage `console.log` statements strategically and proactively for effective debugging when encountering PERSISTENT issues. This rule applies strictly and exclusively to `console.log` and `console.debug` and NOT to other `console` methods like `console.warn`, `console.error`, etc.
+  </objective>
+
+  <principles>
+    <principle name="general_avoidance_and_removal">
+      <summary>Avoid Persistent `console.log`; Actively Remove Near Task Completion or With Permission</summary>
+      <details>
+      - `console.log` statements are to be considered temporary debugging tools and SHOULD NOT be present in finalized code.
+      - **Task Completion:** When a development task, feature, or bug fix is inferred to be NEARING completion (e.g., code seems to being prepared for review, commit or user tells me), all `console.log` statements related to that task MUST be proactively identified and removed.
+      - **Permission Required Otherwise:** If task completion is NOT clearly inferred, and `console.log` statements are present, you MUST explicitly ask the user for permission before deleting them. The question should be clear and state the location of the logs.
+      - **Default to No Permission:** If the user's response does not explicitly grant permission to delete the `console.log` statements, you MUST assume permission is NOT granted and the logs MUST be left in place.
+      - **Strictly `console.log`:** This removal and permission policy applies exclusively to `console.log` and `console.debug`. Other `console` methods (`console.warn`, `console.error`, `console.info`, etc.) are NOT subject to this specific removal rule.
+      </details>
+      <example title="Asking for permission mid-task">
+        ```
+        // AI observes:
+        // file: src/components/DataProcessor.ts
+        // console.log("Intermediate data:", data);
+        // console.log("Processing step 3 with options:", options);
+
+        // AI asks:
+        "I've noticed a couple of `console.log` statements in `src/components/DataProcessor.ts` (lines X and Y).
+        Since we look like we're finishing this feature, would you like me to remove them now, or are they still needed for debugging?"
+        ```
+      </example>
+       <example title="Action on task completion inference">
+        ```
+        // User: "Looks good, let's get this ready for a PR." ||
+        // User: "Yes"
+
+        // AI observes:
+        // file: src/utils/calculation.ts
+        // console.log("Input params for calc:", params);
+        // console.log("Result before formatting:", rawResult);
+
+        // AI action: Silently removes the console.log statements.
+        ```
+      </example>
+    </principle>
+
+    <principle name="mindfulness_of_sensitive_data">
+      <summary>Avoid Logging Sensitive Information</summary>
+      <details>
+      - Even when adding temporary `console.log` or `console.debug` statements for debugging, you MUST NEVER log potentially sensitive information.
+      - This includes, but is not limited to: Personal Identifiable Information (PII) like full names, email addresses, physical addresses, social security numbers; API keys; access tokens; raw user passwords; detailed financial data, etc.
+      - If you need to inspect an object that contains sensitive data, log a transformed version of the object with sensitive fields partially redacted or omitted, or log only the specific non-sensitive fields of interest.
+      </details>
+      <bad_example title="Logging entire user object with PII">
+        ```typescript
+        // BAD: Logs entire user object, including potential PII
+        // console.debug("[UserProfile] User object:", userObject);
+        ```
+      </bad_example>
+      <good_example title="Logging specific non-sensitive fields">
+        ```typescript
+        // GOOD: Logging specific non-sensitive fields
+        // console.debug("[UserProfile] User ID:", userObject.id, "Username:", userObject.username);
+        ```
+      </good_example>
+      <good_example title="Logging a transformed object with sensitive data redacted">
+        ```typescript
+        // GOOD: Logging a transformed object with sensitive data redacted
+        // const safeUserObject = { ...userObject, email: undefined, address: undefined };
+        // console.debug("[UserProfile] Safe user object:", safeUserObject);
+        ```
+      </good_example>
+    </principle>
+
+    <principle name="strategic_debugging_with_console_log">
+      <summary>Proactively Use Well-Formatted `console.log` or `console.debug` for Debugging When Stuck</summary>
+      <details>
+      - **Activation:** If attempts to solve a problem, fix an error, or implement a feature are repeatedly unsuccessful (e.g., after 3-5 distinct, unsuccessful attempts to modify logic even after new user prompts), you MUST temporarily pause direct fix attempts.
+      - **Action:** Proactively introduce `console.log` or `console.debug` statements (or other debugging aids like `debugger;` if more appropriate and you can guide the user effectively) to gather more information about the program's state, variable values, or execution flow.
+      - **Formatting Debug Logs:** These temporary debugging `console.log` or `console.debug` statements MUST be well-formatted to ensure maximum clarity and ease of analysis for both you and the user. This includes:
+          - **Clear Labels:** Prefix logs with context (e.g., component/function name, step in a process) and clearly label the data being logged. Example: `console.log("[MyComponent] User state changed:", newUserState);`
+          - **Object/Array Logging:** Log objects and arrays directly to leverage browser console's interactive inspection capabilities. Prefer this over `JSON.stringify()` for complex objects if the user is inspecting directly in the browser. However, if the primary goal is to capture string output to be pasted for AI analysis, `JSON.stringify(obj, null, 2)` might be acceptable for readability of the pasted string, but clearly indicate this if suggesting it.
+          - **Group Complex Output:** For extensive or nested logging within a function or module, use `console.group("Descriptive Group Label")` (or `console.groupCollapsed()`) and `console.groupEnd()` to organize related logs. This significantly improves readability in the browser console.
+          - **Structure for Readability:** If logging multiple pieces of data, or if logs might be numerous, structure them for easy differentiation.
+      - **Analyzing Debug Output:**
+          - **Internal Analysis First:** Always attempt to use your internal capabilities or tools to interpret the output of these logs if possible.
+          - **Request User Assistance:** If you cannot directly analyze the output, or if debugging requires browser interaction (e.g., inspecting complex objects, stepping through code), clearly instruct the user on:
+              1. What specific actions to perform in the application to trigger the logs.
+              2. How to access and copy the complete, relevant output from the browser console.
+              3. What specific information you are looking for in that output.
+      - **Post-Debugging Removal:** Once the issue is diagnosed and resolved, these temporary debugging `console.log` or `console.debug` statements MUST be removed, following the `general_avoidance_and_removal` principle.
+      </details>
+      <example title="Adding well-formatted debug logs with grouping when stuck">
+        ```typescript
+        // AI: "[DEBUG NEEDED] I'm still unable to resolve the issue with the user data not updating correctly.
+        // I will add some console.log statements with grouping to trace the data flow within the `updateUser` function."
+
+        // AI adds to `updateUser` function:
+        // console.groupCollapsed(`[updateUser] Processing ID: ${userId}`);
+        // console.log(`Initial data payload:`, userDataPayload);
+        // const currentUser = findUserById(userId);
+        // console.log(`Found current user state:`, currentUser);
+        // if (!currentUser) {
+        //   console.error(`Critical: User not found for ID:`, userId);
+        //   console.groupEnd();
+        //   return;
+        // }
+        // const updated = { ...currentUser, ...userDataPayload };
+        // console.log(`Merged user data (before save):`, updated);
+        // saveUser(updated);
+        // console.log(`User data after attempted save for ID:`, userId);
+        // console.groupEnd();
+
+        // AI instructs user:
+        // "Please try updating a user's profile now. Then, open your browser's developer console (you might need to expand the group labeled '[updateUser] Processing ID: ...'),
+        // copy all the log lines within that group, and paste them here so I can see the data at each step."
+        ```
+      </example>
+    </principle>
+  </principles>
+
+</console_log_management_guidelines>
