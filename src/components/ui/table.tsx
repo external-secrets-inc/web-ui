@@ -3,15 +3,15 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 
 const Table = React.forwardRef<
-  HTMLTableElement,
-  React.HTMLAttributes<HTMLTableElement>
->(({ className, ...props }, ref) => (
-  <div className="relative w-full overflow-auto">
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & { style?: React.CSSProperties }
+>(({ className, style, children, ...props }, ref) => (
+  <div ref={ref} style={style} className={cn("relative w-full overflow-auto rounded-md border", className)} {...props}>
     <table
-      ref={ref}
-      className={cn("w-full caption-bottom text-sm", className)}
-      {...props}
-    />
+      className="w-full caption-bottom text-sm"
+    >
+      {children}
+    </table>
   </div>
 ))
 Table.displayName = "Table"
@@ -20,7 +20,15 @@ const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <thead ref={ref} className={cn("[&_tr]:border-b hover:bg-muted/50", className)} {...props} />
+  <thead
+    ref={ref}
+    className={cn(
+      "sticky top-0 z-10 bg-background ring-1 ring-border",
+      "[&_tr]:border-b",
+      className
+    )}
+    {...props}
+  />
 ))
 TableHeader.displayName = "TableHeader"
 
