@@ -56,3 +56,7 @@ export { useAuthForgotPasswordFlow } from './forgotPassword/useAuthForgotPasswor
 // Reset Password
 export { AuthResetPassword } from './resetPassword/AuthResetPassword';
 export { useAuthResetPasswordFlow } from './resetPassword/useAuthResetPasswordFlow';
+
+// Verify
+export { AuthVerify } from "./verify/AuthVerify";
+export { useAuthVerifyFlow } from "./verify/useAuthVerifyFlow";

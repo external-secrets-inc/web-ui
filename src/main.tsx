@@ -8,6 +8,7 @@ import {
   AuthRedirectGuard,
   AuthResetPassword,
   AuthSignup,
+  AuthVerify,
 } from "@/components/Auth";
 import AxiosInterceptor from "@/components/AxiosInterceptor";
 import BodyPortal from "@/components/BodyPortal";
@@ -20,7 +21,6 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { Loader } from "@/components/ui/Loader";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Verify } from "@/components/Verify";
 import { DOCS_DOMAIN, IS_PROD } from "@/constants";
 import { FeatureFlagProvider } from "@/context/FeatureFlagContext";
 import { LayoutProvider } from "@/context/LayoutContext";
@@ -50,14 +50,6 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/verify",
-    element: (
-      <RequireAuth fallbackPath="/login">
-        <Verify />
-      </RequireAuth>
-    ),
-  },
-  {
     element: <AuthLayout />,
     children: [
       {
@@ -66,6 +58,14 @@ const router = createBrowserRouter([
           { path: "/signup", element: <AuthSignup /> },
           { path: "/login", element: <AuthLogin /> },
         ],
+      },
+      {
+        path: "/verify",
+        element: (
+          <RequireAuth fallbackPath="/login">
+            <AuthVerify />
+          </RequireAuth>
+        ),
       },
       { path: "/forgot-password", element: <AuthForgotPassword /> },
       { path: "/reset-password", element: <AuthResetPassword /> },
