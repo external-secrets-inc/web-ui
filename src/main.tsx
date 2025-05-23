@@ -1,72 +1,78 @@
 import ListAgents from "@/components/agents/ListAgents";
 import AppPageHeader from "@/components/AppPageHeader";
-import ForgotPassword from "@/components/Auth/ForgotPassword";
-import ResetPassword from "@/components/Auth/ResetPassword";
+import AuditWrapper from "@/components/audit/AuditWrapper";
+import {
+  AuthForgotPassword,
+  AuthLayout,
+  AuthLogin,
+  AuthRedirectGuard,
+  AuthResetPassword,
+  AuthSignup,
+  AuthVerify,
+} from "@/components/Auth";
 import AxiosInterceptor from "@/components/AxiosInterceptor";
+import BodyPortal from "@/components/BodyPortal";
 import NavigateWithOrg from "@/components/NavigateWithOrg";
 import { NotFound } from "@/components/NotFound";
 import RequireActiveUser from "@/components/RequireActiveUser";
+import ListRotators from "@/components/rotators/ListRotators";
 import Settings from "@/components/Settings";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { Loader } from "@/components/ui/Loader";
 import { Toaster } from "@/components/ui/sonner";
-import { Verify } from "@/components/Verify";
-import authStore from "@/services/auth/authStore";
-import RequireAuth from '@auth-kit/react-router/RequireAuth';
-import { useEffect, StrictMode, Suspense } from 'react';
-import AuthProvider from 'react-auth-kit';
-import { createRoot } from 'react-dom/client';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { load, page } from './analytics';
-import App from './App';
-import './index.css';
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { DOCS_DOMAIN, IS_PROD } from "@/constants";
-import ListRotators from "@/components/rotators/ListRotators";
+import { FeatureFlagProvider } from "@/context/FeatureFlagContext";
+import { LayoutProvider } from "@/context/LayoutContext";
+import { SubscriptionProvider } from "@/context/SubscriptionContext";
+import authStore from "@/services/auth/authStore";
+import RequireAuth from "@auth-kit/react-router/RequireAuth";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import AuditWrapper from "@/components/audit/AuditWrapper";
+import { StrictMode, Suspense, useEffect } from "react";
+import AuthProvider from "react-auth-kit";
+import { createRoot } from "react-dom/client";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { load, page } from "./analytics";
+import App from "./App";
 import OrgRedirector from "./components/OrgRedirector";
-import { Loader } from "@/components/ui/Loader";
-import { SubscriptionProvider } from '@/context/SubscriptionContext';
-import { FeatureFlagProvider } from '@/context/FeatureFlagContext';
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { LayoutProvider } from '@/context/LayoutContext';
-import BodyPortal from '@/components/BodyPortal';
+import "./index.css";
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient();
 
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: (
-      <RequireActiveUser loginFallbackPath="/signup" inactiveFallbackPath="/verify">
+      <RequireActiveUser loginFallbackPath="/login" inactiveFallbackPath="/verify">
         <NavigateWithOrg to="/agents" replace />
       </RequireActiveUser>
     ),
   },
   {
-    path: "/verify",
-    element: <RequireAuth fallbackPath="/login">
-      <Verify />
-    </RequireAuth>
+    element: <AuthLayout />,
+    children: [
+      {
+        element: <AuthRedirectGuard />,
+        children: [
+          { path: "/signup", element: <AuthSignup /> },
+          { path: "/login", element: <AuthLogin /> },
+        ],
+      },
+      {
+        path: "/verify",
+        element: (
+          <RequireAuth fallbackPath="/login">
+            <AuthVerify />
+          </RequireAuth>
+        ),
+      },
+      { path: "/forgot-password", element: <AuthForgotPassword /> },
+      { path: "/reset-password", element: <AuthResetPassword /> },
+    ],
   },
   {
-    path: '/signup',
-    element: <NavigateWithOrg to="/agents" fallbackToSignup replace />,
-  },
-  {
-    path: '/login',
-    element: <NavigateWithOrg to="/agents" fallbackToLogin replace />,
-  },
-  {
-    path: '/forgot-password',
-    element: <ForgotPassword />,
-  },
-  {
-    path: '/reset-password',
-    element: <ResetPassword />,
-  },
-  {
-    path: '/:org',
+    path: "/:org",
     element: (
       <AxiosInterceptor>
         <RequireActiveUser loginFallbackPath="/login" inactiveFallbackPath="/verify">
@@ -82,11 +88,11 @@ const router = createBrowserRouter([
     ),
     children: [
       {
-        path: '',
+        path: "",
         element: <NavigateWithOrg to="/agents" replace />,
       },
       {
-        path: 'agents',
+        path: "agents",
         element: (
           <>
             <AppPageHeader
@@ -100,10 +106,10 @@ const router = createBrowserRouter([
             />
             <ListAgents />
           </>
-        )
+        ),
       },
       {
-        path: 'rotators',
+        path: "rotators",
         element: (
           <>
             <AppPageHeader
@@ -117,7 +123,7 @@ const router = createBrowserRouter([
             />
             <ListRotators />
           </>
-        )
+        ),
       },
       // TODO: Remove mock variable when audit is ready https://github.com/external-secrets-inc/web-ui/issues/124
       import.meta.env.VITE_MOCK_AUDIT_ROUTE ? {
@@ -140,7 +146,7 @@ const router = createBrowserRouter([
         )
       } : {},
       {
-        path: 'settings',
+        path: "settings",
         element: (
           <>
             <AppPageHeader
@@ -149,12 +155,12 @@ const router = createBrowserRouter([
             />
             <Settings />
           </>
-        )
+        ),
       },
     ],
   },
   {
-    path: '*',
+    path: "*",
     element: <NotFound />,
   },
 ]);
@@ -180,7 +186,7 @@ const Main = () => {
   return <RouterProvider router={router} />;
 };
 
-const rootElement = document.getElementById('root');
+const rootElement = document.getElementById("root");
 if (rootElement) {
   createRoot(rootElement).render(
     <StrictMode>

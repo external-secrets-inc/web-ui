@@ -1,53 +1,63 @@
 import { LoginAndIdentifyParams } from "@/services/auth/Auth.interfaces";
 import { performLogin } from "@/services/auth/mutations/usePerformLogin";
 import { getUserData } from "@/services/users/queries/useGetUserData";
-import { ApiHttpError } from "@/types";
+import { ApiHttpError, IUserData } from "@/types";
 import { useMutation, UseMutationOptions } from "@tanstack/react-query";
 import { AxiosError } from "axios";
+
+export interface LoginResult {
+  isSignedIn: boolean;
+  userState: IUserData;
+}
 
 const buildUserState = ({
   email,
   name,
   userDetails,
   tenantId,
-  tenant,
+  tenantSlug,
   userId,
 }: {
   email: string;
   name?: string;
   userDetails: Awaited<ReturnType<typeof getUserData>>;
   tenantId: string;
-  tenant: unknown;
+  tenantSlug: string;
   userId: string;
-}) => {
-  return {
-    email,
-    name: name || userDetails.name,
-    isActive: userDetails.is_active,
-    tenantId,
-    tenant,
-    userId,
-  };
-};
+}): IUserData => ({
+  email,
+  name: name || userDetails.name,
+  isActive: userDetails.is_active,
+  tenantId,
+  tenant: tenantSlug,
+  organizationURL: tenantSlug,
+  userId,
+});
 
 const signInUser = (
   authKitSignIn: LoginAndIdentifyParams["authKitSignIn"],
   token: string,
-  userState: Record<string, unknown>
-) => {
-  return authKitSignIn({
-    auth: {
-      token,
-      type: "Bearer",
-    },
-    userState,
-  });
-};
+  userState: IUserData
+): boolean => authKitSignIn({
+  auth: {
+    token,
+    type: "Bearer",
+  },
+  userState,
+});
 
-const identifyUserWithAnalytics = (userState: Record<string, unknown>) => {
-  const { userId, email, name, ...segmentUserState } = userState; // eslint-disable-line @typescript-eslint/no-unused-vars
+const identifyUserWithAnalytics = (userState: IUserData): void => {
+  const { userId, organizationURL, tenantId } = userState;
+  const traits = {
+    organizationURL,
+    tenantId,
+  };
   try {
-    analytics.identify(userId as string, segmentUserState);
+    if (typeof analytics !== 'undefined' && analytics.identify) {
+      analytics.identify(userId, traits);
+    } else {
+      console.warn("Segment analytics.identify not available.");
+    }
   } catch (error) {
     console.error("Segment identify call failed:", error);
   }
@@ -59,39 +69,38 @@ const loginAndIdentifyUser = async ({
   tenantSlug,
   name,
   authKitSignIn,
-}: LoginAndIdentifyParams): Promise<boolean> => {
-  const { token, tenantId, tenant, userId } = await performLogin({email, password, tenant: tenantSlug});
-  const userDetails = await getUserData(userId!, token);
-  
+}: LoginAndIdentifyParams): Promise<LoginResult> => {
+  const { token, tenantId, tenant: returnedTenantSlug, userId } = await performLogin({ email, password, tenant: tenantSlug });
+
+  if (!userId) {
+    throw new Error("Login failed: No user ID returned");
+  }
+
+  const userDetails = await getUserData(userId, token);
   const userState = buildUserState({
     email,
     name,
     userDetails,
     tenantId,
-    tenant,
-    userId: userId!,
+    tenantSlug: returnedTenantSlug,
+    userId,
   });
-  
+
   const isSignedIn = signInUser(authKitSignIn, token, userState);
-  
+
   if (isSignedIn) {
     identifyUserWithAnalytics(userState);
-    return true;
   }
-  
-  return false;
-};
 
+  return { isSignedIn, userState };
+};
 
 const useLoginAndIdentifyUser = (
-  options?: Omit<UseMutationOptions<boolean, AxiosError<ApiHttpError>, LoginAndIdentifyParams>, 'mutationKey' | 'mutationFn'>
-) => {
-
-  return useMutation({
-    mutationKey: ["useLoginAndIdentifyUser"],
-    mutationFn: (variables: LoginAndIdentifyParams) => loginAndIdentifyUser(variables),
-    ...options,
-  });
-};
+  options?: Omit<UseMutationOptions<LoginResult, AxiosError<ApiHttpError>, LoginAndIdentifyParams>, 'mutationKey' | 'mutationFn'>
+) => useMutation({
+  mutationKey: ["auth", "useLoginAndIdentifyUser"],
+  mutationFn: loginAndIdentifyUser,
+  ...options,
+});
 
 export default useLoginAndIdentifyUser;
