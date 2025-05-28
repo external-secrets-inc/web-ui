@@ -31,7 +31,7 @@ import { AuditSecretData, filterSchema, FilterSchema } from "./Audit.interfaces"
 import useGetAuditProviders from "@/services/audit/queries/useGetAuditProviders";
 import useGetPolicies from "@/services/audit/queries/useGetPolicies";
 import { useMemo, useState, useEffect } from "react";
-import { useAuditFilter } from "./AuditFilterProvider";
+import { useAuditFilter } from "./AuditFilterContext";
 import { Loader } from "@/components/ui/Loader";
 
 interface FilterDialogFormProps {
@@ -41,7 +41,7 @@ interface FilterDialogFormProps {
 }
 import { formatDate } from "@/utils/dateUtils";
 import useGetAuditSecrets from "@/services/audit/queries/useGetAuditSecrets";
-import { AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants";
+import { AUDIT_QUERY_STALE_TIME } from "@/components/Audit/Audit.constants";
 
 const BooleanFilter = ({
   formControl,

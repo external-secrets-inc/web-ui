@@ -1,9 +1,9 @@
-import { AuditTimelineChartCard } from "@/components/audit/AuditTimelineChartCard"
+import { AuditTimelineChartCard } from "@/components/Audit/AuditTimelineChartCard"
 import { ChartConfig } from "@/components/ui/chart"
 import useGetAuditProblemTimelineStats from "@/services/audit/queries/useGetAuditProblemTimelineStats"
 import { TimeRange } from "./Audit.interfaces"
 import { formatDate } from "@/utils/dateUtils"
-import { AUDIT_PAGE_QUERY_REFETCH_INTERVAL, AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants"
+import { AUDIT_PAGE_QUERY_REFETCH_INTERVAL, AUDIT_QUERY_STALE_TIME } from "@/components/Audit/Audit.constants"
 
 const BASE_CHART_CONFIG = {
   amount: {

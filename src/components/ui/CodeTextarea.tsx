@@ -1,4 +1,4 @@
-import { useTheme } from '@/components/ThemeProvider';
+import { useTheme } from "@/context/ThemeContext";
 import { cn } from "@/lib/utils";
 import CodeEditor, { TextareaCodeEditorProps } from '@uiw/react-textarea-code-editor';
 import { forwardRef } from 'react';

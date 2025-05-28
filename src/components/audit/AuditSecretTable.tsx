@@ -9,13 +9,13 @@ import useGetDashboarSecretTable from "@/services/audit/queries/useGetDashboarSe
 import { AuditSecretTableData } from "./Audit.interfaces";
 import FilterDialogForm from "./FilterDialogForm";
 import AuditSecretDetails from "./AuditSecretDetails";
-import { useAuditFilter } from "./AuditFilterProvider";
+import { useAuditFilter } from "./AuditFilterContext";
 import { useSearchParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import saveAs from "file-saver";
 import { Separator } from "@/components/ui/separator";
 import { formatDate } from "@/utils/dateUtils";
-import { AUDIT_PAGE_QUERY_REFETCH_INTERVAL, AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants";
+import { AUDIT_PAGE_QUERY_REFETCH_INTERVAL, AUDIT_QUERY_STALE_TIME } from "@/components/Audit/Audit.constants";
 
 interface AuditSecretTableProps {
   listenerID: string;

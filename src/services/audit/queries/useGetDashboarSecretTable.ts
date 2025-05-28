@@ -4,10 +4,9 @@ import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError, } from "@/types";
 import { AxiosError } from "axios";
 import { mockNetworkResponseDelay, mockAuditSecretTableData } from "../mocks/mockData";
-import { AuditSecretTableData, filterSchema } from "@/components/audit/Audit.interfaces";
-import { useAuditMock } from '@/services/audit/context/AuditMockContext';
+import { AuditSecretTableData, filterSchema } from "@/components/Audit/Audit.interfaces";
+import { useAuditMock } from '@/components/Audit/AuditMockContext';
 
-// TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/115
 const getDashboardSecretTable = async (
   mock: boolean,
   signal: AbortSignal,

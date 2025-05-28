@@ -1,11 +1,11 @@
-import { AuditMetric } from "@/components/audit/Audit.interfaces";
+import { AuditMetric } from "@/components/Audit/Audit.interfaces";
 import { mockNetworkResponseDelay, mockProviderStats } from "@/services/audit/mocks/mockData";
 import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError } from "@/types";
 import { UseQueryOptions, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { useAuditMock } from '@/services/audit/context/AuditMockContext';
+import { useAuditMock } from '@/components/Audit/AuditMockContext';
 
 const getAuditProviderStats = async (mock: boolean, listenerID: string, signal: AbortSignal) => {
   // TODO: Remove this mock when the API is ready

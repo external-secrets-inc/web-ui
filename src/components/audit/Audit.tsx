@@ -20,8 +20,12 @@ import { useEffect, useState } from "react";
 import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { AUDIT_QUERY_STALE_TIME, LISTENER_STATUS, TIME_RANGES } from "./Audit.constants";
-import { TimeRange, TimeUnit, TenantListener, AuditListener } from "./Audit.interfaces";
+import {
+  AUDIT_QUERY_STALE_TIME,
+  LISTENER_STATUS,
+  TIME_RANGES,
+} from "./Audit.constants";
+import { TimeRange, TimeUnit } from "./Audit.interfaces";
 import AuditChartProblems from "./AuditChartProblems";
 import AuditChartProviders from "./AuditChartProviders";
 import AuditPolicyDataTable from "./AuditPolicyDataTable";
@@ -32,24 +36,21 @@ import ListenerInstallDialogContent from "./ListenerInstallDialogContent";
 import { AuditSecretTable } from "./AuditSecretTable";
 import { formatDate } from "@/utils/dateUtils";
 import AuditDestinationDataTable from "./AuditDestinationDataTable";
-
-interface AuditProps {
-  tenantListener: TenantListener;
-  auditListener: AuditListener;
-}
+import { useAuditContext } from "./AuditContext";
+import { AuditFilterProvider } from "./AuditFilterContext";
 
 const getDaysBetweenDates = (start: string, end: string) => {
   const ONE_DAY_IN_MILLISECONDS =
     ONE_SECOND_IN_MILLISECONDS * ONE_MINUTE_IN_SECONDS * 60 * 24;
   return Math.round(
     (new Date(end).getTime() - new Date(start).getTime()) /
-    ONE_DAY_IN_MILLISECONDS
+      ONE_DAY_IN_MILLISECONDS
   );
 };
 
 const isDateFromToday = (dateStr: string) => {
-  const today = formatDate(new Date(), { format: 'isoUTC' });
-  const date = formatDate(new Date(dateStr), { format: 'isoUTC' });
+  const today = formatDate(new Date(), { format: "isoUTC" });
+  const date = formatDate(new Date(dateStr), { format: "isoUTC" });
   return today === date;
 };
 
@@ -63,32 +64,36 @@ const STATUS_CONFIG = {
   [LISTENER_STATUS.ACTIVE]: {
     label: "Active",
     variant: "success",
-    color: "text-green-500"
+    color: "text-green-500",
   },
   [LISTENER_STATUS.OFFLINE]: {
     label: "Offline",
     variant: "destructive",
-    color: "text-red-500"
+    color: "text-red-500",
   },
   [LISTENER_STATUS.PENDING_INSTALLATION]: {
     label: "Pending Installation",
     variant: "warning",
-    color: "text-orange-500"
-  }
+    color: "text-orange-500",
+  },
 } as const;
 
-export default function Audit({ tenantListener, auditListener }: AuditProps) {
+export default function Audit() {
+  const { tenantListener, auditListener } = useAuditContext();
   const authUser = useAuthUser<IUserData>();
   const [bashCommand, setBashCommand] = useState("");
   const [manifestCommand, setManifestCommand] = useState("");
-  const [isListenerInstallDialogOpen, setIsListenerInstallDialogOpen] = useState(false);
+  const [isListenerInstallDialogOpen, setIsListenerInstallDialogOpen] =
+    useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const [timeUnit, setTimeUnit] = useState<TimeUnit>(() => {
-    const initialTimeUnit = searchParams.get("chartsTimeUnit")
+    const initialTimeUnit = searchParams.get("chartsTimeUnit");
     if (!initialTimeUnit) return "day";
     return initialTimeUnit as TimeUnit;
   });
-  const [currentToggledTimeRange, setCurrentToggledTimeRange] = useState<number | null>(() => {
+  const [currentToggledTimeRange, setCurrentToggledTimeRange] = useState<
+    number | null
+  >(() => {
     const startDate = searchParams.get("chartsStartDate");
     const endDate = searchParams.get("chartsEndDate");
     if (!startDate || !endDate) return 0;
@@ -106,43 +111,55 @@ export default function Audit({ tenantListener, auditListener }: AuditProps) {
     return TIME_RANGES.find((r) => r.days === diffDays)?.days ?? null;
   });
 
-  const { mutate: createTenantInstallationToken, data: tenantInstallationToken } = useCreateTenantInstallationToken(
-    false,
-    {
-      onError: (error: AxiosError<ApiHttpError>) =>
-        handleDefaultApiHttpError(
-          error,
-          "Error while trying to generate manifest token"
-        ),
-    }
-  );
+  const {
+    mutate: createTenantInstallationToken,
+    data: tenantInstallationToken,
+  } = useCreateTenantInstallationToken(false, {
+    onError: (error: AxiosError<ApiHttpError>) =>
+      handleDefaultApiHttpError(
+        error,
+        "Error while trying to generate manifest token"
+      ),
+  });
 
   const {
     data: tenantBashFileData,
     isLoading: isLoadingTenantBashFile,
     error: tenantBashFileError,
     isError: isErrorTenantBashFile,
-  } = useGetTenantBashFile(false, tenantInstallationToken ?? "", "latest", tenantListener.id, {
-    staleTime: AUDIT_QUERY_STALE_TIME,
-    enabled: isListenerInstallDialogOpen && Boolean(tenantInstallationToken)
-  });
+  } = useGetTenantBashFile(
+    false,
+    tenantInstallationToken ?? "",
+    "latest",
+    tenantListener?.id ?? "",
+    {
+      staleTime: AUDIT_QUERY_STALE_TIME,
+      enabled:
+        isListenerInstallDialogOpen &&
+        Boolean(tenantInstallationToken) &&
+        !!tenantListener?.id,
+    }
+  );
 
   const {
     data: tenantHelmData,
     isLoading: isLoadingTenantHelm,
     error: tenantHelmError,
     isError: isErrorTenantHelm,
-  } = useGetTenantHelm(false, "latest", tenantListener.id, {
+  } = useGetTenantHelm(false, "latest", tenantListener?.id ?? "", {
     staleTime: AUDIT_QUERY_STALE_TIME,
-    enabled: isListenerInstallDialogOpen
+    enabled: isListenerInstallDialogOpen && !!tenantListener?.id,
   });
 
   // Effect to create installation token when dialog opens
   useEffect(() => {
-    if (!isListenerInstallDialogOpen || !tenantListener.id) return;
-
+    if (!isListenerInstallDialogOpen || !tenantListener?.id) return;
     createTenantInstallationToken({ id: tenantListener.id });
-  }, [isListenerInstallDialogOpen, tenantListener.id, createTenantInstallationToken]);
+  }, [
+    isListenerInstallDialogOpen,
+    tenantListener?.id,
+    createTenantInstallationToken,
+  ]);
 
   useEffect(() => {
     if (!tenantBashFileError) return;
@@ -165,7 +182,7 @@ export default function Audit({ tenantListener, auditListener }: AuditProps) {
   // Update commands contents when token is available
   // TODO update commands to real endpoints https://github.com/external-secrets-inc/web-ui/issues/118
   useEffect(() => {
-    if (!tenantInstallationToken || !tenantListener.id) return;
+    if (!tenantInstallationToken || !tenantListener?.id) return;
 
     let command = [
       "curl \\",
@@ -182,11 +199,7 @@ export default function Audit({ tenantListener, auditListener }: AuditProps) {
       "| bash",
     ].join("\n");
     setBashCommand(command);
-  }, [tenantInstallationToken, tenantListener.id]);
-
-  const handleListenerInstallDialogOpenChange = (isOpen: boolean) => {
-    setIsListenerInstallDialogOpen(isOpen);
-  };
+  }, [tenantInstallationToken, tenantListener?.id]);
 
   useEffect(() => {
     if (!auditListener?.listenerID) return;
@@ -194,14 +207,22 @@ export default function Audit({ tenantListener, auditListener }: AuditProps) {
     trackListenerInstallDialogOpened(auditListener.listenerID);
   }, [auditListener?.listenerID]);
 
+  if (!tenantListener || !auditListener) {
+    return null;
+  }
+
+  const handleListenerInstallDialogOpenChange = (isOpen: boolean) => {
+    setIsListenerInstallDialogOpen(isOpen);
+  };
+
   const calculateTimeUnit = (days: number | null) => {
     if (!days) return "day";
-    if (days <= 7) return "hour"
-    if (days <= 30) return "day"
-    if (days <= 90) return "week"
+    if (days <= 7) return "hour";
+    if (days <= 30) return "day";
+    if (days <= 90) return "week";
 
-    return "month"
-  }
+    return "month";
+  };
 
   const handleTimeRangeChange = (days: number | null) => {
     setCurrentToggledTimeRange(days);
@@ -218,8 +239,14 @@ export default function Audit({ tenantListener, auditListener }: AuditProps) {
         const start = new Date(end);
         start.setDate(end.getDate() - days);
 
-        prevParams.set("chartsStartDate", formatDate(start, { format: 'isoDateOnlyUTC' }));
-        prevParams.set("chartsEndDate", formatDate(end, { format: 'isoDateOnlyUTC' }));
+        prevParams.set(
+          "chartsStartDate",
+          formatDate(start, { format: "isoDateOnlyUTC" })
+        );
+        prevParams.set(
+          "chartsEndDate",
+          formatDate(end, { format: "isoDateOnlyUTC" })
+        );
         prevParams.set("chartsTimeUnit", chartsTimeUnit);
       }
       return prevParams;
@@ -239,11 +266,12 @@ export default function Audit({ tenantListener, auditListener }: AuditProps) {
     return tenantHelmData?.manifest || "";
   };
 
-  const getStatusConfig = (status: string) => STATUS_CONFIG[status] ?? {
-    label: "Unknown",
-    variant: "secondary",
-    color: "text-gray-500"
-  };
+  const getStatusConfig = (status: string) =>
+    STATUS_CONFIG[status] ?? {
+      label: "Unknown",
+      variant: "secondary",
+      color: "text-gray-500",
+    };
 
   return (
     <div className="space-y-8">
@@ -258,8 +286,8 @@ export default function Audit({ tenantListener, auditListener }: AuditProps) {
               installed
             </AlertTitle>
             <AlertDescription className="flex items-center justify-between">
-              To start receiving audit data, you need to install our listener
-              in your cluster
+              To start receiving audit data, you need to install our listener in
+              your cluster
             </AlertDescription>
           </div>
           <Dialog
@@ -307,13 +335,17 @@ export default function Audit({ tenantListener, auditListener }: AuditProps) {
             <TabsTrigger value="destinations">Destinations</TabsTrigger>
           </TabsList>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Listener Status:</span>
+            <span className="text-sm text-muted-foreground">
+              Listener Status:
+            </span>
             <Badge
               variant={getStatusConfig(auditListener.status).variant}
               className="flex items-center gap-2"
             >
               <Circle
-                className={`w-2 h-2 animate-pulse ${getStatusConfig(auditListener.status).color}`}
+                className={`w-2 h-2 animate-pulse ${
+                  getStatusConfig(auditListener.status).color
+                }`}
                 fill="currentColor"
               />
               {getStatusConfig(auditListener.status).label}
@@ -321,7 +353,10 @@ export default function Audit({ tenantListener, auditListener }: AuditProps) {
           </div>
         </div>
 
-        <TabsContent value="dashboard" className="data-[state=active]:grid grid-cols-1 gap-4">
+        <TabsContent
+          value="dashboard"
+          className="data-[state=active]:grid grid-cols-1 gap-4"
+        >
           <div className="flex flex-wrap items-center justify-between gap-2 w-full pt-4">
             <h2 className="font-bold">Analytics</h2>
             <ToggleGroup
@@ -331,7 +366,11 @@ export default function Audit({ tenantListener, auditListener }: AuditProps) {
               onValueChange={(value) => handleTimeRangeChange(Number(value))}
             >
               {TIME_RANGES.map(({ days, label }) => (
-                <ToggleGroupItem key={days} className="w-12" value={String(days)}>
+                <ToggleGroupItem
+                  key={days}
+                  className="w-12"
+                  value={String(days)}
+                >
                   {label}
                 </ToggleGroupItem>
               ))}
@@ -363,9 +402,9 @@ export default function Audit({ tenantListener, auditListener }: AuditProps) {
               </>
             ) : null}
           </div>
-          <AuditSecretTable
-            listenerID={auditListener.listenerID}
-          />
+          <AuditFilterProvider>
+            <AuditSecretTable listenerID={auditListener.listenerID} />
+          </AuditFilterProvider>
         </TabsContent>
 
         <TabsContent value="providers" className="space-y-4">
@@ -383,7 +422,7 @@ export default function Audit({ tenantListener, auditListener }: AuditProps) {
         </TabsContent>
 
         <TabsContent value="destinations" className="space-y-4">
-          <AuditDestinationDataTable/>
+          <AuditDestinationDataTable />
         </TabsContent>
       </Tabs>
     </div>

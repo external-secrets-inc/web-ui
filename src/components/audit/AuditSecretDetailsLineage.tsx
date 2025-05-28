@@ -2,7 +2,7 @@ import { Background, Controls, ReactFlow, Node, Edge, MarkerType, Handle, Positi
 import '@xyflow/react/dist/base.css';
 import Dagre from '@dagrejs/dagre';
 import { useEffect, useState, useRef } from 'react';
-import { LineageData, LineageNodeData } from '@/components/audit/Audit.interfaces';
+import { LineageData, LineageNodeData } from '@/components/Audit/Audit.interfaces';
 import { formatDate } from "@/utils/dateUtils";
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';

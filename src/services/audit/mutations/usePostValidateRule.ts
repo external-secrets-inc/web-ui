@@ -4,7 +4,7 @@ import axiosInstance from "@/services/axiosConfig";
 import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
 import { mockNetworkResponseDelay } from "../mocks/mockData";
-import { useAuditMock } from "../context/AuditMockContext";
+import { useAuditMock } from "@/components/Audit/AuditMockContext";
 
 interface ValidateRulePayload {
   regoCode: string;

@@ -1,5 +1,5 @@
-import { AUDIT_PAGE_QUERY_REFETCH_INTERVAL, AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants"
-import { AuditBarChartCard } from "@/components/audit/AuditBarChartCard"
+import { AUDIT_PAGE_QUERY_REFETCH_INTERVAL, AUDIT_QUERY_STALE_TIME } from "@/components/Audit/Audit.constants"
+import { AuditBarChartCard } from "@/components/Audit/AuditBarChartCard"
 import { ChartConfig } from "@/components/ui/chart"
 import { Skeleton } from "@/components/ui/skeleton"
 import { mockLastUpdate } from "@/services/audit/mocks/mockData"

@@ -1,9 +1,9 @@
-import { AuditBarChartCard } from "@/components/audit/AuditBarChartCard"
+import { AuditBarChartCard } from "@/components/Audit/AuditBarChartCard"
 import { ChartConfig } from "@/components/ui/chart"
 import useGetAuditProviderStats from "@/services/audit/queries/useGetAuditProviderStats"
 import { mockLastUpdate } from "@/services/audit/mocks/mockData"
 import { Skeleton } from "@/components/ui/skeleton"
-import { AUDIT_PAGE_QUERY_REFETCH_INTERVAL, AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants"
+import { AUDIT_PAGE_QUERY_REFETCH_INTERVAL, AUDIT_QUERY_STALE_TIME } from "@/components/Audit/Audit.constants"
 
 const BASE_CHART_CONFIG = {
   amount: {

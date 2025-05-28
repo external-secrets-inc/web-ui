@@ -1,0 +1,60 @@
+import AppLogo from "@/components/AppLogo";
+import {
+  LayoutSidebarNavigationList,
+  LayoutSidebarUserMenu,
+  useLayoutNavigation,
+} from "@/components/layout";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarRail,
+} from "@/components/ui/sidebar";
+import useOrgLink from "@/hooks/useOrgLink";
+
+export function LayoutSidebar({
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
+  const getOrgLink = useOrgLink();
+  const { navMain, navFooter } = useLayoutNavigation(getOrgLink);
+
+  return (
+    <Sidebar
+      className="z-50"
+      collapsible="offcanvas"
+      variant="inset"
+      {...props}
+    >
+      <SidebarHeader className="h-11">
+        <div className="px-0.5">
+          <AppLogo />
+        </div>
+      </SidebarHeader>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarMenu>
+            <LayoutSidebarNavigationList
+              items={navMain}
+              getOrgLink={getOrgLink}
+            />
+          </SidebarMenu>
+        </SidebarGroup>
+        <SidebarGroup className="mt-auto">
+          <SidebarMenu>
+            <LayoutSidebarNavigationList
+              items={navFooter}
+              getOrgLink={getOrgLink}
+            />
+          </SidebarMenu>
+        </SidebarGroup>
+      </SidebarContent>
+      <SidebarFooter>
+        <LayoutSidebarUserMenu />
+      </SidebarFooter>
+      <SidebarRail />
+    </Sidebar>
+  );
+}

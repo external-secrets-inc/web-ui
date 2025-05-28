@@ -23,7 +23,7 @@ import { LucideCheck, LucideEdit, LucideMoreVertical, LucidePlus, LucideTrash2, 
 import { DataProvider, DataTable, defineColumns } from "@/components/ui/DataProvider";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { FeatureItemDeleteAction } from "../FeatureCollection/FeatureItemDeleteAction";
-import { AUDIT_QUERY_STALE_TIME } from "../audit/Audit.constants";
+import { AUDIT_QUERY_STALE_TIME } from "@/components/Audit/Audit.constants";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import useListUsersWithRoles from "@/services/users/queries/useListUsersWithRoles";

@@ -3,8 +3,8 @@ import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
-import { useAuditMock } from '@/services/audit/context/AuditMockContext';
-import { AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants";
+import { useAuditMock } from '@/components/Audit/AuditMockContext';
+import { AUDIT_QUERY_STALE_TIME } from "@/components/Audit/Audit.constants";
 
 export interface DestinationTypeField {
   label: string;

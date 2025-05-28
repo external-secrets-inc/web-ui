@@ -3,10 +3,10 @@ import useGetTenantListeners from "@/services/audit/queries/useGetTenantListener
 import useGetAuditListener from "@/services/audit/queries/useGetAuditListener";
 import useCreateTenantListener from "@/services/audit/mutations/useCreateTenantListener";
 import useCreateAuditListener from "@/services/audit/mutations/useCreateAuditListener";
-import { AUDIT_PAGE_QUERY_REFETCH_INTERVAL, AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants";
+import { AUDIT_PAGE_QUERY_REFETCH_INTERVAL, AUDIT_QUERY_STALE_TIME } from "@/components/Audit/Audit.constants";
 import { useEffect, useCallback } from "react";
 import { IUserData } from "@/types";
-import { TenantListener, AuditListener } from "@/components/audit/Audit.interfaces";
+import { TenantListener, AuditListener } from "@/components/Audit/Audit.interfaces";
 import { AxiosError } from "axios";
 
 interface SetupState {

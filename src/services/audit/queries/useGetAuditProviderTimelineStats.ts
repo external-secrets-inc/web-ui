@@ -1,11 +1,11 @@
-import { AuditTimelineEntry } from "@/components/audit/Audit.interfaces";
+import { AuditTimelineEntry } from "@/components/Audit/Audit.interfaces";
 import { getMockProviderTimelineStats, mockNetworkResponseDelay } from "@/services/audit/mocks/mockData";
 import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError } from "@/types";
 import { UseQueryOptions, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { useAuditMock } from '@/services/audit/context/AuditMockContext';
+import { useAuditMock } from '@/components/Audit/AuditMockContext';
 interface QueryOptions {
   startDate: string;
   endDate: string;

@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LucideNetwork, LucideSquareAsterisk, LucideAlertCircle } from "lucide-react";
 import { useFeatureFlag } from "@/context/FeatureFlagContext";
 import { cn } from "@/lib/utils";
-import { AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants";
+import { AUDIT_QUERY_STALE_TIME } from "@/components/Audit/Audit.constants";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function AuditSecretDetails({

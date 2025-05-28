@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, Dialog, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CreatePolicyPayload, PolicyForm, PolicyTriggerTableData, triggerConditionsMap } from '@/components/audit/Audit.interfaces';
+import { CreatePolicyPayload, PolicyForm, PolicyTriggerTableData, triggerConditionsMap } from '@/components/Audit/Audit.interfaces';
 import { MultiSelect } from '@/components/ui/MultiSelect';
 import { CodeTextarea } from '@/components/ui/CodeTextarea';
 import useGetValidateRule from '@/services/audit/queries/useGetValidateRule';
@@ -16,7 +16,7 @@ import usePostValidateRule from "@/services/audit/mutations/usePostValidateRule"
 import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants";
+import { AUDIT_QUERY_STALE_TIME } from "@/components/Audit/Audit.constants";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LucidePlus, LucideTrash } from "lucide-react";
 import { DataProvider, DataTable, defineColumns } from "@/components/ui/DataProvider";

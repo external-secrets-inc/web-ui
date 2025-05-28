@@ -1,6 +1,7 @@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { useAuditMock, MockSource } from '@/services/audit/context/AuditMockContext';
+import { useAuditMock } from "@/components/Audit/AuditMockContext";
+import type { MockSource } from "@/components/Audit/AuditMockContext";
 
 /**
  * Toggle component to switch between API and Mock data sources for Audit features.
@@ -27,31 +28,33 @@ const AuditMockToggle = () => {
         aria-label="Data Source Toggle"
       >
         <Tooltip>
-            <ToggleGroupItem value="hooks">
-          <TooltipTrigger asChild>
+          <ToggleGroupItem value="hooks">
+            <TooltipTrigger asChild>
               <div>Hooks</div>
-          </TooltipTrigger>
-            </ToggleGroupItem>
+            </TooltipTrigger>
+          </ToggleGroupItem>
           <TooltipContent>
-            Use the explicitly set mock parameter in the code for each React Query hook's query.
+            Use the explicitly set mock parameter in the code for each React
+            Query hook's query.
           </TooltipContent>
         </Tooltip>
         <Tooltip>
-            <ToggleGroupItem value="api">
-          <TooltipTrigger asChild>
+          <ToggleGroupItem value="api">
+            <TooltipTrigger asChild>
               <div>API</div>
-          </TooltipTrigger>
-            </ToggleGroupItem>
+            </TooltipTrigger>
+          </ToggleGroupItem>
           <TooltipContent>
-            Force all hooks to use real API calls, regardless of individual settings.
+            Force all hooks to use real API calls, regardless of individual
+            settings.
           </TooltipContent>
         </Tooltip>
         <Tooltip>
-            <ToggleGroupItem value="mock">
-          <TooltipTrigger asChild>
+          <ToggleGroupItem value="mock">
+            <TooltipTrigger asChild>
               <div>Mock</div>
-          </TooltipTrigger>
-            </ToggleGroupItem>
+            </TooltipTrigger>
+          </ToggleGroupItem>
           <TooltipContent>
             Force all hooks to use mock data, regardless of individual settings.
           </TooltipContent>

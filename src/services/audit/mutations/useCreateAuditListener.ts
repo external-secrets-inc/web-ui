@@ -3,10 +3,9 @@ import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
-import { CreateAuditListenerPayload } from "@/components/audit/Audit.interfaces";
-import { useAuditMock } from '@/services/audit/context/AuditMockContext';
+import { CreateAuditListenerPayload } from "@/components/Audit/Audit.interfaces";
+import { useAuditMock } from '@/components/Audit/AuditMockContext';
 
-// TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/119
 const createAuditListener = async (
   mock: boolean,
   payload: CreateAuditListenerPayload

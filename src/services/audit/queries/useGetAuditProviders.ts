@@ -4,10 +4,9 @@ import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError, } from "@/types";
 import { AxiosError } from "axios";
 import { mockNetworkResponseDelay, mockProvidersData } from "../mocks/mockData";
-import { ProviderTableData } from "@/components/audit/Audit.interfaces";
-import { useAuditMock } from '@/services/audit/context/AuditMockContext';
+import { ProviderTableData } from "@/components/Audit/Audit.interfaces";
+import { useAuditMock } from '@/components/Audit/AuditMockContext';
 
-// TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/119
 const getAuditProviders = async (
   mock: boolean,
   listenerID: string,
@@ -19,7 +18,7 @@ const getAuditProviders = async (
   }
 
   const headers = await getAuthHeaders();
-  const response = await axiosInstance.get('/api/providers', { headers, signal, backend: 'AUDIT_POC', params: {"listener_id": listenerID} });
+  const response = await axiosInstance.get('/api/providers', { headers, signal, backend: 'AUDIT_POC', params: { "listener_id": listenerID } });
   return response.data;
 }
 

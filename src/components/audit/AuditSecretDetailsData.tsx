@@ -27,7 +27,7 @@ import useGetAuditSecretExport from "@/services/audit/queries/useGetAuditSecretE
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { Button } from "@/components/ui/button";
 import saveAs from "file-saver";
-import { AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants";
+import { AUDIT_QUERY_STALE_TIME } from "@/components/Audit/Audit.constants";
 
 const POLICY_STATUS_COLORS = {
   compliant: "text-success",

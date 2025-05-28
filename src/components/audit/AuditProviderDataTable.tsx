@@ -16,7 +16,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction" // TODO[cfviotti]: We should not import components from non generic stuff! This should be a generic component, or re-implemented here.
 import useEditProvider, { EditProviderVariables } from "@/services/audit/mutations/useEditProvider";
 import useGetProvidersTypes from "@/services/audit/queries/useGetProvidersType";
-import { AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants.ts";
+import { AUDIT_QUERY_STALE_TIME } from "@/components/Audit/Audit.constants";
 
 interface ProviderTableMeta {
   renderRowActions?: (row: ProviderTableData) => React.ReactNode;

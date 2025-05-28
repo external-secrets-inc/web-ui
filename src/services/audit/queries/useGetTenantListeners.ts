@@ -4,10 +4,9 @@ import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
 import { mockNetworkResponseDelay } from "../mocks/mockData";
-import { TenantListener } from "@/components/audit/Audit.interfaces"; // Update the import for TenantListener
-import { useAuditMock } from '@/services/audit/context/AuditMockContext';
+import { TenantListener } from "@/components/Audit/Audit.interfaces"; // Update the import for TenantListener
+import { useAuditMock } from '@/components/Audit/AuditMockContext';
 
-// TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/115
 const getTenantListeners = async (
   mock: boolean,
   signal: AbortSignal,

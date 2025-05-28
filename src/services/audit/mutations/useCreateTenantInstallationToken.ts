@@ -3,11 +3,10 @@ import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
-import { useAuditMock } from '@/services/audit/context/AuditMockContext';
+import { useAuditMock } from '@/components/Audit/AuditMockContext';
 
-// TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/118
 const createInstallationToken = async (mock: boolean, listenerId: string) => {
-  if(mock) return 'mockedTokenValue'
+  if (mock) return 'mockedTokenValue'
 
   const headers = await getAuthHeaders();
   const response = await axiosInstance.post(`/api/listeners/${listenerId}/manifest-token`, {}, { headers });
@@ -18,11 +17,11 @@ const useCreateTenantInstallationToken = (
   mock: boolean,
   options?: Omit<UseMutationOptions<string, AxiosError<ApiHttpError>, { id: string }>, 'mutationKey' | 'mutationFn'>
 ) => {
-const { isMocked } = useAuditMock(mock);
+  const { isMocked } = useAuditMock(mock);
 
   return useMutation({
     mutationKey: ["useCreateListenerInstallationToken", isMocked],
-    mutationFn: (variables: {id: string}) => {
+    mutationFn: (variables: { id: string }) => {
       return createInstallationToken(isMocked, variables.id)
     },
     ...options,

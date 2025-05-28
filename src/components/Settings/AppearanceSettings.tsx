@@ -1,6 +1,5 @@
-import { useTheme } from "@/components/ThemeProvider";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"; // eslint-disable-line @typescript-eslint/no-unused-vars
-
+import { useTheme } from "@/context/ThemeContext";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useEffect } from 'react';

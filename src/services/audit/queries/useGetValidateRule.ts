@@ -4,7 +4,7 @@ import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError, } from "@/types";
 import { AxiosError } from "axios";
 import { mockNetworkResponseDelay } from "../mocks/mockData";
-import { useAuditMock } from "../context/AuditMockContext";
+import { useAuditMock } from "@/components/Audit/AuditMockContext";
 
 interface ValidateRuleResponse {
   "secret_name": string;

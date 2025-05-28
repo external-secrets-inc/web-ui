@@ -4,8 +4,8 @@ import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError, } from "@/types";
 import { AxiosError } from "axios";
 import { mockNetworkResponseDelay, mockSecretAccessorLogsData } from "../mocks/mockData";
-import { AccessorDetails } from "@/components/audit/Audit.interfaces";
-import { useAuditMock } from '@/services/audit/context/AuditMockContext';
+import { AccessorDetails } from "@/components/Audit/Audit.interfaces";
+import { useAuditMock } from '@/components/Audit/AuditMockContext';
 import { ONE_MINUTE_IN_SECONDS } from "@/constants";
 
 export const getSecretAccessorLogs = async (

@@ -3,13 +3,13 @@ import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError, Manifest } from "@/types";
 import { AxiosError } from "axios";
-import { useAuditMock } from '@/services/audit/context/AuditMockContext';
+import { useAuditMock } from '@/components/Audit/AuditMockContext';
 
 const getTenantHelm = async (mock: boolean, signal: AbortSignal, version: string = "latest", listenerId: string) => {
-  if(mock) return {manifest: 'Helm chart configuration for listener installation!'}
+  if (mock) return { manifest: 'Helm chart configuration for listener installation!' }
 
   const headers = await getAuthHeaders();
-  const response = await axiosInstance.get(`/api/listeners/${listenerId}/helm/${version}`, { headers, signal});
+  const response = await axiosInstance.get(`/api/listeners/${listenerId}/helm/${version}`, { headers, signal });
   return response.data;
 }
 
@@ -23,7 +23,7 @@ const useGetTenantHelm = <T = Manifest>(
   const finalMock = isMocked || mock;
 
   return useQuery<T, AxiosError<ApiHttpError>>({
-    queryKey: ["audit", 'useGetTenantHelm', listenerId, version, ],
+    queryKey: ["audit", 'useGetTenantHelm', listenerId, version,],
     queryFn: ({ signal }) => getTenantHelm(finalMock, signal, version, listenerId),
     ...options,
   });

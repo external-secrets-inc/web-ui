@@ -1,24 +1,42 @@
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { IS_DEV } from '@/constants';
-import { FeatureFlagName, useFeatureFlagContext } from '@/context/FeatureFlagContext';
-import useOrgLink from '@/hooks/useOrgLink';
-import { useSignOut } from '@/hooks/useSignOut';
-import { IUserData } from '@/types';
-import { LucideChevronDown, LucideLock, LucideToggleLeft, LucideToggleRight } from 'lucide-react';
-import React from 'react';
-import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
-import { Link } from 'react-router-dom';
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { IS_DEV } from "@/constants";
+import {
+  FeatureFlagName,
+  useFeatureFlagContext,
+} from "@/context/FeatureFlagContext";
+import { useSignOut } from "@/hooks/useSignOut";
+import { IUserData } from "@/types";
+import {
+  LucideChevronDown,
+  LucideLock,
+  LucideToggleLeft,
+  LucideToggleRight,
+} from "lucide-react";
+import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 
-const UserMenu: React.FC = () => {
+export function LayoutSidebarUserMenu() {
   const authUser = useAuthUser<IUserData>();
   const signOut = useSignOut();
   const tenant = authUser?.tenant;
   const name = authUser?.name;
   const initials = getInitials(name);
-  const getOrgLink = useOrgLink();
   const featureFlags = useFeatureFlagContext();
 
   const showFeatureFlags = IS_DEV;
@@ -39,7 +57,7 @@ const UserMenu: React.FC = () => {
         <Button
           variant="ghost"
           aria-label="Toggle user menu"
-          className="flex gap-2 h-auto px-1 md:pr-3 py-1"
+          className="flex gap-2 h-auto px-1 md:pr-3 py-1 justify-start"
         >
           <Avatar className="md:h-10 md:w-10 h-8 w-8">
             <AvatarFallback>{initials}</AvatarFallback>
@@ -47,7 +65,7 @@ const UserMenu: React.FC = () => {
 
           <span className="flex-col items-start gap-1 hidden md:flex">
             <span className="inline-flex gap-1">
-              <span className='font-normal leading-none max-w-36 text-ellipsis text-nowrap overflow-hidden'>
+              <span className="font-normal leading-none max-w-36 text-ellipsis text-nowrap overflow-hidden">
                 {name}
               </span>
               <LucideChevronDown className="text-muted-foreground" />
@@ -74,13 +92,8 @@ const UserMenu: React.FC = () => {
 
         <DropdownMenuSeparator className="md:hidden" />
 
-        <Link to={getOrgLink('/settings')}>
-          <DropdownMenuItem>Settings</DropdownMenuItem>
-        </Link>
-
         {showFeatureFlags && (
           <>
-            <DropdownMenuSeparator />
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>Feature Flags</DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
@@ -94,7 +107,11 @@ const UserMenu: React.FC = () => {
                       key={flag}
                       onClick={() => toggleFeatureFlag(flag)}
                       disabled={isLocked}
-                      className={isLocked ? 'opacity-50 cursor-not-allowed !pointer-events-auto' : ''}
+                      className={
+                        isLocked
+                          ? "opacity-50 cursor-not-allowed !pointer-events-auto"
+                          : ""
+                      }
                     >
                       <span className="flex items-center gap-2 w-full">
                         {isEnabled ? (
@@ -113,11 +130,12 @@ const UserMenu: React.FC = () => {
                   if (isLocked) {
                     return (
                       <Tooltip key={flag}>
-                        <TooltipTrigger asChild>
-                          {menuItem}
-                        </TooltipTrigger>
+                        <TooltipTrigger asChild>{menuItem}</TooltipTrigger>
                         <TooltipContent>
-                          <p>This flag is {envValue ? 'enabled' : 'disabled'} by the environment and cannot be changed</p>
+                          <p>
+                            This flag is {envValue ? "enabled" : "disabled"} by
+                            the environment and cannot be changed
+                          </p>
                         </TooltipContent>
                       </Tooltip>
                     );
@@ -127,10 +145,11 @@ const UserMenu: React.FC = () => {
                 })}
               </DropdownMenuSubContent>
             </DropdownMenuSub>
+            <DropdownMenuSeparator />
           </>
         )}
 
-        <DropdownMenuItem onClick={() => signOut({ reason: 'manual' })}>
+        <DropdownMenuItem onClick={() => signOut({ reason: "manual" })}>
           Sign Out
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -139,13 +158,11 @@ const UserMenu: React.FC = () => {
 };
 
 function getInitials(name: string | undefined): string {
-  if (!name) return '';
+  if (!name) return "";
   const initials = name
-    .split(' ')
+    .split(" ")
     .map((word) => word[0])
-    .join('')
+    .join("")
     .toUpperCase();
   return initials.slice(0, 2);
 }
-
-export default UserMenu;

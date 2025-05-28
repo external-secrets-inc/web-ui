@@ -20,7 +20,7 @@ import useAssignProviderPolicy from "@/services/audit/mutations/useAssignProvide
 import useUnassignProviderPolicy from "@/services/audit/mutations/useUnassignProviderPolicy";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import useEditPolicy, { EditPolicyVariables } from "@/services/audit/mutations/useEditPolicy";
-import { AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants";
+import { AUDIT_QUERY_STALE_TIME } from "@/components/Audit/Audit.constants";
 import useGetDestinations from "@/services/audit/queries/useGetDestinations";
 
 interface PolicyTableMeta {
