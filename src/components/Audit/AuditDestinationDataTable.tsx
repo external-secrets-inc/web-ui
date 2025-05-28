@@ -4,7 +4,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { LucideMoreVertical, LucidePlus, LucideTrash2, LucideEdit } from "lucide-react";
 import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogTrigger, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
@@ -129,28 +129,28 @@ export default function AuditDestinationDataTable() {
   };
 
   return (
-    <>
-      <div className="flex items-center justify-between pt-4">
-        <h2 className="font-bold">Destinations</h2>
-        <Dialog open={isAddDestinationDialogOpen} onOpenChange={handleAddDestinationDialogOpenChange}>
-          <DialogTrigger asChild>
-            <Button variant="outline" onClick={() => setSelectedDestinationId("")}>
-              <LucidePlus />
-              Add Destination
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DestinationDialogForm
-              destinationID={selectedDestinationId || undefined}
-              onSuccess={() => {
-                handleAddDestinationDialogOpenChange(false);
-                refetch();
-              }}
-              onCancel={() => { handleAddDestinationDialogOpenChange(false) }}
-            />
-          </DialogContent>
-        </Dialog>
-      </div>
+    <div className="flex flex-col gap-4">
+      <Dialog
+        open={isAddDestinationDialogOpen}
+        onOpenChange={handleAddDestinationDialogOpenChange}
+      >
+        <DialogTrigger asChild>
+          <Button variant="outline" className="self-end">
+            <LucidePlus />
+            Add Destination
+          </Button>
+        </DialogTrigger>
+        <DestinationDialogForm
+          destinationID={selectedDestinationId || undefined}
+          onSuccess={() => {
+            handleAddDestinationDialogOpenChange(false);
+            refetch();
+          }}
+          onCancel={() => {
+            handleAddDestinationDialogOpenChange(false);
+          }}
+        />
+      </Dialog>
 
       <DataProvider
         data={destinations}
@@ -158,10 +158,8 @@ export default function AuditDestinationDataTable() {
         initialSort={{ id: 'name', desc: false }}
         isLoading={isLoadingDestinations}
       >
-        <DataTable
-          meta={destinationTableMeta}
-        />
+        <DataTable meta={destinationTableMeta} />
       </DataProvider>
-    </>
+    </div>
   );
 }

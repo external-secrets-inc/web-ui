@@ -206,37 +206,34 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
   };
 
   return (
-    <>
-      <div className="flex items-center justify-between pt-4">
-        <h2 className="font-bold">Providers</h2>
-        <Dialog open={isAddProviderDialogOpen} onOpenChange={handleAddProviderDialogOpenChange}>
-          <DialogTrigger asChild>
-            <Button variant="outline">
-              <LucidePlus />
-              Add Provider
-            </Button>
-          </DialogTrigger>
-          <ProviderDialogForm
-            selectedProviderId={selectedProviderId}
-            providerForm={providerForm}
-            open={isAddProviderDialogOpen}
-            onSubmit={handleSubmit}
-            onCancel={() => { handleAddProviderDialogOpenChange(false) }}
-          />
-        </Dialog>
-      </div>
+    <div className="flex flex-col gap-4">
+      <Dialog open={isAddProviderDialogOpen} onOpenChange={handleAddProviderDialogOpenChange}>
+        <DialogTrigger asChild>
+          <Button className="self-end" variant="outline">
+            <LucidePlus />
+            Add Provider
+          </Button>
+        </DialogTrigger>
+        <ProviderDialogForm
+          selectedProviderId={selectedProviderId}
+          providerForm={providerForm}
+          open={isAddProviderDialogOpen}
+          onSubmit={handleSubmit}
+          onCancel={() => { handleAddProviderDialogOpenChange(false) }}
+        />
+      </Dialog>
       <DataProvider
         data={providers}
         columns={columns}
         initialSort={{ id: 'name', desc: false }}
         isLoading={isLoadingProviders}
         getRowId={row => row.providerID}
-      >
+        >
         <DataTable
           meta={providerTableMeta}
-        />
+          />
       </DataProvider>
-    </>
+    </div>
   )
 }
 

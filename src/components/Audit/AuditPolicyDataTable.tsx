@@ -367,11 +367,10 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
 
   return (
     <>
-      <div className="flex items-center justify-between pt-4">
-        <h2 className="font-bold">Policies</h2>
+      <div className="flex flex-col gap-4">
         <Dialog open={isAddPolicyDialogOpen} onOpenChange={handleAddPolicyDialogOpenChange}>
           <DialogTrigger asChild>
-            <Button variant="outline">
+            <Button className="self-end" variant="outline">
               <LucidePlus />
               Add Policy
             </Button>
@@ -385,18 +384,18 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
             onCancel={() => { handleAddPolicyDialogOpenChange(false) }}
           />
         </Dialog>
-      </div>
 
-      <DataProvider
-        data={policies}
-        columns={columns}
-        initialSort={{ id: 'name', desc: false }}
-        isLoading={isLoadingPolicies}
-      >
-        <DataTable
-          meta={policyTableMeta}
-        />
-      </DataProvider>
+        <DataProvider
+          data={policies}
+          columns={columns}
+          initialSort={{ id: 'name', desc: false }}
+          isLoading={isLoadingPolicies}
+        >
+          <DataTable
+            meta={policyTableMeta}
+          />
+        </DataProvider>
+      </div>
 
       <Dialog
         open={isAssignProvidersDialogOpen}
