@@ -4,7 +4,7 @@ import { LayoutPage, LayoutPortalHeaderActions } from "@/components/layout";
 import { IUserData } from "@/types";
 import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 
-export function AuditProvidersPage() {
+export function PageAuditProviders() {
   const authUser = useAuthUser<IUserData>();
 
   return (

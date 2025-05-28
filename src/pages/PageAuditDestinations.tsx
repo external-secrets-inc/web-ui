@@ -2,7 +2,7 @@ import AuditDestinationDataTable from "@/components/Audit/AuditDestinationDataTa
 import { AuditHeaderActions } from "@/components/Audit/AuditHeaderActions";
 import { LayoutPage, LayoutPortalHeaderActions } from "@/components/layout";
 
-export function AuditDestinationsPage() {
+export function PageAuditDestinations() {
   return (
     <LayoutPage
       title="Destinations"

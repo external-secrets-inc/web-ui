@@ -2,7 +2,7 @@ import ListRotators from "@/components/Rotators/ListRotators";
 import { LayoutPage } from "@/components/layout";
 import { DOCS_DOMAIN } from "@/constants";
 
-export function ReloadersPage() {
+export function PageReloaders() {
   return (
     <LayoutPage
       title="Reloaders"

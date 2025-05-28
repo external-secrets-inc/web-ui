@@ -18,6 +18,15 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { IS_PROD } from "@/constants";
 import { ThemeProvider } from "@/context/ThemeContext";
+import {
+  PageAgents,
+  PageAuditDashboard,
+  PageAuditDestinations,
+  PageAuditPolicies,
+  PageAuditProviders,
+  PageReloaders,
+  PageSettings,
+} from "@/pages";
 import authStore from "@/services/auth/authStore";
 import RequireAuth from "@auth-kit/react-router/RequireAuth";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -28,13 +37,6 @@ import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { load, page } from "./analytics";
 import { App } from "./App";
-import { AgentsPage } from "./pages/AgentsPage";
-import { AuditDashboardPage } from "./pages/AuditDashboardPage";
-import { AuditDestinationsPage } from "./pages/AuditDestinationsPage";
-import { AuditPoliciesPage } from "./pages/AuditPoliciesPage";
-import { AuditProvidersPage } from "./pages/AuditProvidersPage";
-import { ReloadersPage } from "./pages/ReloadersPage";
-import { SettingsPage } from "./pages/SettingsPage";
 import "./index.css";
 
 const queryClient = new QueryClient();
@@ -83,11 +85,11 @@ const router = createBrowserRouter([
       },
       {
         path: "agents",
-        element: <AgentsPage />,
+        element: <PageAgents />,
       },
       {
         path: "rotators",
-        element: <ReloadersPage />,
+        element: <PageReloaders />,
       },
       {
         element: (
@@ -100,19 +102,19 @@ const router = createBrowserRouter([
         children: [
           {
             path: "audit/dashboard",
-            element: <AuditDashboardPage />,
+            element: <PageAuditDashboard />,
           },
           {
             path: "audit/providers",
-            element: <AuditProvidersPage />,
+            element: <PageAuditProviders />,
           },
           {
             path: "audit/policies",
-            element: <AuditPoliciesPage />,
+            element: <PageAuditPolicies />,
           },
           {
             path: "audit/destinations",
-            element: <AuditDestinationsPage />,
+            element: <PageAuditDestinations />,
           },
           {
             path: "audit",
@@ -122,7 +124,7 @@ const router = createBrowserRouter([
       },
       {
         path: "settings",
-        element: <SettingsPage />,
+        element: <PageSettings />,
       },
     ],
   },
