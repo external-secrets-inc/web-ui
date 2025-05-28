@@ -16,7 +16,7 @@ import { NotFound } from "@/components/NotFound";
 import RequireActiveUser from "@/components/RequireActiveUser";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { IS_PROD } from "@/constants";
+import { IS_DEV, IS_PROD } from "@/constants";
 import { ThemeProvider } from "@/context/ThemeContext";
 import {
   PageAgents,
@@ -166,7 +166,7 @@ if (rootElement) {
               <Main />
               <Toaster />
             </TooltipProvider>
-            {IS_PROD && (
+            {IS_DEV && (
               <BodyPortal>
                 <ReactQueryDevtools
                   initialIsOpen={false}
