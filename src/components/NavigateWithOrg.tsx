@@ -3,55 +3,49 @@ import { Navigate, NavigateProps } from 'react-router-dom';
 import useIsAuthenticated from 'react-auth-kit/hooks/useIsAuthenticated';
 import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
 import { IUserData } from '@/types';
-import Auth from '@/components/Auth';
 
 interface NavigateWithOrgProps extends NavigateProps {
   children?: React.ReactNode;
   to: string;
-  fallbackToLogin?: boolean;
-  fallbackToSignup?: boolean;
   replace?: boolean;
 }
 
-const NavigateWithOrg: React.FC<NavigateWithOrgProps> = ({ children, to, fallbackToLogin = false, fallbackToSignup = false, replace = false, ...navigateProps }) => {
+/**
+ * Redirects authenticated users to their org-specific path.
+ * Renders children if the user is not authenticated (though this component
+ * is typically used within routes already protected by authentication checks).
+ */
+const NavigateWithOrg: React.FC<NavigateWithOrgProps> = ({ children, to, replace = false, ...navigateProps }) => {
   const isAuthenticated = useIsAuthenticated();
   const authUser = useAuthUser<IUserData>();
   const [redirectTo, setRedirectTo] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let targetPath: string | null = null;
     if (isAuthenticated) {
       const user = authUser;
       const organizationURL = user?.tenant;
       if (organizationURL) {
-        setRedirectTo(`/${organizationURL}${to}`);
+        targetPath = `/${organizationURL}${to.startsWith('/') ? to : `/${to}`}`;
       } else {
-        console.warn('Tenant information is missing.');
-        setRedirectTo(null);
+        console.error('NavigateWithOrg: User is authenticated but tenant information is missing.');
       }
-    } else {
-      setRedirectTo(null);
     }
+
+    setRedirectTo(targetPath);
     setLoading(false);
   }, [isAuthenticated, authUser, to]);
 
   if (loading) {
-    return null; // TODO: Use a proper loader or nah?
+    return null;
   }
 
   if (redirectTo) {
     return <Navigate {...navigateProps} to={redirectTo} replace={replace} />;
   }
 
-  if (!isAuthenticated && fallbackToLogin) {
-    return <Auth variant="login" />;
-  }
-
-  if (!isAuthenticated && fallbackToSignup) {
-    return <Auth variant="signup" />;
-  }
-
-  return <>{children}</>; // Render children if no redirection is needed
+  return <>{children}</>;
 };
 
 export default NavigateWithOrg;
