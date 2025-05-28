@@ -88,64 +88,56 @@ module.exports = {
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: 0,
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: 0 },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: 0,
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: 0 },
         },
         "bg-auth-hero-scroll": {
-          from: {
-            backgroundPosition: "center center",
-          },
-          to: {
-            backgroundPosition: "center -3000px",
-          },
+          from: { transform: "translateY(0%)" },
+          to: { transform: "translateY(-50%)" },
         },
         "bg-auth-blob-animation-1": {
           "0%": {
-            transform: "translate(-30%, 40%) rotate(-20deg)",
+            transform: "scale(5) translate(-30%, 40%) rotate(-20deg)",
           },
           "25%": {
-            transform: "translate(0%, 20%) skew(-15deg, -15deg) rotate(80deg)",
+            transform:
+              "scale(5) translate(0%, 20%) skew(-15deg, -15deg) rotate(80deg)",
           },
           "50%": {
-            transform: "translate(30%, -10%) rotate(180deg)",
+            transform: "scale(5) translate(30%, -10%) rotate(180deg)",
           },
           "75%": {
-            transform: "translate(-30%, 40%) skew(15deg, 15deg) rotate(240deg)",
+            transform:
+              "scale(5) translate(-30%, 40%) skew(15deg, 15deg) rotate(240deg)",
           },
           "100%": {
-            transform: "translate(-30%, 40%) rotate(-20deg)",
+            transform: "scale(5) translate(-30%, 40%) rotate(-20deg)",
           },
         },
         "bg-auth-blob-animation-2": {
           "0%": {
-            transform: "translate(20%, -40%) rotate(-20deg)",
+            transform: "scale(5) translate(20%, -40%) rotate(-20deg)",
           },
           "20%": {
-            transform: "translate(0%, 0%) skew(-15deg, -15deg) rotate(80deg)",
+            transform:
+              "scale(5) translate(0%, 0%) skew(-15deg, -15deg) rotate(80deg)",
           },
           "40%": {
-            transform: "translate(-40%, 50%) rotate(180deg)",
+            transform: "scale(5) translate(-40%, 50%) rotate(180deg)",
           },
           "60%": {
-            transform: "translate(-20%, -20%) skew(15deg, 15deg) rotate(80deg)",
+            transform:
+              "scale(5) translate(-20%, -20%) skew(15deg, 15deg) rotate(80deg)",
           },
           "80%": {
-            transform: "translate(10%, -30%) rotate(180deg)",
+            transform: "scale(5) translate(10%, -30%) rotate(180deg)",
           },
           "100%": {
-            transform: "translate(20%, -40%) rotate(340deg)",
+            transform: "scale(5) translate(20%, -40%) rotate(340deg)",
           },
         },
         "collapsible-down": {
@@ -165,30 +157,22 @@ module.exports = {
           },
           to: {
             height: "0",
-            opacity: 0,
+            opacity: 0
           },
         },
         "fade-in": {
-          from: {
-            opacity: 0,
-          },
-          to: {
-            opacity: 1,
-          },
+          from: { opacity: 0 },
+          to: { opacity: 1 },
         },
         "fade-out": {
-          from: {
-            opacity: 1,
-          },
-          to: {
-            opacity: 0,
-          },
+          from: { opacity: 1 },
+          to: { opacity: 0 },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.4s ease-in-out",
         "accordion-up": "accordion-up 0.4s ease-in-out",
-        "bg-auth-hero-scroll": "bg-auth-hero-scroll 600s linear infinite",
+        "bg-auth-hero-scroll": "bg-auth-hero-scroll 200s linear infinite",
         "bg-auth-blob-animation-1":
           "bg-auth-blob-animation-1 20s infinite cubic-bezier(0.1, 0, 0.9, 1)",
         "bg-auth-blob-animation-2":

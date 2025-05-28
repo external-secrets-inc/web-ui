@@ -1,15 +1,21 @@
 import { AuditProvider } from "@/components/Audit/AuditContext";
 import { AuditGuard } from "@/components/Audit/AuditGuard";
 import { AuditMockProvider } from "@/components/Audit/AuditMockContext";
-import ForgotPassword from "@/components/Auth/ForgotPassword";
-import ResetPassword from "@/components/Auth/ResetPassword";
+import {
+  AuthForgotPassword,
+  AuthLayout,
+  AuthLogin,
+  AuthRedirectGuard,
+  AuthResetPassword,
+  AuthSignup,
+  AuthVerify,
+} from "@/components/Auth";
 import BodyPortal from "@/components/BodyPortal";
 import NavigateWithOrg from "@/components/NavigateWithOrg";
 import { NotFound } from "@/components/NotFound";
 import RequireActiveUser from "@/components/RequireActiveUser";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Verify } from "@/components/Verify";
 import { IS_PROD } from "@/constants";
 import { ThemeProvider } from "@/context/ThemeContext";
 import authStore from "@/services/auth/authStore";
@@ -22,7 +28,6 @@ import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { load, page } from "./analytics";
 import { App } from "./App";
-import "./index.css";
 import { AgentsPage } from "./pages/AgentsPage";
 import { AuditDashboardPage } from "./pages/AuditDashboardPage";
 import { AuditDestinationsPage } from "./pages/AuditDestinationsPage";
@@ -30,6 +35,7 @@ import { AuditPoliciesPage } from "./pages/AuditPoliciesPage";
 import { AuditProvidersPage } from "./pages/AuditProvidersPage";
 import { ReloadersPage } from "./pages/ReloadersPage";
 import { SettingsPage } from "./pages/SettingsPage";
+import "./index.css";
 
 const queryClient = new QueryClient();
 
@@ -38,7 +44,7 @@ const router = createBrowserRouter([
     path: "/",
     element: (
       <RequireActiveUser
-        loginFallbackPath="/signup"
+        loginFallbackPath="/login"
         inactiveFallbackPath="/verify"
       >
         <NavigateWithOrg to="/agents" replace />
@@ -46,28 +52,26 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/verify",
-    element: (
-      <RequireAuth fallbackPath="/login">
-        <Verify />
-      </RequireAuth>
-    ),
-  },
-  {
-    path: "/signup",
-    element: <NavigateWithOrg to="/agents" fallbackToSignup replace />,
-  },
-  {
-    path: "/login",
-    element: <NavigateWithOrg to="/agents" fallbackToLogin replace />,
-  },
-  {
-    path: "/forgot-password",
-    element: <ForgotPassword />,
-  },
-  {
-    path: "/reset-password",
-    element: <ResetPassword />,
+    element: <AuthLayout />,
+    children: [
+      {
+        element: <AuthRedirectGuard />,
+        children: [
+          { path: "/signup", element: <AuthSignup /> },
+          { path: "/login", element: <AuthLogin /> },
+        ],
+      },
+      {
+        path: "/verify",
+        element: (
+          <RequireAuth fallbackPath="/login">
+            <AuthVerify />
+          </RequireAuth>
+        ),
+      },
+      { path: "/forgot-password", element: <AuthForgotPassword /> },
+      { path: "/reset-password", element: <AuthResetPassword /> },
+    ],
   },
   {
     path: "/:org",
