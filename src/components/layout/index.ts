@@ -1,6 +1,6 @@
 // Types & Constants
-export type { LayoutSidebarNavigationItem, LayoutSidebarNavigationData, LayoutBreadcrumbSegment } from './layout.interfaces';
-export { navigationData } from './layout.constants';
+export type { LayoutSidebarNavigationItem, AppSidebarNavigationConfig, LayoutBreadcrumbSegment } from './layout.interfaces';
+export { appSidebarNavigationConfig } from './layout.constants';
 
 // Utils
 export { generateGroupPathKey } from './layout.utils';

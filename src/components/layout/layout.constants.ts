@@ -9,9 +9,9 @@ import {
   LucideShieldCheck,
 } from "lucide-react";
 import { DOCS_DOMAIN } from "@/constants";
-import { LayoutSidebarNavigationData } from "@/components/layout";
+import { AppSidebarNavigationConfig } from "@/components/layout";
 
-export const navigationData: LayoutSidebarNavigationData = {
+export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
   navMain: [
     {
       label: "Audit",

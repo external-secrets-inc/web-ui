@@ -27,7 +27,7 @@ export interface LayoutSidebarNavigationItem {
  * Defines the structure for the complete set of navigation data for the application layout,
  * typically separating main navigation links from those in the footer.
  */
-export interface LayoutSidebarNavigationData {
+export interface AppSidebarNavigationConfig {
   /** An array of `LayoutSidebarNavigationItem` objects for the primary navigation section (e.g., main sidebar). */
   navMain: LayoutSidebarNavigationItem[];
   /** An array of `LayoutSidebarNavigationItem` objects for the footer navigation section. */

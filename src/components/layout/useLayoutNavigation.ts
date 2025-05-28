@@ -1,5 +1,5 @@
 import type { LayoutSidebarNavigationItem } from "@/components/layout";
-import { isSectionActive, navigationData } from "@/components/layout";
+import { isSectionActive, appSidebarNavigationConfig } from "@/components/layout";
 import { useCallback } from "react";
 import { useLocation } from "react-router-dom";
 
@@ -28,8 +28,8 @@ export function useLayoutNavigation(getOrgLink: (path: string) => string) {
   );
 
   return {
-    navMain: navigationData.navMain,
-    navFooter: navigationData.navFooter,
+    navMain: appSidebarNavigationConfig.navMain,
+    navFooter: appSidebarNavigationConfig.navFooter,
     isSectionActive: checkSectionActive,
   };
 }
