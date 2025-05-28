@@ -1,21 +1,23 @@
 import ListRotators from "@/components/Rotators/ListRotators";
 import { LayoutPage } from "@/components/layout";
 import { DOCS_DOMAIN } from "@/constants";
+import { LucideExternalLink } from "lucide-react";
 
 export function PageReloaders() {
+  const docsLink = `${DOCS_DOMAIN}/docs/open_source/reloader/quickstart`;
+
   return (
     <LayoutPage
       title="Reloaders"
       description={
         <>
           Reloaders listen for events from audit logs to trigger a rotation in
-          the External Secrets Operator
+          the External Secrets Operator.
           <br />
-          See our{" "}
-          <a href={`${DOCS_DOMAIN}/docs/esi-async-rotator/quickstart`}>
+          <a href={docsLink} target="_blank">
             Quickstart guide
-          </a>{" "}
-          for more details
+            <LucideExternalLink className="inline ml-1" />
+          </a>
         </>
       }
     >

@@ -27,7 +27,7 @@ export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
           ],
         },
         {
-          label: "Credential Stores",
+          label: "Secrets stores",
           items: [
             {
               label: "Providers",
@@ -37,7 +37,7 @@ export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
           ],
         },
         {
-          label: "Policy Control",
+          label: "Policy control",
           items: [
             {
               label: "Policies",
@@ -54,7 +54,7 @@ export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
       ],
     },
     {
-      label: "Credentials Ops",
+      label: "Secrets Ops",
       items: [
         {
           label: "Agents",

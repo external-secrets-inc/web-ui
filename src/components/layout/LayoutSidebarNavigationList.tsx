@@ -70,7 +70,7 @@ const LeafNavItem: React.FC<BaseNavigationItemProps> = ({
     return (
       <SidebarMenuItem style={{ "--level": level } as React.CSSProperties}>
         <SidebarMenuButton asChild tooltip={item.label}>
-          <a href={item.url} target="_blank" rel="noopener noreferrer">
+          <a href={item.url} target="_blank">
             {IconComponent && <IconComponent />}
             <span className="font-medium">{item.label}</span>
           </a>
