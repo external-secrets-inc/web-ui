@@ -6,6 +6,7 @@ export { navigationData } from './layout.constants';
 export { generateGroupPathKey } from './layout.utils';
 export { isSectionActive } from './layout.utils';
 export { findPathRecursive } from './layout.utils';
+export { removeOrgPrefix } from './layout.utils';
 
 // Hooks
 export { useLayoutNavigation } from './useLayoutNavigation';

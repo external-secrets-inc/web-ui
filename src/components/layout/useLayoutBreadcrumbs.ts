@@ -1,23 +1,12 @@
 import {
-  findPathRecursive, useLayoutNavigation, type LayoutBreadcrumbSegment,
-  type LayoutSidebarNavigationItem
+  type LayoutBreadcrumbSegment,
+  type LayoutSidebarNavigationItem,
+  findPathRecursive,
+  removeOrgPrefix,
+  useLayoutNavigation,
 } from "@/components/layout";
 import useOrgLink from "@/hooks/useOrgLink";
 import { useLocation } from "react-router-dom";
-
-/**
- * Removes the organization prefix from a given URL path.
- *
- * @param path - The URL path, potentially including an organization prefix.
- * @returns The path with the organization prefix removed, or "/" as a default.
- */
-function removeOrgPrefix(path: string): string {
-  const segments = path.split("/").filter(Boolean);
-  if (segments.length > 1) {
-    return "/" + segments.slice(1).join("/");
-  }
-  return "/";
-}
 
 const ROOT_PATH = "/";
 

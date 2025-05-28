@@ -32,6 +32,20 @@ export function isSectionActive(
 }
 
 /**
+ * Removes the organization prefix from a given URL path.
+ *
+ * @param path - The URL path, potentially including an organization prefix.
+ * @returns The path with the organization prefix removed, or "/" as a default.
+ */
+export function removeOrgPrefix(path: string): string {
+  const segments = path.split("/").filter(Boolean);
+  if (segments.length > 1) {
+    return "/" + segments.slice(1).join("/");
+  }
+  return "/";
+}
+
+/**
  * Recursively searches through navigation items to find the hierarchical path
  * that matches the given `currentPathWithoutOrg`.
  * Used for constructing breadcrumbs.
