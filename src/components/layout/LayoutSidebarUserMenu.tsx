@@ -1,8 +1,8 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -11,6 +11,12 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from "@/components/ui/sidebar";
 import {
   Tooltip,
   TooltipContent,
@@ -24,7 +30,9 @@ import {
 import { useSignOut } from "@/hooks/useSignOut";
 import { IUserData } from "@/types";
 import {
-  LucideChevronDown,
+  LogOut,
+  LucideChevronsUpDown,
+  LucideLandPlot,
   LucideLock,
   LucideToggleLeft,
   LucideToggleRight,
@@ -32,6 +40,7 @@ import {
 import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 
 export function LayoutSidebarUserMenu() {
+  const { isMobile } = useSidebar();
   const authUser = useAuthUser<IUserData>();
   const signOut = useSignOut();
   const tenant = authUser?.tenant;
@@ -52,110 +61,124 @@ export function LayoutSidebarUserMenu() {
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          aria-label="Toggle user menu"
-          className="flex gap-2 h-auto px-1 md:pr-3 py-1 justify-start"
-        >
-          <Avatar className="md:h-10 md:w-10 h-8 w-8">
-            <AvatarFallback>{initials}</AvatarFallback>
-          </Avatar>
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton
+              size="lg"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+            >
+              <Avatar className="h-8 w-8 rounded-lg ring-inset ring-1 ring-sidebar-foreground/50">
+                <AvatarFallback className="rounded-lg bg-violet-400/50 dark:bg-violet-400/75 dark:text-sidebar-accent">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-semibold">{name}</span>
+                <span className="truncate text-xs">{tenant}</span>
+              </div>
+              <LucideChevronsUpDown className="ml-auto size-4" />
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
 
-          <span className="flex-col items-start gap-1 hidden md:flex">
-            <span className="inline-flex gap-1">
-              <span className="font-normal leading-none max-w-36 text-ellipsis text-nowrap overflow-hidden">
-                {name}
-              </span>
-              <LucideChevronDown className="text-muted-foreground" />
-            </span>
-            <span className="font-normal leading-none text-xs text-muted-foreground max-w-36 text-ellipsis text-nowrap overflow-hidden">
-              {tenant}
-            </span>
-          </span>
-        </Button>
-      </DropdownMenuTrigger>
-
-      <DropdownMenuContent
-        align="end"
-        onCloseAutoFocus={(event) => event.preventDefault()}
-      >
-        <DropdownMenuLabel className="md:hidden">
-          <span className="flex-col text-start items-start gap-1 flex">
-            <span className="font-normal leading-none">{name}</span>
-            <span className="font-normal leading-none text-xs text-muted-foreground max-w-36 text-ellipsis text-nowrap overflow-hidden">
-              {tenant}
-            </span>
-          </span>
-        </DropdownMenuLabel>
-
-        <DropdownMenuSeparator className="md:hidden" />
-
-        {showFeatureFlags && (
-          <>
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>Feature Flags</DropdownMenuSubTrigger>
-              <DropdownMenuSubContent>
-                {featureFlags.toggleableFlags.map((flag) => {
-                  const isEnabled = featureFlags.hasFeatureFlagEnabled(flag);
-                  const isLocked = featureFlags.isLockedByEnv(flag);
-                  const envValue = featureFlags.getEnvOverride(flag);
-
-                  const menuItem = (
-                    <DropdownMenuItem
-                      key={flag}
-                      onClick={() => toggleFeatureFlag(flag)}
-                      disabled={isLocked}
-                      className={
-                        isLocked
-                          ? "opacity-50 cursor-not-allowed !pointer-events-auto"
-                          : ""
-                      }
-                    >
-                      <span className="flex items-center gap-2 w-full">
-                        {isEnabled ? (
-                          <LucideToggleRight className="text-success" />
-                        ) : (
-                          <LucideToggleLeft className="text-muted-foreground" />
-                        )}
-                        {flag}
-                        {isLocked && (
-                          <LucideLock className="ml-auto text-muted-foreground" />
-                        )}
-                      </span>
-                    </DropdownMenuItem>
-                  );
-
-                  if (isLocked) {
-                    return (
-                      <Tooltip key={flag}>
-                        <TooltipTrigger asChild>{menuItem}</TooltipTrigger>
-                        <TooltipContent>
-                          <p>
-                            This flag is {envValue ? "enabled" : "disabled"} by
-                            the environment and cannot be changed
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    );
-                  }
-
-                  return menuItem;
-                })}
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
+          <DropdownMenuContent
+            className="w-[--radix-dropdown-menu-trigger-width] min-w-56"
+            side={isMobile ? "top" : "right"}
+            align="end"
+            sideOffset={4}
+          >
+            <DropdownMenuLabel className="p-0 font-normal">
+              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                <Avatar className="h-8 w-8 rounded-lg ring-inset ring-1 ring-sidebar-foreground/50">
+                  <AvatarFallback className="rounded-lg bg-violet-400/50 dark:bg-violet-400/75 dark:text-sidebar-accent">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold">{name}</span>
+                  <span className="truncate text-xs">{tenant}</span>
+                </div>
+              </div>
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
-          </>
-        )}
 
-        <DropdownMenuItem onClick={() => signOut({ reason: "manual" })}>
-          Sign Out
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+            {showFeatureFlags && (
+              <>
+                <DropdownMenuGroup>
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>
+                      <LucideLandPlot className="mr-2" />
+                      Feature Flags
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      {featureFlags.toggleableFlags.map((flag) => {
+                        const isEnabled =
+                          featureFlags.hasFeatureFlagEnabled(flag);
+                        const isLocked = featureFlags.isLockedByEnv(flag);
+                        const envValue = featureFlags.getEnvOverride(flag);
+
+                        const menuItem = (
+                          <DropdownMenuItem
+                            key={flag}
+                            onClick={() => toggleFeatureFlag(flag)}
+                            disabled={isLocked}
+                            className={
+                              isLocked
+                                ? "opacity-50 cursor-not-allowed !pointer-events-auto"
+                                : ""
+                            }
+                          >
+                            <span className="flex items-center gap-2 w-full">
+                              {isEnabled ? (
+                                <LucideToggleRight className="text-success" />
+                              ) : (
+                                <LucideToggleLeft className="text-muted-foreground" />
+                              )}
+                              {flag}
+                              {isLocked && (
+                                <LucideLock className="ml-auto text-muted-foreground" />
+                              )}
+                            </span>
+                          </DropdownMenuItem>
+                        );
+
+                        if (isLocked) {
+                          return (
+                            <Tooltip key={flag}>
+                              <TooltipTrigger asChild>
+                                {menuItem}
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>
+                                  This flag is{" "}
+                                  {envValue ? "enabled" : "disabled"} by the
+                                  environment and cannot be changed
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          );
+                        }
+
+                        return menuItem;
+                      })}
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+              </>
+            )}
+
+            <DropdownMenuItem onClick={() => signOut({ reason: "manual" })}>
+              <LogOut className="mr-2" />
+              Sign Out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
   );
-};
+}
 
 function getInitials(name: string | undefined): string {
   if (!name) return "";

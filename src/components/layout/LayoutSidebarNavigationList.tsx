@@ -51,17 +51,20 @@ interface CollapsibleNavigationItemProps
     SidebarGroupStateProps {}
 
 /**
- * Renders a leaf navigation item (a direct link, not a collapsible group).
- * Handles both internal links (using React Router) and external links.
+ * Renders the append content of a navigation item.
+ * If you want to add any `SidebarMenuAction`, you must place them here.
  */
-
 const AppendContent: React.FC<{
   render: React.ReactNode;
 }> = ({ render }) => {
   if (!render) return null;
-  return <div className="ml-auto">{render}</div>;
+  return <div className="ml-auto flex items-center">{render}</div>;
 };
 
+/**
+ * Renders a leaf navigation item (a direct link, not a collapsible group).
+ * Handles both internal links (using React Router) and external links.
+ */
 const LeafNavItem: React.FC<BaseNavigationItemProps> = ({
   item,
   getOrgLink,
@@ -77,7 +80,7 @@ const LeafNavItem: React.FC<BaseNavigationItemProps> = ({
   if (item.isExternal) {
     return (
       <SidebarMenuItem style={{ "--level": level } as React.CSSProperties}>
-        <SidebarMenuButton asChild tooltip={item.label} className="hover:has-[a:hover]:bg-transparent">
+        <SidebarMenuButton asChild tooltip={item.label}>
           <a href={item.url} target="_blank">
             {IconComponent && <IconComponent />}
             <span className="font-medium">{item.label}</span>
@@ -93,7 +96,7 @@ const LeafNavItem: React.FC<BaseNavigationItemProps> = ({
 
   return (
     <SidebarMenuSubItem style={{ "--level": level - 1 } as React.CSSProperties}>
-      <SidebarMenuSubButton asChild isActive={isActive} className="hover:has-[a:hover]:bg-transparent">
+      <SidebarMenuSubButton asChild isActive={isActive}>
         <Link to={getOrgLink(item.url)}>
           {IconComponent && <IconComponent className="text-violet-400" />}
           <span className="font-medium">{item.label}</span>
@@ -132,7 +135,7 @@ const SubLevelGroupNavItem: React.FC<CollapsibleNavigationItemProps> = ({
         <CollapsibleTrigger asChild>
           <SidebarMenuSubButton
             className={cn(
-              "cursor-pointer select-none [&[data-state=open]>svg]:rotate-90 [&:hover>svg]:opacity-100 max-md:[&[data-state=closed]>svg]:opacity-100 gap-1 hover:has-[a:hover]:bg-transparent",
+              "cursor-pointer select-none [&[data-state=open]>svg]:rotate-90 [&:hover>svg]:opacity-100 max-md:[&[data-state=closed]>svg]:opacity-100 gap-1",
               level > 1 &&
                 "pl-[calc((var(--level)-1)*theme(spacing[2])+theme(spacing.2))]"
             )}
@@ -205,12 +208,7 @@ const TopLevelGroupNavItem: React.FC<CollapsibleNavigationItemProps> = ({
     const IconComponent = item.icon;
     return (
       <SidebarMenuItem style={{ "--level": level } as React.CSSProperties}>
-        <SidebarMenuButton
-          asChild
-          tooltip={item.label}
-          isActive={isActive}
-          className="hover:has-[a:hover]:bg-transparent"
-        >
+        <SidebarMenuButton asChild tooltip={item.label} isActive={isActive}>
           <Link to={getOrgLink(item.url)}>
             {IconComponent && <IconComponent />}
             <span>{item.label}</span>
@@ -236,7 +234,7 @@ const TopLevelGroupNavItem: React.FC<CollapsibleNavigationItemProps> = ({
         <CollapsibleTrigger asChild>
           <SidebarMenuButton
             tooltip={item.label}
-            className="[&[data-state=open]>svg]:rotate-90 [&:hover>svg]:opacity-100 max-md:[&[data-state=closed]>svg]:opacity-100 gap-1 hover:has-[a:hover]:bg-transparent"
+            className="[&[data-state=open]>svg]:rotate-90 [&:hover>svg]:opacity-100 max-md:[&[data-state=closed]>svg]:opacity-100 gap-1"
           >
             <span>{item.label}</span>
             <LucideChevronRight className="transition-all duration-200 opacity-0" />

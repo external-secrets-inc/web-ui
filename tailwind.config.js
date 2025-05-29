@@ -78,6 +78,8 @@ module.exports = {
           "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
+          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
+          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
         },
       },
       borderRadius: {
@@ -88,16 +90,28 @@ module.exports = {
       },
       keyframes: {
         "accordion-down": {
-          from: { height: 0 },
-          to: { height: "var(--radix-accordion-content-height)" },
+          from: {
+            height: 0,
+          },
+          to: {
+            height: "var(--radix-accordion-content-height)",
+          },
         },
         "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: 0 },
+          from: {
+            height: "var(--radix-accordion-content-height)",
+          },
+          to: {
+            height: 0,
+          },
         },
         "bg-auth-hero-scroll": {
-          from: { transform: "translateY(0%)" },
-          to: { transform: "translateY(-50%)" },
+          from: {
+            transform: "translateY(0%)",
+          },
+          to: {
+            transform: "translateY(-50%)",
+          },
         },
         "bg-auth-blob-animation-1": {
           "0%": {
@@ -157,16 +171,24 @@ module.exports = {
           },
           to: {
             height: "0",
-            opacity: 0
+            opacity: 0,
           },
         },
         "fade-in": {
-          from: { opacity: 0 },
-          to: { opacity: 1 },
+          from: {
+            opacity: 0,
+          },
+          to: {
+            opacity: 1,
+          },
         },
         "fade-out": {
-          from: { opacity: 1 },
-          to: { opacity: 0 },
+          from: {
+            opacity: 1,
+          },
+          to: {
+            opacity: 0,
+          },
         },
       },
       animation: {

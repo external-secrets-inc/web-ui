@@ -1,17 +1,17 @@
 import { Badge } from "@/components/ui/badge";
-import { Circle } from "lucide-react";
-import { LISTENER_STATUS } from "./Audit.constants";
-import { useSubscription } from "@/context/SubscriptionContext";
-import useAuditSetup from "@/services/audit/hooks/useAuditSetup";
-import { cn } from "@/lib/utils";
+import { SidebarMenuAction } from "@/components/ui/sidebar";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { useSubscription } from "@/context/SubscriptionContext";
 import useOrgLink from "@/hooks/useOrgLink";
+import { cn } from "@/lib/utils";
+import useAuditSetup from "@/services/audit/hooks/useAuditSetup";
+import { Circle } from "lucide-react";
+import { Link } from "react-router-dom";
+import { LISTENER_STATUS } from "./Audit.constants";
 
 const STATUS_CONFIG = {
   [LISTENER_STATUS.ACTIVE]: {
@@ -92,34 +92,35 @@ export function AuditListenerStatusBadge({
 
   if (compact) {
     return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          {auditListener?.status !== LISTENER_STATUS.ACTIVE ? (
-            <Button
-              className="-mr-2 size-8"
-              variant="ghost"
-              size="icon"
-              asChild
-            >
-              <Link to={getOrgUrl("/audit/dashboard")}>
-                <Circle
-                  className={cn("w-2 box-content", config.color)}
-                  fill="currentColor"
-                />
-              </Link>
-            </Button>
-          ) : (
-            <Circle
-              className={cn("w-2 h-2 p-3 -mr-3 box-content", config.color)}
-              fill="currentColor"
-            />
-          )}
-        </TooltipTrigger>
-        <TooltipContent>
-          Audit {config.label}. <br />
-          View Dashboard.
-        </TooltipContent>
-      </Tooltip>
+      <>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            {auditListener?.status !== LISTENER_STATUS.ACTIVE ? (
+              <SidebarMenuAction asChild>
+                <Link to={getOrgUrl("/audit/dashboard")}>
+                  <Circle
+                    className={cn("w-2 box-content", config.color)}
+                    fill="currentColor"
+                  />
+                </Link>
+              </SidebarMenuAction>
+            ) : (
+              <Circle
+                className={cn("w-2 h-2 p-3 -mr-3 box-content", config.color)}
+                fill="currentColor"
+              />
+            )}
+          </TooltipTrigger>
+          <TooltipContent>
+            Audit {config.label}.
+            {auditListener?.status !== LISTENER_STATUS.ACTIVE && (
+              <>
+                <br /> View Dashboard.
+              </>
+            )}
+          </TooltipContent>
+        </Tooltip>
+      </>
     );
   }
 

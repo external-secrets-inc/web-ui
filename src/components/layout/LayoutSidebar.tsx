@@ -14,6 +14,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import useOrgLink from "@/hooks/useOrgLink";
+import { cn } from "@/lib/utils";
 
 export function LayoutSidebar({
   ...props
@@ -33,7 +34,14 @@ export function LayoutSidebar({
           <AppLogo />
         </div>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent
+        className={cn(
+          "[&_:is([data-sidebar=menu-button],[data-sidebar=menu-sub-button]):hover:has(a:hover,button:hover)]:bg-transparent",
+          "[&_:is([data-sidebar=menu-button],[data-sidebar=menu-sub-button])]:!pr-2",
+          "[&_[data-sidebar=menu-action]]:static",
+          "[&_[data-sidebar=menu-action]]:rounded-xs"
+        )}
+      >
         <SidebarGroup>
           <SidebarMenu>
             <LayoutSidebarNavigationList
