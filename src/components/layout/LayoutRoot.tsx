@@ -18,12 +18,14 @@ export function LayoutRoot() {
       className="h-svh overflow-hidden"
     >
       <LayoutSidebar />
-      <SidebarInset className="min-h-0 overflow-clip">
+      <SidebarInset className="min-h-0 min-w-0 overflow-clip">
         <ScrollArea className="h-full flex-1 min-h-0 [&_[data-radix-scroll-area-content]]:min-w-0">
-          <div className="bg-background/80 flex-none border-b border-sidebar px-4 h-11 sticky top-0 z-20 backdrop-blur-lg flex items-center gap-2">
-            <SidebarTrigger className="flex-none -ml-1.5" />
-            <Separator orientation="vertical" className="mr-1.5 h-4" />
-            <LayoutBreadcrumbs className="flex-1" />
+          <div className="bg-background/80 flex-none border-b border-sidebar sticky top-0 z-20 backdrop-blur-lg flex">
+            <div className="h-11 px-4 flex items-center gap-2 sticky left-0">
+              <SidebarTrigger className="flex-none -ml-1.5" />
+              <Separator orientation="vertical" className="mr-1.5 h-4" />
+              <LayoutBreadcrumbs className="flex-1" />
+            </div>
           </div>
           <LayoutBannerSubscription />
 

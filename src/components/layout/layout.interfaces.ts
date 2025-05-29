@@ -11,6 +11,8 @@ export interface LayoutSidebarNavigationItem {
   url?: string;
   /** Optional icon component to be displayed next to the label. */
   icon?: LucideIcon;
+  /** Optional content to render after the label. */
+  renderAppendContent?: React.ReactNode;
   /** If true, the link will open in a new tab and is treated as an external URL. */
   isExternal?: boolean;
   /** Optional array of child `LayoutSidebarNavigationItem` objects for creating hierarchical navigation (sub-menus or groups). */

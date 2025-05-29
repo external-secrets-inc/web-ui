@@ -35,7 +35,7 @@ const csvHeaderMap: Record<keyof AuditSecretTableData, string | null> = {
   fullCompliant: null,
 };
 
-export const AuditSecretTable = ({ listenerID }: AuditSecretTableProps) => {
+export const AuditSecretDataTable = ({ listenerID }: AuditSecretTableProps) => {
   const [selectedSecretId, setSelectedSecretId] = useState<string | null>(null);
   const [searchInputValue, setSearchInputValue] = useState("");
   const [searchParams] = useSearchParams();

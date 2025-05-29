@@ -1,8 +1,6 @@
 import { trackListenerInstallDialogOpened } from "@/analytics";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import {
   API_DOMAIN,
   ONE_MINUTE_IN_SECONDS,
@@ -12,12 +10,11 @@ import useCreateTenantInstallationToken from "@/services/audit/mutations/useCrea
 import useGetTenantBashFile from "@/services/audit/queries/useGetTenantBashFile";
 import useGetTenantHelm from "@/services/audit/queries/useGetTenantHelm";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
-import { ApiHttpError, IUserData } from "@/types";
+import { ApiHttpError } from "@/types";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { AxiosError } from "axios";
-import { LucideAlertCircle, Circle } from "lucide-react";
+import { LucideAlertCircle } from "lucide-react";
 import { useEffect, useState } from "react";
-import useAuthUser from "react-auth-kit/hooks/useAuthUser";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,16 +25,17 @@ import {
 import { TimeRange, TimeUnit } from "./Audit.interfaces";
 import AuditChartProblems from "./AuditChartProblems";
 import AuditChartProviders from "./AuditChartProviders";
-import AuditPolicyDataTable from "./AuditPolicyDataTable";
-import AuditProviderDataTable from "./AuditProviderDataTable";
 import AuditTimelineProblems from "./AuditTimelineProblems";
 import AuditTimelineProviders from "./AuditTimelineProviders";
 import ListenerInstallDialogContent from "./ListenerInstallDialogContent";
-import { AuditSecretTable } from "./AuditSecretTable";
+import { AuditSecretDataTable } from "./AuditSecretDataTable";
 import { formatDate } from "@/utils/dateUtils";
-import AuditDestinationDataTable from "./AuditDestinationDataTable";
 import { useAuditContext } from "./AuditContext";
 import { AuditFilterProvider } from "./AuditFilterContext";
+import { LayoutPortalHeaderActions } from "@/components/layout";
+import { AuditHeaderActions } from "@/components/Audit/AuditHeaderActions";
+import { AuditRefreshButton } from "@/components/Audit/AuditRefreshButton";
+import { AuditListenerStatusBadge } from "@/components/Audit/AuditListenerStatusBadge";
 
 const getDaysBetweenDates = (start: string, end: string) => {
   const ONE_DAY_IN_MILLISECONDS =
@@ -60,27 +58,8 @@ const getTimeRangeFromDays = (days: number | null): TimeRange => {
   return range.label;
 };
 
-const STATUS_CONFIG = {
-  [LISTENER_STATUS.ACTIVE]: {
-    label: "Active",
-    variant: "success",
-    color: "text-green-500",
-  },
-  [LISTENER_STATUS.OFFLINE]: {
-    label: "Offline",
-    variant: "destructive",
-    color: "text-red-500",
-  },
-  [LISTENER_STATUS.PENDING_INSTALLATION]: {
-    label: "Pending Installation",
-    variant: "warning",
-    color: "text-orange-500",
-  },
-} as const;
-
 export default function Audit() {
   const { tenantListener, auditListener } = useAuditContext();
-  const authUser = useAuthUser<IUserData>();
   const [bashCommand, setBashCommand] = useState("");
   const [manifestCommand, setManifestCommand] = useState("");
   const [isListenerInstallDialogOpen, setIsListenerInstallDialogOpen] =
@@ -266,97 +245,68 @@ export default function Audit() {
     return tenantHelmData?.manifest || "";
   };
 
-  const getStatusConfig = (status: string) =>
-    STATUS_CONFIG[status] ?? {
-      label: "Unknown",
-      variant: "secondary",
-      color: "text-gray-500",
-    };
-
   return (
-    <div className="space-y-8">
-      {auditListener.status === LISTENER_STATUS.PENDING_INSTALLATION && (
-        <Alert
-          className="flex gap-2 items-center justify-between flex-wrap"
-          variant="warning"
-        >
-          <div>
-            <AlertTitle className="flex gap-3 items-center">
-              <LucideAlertCircle className="text-orange-500" /> Listener not
-              installed
-            </AlertTitle>
-            <AlertDescription className="flex items-center justify-between">
-              To start receiving audit data, you need to install our listener in
-              your cluster
-            </AlertDescription>
-          </div>
-          <Dialog
-            open={isListenerInstallDialogOpen}
-            onOpenChange={handleListenerInstallDialogOpenChange}
+    <>
+      <LayoutPortalHeaderActions>
+        <AuditHeaderActions>
+          <AuditListenerStatusBadge />
+          <AuditRefreshButton queryKey={["audit"]} />
+        </AuditHeaderActions>
+      </LayoutPortalHeaderActions>
+
+      <div className="space-y-8">
+        {auditListener.status === LISTENER_STATUS.PENDING_INSTALLATION && (
+          <Alert
+            className="flex gap-2 items-center justify-between flex-wrap"
+            variant="warning"
           >
-            <DialogTrigger asChild>
-              <Button variant="outline">Install listener</Button>
-            </DialogTrigger>
-            <ListenerInstallDialogContent
-              id={auditListener.listenerID}
-              bashFileContent={getTenantBashFileContent()}
-              helmContent={getTenantHelmContent()}
-              isLoadingBashFile={isLoadingTenantBashFile}
-              isLoadingHelm={isLoadingTenantHelm}
-              bashCommand={bashCommand}
-              manifestCommand={manifestCommand}
-            />
-          </Dialog>
-        </Alert>
-      )}
-
-      {auditListener.status === LISTENER_STATUS.OFFLINE && (
-        <Alert
-          className="flex gap-2 items-center justify-between flex-wrap"
-          variant="destructive"
-        >
-          <AlertTitle className="flex gap-2 items-center">
-            <LucideAlertCircle className="text-destructive" /> Listener Offline
-            or Unreachable
-          </AlertTitle>
-          <AlertDescription>
-            The listener is currently offline or cannot be accessed. Please
-            check the cluster configuration on your end.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      <Tabs defaultValue="dashboard" className="w-full">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <TabsList>
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="providers">Providers</TabsTrigger>
-            <TabsTrigger value="policies">Policies</TabsTrigger>
-            <TabsTrigger value="destinations">Destinations</TabsTrigger>
-          </TabsList>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">
-              Listener Status:
-            </span>
-            <Badge
-              variant={getStatusConfig(auditListener.status).variant}
-              className="flex items-center gap-2"
+            <div>
+              <AlertTitle className="flex gap-3 items-center">
+                <LucideAlertCircle className="text-orange-500" /> Listener not
+                installed
+              </AlertTitle>
+              <AlertDescription className="flex items-center justify-between">
+                To start receiving audit data, you need to install our listener
+                in your cluster
+              </AlertDescription>
+            </div>
+            <Dialog
+              open={isListenerInstallDialogOpen}
+              onOpenChange={handleListenerInstallDialogOpenChange}
             >
-              <Circle
-                className={`w-2 h-2 animate-pulse ${
-                  getStatusConfig(auditListener.status).color
-                }`}
-                fill="currentColor"
+              <DialogTrigger asChild>
+                <Button variant="outline">Install listener</Button>
+              </DialogTrigger>
+              <ListenerInstallDialogContent
+                id={auditListener.listenerID}
+                bashFileContent={getTenantBashFileContent()}
+                helmContent={getTenantHelmContent()}
+                isLoadingBashFile={isLoadingTenantBashFile}
+                isLoadingHelm={isLoadingTenantHelm}
+                bashCommand={bashCommand}
+                manifestCommand={manifestCommand}
               />
-              {getStatusConfig(auditListener.status).label}
-            </Badge>
-          </div>
-        </div>
+            </Dialog>
+          </Alert>
+        )}
 
-        <TabsContent
-          value="dashboard"
-          className="data-[state=active]:grid grid-cols-1 gap-4"
-        >
+        {auditListener.status === LISTENER_STATUS.OFFLINE && (
+          <Alert
+            className="flex gap-2 items-center justify-between flex-wrap"
+            variant="destructive"
+          >
+            <AlertTitle className="flex gap-2 items-center">
+              <LucideAlertCircle className="text-destructive" /> Listener
+              Offline or Unreachable
+            </AlertTitle>
+            <AlertDescription>
+              The listener is currently offline or cannot be accessed. Please
+              check the cluster configuration on your end.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-2 w-full pt-4">
             <h2 className="font-bold">Analytics</h2>
             <ToggleGroup
@@ -402,29 +352,12 @@ export default function Audit() {
               </>
             ) : null}
           </div>
-          <AuditFilterProvider>
-            <AuditSecretTable listenerID={auditListener.listenerID} />
-          </AuditFilterProvider>
-        </TabsContent>
+        </div>
 
-        <TabsContent value="providers" className="space-y-4">
-          <AuditProviderDataTable
-            tenantID={auditListener.tenantID}
-            listenerID={auditListener.listenerID}
-          />
-        </TabsContent>
-
-        <TabsContent value="policies" className="space-y-4">
-          <AuditPolicyDataTable
-            tenantID={authUser?.tenantId ?? ""}
-            listenerID={auditListener.listenerID}
-          />
-        </TabsContent>
-
-        <TabsContent value="destinations" className="space-y-4">
-          <AuditDestinationDataTable />
-        </TabsContent>
-      </Tabs>
-    </div>
+        <AuditFilterProvider>
+          <AuditSecretDataTable listenerID={auditListener.listenerID} />
+        </AuditFilterProvider>
+      </div>
+    </>
   );
 }

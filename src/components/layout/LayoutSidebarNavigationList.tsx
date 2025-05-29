@@ -54,6 +54,14 @@ interface CollapsibleNavigationItemProps
  * Renders a leaf navigation item (a direct link, not a collapsible group).
  * Handles both internal links (using React Router) and external links.
  */
+
+const AppendContent: React.FC<{
+  render: React.ReactNode;
+}> = ({ render }) => {
+  if (!render) return null;
+  return <div className="ml-auto">{render}</div>;
+};
+
 const LeafNavItem: React.FC<BaseNavigationItemProps> = ({
   item,
   getOrgLink,
@@ -69,10 +77,11 @@ const LeafNavItem: React.FC<BaseNavigationItemProps> = ({
   if (item.isExternal) {
     return (
       <SidebarMenuItem style={{ "--level": level } as React.CSSProperties}>
-        <SidebarMenuButton asChild tooltip={item.label}>
+        <SidebarMenuButton asChild tooltip={item.label} className="hover:has-[a:hover]:bg-transparent">
           <a href={item.url} target="_blank">
             {IconComponent && <IconComponent />}
             <span className="font-medium">{item.label}</span>
+            <AppendContent render={item.renderAppendContent} />
           </a>
         </SidebarMenuButton>
         <SidebarMenuBadge>
@@ -84,10 +93,11 @@ const LeafNavItem: React.FC<BaseNavigationItemProps> = ({
 
   return (
     <SidebarMenuSubItem style={{ "--level": level - 1 } as React.CSSProperties}>
-      <SidebarMenuSubButton asChild isActive={isActive}>
+      <SidebarMenuSubButton asChild isActive={isActive} className="hover:has-[a:hover]:bg-transparent">
         <Link to={getOrgLink(item.url)}>
           {IconComponent && <IconComponent className="text-violet-400" />}
           <span className="font-medium">{item.label}</span>
+          <AppendContent render={item.renderAppendContent} />
         </Link>
       </SidebarMenuSubButton>
     </SidebarMenuSubItem>
@@ -122,13 +132,14 @@ const SubLevelGroupNavItem: React.FC<CollapsibleNavigationItemProps> = ({
         <CollapsibleTrigger asChild>
           <SidebarMenuSubButton
             className={cn(
-              "cursor-pointer select-none [&[data-state=open]>svg]:rotate-90 [&:hover>svg]:opacity-100 max-md:[&[data-state=closed]>svg]:opacity-100 gap-1",
+              "cursor-pointer select-none [&[data-state=open]>svg]:rotate-90 [&:hover>svg]:opacity-100 max-md:[&[data-state=closed]>svg]:opacity-100 gap-1 hover:has-[a:hover]:bg-transparent",
               level > 1 &&
                 "pl-[calc((var(--level)-1)*theme(spacing[2])+theme(spacing.2))]"
             )}
           >
             <SidebarGroupLabel className="p-0">{item.label}</SidebarGroupLabel>
             <LucideChevronRight className="transition-all duration-200 text-sidebar-foreground/70 opacity-0" />
+            <AppendContent render={item.renderAppendContent} />
           </SidebarMenuSubButton>
         </CollapsibleTrigger>
         <CollapsibleContent>
@@ -194,10 +205,16 @@ const TopLevelGroupNavItem: React.FC<CollapsibleNavigationItemProps> = ({
     const IconComponent = item.icon;
     return (
       <SidebarMenuItem style={{ "--level": level } as React.CSSProperties}>
-        <SidebarMenuButton asChild tooltip={item.label} isActive={isActive}>
+        <SidebarMenuButton
+          asChild
+          tooltip={item.label}
+          isActive={isActive}
+          className="hover:has-[a:hover]:bg-transparent"
+        >
           <Link to={getOrgLink(item.url)}>
             {IconComponent && <IconComponent />}
             <span>{item.label}</span>
+            <AppendContent render={item.renderAppendContent} />
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -219,10 +236,11 @@ const TopLevelGroupNavItem: React.FC<CollapsibleNavigationItemProps> = ({
         <CollapsibleTrigger asChild>
           <SidebarMenuButton
             tooltip={item.label}
-            className="[&[data-state=open]>svg]:rotate-90 [&:hover>svg]:opacity-100 max-md:[&[data-state=closed]>svg]:opacity-100 gap-1"
+            className="[&[data-state=open]>svg]:rotate-90 [&:hover>svg]:opacity-100 max-md:[&[data-state=closed]>svg]:opacity-100 gap-1 hover:has-[a:hover]:bg-transparent"
           >
             <span>{item.label}</span>
             <LucideChevronRight className="transition-all duration-200 opacity-0" />
+            <AppendContent render={item.renderAppendContent} />
           </SidebarMenuButton>
         </CollapsibleTrigger>
         <CollapsibleContent>

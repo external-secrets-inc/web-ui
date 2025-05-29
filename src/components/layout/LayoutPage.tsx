@@ -53,24 +53,16 @@ export function LayoutPage({
         )}
         {...props}
       >
-        <header className="mb-4">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            {(title || description) && (
-              <div className="space-y-1 flex-grow">
-                {title && <h1 className="text-2xl font-semibold">{title}</h1>}
-                {description && (
-                  <h2 className="text-sm text-muted-foreground">
-                    {description}
-                  </h2>
-                )}
-              </div>
-            )}
-
-            <div
-              ref={portalHeaderActionsTargetRef}
-              className="flex-shrink-0"
-            ></div>
+        <header className="mb-6">
+          <div className="flex items-center gap-2 flex-wrap-reverse mb-1">
+            {title && <h1 className="text-2xl font-semibold">{title}</h1>}
+            <div ref={portalHeaderActionsTargetRef} className="ml-auto flex-none items-center" />
           </div>
+          {description && (
+            <h2 className="text-sm text-muted-foreground">
+              {description}
+            </h2>
+          )}
         </header>
 
         {isMounted && <>{children}</>}

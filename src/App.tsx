@@ -4,6 +4,7 @@ import { FeatureFlagProvider } from "@/context/FeatureFlagContext";
 import RequireActiveUser from "@/components/RequireActiveUser";
 import OrgRedirector from "@/components/OrgRedirector";
 import { SubscriptionProvider } from "@/context/SubscriptionContext";
+import { AuditMockProvider } from "@/components/Audit/AuditMockContext";
 
 export function App() {
   return (
@@ -15,7 +16,9 @@ export function App() {
         <OrgRedirector>
           <SubscriptionProvider>
             <FeatureFlagProvider>
-              <LayoutRoot />
+              <AuditMockProvider>
+                <LayoutRoot />
+              </AuditMockProvider>
             </FeatureFlagProvider>
           </SubscriptionProvider>
         </OrgRedirector>

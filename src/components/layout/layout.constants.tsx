@@ -10,11 +10,13 @@ import {
 } from "lucide-react";
 import { DOCS_DOMAIN } from "@/constants";
 import { AppSidebarNavigationConfig } from "@/components/layout";
+import { AuditListenerStatusBadge } from "@/components/Audit/AuditListenerStatusBadge";
 
 export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
   navMain: [
     {
       label: "Audit",
+      renderAppendContent: <AuditListenerStatusBadge compact />,
       items: [
         {
           label: "Monitoring",

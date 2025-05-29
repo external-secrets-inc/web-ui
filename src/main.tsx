@@ -1,6 +1,5 @@
 import { AuditProvider } from "@/components/Audit/AuditContext";
 import { AuditGuard } from "@/components/Audit/AuditGuard";
-import { AuditMockProvider } from "@/components/Audit/AuditMockContext";
 import {
   AuthForgotPassword,
   AuthLayout,
@@ -93,11 +92,9 @@ const router = createBrowserRouter([
       },
       {
         element: (
-          <AuditMockProvider>
-            <AuditProvider>
-              <AuditGuard />
-            </AuditProvider>
-          </AuditMockProvider>
+          <AuditProvider>
+            <AuditGuard />
+          </AuditProvider>
         ),
         children: [
           {

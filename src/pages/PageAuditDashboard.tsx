@@ -1,6 +1,5 @@
 import Audit from "@/components/Audit/Audit";
-import { AuditHeaderActions } from "@/components/Audit/AuditHeaderActions";
-import { LayoutPage, LayoutPortalHeaderActions } from "@/components/layout";
+import { LayoutPage } from "@/components/layout";
 
 export function PageAuditDashboard() {
   return (
@@ -13,9 +12,6 @@ export function PageAuditDashboard() {
         </>
       }
     >
-      <LayoutPortalHeaderActions>
-        <AuditHeaderActions />
-      </LayoutPortalHeaderActions>
       <Audit />
     </LayoutPage>
   );
