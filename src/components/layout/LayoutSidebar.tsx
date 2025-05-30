@@ -3,6 +3,7 @@ import {
   LayoutSidebarNavigationList,
   LayoutSidebarUserMenu,
   useLayoutNavigation,
+  useLayoutSidebarMobileClose,
 } from "@/components/layout";
 import {
   Sidebar,
@@ -21,6 +22,8 @@ export function LayoutSidebar({
 }: React.ComponentProps<typeof Sidebar>) {
   const getOrgLink = useOrgLink();
   const { navMain, navFooter } = useLayoutNavigation(getOrgLink);
+
+  useLayoutSidebarMobileClose();
 
   return (
     <Sidebar

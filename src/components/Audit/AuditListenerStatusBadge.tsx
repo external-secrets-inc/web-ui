@@ -9,7 +9,7 @@ import { useSubscription } from "@/context/SubscriptionContext";
 import useOrgLink from "@/hooks/useOrgLink";
 import { cn } from "@/lib/utils";
 import useAuditSetup from "@/services/audit/hooks/useAuditSetup";
-import { Circle } from "lucide-react";
+import { LucideCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { LISTENER_STATUS } from "./Audit.constants";
 
@@ -98,14 +98,14 @@ export function AuditListenerStatusBadge({
             {auditListener?.status !== LISTENER_STATUS.ACTIVE ? (
               <SidebarMenuAction className="relative top-[unset] right-[unset] rounded-xs" asChild>
                 <Link to={getOrgUrl("/audit/dashboard")}>
-                  <Circle
+                  <LucideCircle
                     className={cn("w-2 box-content", config.color)}
                     fill="currentColor"
                   />
                 </Link>
               </SidebarMenuAction>
             ) : (
-              <Circle
+              <LucideCircle
                 className={cn("w-2 h-2 p-3 -mr-3 box-content", config.color)}
                 fill="currentColor"
               />
@@ -127,7 +127,7 @@ export function AuditListenerStatusBadge({
   return (
     <div className="flex items-center gap-2">
       <Badge variant={config.variant} className="flex items-center gap-2">
-        <Circle
+        <LucideCircle
           className={cn("w-2 h-2 animate-pulse", config.color)}
           fill="currentColor"
         />

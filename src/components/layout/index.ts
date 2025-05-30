@@ -12,6 +12,7 @@ export { removeOrgPrefix } from './layout.utils';
 export { useLayoutNavigation } from './useLayoutNavigation';
 export { useLayoutSidebarGroupsState } from './useLayoutSidebarGroupsState';
 export { useLayoutBreadcrumbs } from './useLayoutBreadcrumbs';
+export { useLayoutSidebarMobileClose } from './useLayoutSidebarMobileClose';
 
 // Components
 export { LayoutRoot } from './LayoutRoot';
