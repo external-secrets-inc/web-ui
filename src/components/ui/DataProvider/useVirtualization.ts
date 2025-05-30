@@ -58,10 +58,10 @@ export function useVirtualization<TData extends object>({
   rows,
   scrollElementRef,
 }: UseVirtualizationProps<TData>) {
-  // --- Conditional Virtualizer Setup ---
   const isVirtualEnabled = virtualizationMode !== 'off';
   const isTableContainer = virtualizationContainer === 'table';
   const isWindowContainer = virtualizationContainer === 'window';
+  const isSelectorContainer = typeof virtualizationContainer === 'string' && !isTableContainer && !isWindowContainer;
 
   const { estimateSize: estimateSizeFn, overscan, ...restVirtualizerOptions } = virtualizerOptions || {};
 
@@ -78,12 +78,23 @@ export function useVirtualization<TData extends object>({
     [virtualizationMode, rowHeight, estimateSizeFn]
   );
 
-  const tableVirtualizer = useVirtualizer({
+  const elementVirtualizer = useVirtualizer({
     count: rows.length,
-    getScrollElement: () => scrollElementRef.current,
+    getScrollElement: () => {
+      if (isSelectorContainer) {
+        const element = document.querySelector(virtualizationContainer);
+        if (!element || !(element instanceof HTMLDivElement)) {
+          console.error(`[DataProvider] Selector "${virtualizationContainer}" did not match an HTMLDivElement`);
+          return null;
+        }
+        return element;
+      }
+      return scrollElementRef.current;
+    },
     estimateSize: createSizeEstimator,
     overscan: overscan ?? DEFAULT_OVERSCAN,
-    enabled: isVirtualEnabled && isTableContainer,
+    enabled: isVirtualEnabled && (isTableContainer || isSelectorContainer),
+    scrollMargin: isSelectorContainer ? (scrollElementRef.current?.offsetTop ?? 0) : undefined,
     ...restVirtualizerOptions,
   });
 
@@ -98,7 +109,7 @@ export function useVirtualization<TData extends object>({
     ...(restVirtualizerOptions as any), // TODO: [cfviotti] Figure out how to avoid `any`
   });
 
-  const rowVirtualizer = isWindowContainer ? windowVirtualizer : tableVirtualizer;
+  const rowVirtualizer = isWindowContainer ? windowVirtualizer : elementVirtualizer;
 
   // Use the memoized ref workaround
   const virtualizerRef = useMemoizedVirtualizerRef(rowVirtualizer);
@@ -147,7 +158,7 @@ export function useVirtualization<TData extends object>({
     if (virtualizationMode === 'dynamic' && isVirtualEnabled && node) {
       virtualizerRef.current.measureElement(node);
     }
-  // Depend on virtualizationMode and isVirtualEnabled. Ref access doesn't need dependency.
+    // Depend on virtualizationMode and isVirtualEnabled. Ref access doesn't need dependency.
   }, [virtualizationMode, isVirtualEnabled, virtualizerRef]);
 
   return {
@@ -156,5 +167,8 @@ export function useVirtualization<TData extends object>({
     paddingTop,
     paddingBottom,
     measureElementRefCallback,
+    isTableContainer,
+    isWindowContainer,
+    isSelectorContainer,
   };
 }

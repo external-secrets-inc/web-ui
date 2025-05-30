@@ -1,18 +1,21 @@
-import * as React from "react"
+import * as React from "react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 const Table = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & { style?: React.CSSProperties }
 >(({ className, style, children, ...props }, ref) => (
-  <div ref={ref} style={style} className={cn("relative w-full overflow-auto rounded-md border", className)} {...props}>
+  <ScrollArea ref={ref} style={style} type="always" className={cn("relative w-full rounded-md outline -outline-offset-1 outline-1 outline-border", className)}>
     <table
       className="w-full caption-bottom text-sm"
+      {...props}
     >
       {children}
     </table>
-  </div>
+    <ScrollBar orientation="horizontal" />
+  </ScrollArea>
 ))
 Table.displayName = "Table"
 
@@ -23,8 +26,11 @@ const TableHeader = React.forwardRef<
   <thead
     ref={ref}
     className={cn(
-      "sticky top-0 z-10 bg-background ring-1 ring-border",
-      "[&_tr]:border-b",
+      "sticky top-0 z-10",
+      "[box-shadow:0_1px_0_0_theme(colors.border)]",
+      "[&_th]:bg-background",
+      "[&>tr]:border [&>tr]:border-transparent",
+      "[&>tr]:[clip-path:border-box] [&>tr]:rounded-t-lg",
       className
     )}
     {...props}

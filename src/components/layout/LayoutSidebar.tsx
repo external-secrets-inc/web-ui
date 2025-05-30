@@ -38,7 +38,9 @@ export function LayoutSidebar({
         className={cn(
           "[&_:is([data-sidebar=menu-button],[data-sidebar=menu-sub-button]):hover:has(a:hover,button:hover)]:bg-transparent",
           "[&_:is([data-sidebar=menu-button],[data-sidebar=menu-sub-button])]:!pr-2",
-          "[&_[data-sidebar=menu-action]]:static",
+          "[&_[data-sidebar=menu-action]]:relative",
+          "[&_[data-sidebar=menu-action]]:top-[unset]",
+          "[&_[data-sidebar=menu-action]]:right-[unset]",
           "[&_[data-sidebar=menu-action]]:rounded-xs"
         )}
       >

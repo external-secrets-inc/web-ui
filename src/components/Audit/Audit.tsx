@@ -36,6 +36,7 @@ import { LayoutPortalHeaderActions } from "@/components/layout";
 import { AuditHeaderActions } from "@/components/Audit/AuditHeaderActions";
 import { AuditRefreshButton } from "@/components/Audit/AuditRefreshButton";
 import { AuditListenerStatusBadge } from "@/components/Audit/AuditListenerStatusBadge";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const getDaysBetweenDates = (start: string, end: string) => {
   const ONE_DAY_IN_MILLISECONDS =
@@ -70,6 +71,7 @@ export default function Audit() {
     if (!initialTimeUnit) return "day";
     return initialTimeUnit as TimeUnit;
   });
+  const isMobile  = useIsMobile();
   const [currentToggledTimeRange, setCurrentToggledTimeRange] = useState<
     number | null
   >(() => {
@@ -249,7 +251,11 @@ export default function Audit() {
     <>
       <LayoutPortalHeaderActions>
         <AuditHeaderActions>
-          <AuditListenerStatusBadge />
+          {isMobile ? (
+            <AuditListenerStatusBadge compact />
+          ) : (
+            <AuditListenerStatusBadge />
+          )}
           <AuditRefreshButton queryKey={["audit"]} />
         </AuditHeaderActions>
       </LayoutPortalHeaderActions>
@@ -259,6 +265,7 @@ export default function Audit() {
           <Alert
             className="flex gap-2 items-center justify-between flex-wrap"
             variant="warning"
+            data-layout-contain-on-x-scroll
           >
             <div>
               <AlertTitle className="flex gap-3 items-center">
@@ -294,6 +301,7 @@ export default function Audit() {
           <Alert
             className="flex gap-2 items-center justify-between flex-wrap"
             variant="destructive"
+            data-layout-contain-on-x-scroll
           >
             <AlertTitle className="flex gap-2 items-center">
               <LucideAlertCircle className="text-destructive" /> Listener
@@ -306,7 +314,7 @@ export default function Audit() {
           </Alert>
         )}
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4" data-layout-contain-on-x-scroll>
           <div className="flex flex-wrap items-center justify-between gap-2 w-full pt-4">
             <h2 className="font-bold">Analytics</h2>
             <ToggleGroup

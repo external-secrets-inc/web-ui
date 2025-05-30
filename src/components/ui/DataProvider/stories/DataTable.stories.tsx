@@ -151,6 +151,8 @@ export const DynamicVirtualization: Story = {
   },
 };
 
+// TODO[cfviotti]: Add a story for the custom selector container virtualization mode
+
 /**
  * Demonstrates window-based virtualization where the browser window is the scroll container.
  * Useful for full-page tables integrated with the main page scroll.
@@ -160,7 +162,7 @@ export const WindowVirtualization: Story = {
   name: "Window Virtualization",
   args: {
     ...baseVirtualizationArgs,
-    className: "w-full [--window-container-header-offset:0px]",
+    className: "w-full [--virtual-container-header-offset:0px]",
     virtualizationMode: 'static',
     virtualizationContainer: 'window',
   },

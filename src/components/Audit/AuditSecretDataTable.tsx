@@ -1,9 +1,24 @@
 import { useState, useMemo, useEffect } from "react";
-import { LucideAlertCircle, LucideCircle, LucideDownload, LucideFilter, LucideSearch, LucideX } from "lucide-react";
+import {
+  LucideAlertCircle,
+  LucideCircle,
+  LucideDownload,
+  LucideFilter,
+  LucideSearch,
+  LucideX,
+} from "lucide-react";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { DataProvider, DataTable, defineColumns } from "@/components/ui/DataProvider";
+import {
+  DataProvider,
+  DataTable,
+  defineColumns,
+} from "@/components/ui/DataProvider";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import useGetDashboarSecretTable from "@/services/audit/queries/useGetDashboarSecretTable";
 import { AuditSecretTableData } from "./Audit.interfaces";
@@ -15,7 +30,10 @@ import { Input } from "@/components/ui/input";
 import saveAs from "file-saver";
 import { Separator } from "@/components/ui/separator";
 import { formatDate } from "@/utils/dateUtils";
-import { AUDIT_PAGE_QUERY_REFETCH_INTERVAL, AUDIT_QUERY_STALE_TIME } from "@/components/Audit/Audit.constants";
+import {
+  AUDIT_PAGE_QUERY_REFETCH_INTERVAL,
+  AUDIT_QUERY_STALE_TIME,
+} from "@/components/Audit/Audit.constants";
 
 interface AuditSecretTableProps {
   listenerID: string;
@@ -46,7 +64,7 @@ export const AuditSecretDataTable = ({ listenerID }: AuditSecretTableProps) => {
     handleFilterNameChange,
     currentFilters,
     hasAppliedFilters,
-    clearFilters
+    clearFilters,
   } = useAuditFilter();
 
   const {
@@ -55,16 +73,15 @@ export const AuditSecretDataTable = ({ listenerID }: AuditSecretTableProps) => {
     isError: isErrorSecretTableData,
     isRefetchError: isRefetchErrorSecretTableData,
     error: secretTableDataError,
-  } = useGetDashboarSecretTable(false, listenerID || '', searchParams, {
+  } = useGetDashboarSecretTable(false, listenerID || "", searchParams, {
     staleTime: AUDIT_QUERY_STALE_TIME,
     refetchInterval: AUDIT_PAGE_QUERY_REFETCH_INTERVAL,
     refetchIntervalInBackground: true,
-    enabled: !!listenerID
+    enabled: !!listenerID,
   });
 
   const listenerSecretTableData = useMemo(() => {
-    if (!secretTableData)
-      return []
+    if (!secretTableData) return [];
 
     return secretTableData;
   }, [secretTableData]);
@@ -188,7 +205,7 @@ export const AuditSecretDataTable = ({ listenerID }: AuditSecretTableProps) => {
           .join(",");
       });
 
-    return [headers, ...rows].join('\n');
+    return [headers, ...rows].join("\n");
   };
 
   const handleExportSecretsTable = (jsonData: AuditSecretTableData[]) => {
@@ -225,11 +242,13 @@ export const AuditSecretDataTable = ({ listenerID }: AuditSecretTableProps) => {
   };
 
   return (
-    <>
-      <div className="flex flex-wrap items-center justify-between pt-4 gap-2">
+    <div className="flex flex-col gap-4">
+      <div
+        className="flex gap-2 flex-wrap items-center"
+        data-layout-contain-on-x-scroll
+      >
         <h2 className="font-bold w-auto">Secrets</h2>
-
-        <div className="flex gap-2 flex-wrap-reverse">
+        <div className="flex gap-2 flex-wrap-reverse ml-auto">
           <div className="relative flex gap-2 items-center flex-1 basis-32">
             <Input
               placeholder="Search..."
@@ -254,8 +273,7 @@ export const AuditSecretDataTable = ({ listenerID }: AuditSecretTableProps) => {
             )}
             <LucideSearch className="absolute right-3 text-muted-foreground" />
           </div>
-
-          <div className="flex gap-2">
+          <div className="flex flex-wrap-reverse gap-2">
             <Button
               variant="outline"
               onClick={() => {handleExportSecretsTable(listenerSecretTableData?? [])}}
@@ -276,7 +294,9 @@ export const AuditSecretDataTable = ({ listenerID }: AuditSecretTableProps) => {
                 >
                   <LucideFilter />
                   Filters
-                  {hasAppliedFilters() && <LucideCircle className="absolute -top-1 -right-1 !size-2.5 stroke-0 fill-orange-500" />}
+                  {hasAppliedFilters() && (
+                    <LucideCircle className="absolute -top-1 -right-1 !size-2.5 stroke-0 fill-orange-500" />
+                  )}
                 </Button>
               </DialogTrigger>
               <FilterDialogForm
@@ -298,9 +318,11 @@ export const AuditSecretDataTable = ({ listenerID }: AuditSecretTableProps) => {
       >
         <DataTable
           virtualizationMode="static"
-          virtualizationContainer="window"
-          onRowClick={(row) => setSelectedSecretId((row as AuditSecretTableData).id)}
-          className="[--window-container-header-offset:calc(var(--topbar-height)+theme(spacing.3))]" // Sticky table header below the topbar with a mt-3 gap
+          virtualizationContainer="#layout-root-scroll-area>[data-radix-scroll-area-viewport]"
+          onRowClick={(row) =>
+            setSelectedSecretId((row as AuditSecretTableData).id)
+          }
+          className="min-w-max [--virtual-container-header-offset:calc(var(--layout-breadcrumbs-height)+theme(spacing.3))]" // Sticky table header below the breadcrumbs with a mt-3 gap
         />
       </DataProvider>
 
@@ -309,6 +331,6 @@ export const AuditSecretDataTable = ({ listenerID }: AuditSecretTableProps) => {
         setSecretId={setSelectedSecretId}
         onOpenChange={(open) => !open && setSelectedSecretId(null)}
       />
-    </>
+    </div>
   );
 };

@@ -3,12 +3,16 @@ import * as React from "react";
 import { type VirtualizerOptions } from "@tanstack/react-virtual";
 
 /**
- * Defines the available modes for row virtualization.
- * - `off`: Virtualization is disabled.
- * - `dynamic`: Rows have variable heights, measured by the virtualizer.
- * - `static`: All rows have a fixed height specified by `rowHeight`.
+ * Determines how row virtualization behaves in terms of height calculation and measurement.
+ * 'dynamic' requires runtime measurement of actual row heights.
  */
-export type VirtualizationMode = 'off' | 'dynamic' | 'static';
+export type VirtualizationMode = 'off' | 'static' | 'dynamic';
+
+/**
+ * Defines what element acts as the scrollable viewport for virtualization.
+ * Custom selectors can be provided to target specific container elements.
+ */
+export type VirtualizationContainer = 'table' | 'window' | string;
 
 /**
  * Base requirement for all data items in the table.
@@ -147,9 +151,6 @@ export interface DataTableProps<TData extends object, TMeta extends object> {
   rowsAppend?: React.ReactNode;
   /** Metadata object passed down to cell/header renderers */
   meta?: TMeta;
-
-  // --- Virtualization Props ---
-
   /**
    * Determines the row height strategy for virtualization.
    * - 'off': Disables virtualization.
@@ -157,7 +158,7 @@ export interface DataTableProps<TData extends object, TMeta extends object> {
    * - 'dynamic': Rows can have variable heights, measured dynamically. Requires `virtualizerOptions.estimateSize`.
    * @default 'off'
    */
-  virtualizationMode?: 'off' | 'static' | 'dynamic';
+  virtualizationMode?: VirtualizationMode;
 
   /**
    * Determines the scrollable container for virtualization.
@@ -165,7 +166,7 @@ export interface DataTableProps<TData extends object, TMeta extends object> {
    * - 'window': The browser window is the scroll container. The table component will not be intrinsically scrollable.
    * @default 'table'
    */
-  virtualizationContainer?: 'table' | 'window';
+  virtualizationContainer?: VirtualizationContainer;
 
   /**
    * The fixed height (in pixels) for each row when `virtualizationMode` is 'static'.

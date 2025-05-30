@@ -47,21 +47,19 @@ export function LayoutPage({
       value={portalHeaderActionsTargetElement}
     >
       <div
-        className={cn(
-          "container mx-auto text-left flex flex-col py-4 pb-16 px-4",
-          className
-        )}
+        className={cn("container flex flex-col py-4 pb-16", className)}
         {...props}
       >
-        <header className="mb-6">
+        <header className="mb-6" data-layout-contain-on-x-scroll>
           <div className="flex items-center gap-2 flex-wrap-reverse mb-1">
             {title && <h1 className="text-2xl font-semibold">{title}</h1>}
-            <div ref={portalHeaderActionsTargetRef} className="ml-auto flex-none items-center" />
+            <div
+              ref={portalHeaderActionsTargetRef}
+              className="ml-auto flex-none items-center"
+            />
           </div>
           {description && (
-            <h2 className="text-sm text-muted-foreground">
-              {description}
-            </h2>
+            <h2 className="text-sm text-muted-foreground">{description}</h2>
           )}
         </header>
 

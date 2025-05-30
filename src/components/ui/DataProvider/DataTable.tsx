@@ -1,15 +1,28 @@
-import * as React from "react";
 import {
-  flexRender,
-} from "@tanstack/react-table";
-import { LucideArrowDown, LucideArrowUp, LucideChevronsUpDown } from "lucide-react";
+  type ForwardedRef,
+  type RefObject,
+  forwardRef,
+  useEffect,
+  useRef,
+} from "react";
+import { flexRender } from "@tanstack/react-table";
+import {
+  LucideArrowDown,
+  LucideArrowUp,
+  LucideChevronsUpDown,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Loader } from "@/components/ui/Loader";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useData } from "./DataProviderContext";
 import {
-  type DataTableProps,
-} from "./DataProvider.interfaces";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useData } from "./DataProviderContext";
+import { type DataTableProps } from "./DataProvider.interfaces";
 import { useVirtualization } from "./useVirtualization";
 
 /**
@@ -21,7 +34,7 @@ import { useVirtualization } from "./useVirtualization";
  * - Integrated state management for sorting, filtering, and column sizing
  * - Support for both table-level and window-level scrolling
  */
-export const DataTable = React.forwardRef(
+export const DataTable = forwardRef(
   <TData extends object, TMeta extends object>(
     {
       className,
@@ -29,18 +42,19 @@ export const DataTable = React.forwardRef(
       rowsAppend,
       meta,
       style,
-      virtualizationMode = 'off',
-      virtualizationContainer = 'table',
+      virtualizationMode = "off",
+      virtualizationContainer = "table",
       rowHeight = 40,
       virtualizerOptions,
     }: DataTableProps<TData, TMeta>,
-    ref: React.ForwardedRef<HTMLDivElement>
+    ref: ForwardedRef<HTMLDivElement>
   ) => {
     const { table, isLoading, emptyMessage } = useData<TData>();
-    const internalScrollElementRef = React.useRef<HTMLDivElement>(null);
-    const scrollElementRef = (ref || internalScrollElementRef) as React.RefObject<HTMLDivElement>;
+    const internalScrollElementRef = useRef<HTMLDivElement>(null);
+    const scrollElementRef = (ref ||
+      internalScrollElementRef) as RefObject<HTMLDivElement>;
 
-    React.useEffect(() => {
+    useEffect(() => {
       table.setOptions((prev) => ({
         ...prev,
         meta: { ...(prev.meta ?? {}), ...(meta ?? {}) },
@@ -57,6 +71,8 @@ export const DataTable = React.forwardRef(
       paddingTop,
       paddingBottom,
       measureElementRefCallback,
+      isWindowContainer,
+      isSelectorContainer,
     } = useVirtualization({
       virtualizationMode,
       virtualizationContainer,
@@ -72,23 +88,29 @@ export const DataTable = React.forwardRef(
     return (
       <Table
         ref={scrollElementRef}
-        className={cn(virtualizationContainer === 'window' && "[overflow:unset] block", className)}
+        className={cn(
+          (isWindowContainer || isSelectorContainer) &&
+            "[&_[data-radix-scroll-area-viewport]]:!overflow-clip block",
+          "[&_[data-radix-scroll-area-viewport]]:min-w-fit",
+          "[&_[data-radix-scroll-area-content]]:min-w-fit",
+          "min-w-fit [overflow:unset]",
+          className
+        )}
         style={style}
       >
         <TableHeader
           className={cn(
-            // Base sticky header styles
-            'sticky z-10 [&_tr]:border-b',
             // Conditional class for window scrolling offset and pseudo-element
             // for background, border, shadow, and clipping for proper border
             // radius on table elements while avoiding showing rows moving below
             // the header
-            virtualizationContainer === 'window' && `
-              top-[--window-container-header-offset]
-              before:absolute before:inset-0 before:-m-px
-              before:rounded-t-md before:shadow-[0_0_0_theme(spacing.12)_theme(colors.background)]
-              before:-z-10 before:[clip-path:rect(calc(theme(spacing.3)*-1)_100%_100%_0%)]
-              before:border before:border-border before:bg-background
+            (isWindowContainer || isSelectorContainer) &&
+              `
+              top-[--virtual-container-header-offset] [&>tr]:border-none [&_th]:bg-transparent
+              before:absolute before:w-[stretch] before:h-[stretch]
+              before:rounded-t-md before:shadow-[0_0_0_var(--virtual-container-header-offset)_theme(colors.background)]
+              before:-z-10 before:[clip-path:rect(calc(var(--virtual-container-header-offset)*-1)_100%_100%_0%)]
+              before:border before:border-border before:bg-background/80 before:backdrop-blur-lg
             `
           )}
         >
@@ -105,12 +127,15 @@ export const DataTable = React.forwardRef(
                   onClick={header.column.getToggleSortingHandler()}
                 >
                   <div className="flex items-center gap-1">
-                    {flexRender(header.column.columnDef.header, header.getContext())}
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
                     {header.column.getCanSort() && (
                       <div className="w-4 h-4">
-                        {header.column.getIsSorted() === 'asc' ? (
+                        {header.column.getIsSorted() === "asc" ? (
                           <LucideArrowDown className="h-4 w-4" />
-                        ) : header.column.getIsSorted() === 'desc' ? (
+                        ) : header.column.getIsSorted() === "desc" ? (
                           <LucideArrowUp className="h-4 w-4" />
                         ) : (
                           <LucideChevronsUpDown className="h-4 w-4 text-muted-foreground/30" />
@@ -127,14 +152,18 @@ export const DataTable = React.forwardRef(
           {showLoading ? (
             <TableRow>
               <TableCell colSpan={columns.length}>
-                <div className="flex justify-center items-center h-10"><Loader /></div>
+                <div className="flex justify-center items-center h-10">
+                  <Loader />
+                </div>
               </TableCell>
             </TableRow>
           ) : showEmpty ? (
             <TableRow>
               <TableCell colSpan={columns.length}>
                 <div className="flex justify-center items-center h-10">
-                  <div className="text-sm text-muted-foreground">{emptyMessage}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {emptyMessage}
+                  </div>
                 </div>
               </TableCell>
             </TableRow>
@@ -143,7 +172,10 @@ export const DataTable = React.forwardRef(
               {/* Spacer rows maintain table height and scroll position without breaking table semantics */}
               {paddingTop > 0 && (
                 <TableRow>
-                  <TableCell colSpan={columns.length} style={{ height: `${paddingTop}px`, padding: 0, border: 0 }} />
+                  <TableCell
+                    colSpan={columns.length}
+                    style={{ height: `${paddingTop}px`, padding: 0, border: 0 }}
+                  />
                 </TableRow>
               )}
               {virtualItems.map((virtualRow) => {
@@ -153,15 +185,24 @@ export const DataTable = React.forwardRef(
                     key={row.id}
                     ref={measureElementRefCallback}
                     data-index={virtualRow.index}
-                    style={{ height: virtualizationMode === 'static' ? rowHeight : undefined }}
+                    style={{
+                      height:
+                        virtualizationMode === "static" ? rowHeight : undefined,
+                    }}
                     onClick={() => onRowClick?.(row.original)}
                     className={cn(
-                      onRowClick && "cursor-pointer hover:bg-muted/50",
+                      onRowClick && "cursor-pointer hover:bg-muted/50"
                     )}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell style={{ width: cell.column.getSize() }} key={cell.id}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      <TableCell
+                        style={{ width: cell.column.getSize() }}
+                        key={cell.id}
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
                       </TableCell>
                     ))}
                   </TableRow>
@@ -169,7 +210,14 @@ export const DataTable = React.forwardRef(
               })}
               {paddingBottom > 0 && (
                 <TableRow>
-                  <TableCell colSpan={columns.length} style={{ height: `${paddingBottom}px`, padding: 0, border: 0 }} />
+                  <TableCell
+                    colSpan={columns.length}
+                    style={{
+                      height: `${paddingBottom}px`,
+                      padding: 0,
+                      border: 0,
+                    }}
+                  />
                 </TableRow>
               )}
             </>
@@ -180,11 +228,19 @@ export const DataTable = React.forwardRef(
                 <TableRow
                   key={row.id}
                   onClick={() => onRowClick?.(row.original)}
-                  className={cn(onRowClick && "cursor-pointer hover:bg-muted/50")}
+                  className={cn(
+                    onRowClick && "cursor-pointer hover:bg-muted/50"
+                  )}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell style={{ width: cell.column.getSize() }} key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    <TableCell
+                      style={{ width: cell.column.getSize() }}
+                      key={cell.id}
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>

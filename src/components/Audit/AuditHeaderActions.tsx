@@ -18,7 +18,7 @@ export function AuditHeaderActions({
 
   if (children) {
     return (
-      <div className={cn("flex items-center gap-4 h-0", className)}>
+      <div className={cn("flex items-center gap-4 -my-1", className)}>
         {showMockToggle && <AuditMockToggle />}
         {children}
       </div>
@@ -26,7 +26,7 @@ export function AuditHeaderActions({
   }
 
   return (
-    <div className={cn("flex items-center gap-4 h-0", className)}>
+    <div className={cn("flex items-center gap-4 -my-1", className)}>
       {showMockToggle && <AuditMockToggle />}
       <AuditRefreshButton queryKey={["audit"]} />
     </div>

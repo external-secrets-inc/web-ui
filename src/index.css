@@ -43,11 +43,8 @@
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
 
-    --topbar-height: theme(spacing.12);
-
-    @media screen(md) {
-      --topbar-height: theme(spacing.16);
-    }
+    --layout-padding-inline: theme(spacing.4);
+    --layout-breadcrumbs-height: theme(spacing.11);
 
     color-scheme: light;
     font-synthesis: none;
@@ -148,11 +145,15 @@
 
 /* Custom .container behavior */
 :where(.container) {
+  @apply supports-[width:stretch]:box-content supports-[width:stretch]:!w-[stretch];
+
   @media (min-width: theme(screens.lg)) {
     max-width: theme(container.screens.lg);
-    padding-inline: theme(container.padding.lg);
   }
-  @apply supports-[width:stretch]:box-content supports-[width:stretch]:!w-[stretch]
+
+  &:is(.container) {
+    padding-inline: var(--layout-padding-inline);
+  }
 }
 
 /* Override default size for lucide icons */

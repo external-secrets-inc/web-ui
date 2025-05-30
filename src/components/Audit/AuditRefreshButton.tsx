@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { LucideRefreshCw } from "lucide-react";
 import { Loader } from "@/components/ui/Loader";
 import { useQueryClient, useIsFetching } from "@tanstack/react-query";
+import { cn } from "@/lib/utils";
 
 interface AuditRefreshButtonProps {
   queryKey: string[];
@@ -30,10 +31,10 @@ export function AuditRefreshButton({
       variant="secondary"
       onClick={handleRefresh}
       disabled={isFetching}
-      className={`flex items-center gap-2 ${className || ""}`}
+      className={cn("flex items-center gap-2 max-md:p-2.5", className)}
     >
       {isFetching ? <Loader /> : <LucideRefreshCw className="size-4" />}
-      {children}
+      <span className="hidden md:inline">{children}</span>
     </Button>
   );
 }

@@ -135,7 +135,7 @@ const SubLevelGroupNavItem: React.FC<CollapsibleNavigationItemProps> = ({
         <CollapsibleTrigger asChild>
           <SidebarMenuSubButton
             className={cn(
-              "cursor-pointer select-none [&[data-state=open]>svg]:rotate-90 [&:hover>svg]:opacity-100 max-md:[&[data-state=closed]>svg]:opacity-100 gap-1",
+              "cursor-pointer select-none [&[data-state=open]>svg]:rotate-90 [&:not(:has([data-sidebar=menu-action]:hover)):hover>svg]:opacity-100 max-md:[&[data-state=closed]>svg]:opacity-100 gap-1",
               level > 1 &&
                 "pl-[calc((var(--level)-1)*theme(spacing[2])+theme(spacing.2))]"
             )}
@@ -234,7 +234,7 @@ const TopLevelGroupNavItem: React.FC<CollapsibleNavigationItemProps> = ({
         <CollapsibleTrigger asChild>
           <SidebarMenuButton
             tooltip={item.label}
-            className="[&[data-state=open]>svg]:rotate-90 [&:hover>svg]:opacity-100 max-md:[&[data-state=closed]>svg]:opacity-100 gap-1"
+            className="[&[data-state=open]>svg]:rotate-90 [&:not(:has([data-sidebar=menu-action]:hover)):hover>svg]:opacity-100 max-md:[&[data-state=closed]>svg]:opacity-100 gap-1"
           >
             <span>{item.label}</span>
             <LucideChevronRight className="transition-all duration-200 opacity-0" />

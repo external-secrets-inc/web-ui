@@ -96,7 +96,7 @@ export function AuditListenerStatusBadge({
         <Tooltip>
           <TooltipTrigger asChild>
             {auditListener?.status !== LISTENER_STATUS.ACTIVE ? (
-              <SidebarMenuAction asChild>
+              <SidebarMenuAction className="relative top-[unset] right-[unset] rounded-xs" asChild>
                 <Link to={getOrgUrl("/audit/dashboard")}>
                   <Circle
                     className={cn("w-2 box-content", config.color)}
