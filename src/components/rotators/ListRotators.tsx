@@ -13,7 +13,7 @@ import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { ApiHttpError } from "@/types";
 
 export default function ListRotators() {
-  const featureType: string = "Async Rotator"
+  const featureType: string = "Reloader"
 
   const [featureID, setFeatureID] = useState("")
   const [applyCommand, setApplyCommand] = useState("")
@@ -31,17 +31,17 @@ export default function ListRotators() {
     onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to generate manifest token")
   });
   const { mutate: createRotator } = useCreateRotator({
-    onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to create async rotator"),
+    onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to create reloader"),
     onSuccess: () => {
       rotatorsRefetch();
-      toast.success("Async rotator created successfully")
+      toast.success("Reloader created successfully")
     }
   });
   const { mutate: deleteRotator } = useDeleteRotator({
-    onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to delete async rotator"),
+    onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to delete reloader"),
     onSuccess: () => {
       rotatorsRefetch();
-      toast.success("Async rotator deleted successfully")
+      toast.success("Reloader deleted successfully")
     },
   })
 
@@ -78,20 +78,20 @@ export default function ListRotators() {
   useEffect(() => {
     if (!(rotatorError || rotatorIsRefetchError)) return;
 
-    handleDefaultApiHttpError(rotatorError, "Error while fetching async rotators")
+    handleDefaultApiHttpError(rotatorError, "Error while fetching reloader")
   }, [rotatorError, rotatorsIsError, rotatorIsRefetchError])
 
   useEffect(() => {
     if (!manifestIsError) return;
 
-    handleDefaultApiHttpError(manifestError, "Error while fetching async rotators manifest")
+    handleDefaultApiHttpError(manifestError, "Error while fetching reloader manifest")
   }, [manifestError, manifestIsError])
 
   return (
     <FeatureCollection
       data={rotatorsData || []}
       featureType={featureType}
-      featureDescription="Async Rotator listens to secret rotation notifications and triggers the External Secrets Operator reconciliation"
+      featureDescription="Reloader listens to secret rotation notifications and triggers the External Secrets Operator reconciliation"
       onDeleteFeature={performDelete}
       setFeatureID={setFeatureID}
       applyCommand={isManifestReady ? applyCommand : ''}

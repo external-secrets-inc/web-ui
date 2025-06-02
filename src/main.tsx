@@ -87,7 +87,7 @@ const router = createBrowserRouter([
         element: <PageAgents />,
       },
       {
-        path: "rotators",
+        path: "reloaders",
         element: <PageReloaders />,
       },
       {

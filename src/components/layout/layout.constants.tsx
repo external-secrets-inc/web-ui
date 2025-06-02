@@ -65,7 +65,7 @@ export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
         },
         {
           label: "Reloaders",
-          url: "/rotators",
+          url: "/reloaders",
           icon: LucideRotateCcwKey,
         },
       ],
