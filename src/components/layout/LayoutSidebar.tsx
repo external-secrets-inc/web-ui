@@ -1,5 +1,5 @@
-import AppLogo from "@/components/AppLogo";
 import {
+  LayoutSidebarAppLogo,
   LayoutSidebarNavigationList,
   LayoutSidebarUserMenu,
   useLayoutNavigation,
@@ -32,10 +32,8 @@ export function LayoutSidebar({
       variant="inset"
       {...props}
     >
-      <SidebarHeader className="h-11">
-        <div className="px-0.5">
-          <AppLogo />
-        </div>
+      <SidebarHeader className="h-16 md:h-[--layout-topbar-height] items-start justify-center">
+        <LayoutSidebarAppLogo className="px-2" />
       </SidebarHeader>
       <SidebarContent
         className={cn(

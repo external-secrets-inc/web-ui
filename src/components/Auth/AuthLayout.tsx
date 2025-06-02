@@ -14,7 +14,7 @@ export function AuthLayout() {
   return (
     <div className="p-2 lg:p-14 xl:p-20 min-h-dvh flex flex-col">
       <div className="z-10 lg:w-full lg:flex-1 flex flex-col max-w-full lg:max-w-[1600px] m-auto lg:grid lg:grid-cols-[minmax(30%,60%)_minmax(auto,auto)] rounded-[32px] overflow-hidden bg-background dark:bg-background/90">
-        <aside className="relative contain-content p-8 py-6 sm:py-8 lg:p-16 xl:p-20 flex flex-col flex-0 gap-6 items-start justify-between rounded-[inherit]">
+        <aside className="relative contain-content p-8 py-6 sm:py-8 lg:p-16 xl:p-20 flex flex-col flex-0 gap-6 items-start justify-between rounded-[inherit] [container-type:inline-size]">
           <Link
             to={WEBSITE_DOMAIN}
             className="self-center sm:self-start"
@@ -26,8 +26,9 @@ export function AuthLayout() {
               alt="External Secrets"
             />
           </Link>
-          <h1 className="hidden sm:block text-base font-bold text-white lg:text-3xl xl:text-5xl lg:max-w-[310px] xl:max-w-[480px]">
-            Your seamless secrets management journey starts here
+          <h1 className="hidden sm:block font-bold text-base-50 text-[6cqw] leading-[1.2]">
+            Solve secrets chaos forever. <br />
+            Your path to clarity <span className="text-primary-400 mix-blend-plus-lighter">starts here</span>.
           </h1>
           <div className="absolute inset-0 overflow-hidden border-transparent border-8 bg-clip-padding rounded-[inherit] opacity-95 dark:opacity-75 -z-10">
             <div className="animate-bg-auth-hero-scroll motion-reduce:animate-none">
@@ -54,7 +55,7 @@ export function AuthLayout() {
         </div>
       </div>
 
-      <div className="fixed inset-0 overflow-hidden bg-gradient-to-tl from-violet-400/60 to-violet-950 -z-10">
+      <div className="fixed inset-0 overflow-hidden bg-auth-gradient -z-10">
         <div className="absolute inset-0 translate-z-0">
           <img
             src={BGBlob1}

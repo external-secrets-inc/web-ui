@@ -69,8 +69,8 @@ export function LayoutSidebarUserMenu() {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="h-8 w-8 rounded-lg ring-inset ring-1 ring-sidebar-foreground/50">
-                <AvatarFallback className="rounded-lg bg-violet-400/50 dark:bg-violet-400/75 dark:text-sidebar-accent">
+              <Avatar className="h-8 w-8 rounded-sm ring-inset ring-1 ring-sidebar-foreground/50">
+                <AvatarFallback className="rounded-sm bg-primary-400/50 dark:bg-primary-300/80 text-primary-900/70 font-bold">
                   {initials}
                 </AvatarFallback>
               </Avatar>
@@ -90,8 +90,8 @@ export function LayoutSidebarUserMenu() {
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg ring-inset ring-1 ring-sidebar-foreground/50">
-                  <AvatarFallback className="rounded-lg bg-violet-400/50 dark:bg-violet-400/75 dark:text-sidebar-accent">
+              <Avatar className="h-8 w-8 rounded-sm ring-inset ring-1 ring-sidebar-foreground/50">
+                <AvatarFallback className="rounded-sm bg-primary-400/50 dark:bg-primary-300/80 text-primary-900/70 font-bold">
                     {initials}
                   </AvatarFallback>
                 </Avatar>

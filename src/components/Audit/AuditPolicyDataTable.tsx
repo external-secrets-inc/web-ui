@@ -79,7 +79,7 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
           {(!info.getValue()?.amount) && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <LucideAlertCircle className="h-4 w-4 text-orange-500" />
+                <LucideAlertCircle className="h-4 w-4 text-warning" />
               </TooltipTrigger>
               <TooltipContent>
                 <p>You must assign a provider for this policy to take effect</p>
@@ -106,7 +106,7 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
                   <span>
                     {triggers.length} trigger{triggers.length > 1 ? 's' : ''}
                   </span>
-                  <LucideCircleHelp className="h-4 w-4 text-orange-500" />
+                  <LucideCircleHelp className="h-4 w-4 text-warning" />
                 </div>
               </TooltipTrigger>
               <TooltipContent className="max-w-xs whitespace-pre-wrap text-left">

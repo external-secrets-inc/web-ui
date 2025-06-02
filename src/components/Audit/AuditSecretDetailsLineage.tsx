@@ -285,7 +285,7 @@ export default function AuditSecretDetailsLineage({
       >
         <Controls />
         <Background
-          patternClassName="!fill-muted-background"
+          patternClassName="!fill-foreground/40"
           className="!bg-muted/10"
           gap={32}
           size={2}

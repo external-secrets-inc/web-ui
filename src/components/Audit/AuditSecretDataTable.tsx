@@ -135,11 +135,11 @@ export const AuditSecretDataTable = ({ listenerID }: AuditSecretTableProps) => {
       }),
       columnHelper.accessor("duplicatesAmount", {
         header: "Duplicates",
-        cell: (info) => info.getValue() !== null ? info.getValue() : "Unknown duplicates amount",
+        cell: (info) => info.getValue() !== null ? <span className="font-mono">{info.getValue()}</span> : "Unknown duplicates amount",
       }),
       columnHelper.accessor("accessorsAmount", {
         header: "Accessors",
-        cell: (info) => info.getValue() !== null ? info.getValue() : "Unknown accessors amount",
+        cell: (info) => info.getValue() !== null ? <span className="font-mono">{info.getValue()}</span> : "Unknown accessors amount",
       }),
       columnHelper.accessor("policiesAmount", {
         header: "Policy compliance",
@@ -154,13 +154,13 @@ export const AuditSecretDataTable = ({ listenerID }: AuditSecretTableProps) => {
           const nonCompliantPolicies = policiesAmount - compliantPoliciesAmount;
           const policiesAmountStr = compliantPoliciesAmount + "/" + policiesAmount;
           return (
-            <div className="flex gap-2 w-full items-center">
+            <div className="flex gap-2 w-full items-center font-mono">
               {policiesAmountStr}
               {" "}
               {!info.row.original.fullCompliant && (
                 <Tooltip>
                   <TooltipTrigger>
-                    <LucideAlertCircle className="text-orange-500" />
+                    <LucideAlertCircle className="text-warning" />
                   </TooltipTrigger>
                   <TooltipContent>
                     Needs attention for {nonCompliantPolicies} {nonCompliantPolicies === 1 ? "policy" : "policies"}
@@ -295,7 +295,7 @@ export const AuditSecretDataTable = ({ listenerID }: AuditSecretTableProps) => {
                   <LucideFilter />
                   Filters
                   {hasAppliedFilters() && (
-                    <LucideCircle className="absolute -top-1 -right-1 !size-2.5 stroke-0 fill-orange-500" />
+                    <LucideCircle className="absolute -top-1 -right-1 !size-2.5 stroke-0 fill-warning" />
                   )}
                 </Button>
               </DialogTrigger>
@@ -322,7 +322,7 @@ export const AuditSecretDataTable = ({ listenerID }: AuditSecretTableProps) => {
           onRowClick={(row) =>
             setSelectedSecretId((row as AuditSecretTableData).id)
           }
-          className="min-w-max [--virtual-container-header-offset:calc(var(--layout-breadcrumbs-height)+theme(spacing.3))]" // Sticky table header below the breadcrumbs with a mt-3 gap
+          className="min-w-max [--virtual-container-header-offset:calc(var(--layout-topbar-height)+theme(spacing.3))]" // Sticky table header below the layout topbar with a mt-3 gap
         />
       </DataProvider>
 

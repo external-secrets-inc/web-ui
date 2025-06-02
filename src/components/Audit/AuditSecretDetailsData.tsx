@@ -249,7 +249,7 @@ const SectionSecretPolicies = ({
       <>
         <div className="flex items-center gap-2 flex-1 min-w-14">
           {policy.status === "compliant" ? (
-            <LucideCheck className="text-emerald-500" />
+            <LucideCheck className="text-success" />
           ) : (
             <LucideAlertCircle className={cn(POLICY_STATUS_COLORS[policy.status])} />
           )}
@@ -289,7 +289,7 @@ const SectionSecretDuplicates = ({ duplicates, setSecretId }: { duplicates: Audi
           <Alert key={duplicate.id} onClick={() => setSecretId(duplicate.id)} className="cursor-pointer bg-muted/40 hover:bg-muted/75">
             <AlertDescription className="flex items-center gap-2">
               <div className="flex items-center gap-2 flex-1 min-w-14">
-                <LucideAlertCircle className="text-orange-500" />
+                <LucideAlertCircle className="text-warning" />
                 <Trimmer className="font-medium mr-auto">{duplicate.name || duplicate.id || "Unknown Duplicate"}</Trimmer>
               </div>
               <Badge variant="outline" className="min-w-14">

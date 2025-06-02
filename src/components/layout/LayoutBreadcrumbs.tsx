@@ -22,7 +22,7 @@ export function LayoutBreadcrumbs({
   }
 
   return (
-    <Breadcrumb className={cn("h-11 flex items-center", className)} {...props}>
+    <Breadcrumb className={cn("h-[--layout-topbar-height] flex items-center", className)} {...props}>
       <BreadcrumbList>
         {breadcrumbSegments.map((segment, index) => (
           <Fragment key={segment.label + segment.path}>

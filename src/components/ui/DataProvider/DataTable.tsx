@@ -93,7 +93,7 @@ export const DataTable = forwardRef(
             "[&_[data-radix-scroll-area-viewport]]:!overflow-clip block",
           "[&_[data-radix-scroll-area-viewport]]:min-w-fit",
           "[&_[data-radix-scroll-area-content]]:min-w-fit",
-          "min-w-fit [overflow:unset]",
+          "min-w-fit",
           className
         )}
         style={style}
@@ -107,10 +107,8 @@ export const DataTable = forwardRef(
             (isWindowContainer || isSelectorContainer) &&
               `
               top-[--virtual-container-header-offset] [&>tr]:border-none [&_th]:bg-transparent
-              before:absolute before:w-[stretch] before:h-[stretch]
-              before:rounded-t-md before:shadow-[0_0_0_var(--virtual-container-header-offset)_theme(colors.background)]
-              before:-z-10 before:[clip-path:rect(calc(var(--virtual-container-header-offset)*-1)_100%_100%_0%)]
-              before:border before:border-border before:bg-background/80 before:backdrop-blur-lg
+              before:shadow-[0_0_0_var(--virtual-container-header-offset)_theme(colors.background)]
+              [clip-path:inset(calc(var(--virtual-container-header-offset)*-1)_0px_0px_0px)]
             `
           )}
         >
@@ -191,7 +189,7 @@ export const DataTable = forwardRef(
                     }}
                     onClick={() => onRowClick?.(row.original)}
                     className={cn(
-                      onRowClick && "cursor-pointer hover:bg-muted/50"
+                      onRowClick && "cursor-pointer [&:not(:has(button:hover,a:hover))]:hover:bg-muted/50"
                     )}
                   >
                     {row.getVisibleCells().map((cell) => (
@@ -229,7 +227,7 @@ export const DataTable = forwardRef(
                   key={row.id}
                   onClick={() => onRowClick?.(row.original)}
                   className={cn(
-                    onRowClick && "cursor-pointer hover:bg-muted/50"
+                    onRowClick && "cursor-pointer [&:not(:has(button:hover,a:hover))]:hover:bg-muted/50"
                   )}
                 >
                   {row.getVisibleCells().map((cell) => (

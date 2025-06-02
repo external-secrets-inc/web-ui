@@ -47,7 +47,7 @@ export function LayoutPage({
       value={portalHeaderActionsTargetElement}
     >
       <div
-        className={cn("container flex flex-col py-4 pb-16", className)}
+        className={cn("container flex flex-col pt-[--layout-padding] pb-16", className)}
         {...props}
       >
         <header className="mb-6" data-layout-contain-on-x-scroll>

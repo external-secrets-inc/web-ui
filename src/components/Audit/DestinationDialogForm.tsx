@@ -460,7 +460,7 @@ export const DestinationDialogForm = ({ destinationID, onSuccess, onCancel }: De
             {selectedType && destinationTypes?.[selectedType] && renderConfigFields(destinationTypes[selectedType])}
 
             {formError && (
-              <div className="text-sm text-red-500">
+              <div className="text-sm text-destructive">
                 {formError}
               </div>
             )}

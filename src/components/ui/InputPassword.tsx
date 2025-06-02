@@ -107,7 +107,7 @@ function ValidationRequirement({ isValid, showError, text }: ValidationRequireme
   return (
     <li className={`flex items-center ${showError && !isValid ? "text-destructive" : ""}`}>
       {isValid ? (
-        <LucideCheckSquare className="mr-2 text-green-500" />
+        <LucideCheckSquare className="mr-2 text-success" />
       ) : (
         <LucideSquare className="mr-2" />
       )}

@@ -7,7 +7,7 @@ const Table = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & { style?: React.CSSProperties }
 >(({ className, style, children, ...props }, ref) => (
-  <ScrollArea ref={ref} style={style} type="always" className={cn("relative w-full rounded-md outline -outline-offset-1 outline-1 outline-border", className)}>
+  <ScrollArea ref={ref} style={style} className={cn("relative w-full rounded-xl outline -outline-offset-1 outline-1 outline-border overflow-clip", className)}>
     <table
       className="w-full caption-bottom text-sm"
       {...props}
@@ -27,10 +27,10 @@ const TableHeader = React.forwardRef<
     ref={ref}
     className={cn(
       "sticky top-0 z-10",
-      "[box-shadow:0_1px_0_0_theme(colors.border)]",
-      "[&_th]:bg-background",
+      "outline outline-1 outline-border -outline-offset-1 rounded-t-xl",
+      "before:absolute before:w-full before:h-full before:-z-10 before:bg-muted before:rounded-t-xl",
       "[&>tr]:border [&>tr]:border-transparent",
-      "[&>tr]:[clip-path:border-box] [&>tr]:rounded-t-lg",
+      "[clip-path:inset(0)]",
       className
     )}
     {...props}
@@ -87,7 +87,7 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      "h-10 px-2 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+      "h-10 px-2 text-left align-middle font-medium text-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
       className
     )}
     {...props}

@@ -29,7 +29,7 @@ const SubscriptionSettings: React.FC = () => {
                 <p className="flex items-center">
                   Expiry Date: {formattedExpiryDate}
                   {hasExpiredSubscription && (
-                    <span className="text-red-500 ml-2 flex items-center">
+                    <span className="text-destructive ml-2 flex items-center">
                       <LucideCircleAlert className="mr-1" />
                       <span>Expired</span>
                     </span>

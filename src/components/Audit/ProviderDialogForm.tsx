@@ -412,7 +412,7 @@ const ProviderDialogForm = ({
           {selectedFormType && (
             <>
               <div className="pt-4">
-                <h2 className="text-lg font-semibold text-gray-300">Configuration</h2>
+                <h2 className="text-lg font-semibold text-muted-foreground">Configuration</h2>
               </div>
               {
                 Object.entries(formSchemaData[selectedFormType]).map(([field, schema]) => (

@@ -98,7 +98,7 @@ const LeafNavItem: React.FC<BaseNavigationItemProps> = ({
     <SidebarMenuSubItem style={{ "--level": level - 1 } as React.CSSProperties}>
       <SidebarMenuSubButton asChild isActive={isActive}>
         <Link to={getOrgLink(item.url)}>
-          {IconComponent && <IconComponent className="text-violet-400" />}
+          {IconComponent && <IconComponent className="text-primary-600 dark:text-primary-400" />}
           <span className="font-medium">{item.label}</span>
           <AppendContent render={item.renderAppendContent} />
         </Link>

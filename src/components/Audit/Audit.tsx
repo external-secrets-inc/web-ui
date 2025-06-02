@@ -269,7 +269,7 @@ export default function Audit() {
           >
             <div>
               <AlertTitle className="flex gap-3 items-center">
-                <LucideAlertCircle className="text-orange-500" /> Listener not
+                <LucideAlertCircle className="text-warning" /> Listener not
                 installed
               </AlertTitle>
               <AlertDescription className="flex items-center justify-between">

@@ -17,7 +17,7 @@ const getAuditListener = async (
     return {
       listenerID: '1234-5678-9870',
       tenantID: "4567-8910",
-      status: "PENDING_INSTALLATION",
+      status: "active",
     };
   }
 

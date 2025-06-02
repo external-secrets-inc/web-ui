@@ -1,3 +1,5 @@
+const { fontFamily } = require("tailwindcss/defaultTheme");
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
@@ -19,6 +21,12 @@ module.exports = {
         lg: "1376px",
       },
     },
+    fontFamily: {
+      sans: ["Figtree", ...fontFamily.sans],
+      display: ["Libre Baskerville", ...fontFamily.serif],
+      mono: ["Geist Mono", ...fontFamily.mono],
+      serif: [...fontFamily.serif],
+    },
     extend: {
       colors: {
         border: "hsl(var(--border))",
@@ -27,10 +35,34 @@ module.exports = {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
+          50: "hsl(var(--primary-50))",
+          100: "hsl(var(--primary-100))",
+          200: "hsl(var(--primary-200))",
+          300: "hsl(var(--primary-300))",
+          400: "hsl(var(--primary-400))",
+          500: "hsl(var(--primary-500))",
+          600: "hsl(var(--primary-600))",
+          700: "hsl(var(--primary-700))",
+          800: "hsl(var(--primary-800))",
+          900: "hsl(var(--primary-900))",
+          950: "hsl(var(--primary-950))",
+          1000: "hsl(var(--primary-1000))",
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
+          50: "hsl(var(--secondary-50))",
+          100: "hsl(var(--secondary-100))",
+          200: "hsl(var(--secondary-200))",
+          300: "hsl(var(--secondary-300))",
+          400: "hsl(var(--secondary-400))",
+          500: "hsl(var(--secondary-500))",
+          600: "hsl(var(--secondary-600))",
+          700: "hsl(var(--secondary-700))",
+          800: "hsl(var(--secondary-800))",
+          900: "hsl(var(--secondary-900))",
+          950: "hsl(var(--secondary-950))",
+          1000: "hsl(var(--secondary-1000))",
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
         },
@@ -45,6 +77,10 @@ module.exports = {
         success: {
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",
+        },
+        link: {
+          DEFAULT: "hsl(var(--link))",
+          hover: "hsl(var(--link-hover))",
         },
         muted: {
           DEFAULT: "hsl(var(--muted))",
@@ -68,6 +104,7 @@ module.exports = {
           3: "hsl(var(--chart-3))",
           4: "hsl(var(--chart-4))",
           5: "hsl(var(--chart-5))",
+          6: "hsl(var(--chart-6))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
@@ -78,15 +115,28 @@ module.exports = {
           "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
-          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
+        },
+        base: {
+          50: "hsl(var(--base-50))",
+          100: "hsl(var(--base-100))",
+          200: "hsl(var(--base-200))",
+          300: "hsl(var(--base-300))",
+          400: "hsl(var(--base-400))",
+          500: "hsl(var(--base-500))",
+          600: "hsl(var(--base-600))",
+          700: "hsl(var(--base-700))",
+          800: "hsl(var(--base-800))",
+          900: "hsl(var(--base-900))",
+          950: "hsl(var(--base-950))",
+          1000: "hsl(var(--base-1000))",
         },
       },
       borderRadius: {
+        xl: "calc(var(--radius) + 6px)",
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
-        xs: "calc(var(--radius) - 8px)",
+        xs: "6px",
       },
       keyframes: {
         "accordion-down": {
@@ -115,43 +165,43 @@ module.exports = {
         },
         "bg-auth-blob-animation-1": {
           "0%": {
-            transform: "scale(5) translate(-30%, 40%) rotate(-20deg)",
+            transform: "scale(8) translate(-30%, 40%) rotate(-20deg)",
           },
           "25%": {
             transform:
-              "scale(5) translate(0%, 20%) skew(-15deg, -15deg) rotate(80deg)",
+              "scale(8) translate(0%, 20%) skew(-15deg, -15deg) rotate(80deg)",
           },
           "50%": {
-            transform: "scale(5) translate(30%, -10%) rotate(180deg)",
+            transform: "scale(8) translate(30%, -10%) rotate(180deg)",
           },
           "75%": {
             transform:
-              "scale(5) translate(-30%, 40%) skew(15deg, 15deg) rotate(240deg)",
+              "scale(8) translate(-30%, 40%) skew(15deg, 15deg) rotate(240deg)",
           },
           "100%": {
-            transform: "scale(5) translate(-30%, 40%) rotate(-20deg)",
+            transform: "scale(8) translate(-30%, 40%) rotate(-20deg)",
           },
         },
         "bg-auth-blob-animation-2": {
           "0%": {
-            transform: "scale(5) translate(20%, -40%) rotate(-20deg)",
+            transform: "scale(8) translate(20%, -40%) rotate(-20deg)",
           },
           "20%": {
             transform:
-              "scale(5) translate(0%, 0%) skew(-15deg, -15deg) rotate(80deg)",
+              "scale(8) translate(0%, 0%) skew(-15deg, -15deg) rotate(80deg)",
           },
           "40%": {
-            transform: "scale(5) translate(-40%, 50%) rotate(180deg)",
+            transform: "scale(8) translate(-40%, 50%) rotate(180deg)",
           },
           "60%": {
             transform:
-              "scale(5) translate(-20%, -20%) skew(15deg, 15deg) rotate(80deg)",
+              "scale(8) translate(-20%, -20%) skew(15deg, 15deg) rotate(80deg)",
           },
           "80%": {
-            transform: "scale(5) translate(10%, -30%) rotate(180deg)",
+            transform: "scale(8) translate(10%, -30%) rotate(180deg)",
           },
           "100%": {
-            transform: "scale(5) translate(20%, -40%) rotate(340deg)",
+            transform: "scale(8) translate(20%, -40%) rotate(340deg)",
           },
         },
         "collapsible-down": {

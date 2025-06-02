@@ -22,6 +22,7 @@ export function FeatureCollectionTableActions(props: FeatureCollectionTableActio
       {isPending && (
         <Button
           size="sm"
+          variant="secondary"
           onClick={(e) => {
             e.stopPropagation();
             openFeatureItemDialog({

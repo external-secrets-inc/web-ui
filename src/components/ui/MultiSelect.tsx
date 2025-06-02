@@ -522,7 +522,7 @@ const MultiSelectCurrentBadges: React.FC = () => {
       {isAutoMaxCount && (
         <div className="invisible [grid-area:1/-1] flex min-w-12 gap-1 [&>*]:pointer-events-none flex-wrap-reverse items-end">
           <div
-            className="flex flex-wrap gap-1 flex-1 min-w-12 outline outline-1 outline-red-500 -outline-offset-1"
+            className="flex flex-wrap gap-1 flex-1 min-w-12 outline outline-1 -outline-offset-1"
             ref={observedMirroredBadgeListRef}
           >
               {selectedValues.map((value) => {
@@ -542,7 +542,7 @@ const MultiSelectCurrentBadges: React.FC = () => {
               })}
             </div>
             {shouldShowExtraCounterBadge && (
-            <div className="flex flex-wrap justify-start min-w-12 flex-none outline outline-1 outline-green-500 -outline-offset-1">
+            <div className="flex flex-wrap justify-start min-w-12 flex-none outline outline-1 -outline-offset-1">
               <MultiSelectExtraBadge />
             </div>
           )}

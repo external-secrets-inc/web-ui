@@ -17,17 +17,17 @@ const STATUS_CONFIG = {
   [LISTENER_STATUS.ACTIVE]: {
     label: "Listener active",
     variant: "success",
-    color: "text-green-500",
+    color: "text-success",
   },
   [LISTENER_STATUS.OFFLINE]: {
     label: "Listener offline",
     variant: "destructive",
-    color: "text-red-500",
+    color: "text-destructive",
   },
   [LISTENER_STATUS.PENDING_INSTALLATION]: {
     label: "Listener not installed",
     variant: "warning",
-    color: "text-orange-500",
+    color: "text-warning",
   },
 } as const;
 
@@ -43,7 +43,7 @@ const getStatusConfig = (status: string): StatusConfig =>
   STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] ?? {
     label: "Unknown Listener",
     variant: "secondary",
-    color: "text-gray-500",
+    color: "text-muted-foreground",
   };
 
 interface AuditListenerStatusBadgeProps {
@@ -106,7 +106,7 @@ export function AuditListenerStatusBadge({
               </SidebarMenuAction>
             ) : (
               <LucideCircle
-                className={cn("w-2 h-2 p-3 -mr-3 box-content", config.color)}
+                className={cn("w-2 h-2 p-3.5 -m-2 box-content", config.color)}
                 fill="currentColor"
               />
             )}

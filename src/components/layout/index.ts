@@ -21,5 +21,6 @@ export { LayoutPortalHeaderActions } from './LayoutPortalHeaderActions';
 export { LayoutBreadcrumbs } from './LayoutBreadcrumbs';
 export { LayoutBannerSubscription } from './LayoutBannerSubscription';
 export { LayoutSidebar } from './LayoutSidebar';
+export { LayoutSidebarAppLogo } from './LayoutSidebarAppLogo';
 export { LayoutSidebarNavigationList } from './LayoutSidebarNavigationList';
 export { LayoutSidebarUserMenu } from './LayoutSidebarUserMenu';

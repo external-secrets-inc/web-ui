@@ -15,12 +15,12 @@ import Cookies from "js-cookie";
 import { Outlet } from "react-router-dom";
 
 export function LayoutRoot() {
-  const persistedSidebarOpen = Cookies.get("sidebar_state") === "true";
+  const persistedSidebarOpen = Cookies.get("sidebar_state") !== "false";
 
   return (
     <SidebarProvider
       defaultOpen={persistedSidebarOpen}
-      className="h-svh overflow-hidden"
+      className="h-svh overflow-hidden bg-sidebar-gradient [&_[data-sidebar=sidebar]]:[background:inherit]"
     >
       <LayoutSidebar />
 
@@ -51,8 +51,8 @@ export function LayoutRoot() {
            * behavior.
            */
           "[&_[data-layout-contain-on-x-scroll]]:sticky",
-          "[&_[data-layout-contain-on-x-scroll]]:left-[--layout-padding-inline]",
-          "[&_[data-layout-contain-on-x-scroll]]:[max-width:calc(100cqw-var(--layout-padding-inline)*2)]"
+          "[&_[data-layout-contain-on-x-scroll]]:left-[--layout-padding]",
+          "[&_[data-layout-contain-on-x-scroll]]:[max-width:calc(100cqw-var(--layout-padding)*2)]"
         )}
       >
         <ScrollArea
@@ -61,7 +61,7 @@ export function LayoutRoot() {
         >
           <div className="bg-background/80 flex-none border-b border-sidebar sticky top-0 z-20 backdrop-blur-lg flex">
             <div
-              className="h-11 flex items-center gap-2"
+              className="h-[--layout-topbar-height] flex items-center gap-1.5 md:gap-4"
               data-layout-contain-on-x-scroll
             >
               <SidebarTrigger className="flex-none -ml-1.5" />
