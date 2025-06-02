@@ -80,7 +80,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: "",
-        element: <NavigateWithOrg to="/audit/dashboard" replace />,
+        element: <NavigateWithOrg to="/agents" replace />,
       },
       {
         path: "agents",
