@@ -30,7 +30,10 @@ module.exports = {
     extend: {
       colors: {
         border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
+        input: {
+          DEFAULT: "hsl(var(--input))",
+          accent: "hsl(var(--input-accent))",
+        },
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
@@ -80,7 +83,7 @@ module.exports = {
         },
         link: {
           DEFAULT: "hsl(var(--link))",
-          hover: "hsl(var(--link-hover))",
+          accent: "hsl(var(--link-accent))",
         },
         muted: {
           DEFAULT: "hsl(var(--muted))",

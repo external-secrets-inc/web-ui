@@ -52,7 +52,7 @@
     --destructive-foreground: 0 0% 100%;
     --border: var(--base-200);
     --input: var(--base-300);
-    --ring: var(--primary-700);
+    --ring: var(--primary-500);
     --radius: 0.875rem;
     --chart-1: 285 75% 70%;
     --chart-2: 155 75% 50%;
@@ -67,7 +67,7 @@
     --sidebar-accent: var(--base-200);
     --sidebar-accent-foreground: var(--base-800);
     --sidebar-border: var(--base-200);
-    --sidebar-ring: var(--primary-700);
+    --sidebar-ring: var(--primary-500);
 
     /* Our custom vars (not in shadcn) */
     --warning: 32 92% 52%;
@@ -75,7 +75,8 @@
     --success: 175 80% 40%;
     --success-foreground: 0 0% 100%;
     --link: 205 95% 40%;
-    --link-hover: 205 100% 60%;
+    --link-accent: 205 100% 60%;
+    --input-accent: var(--base-400);
 
     --layout-padding: theme(spacing.4);
     --layout-topbar-height: theme(spacing.10);
@@ -111,7 +112,7 @@
     --destructive-foreground: 0 0% 100%;
     --border: var(--base-800);
     --input: var(--base-800);
-    --ring: var(--primary-700);
+    --ring: var(--primary-400);
     --chart-1: 280 65% 62%;
     --chart-2: 160 60% 47%;
     --chart-3: 30 80% 57%;
@@ -125,7 +126,7 @@
     --sidebar-accent: var(--base-800);
     --sidebar-accent-foreground: var(--base-200);
     --sidebar-border: var(--base-800);
-    --sidebar-ring: var(--primary-700);
+    --sidebar-ring: var(--primary-400);
 
     /* Our custom vars (not in shadcn) */
     --warning: 24.58 61% 50%;
@@ -133,7 +134,8 @@
     --success: 159.89 84% 38%;
     --success-foreground: 0 0% 100%;
     --link: 203 73% 50%;
-    --link-hover: 200 96% 70%;
+    --link-accent: 200 96% 70%;
+    --input-accent: var(--base-700);
 
     color-scheme: dark;
   }
@@ -171,7 +173,7 @@
   }
 
   :is(p, h1, h2, h3, h4, h5, h6) a {
-    @apply text-link hover:text-link-hover underline underline-offset-[0.12em] decoration-1 transition-colors
+    @apply text-link hover:text-link-accent underline underline-offset-[0.12em] decoration-1 transition-colors
   }
 
   ::-webkit-scrollbar {
