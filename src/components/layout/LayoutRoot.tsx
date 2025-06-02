@@ -59,7 +59,8 @@ export function LayoutRoot() {
           id="layout-root-scroll-area"
           className="h-full flex-1 min-h-0"
         >
-          <div className="bg-background/80 flex-none border-b border-sidebar sticky top-0 z-20 backdrop-blur-lg flex">
+          <span className="h-[--layout-topbar-height] absolute top-0 left-0 right-0 z-10 backdrop-blur-xl" />
+          <div className="bg-background/80 flex-none border-b border-sidebar sticky top-0 z-20 flex">
             <div
               className="h-[--layout-topbar-height] flex items-center gap-1.5 md:gap-4"
               data-layout-contain-on-x-scroll
