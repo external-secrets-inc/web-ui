@@ -46,7 +46,7 @@ export function LayoutSidebar({
         )}
       >
         <SidebarGroup>
-          <SidebarMenu>
+          <SidebarMenu className="[&_:not([data-sidebar=menu-action])>svg]:text-primary-600 dark:[&_:not([data-sidebar=menu-action])>svg]:text-primary-400">
             <LayoutSidebarNavigationList
               items={navMain}
               getOrgLink={getOrgLink}
