@@ -110,7 +110,7 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
                 </div>
               </TooltipTrigger>
               <TooltipContent className="max-w-xs whitespace-pre-wrap text-left">
-                {triggers.map((trigger) => {
+                {triggers?.map((trigger) => {
                   const destinationLabels = trigger.destinationIdentifiers.map(id => destinationsMap[id]?.label || id);
                   return `• ${destinationLabels.join(", ")} → ${POLICY_TRIGGER_CONDITIONS_MAP[trigger.condition]?.label || trigger.condition}`;
                 }).join("\n")}
