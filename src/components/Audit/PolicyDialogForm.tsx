@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, Dialog, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CreatePolicyPayload, PolicyForm, PolicyTriggerTableData, triggerConditionsMap } from '@/components/Audit/Audit.interfaces';
+import { CreatePolicyPayload, PolicyForm, PolicyTriggerConditionEnum, PolicyTriggerTableData } from '@/components/Audit/Audit.interfaces';
 import { MultiSelect } from '@/components/ui/MultiSelect';
 import { CodeTextarea } from '@/components/ui/CodeTextarea';
 import useGetValidateRule from '@/services/audit/queries/useGetValidateRule';
@@ -16,7 +16,7 @@ import usePostValidateRule from "@/services/audit/mutations/usePostValidateRule"
 import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AUDIT_QUERY_STALE_TIME } from "@/components/Audit/Audit.constants";
+import { AUDIT_QUERY_STALE_TIME, POLICY_TRIGGER_CONDITIONS_MAP } from "@/components/Audit/Audit.constants";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LucidePlus, LucideTrash } from "lucide-react";
 import { DataProvider, DataTable, defineColumns } from "@/components/ui/DataProvider";
@@ -51,7 +51,7 @@ const tabValues = {
 };
 
 interface PolicyTriggerTableMeta {
-  renderRowActions?: (row: PolicyTriggerTableData) => React.ReactNode;
+  renderRowActions?: (row: PolicyTriggerTableData, index: number) => React.ReactNode;
 }
 
 const PolicyDialogForm = ({ selectedPolicyId, policyForm, isLoadingDestinations, destinationsMap, onSubmit, onCancel }: {
@@ -161,7 +161,7 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, isLoadingDestinations,
     }),
     columnHelper.accessor('condition', {
       header: 'Condition',
-      cell: info => triggerConditionsMap[info.getValue()]?.label || info.getValue(),
+      cell: info => POLICY_TRIGGER_CONDITIONS_MAP[info.getValue() as PolicyTriggerConditionEnum]?.label || info.getValue(),
     }),
     columnHelper.accessor('waitForCycles', {
       header: 'Wait for Cycles',
@@ -171,7 +171,7 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, isLoadingDestinations,
       id: 'actions',
       cell: props => (
         <div className='flex justify-end'>
-          {(props.table.options.meta as PolicyTriggerTableMeta)?.renderRowActions?.(props.row.original)}
+          {(props.table.options.meta as PolicyTriggerTableMeta)?.renderRowActions?.(props.row.original, props.row.index)}
         </div>
       )
     })
@@ -183,14 +183,14 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, isLoadingDestinations,
     setIsAddTriggerDialogOpen(false);
   };
 
-  const handleDeleteTrigger = (id: string) => {
+  const handleDeleteTrigger = (triggerIndex: number) => {
     const currentTriggers = form.getValues("triggers") || [];
-    const updatedTriggers = currentTriggers.filter(trigger => trigger.id !== id);
+    const updatedTriggers = currentTriggers.filter((_, index) => index !== triggerIndex);
     form.setValue("triggers", updatedTriggers);
   }
 
   const policyTriggerTableMeta: PolicyTriggerTableMeta = {
-    renderRowActions: (row) => (
+    renderRowActions: (_row, index) => (
       <div className="flex items-center gap-2">
         <Dialog>
           <DialogTrigger asChild>
@@ -215,7 +215,7 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, isLoadingDestinations,
                 </Button>
               </DialogClose>
               <DialogClose asChild>
-                <Button variant={"destructive"} onClick={() => handleDeleteTrigger(row.id)}>Delete</Button>
+                <Button variant={"destructive"} onClick={() => handleDeleteTrigger(index)}>Delete</Button>
               </DialogClose>
             </DialogFooter>
           </DialogContent>
@@ -387,7 +387,7 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, isLoadingDestinations,
                           </DialogTrigger>
                           <PolicyTriggerDialogForm
                             destinationOptions={Object.values(destinationsMap)}
-                            conditionsOptions={Object.values(triggerConditionsMap)}
+                            conditionsOptions={Object.values(POLICY_TRIGGER_CONDITIONS_MAP)}
                             onSubmit={handleAddTrigger}
                             onCancel={() => setIsAddTriggerDialogOpen(false)}
                           />
@@ -399,6 +399,7 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, isLoadingDestinations,
                         isLoading={false}
                         emptyMessage="No triggers configured"
                         initialSort={{ id: 'destinationIdentifiers', desc: false }}
+                        getRowId={(_, index) => String(index)} // TODO[cfviotti]: Triggers should probably have an id from the API
                       >
                         <DataTable meta={policyTriggerTableMeta} />
                       </DataProvider>
