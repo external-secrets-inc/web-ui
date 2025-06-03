@@ -20,11 +20,12 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { MultiSelect } from "@/components/ui/MultiSelect";
 import { z } from "zod";
-import { PolicyTriggerTableData } from "./Audit.interfaces";
+import { PolicyTriggerTableData, PolicyTriggerConditionEnum } from "./Audit.interfaces";
+import { POLICY_TRIGGER_CONDITIONS_MAP } from "@/components/Audit/Audit.constants";
 
 const schema = z.object({
   destinationIdentifiers: z.array(z.string()).min(1, "Select at least one destination"),
-  condition: z.string().min(1, "Select a condition"),
+  condition: z.enum(Object.keys(POLICY_TRIGGER_CONDITIONS_MAP) as [PolicyTriggerConditionEnum, ...PolicyTriggerConditionEnum[]]),
   waitForCycles: z.coerce.number().min(0, "Must be a non-negative number"),
 });
 
@@ -37,7 +38,7 @@ const PolicyTriggerDialogForm = ({
   onCancel,
 }: {
   destinationOptions: { label: string; value: string }[];
-  conditionsOptions: { label: string; value: string }[];
+  conditionsOptions: { label: string; value: PolicyTriggerConditionEnum }[];
   onSubmit: (data: PolicyTriggerTableData) => void;
   onCancel: () => void;
 }) => {
@@ -45,9 +46,9 @@ const PolicyTriggerDialogForm = ({
     resolver: zodResolver(schema),
     defaultValues: {
       destinationIdentifiers: [],
-      condition: "",
+      condition: undefined,
       waitForCycles: 0,
-    },
+    } as Partial<TriggerFormData>,
   });
 
   const handleSubmit = async (data: TriggerFormData) => {
@@ -56,9 +57,8 @@ const PolicyTriggerDialogForm = ({
 
     const newTableData: PolicyTriggerTableData = {
       ...data,
-      id: crypto.randomUUID(),
       waitForCycles: Number(data.waitForCycles)
-    }
+    };
     onSubmit(newTableData);
     form.reset();
   };

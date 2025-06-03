@@ -88,24 +88,19 @@ export interface TimeRangeOption {
   label: TimeRange;
 }
 
-export const triggerConditionsMap: Record<string, { label: string; value: string }> = {
-  "EvaluatedCompliant": { label: "Evaluated as Compliant", value: "EvaluatedCompliant" },
-  "EvaluatedNonCompliant": { label: "Evaluated as Non-Compliant", value: "EvaluatedNonCompliant" },
-  "UpdatedToCompliant": { label: "Updated to Compliant", value: "UpdatedToCompliant" },
-  "UpdatedToNonCompliant": { label: "Updated to Non-Compliant", value: "UpdatedToNonCompliant" },
-};
+export type PolicyTriggerConditionEnum =
+  | "EvaluatedNonCompliant"
+  | "EvaluatedCompliant"
+  | "UpdatedToNonCompliant"
+  | "UpdatedToCompliant";
 
 export interface PolicyTriggerTableData {
-  id: string
   destinationIdentifiers: string[];
-  condition: string;
+  condition: PolicyTriggerConditionEnum;
   waitForCycles: number;
 }
 
-export type PolicyTrigger = Omit<PolicyTriggerTableData, "id">
-
 export interface PolicyTableData {
-  id: string;
   policyID: string;
   tenantID: string;
   name: string;
@@ -131,7 +126,7 @@ export interface CreatePolicyPayload {
   engine: string;
   executeOn: string[];
   rule: string;
-  triggers: PolicyTrigger[];
+  triggers: PolicyTriggerTableData[];
 }
 
 export type EditPolicyPayload = Omit<CreatePolicyPayload, "tenantID">
@@ -146,7 +141,6 @@ export interface PolicyForm {
 }
 
 export interface ProviderTableData {
-  _id: string;
   providerID: string;
   listenerID: string;
   tenantID: string;

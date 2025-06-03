@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { PolicyForm, PolicyTableData, PolicyTriggerTableData, triggerConditionsMap, CreatePolicyPayload } from "./Audit.interfaces";
+import { PolicyForm, PolicyTableData, PolicyTriggerTableData, CreatePolicyPayload } from "./Audit.interfaces";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { LucideMoreVertical, LucidePlus, LucideTrash2, LucideUsers, LucideAlertCircle, LucideEdit, LucideCircleHelp } from "lucide-react";
 import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction" // TODO: We should not import components from non generic stuff! This should be a generic component, or re-implemented here.
@@ -20,7 +20,7 @@ import useAssignProviderPolicy from "@/services/audit/mutations/useAssignProvide
 import useUnassignProviderPolicy from "@/services/audit/mutations/useUnassignProviderPolicy";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import useEditPolicy, { EditPolicyVariables } from "@/services/audit/mutations/useEditPolicy";
-import { AUDIT_QUERY_STALE_TIME } from "@/components/Audit/Audit.constants";
+import { AUDIT_QUERY_STALE_TIME, POLICY_TRIGGER_CONDITIONS_MAP } from "@/components/Audit/Audit.constants";
 import useGetDestinations from "@/services/audit/queries/useGetDestinations";
 
 interface PolicyTableMeta {
@@ -112,7 +112,7 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
               <TooltipContent className="max-w-xs whitespace-pre-wrap text-left">
                 {triggers.map((trigger) => {
                   const destinationLabels = trigger.destinationIdentifiers.map(id => destinationsMap[id]?.label || id);
-                  return `• ${destinationLabels.join(", ")} → ${triggerConditionsMap[trigger.condition]?.label || trigger.condition}`;
+                  return `• ${destinationLabels.join(", ")} → ${POLICY_TRIGGER_CONDITIONS_MAP[trigger.condition]?.label || trigger.condition}`;
                 }).join("\n")}
               </TooltipContent>
             </Tooltip>
@@ -237,15 +237,7 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
   const policies = useMemo(() => {
     if (!policiesData) return []
 
-    // Transform the API response to include the required id dataProvider field
-    return policiesData.map(policy => ({
-      ...policy,
-      id: policy.policyID,
-      triggers: policy.triggers.map(trigger => ({
-        ...trigger,
-        id: crypto.randomUUID(),
-      })),
-    }));
+    return policiesData;
   }, [policiesData]);
 
   const { mutate: createPolicy } = useCreatePolicy(false, {
@@ -305,7 +297,7 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
   }
 
   const handleAssignProviders = async (providerIds: string[]) => {
-    const currentPolicy = policies.find(p => p.id === selectedPolicyId);
+    const currentPolicy = policies.find(p => p.policyID === selectedPolicyId);
     if (!currentPolicy) return;
 
     const currentProviderIds = currentPolicy.providers.items.map(p => p.providerID);
@@ -386,6 +378,7 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
         </Dialog>
 
         <DataProvider
+          getRowId={(row) => row.policyID}
           data={policies}
           columns={columns}
           initialSort={{ id: 'name', desc: false }}

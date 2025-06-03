@@ -85,7 +85,7 @@ export type ProviderConfig<TData extends object> = {
    * If not provided, data items must have an 'id' property.
    * @see {@link https://tanstack.com/table/v8/docs/api/core/table#getrowid GetRowId API}
    */
-  getRowId?: ((row: TData) => string) | undefined;
+  getRowId?: TableOptions<TData>['getRowId'];
   /**
    * Additional options passed directly to the underlying TanStack Table instance.
    * @see {@link https://tanstack.com/table/v8/docs/api/core/table#options Table Options API}
@@ -104,7 +104,7 @@ export type ProviderConfig<TData extends object> = {
     | 'onColumnSizingChange'
     | 'columnResizeMode'
   >;
-} & ({ getRowId: (row: TData) => string } | { data: Array<TData & WithId> });
+} & ({ getRowId: TableOptions<TData>['getRowId'] } | { data: Array<TData & WithId> });
 
 /**
  * Props for the DataProvider component, including children.

@@ -1,31 +1,23 @@
-import { AuditSecretData, AuditSecretTableData } from "@/components/Audit/Audit.interfaces";
+import {
+  AuditSecretData,
+  AuditMetric,
+  ProviderTableData,
+  SecretPolicies,
+  PolicyDetails,
+  SecretAccessors,
+  AccessorDetails,
+  PolicyTableData,
+} from "@/components/Audit/Audit.interfaces";
 import { formatDate } from "@/utils/dateUtils";
+import { generateMockTimelineData, generateMockSecrets } from "./mockData.utils";
+import { DEFAULT_SECRETS_AMOUNT } from "./mockData.constants";
 
 /**
  * Mock API Response Structures
  * These represent the exact format we expect from the backend
  */
-type StatsItem = {
-  kind: string
-  label: string
-  tooltipLabel: string
-  amount: number
-}
 
-type TimelineData = {
-  date: string
-  stats: StatsItem[]
-}
-
-// Helper functions (internal use only)
-// Random number but seeded for consistent mock data
-const seededRandom = (date: string) => {
-  let seed = Array.from(date).reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const x = Math.sin(seed++) * 10000;
-  return x - Math.floor(x);
-};
-
-export const mockProviderStats: StatsItem[] = [
+export const mockProviderStats: AuditMetric[] = [
   { kind: "aws", label: "AWS", tooltipLabel: "AWS Secrets Manager", amount: 245 },
   { kind: "gcp", label: "GCP", tooltipLabel: "Google Secret Manager", amount: 156 },
   { kind: "azure", label: "Azure", tooltipLabel: "Azure Key Vault", amount: 98 },
@@ -34,98 +26,23 @@ export const mockProviderStats: StatsItem[] = [
   { kind: "onePassword", label: "1Pass", tooltipLabel: "1Password Connect", amount: 65 },
   { kind: "delinea", label: "Delinea", tooltipLabel: "Delinea Secret Server", amount: 42 },
   { kind: "conjur", label: "Conjur", tooltipLabel: "CyberArk Conjur", amount: 23 }
-]
+];
 
-export const mockProblemStats: StatsItem[] = [
+export const mockProblemStats: AuditMetric[] = [
   { kind: "duplicated", label: "Duplicated", tooltipLabel: "Secrets with duplicate values", amount: 4 },
   { kind: "nonCompliant", label: "Non-compliant", tooltipLabel: "Secrets not following compliance rules", amount: 18 },
   { kind: "neverAccessed", label: "Never Accessed", tooltipLabel: "Secrets that were never accessed", amount: 5 }
-]
+];
 
-const generateMockTimelineData = (startDate: Date | string, endDate: Date | string, baseStats: StatsItem[]): TimelineData[] => {
-  const start = new Date(startDate)
-  start.setHours(0, 0, 0, 0)
-
-  const end = new Date(endDate)
-  end.setHours(23, 59, 59, 999)
-
-  const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
-
-  return Array.from({ length: days }).map((_, index) => {
-    const date = new Date(start)
-    date.setDate(date.getDate() + index)
-    const dateStr = date.toISOString().split('T')[0]
-
-    return {
-      date: dateStr,
-      stats: baseStats.map(stat => ({
-        ...stat,
-        amount: stat.amount - Math.floor(seededRandom(dateStr + stat.kind) * (stat.amount * 0.2))
-      }))
-    }
-  })
-}
-
-// Timeline mock generators
 export const getMockProviderTimelineStats = (startDate: string, endDate: string) =>
-  generateMockTimelineData(new Date(startDate), new Date(endDate), mockProviderStats)
+  generateMockTimelineData(new Date(startDate), new Date(endDate), mockProviderStats);
 
 export const getMockProblemTimelineStats = (startDate: string, endDate: string) =>
-  generateMockTimelineData(new Date(startDate), new Date(endDate), mockProblemStats)
+  generateMockTimelineData(new Date(startDate), new Date(endDate), mockProblemStats);
 
 export const mockLastUpdate = formatDate(new Date(), { format: 'readableDate' });
 
-/**
- * Generates a specified number of mock secrets with realistic data
- * @param count Number of secrets to generate
- * @returns Array of mock secrets
- */
-const generateMockSecrets = (count: number): AuditSecretTableData[] => {
-  const providers = [
-    { id: "e45c3621-5e2f-4996-91c8-9dec1a15f5fb", name: "AWS Secrets Manager" },
-    { id: "2a7b4de8-31c9-45d2-b656-92c8f6947f9d", name: "GCP Secret Manager" },
-    { id: "7f9e8d23-6c5b-4a3e-9f72-14d5a8b67c91", name: "Kubernetes Secrets" },
-    { id: "b3c2d1a4-8f7e-4d6c-9b5a-3e2f1c8d7b6a", name: "Azure Key Vault" },
-    { id: "a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6", name: "HashiCorp Vault" }
-  ];
-
-  const names = [
-    "Solid Serpent", "Liquid Cobra", "Crying Wolf", "Raging Raven", "Screaming Mantis",
-    "Silent Tiger", "Swift Eagle", "Mighty Lion", "Wise Owl", "Brave Bear"
-  ];
-
-  return Array.from({ length: count }, (_, index) => {
-    const provider = providers[Math.floor(Math.random() * providers.length)];
-    const name = names[Math.floor(Math.random() * names.length)];
-    const hasRotation = Math.random() > 0.3;
-    const lastRotation = hasRotation
-      ? new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString()
-      : null;
-    const lastAccess = new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString();
-    const policiesAmount = Math.floor(Math.random() * 5);
-    const compliantPoliciesAmount = Math.floor(Math.random() * (policiesAmount + 1));
-    const duplicatesAmount = Math.floor(Math.random() * 3);
-    const accessorsAmount = Math.floor(Math.random() * 5) + 1;
-
-    return {
-      id: `secret-${index + 1}-${Math.random().toString(36).substr(2, 9)}`,
-      name: `${index + 1} - ${name}`,
-      provider: provider.id,
-      providerName: provider.name,
-      lastRotation,
-      compliantPoliciesAmount,
-      policiesAmount,
-      fullCompliant: compliantPoliciesAmount === policiesAmount,
-      duplicatesAmount,
-      lastAccess,
-      accessorsAmount,
-    };
-  });
-};
-
-const DEFAULT_SECRETS_COUNT = 4000; // Large dataset for virtualization testing
-
-export const mockAuditSecretTableData = generateMockSecrets(DEFAULT_SECRETS_COUNT);
+export const mockAuditSecretTableData = generateMockSecrets(DEFAULT_SECRETS_AMOUNT);
 
 export const mockAuditSecretsData: AuditSecretData[] = [
   {
@@ -299,7 +216,7 @@ export const mockAuditSecretsData: AuditSecretData[] = [
   },
 ];
 
-export const mockPoliciesData = [
+export const mockPoliciesData: PolicyTableData[] = [
   {
     policyID: "policy-id-1",
     tenantID: "tenant-1",
@@ -319,6 +236,13 @@ export const mockPoliciesData = [
     },
     engine: "rego",
     rule: "cGFja2FnZSBtYWluCgppbXBvcnQgcmVnby52MQoKYWxsb3cgaWYgewoJaW5wdXQudXNlciA9PSAiYWRtaW4iCn0=",
+    triggers: [
+      {
+        destinationIdentifiers: ["destination-id-1", "destination-id-2"],
+        condition: "EvaluatedNonCompliant",
+        waitForCycles: 0
+      }
+    ]
   },
   {
     policyID: "policy-id-2",
@@ -340,6 +264,18 @@ export const mockPoliciesData = [
     },
     engine: "rego",
     rule: "cGFja2FnZSBtYWluCgppbXBvcnQgcmVnby52MQoKYWxsb3cgaWYgewoJaW5wdXQudXNlciA9PSAiYWRtaW4iCn0=",
+    triggers: [
+      {
+        destinationIdentifiers: ["destination-id-3"],
+        condition: "EvaluatedCompliant",
+        waitForCycles: 1
+      },
+      {
+        destinationIdentifiers: ["destination-id-4", "destination-id-5"],
+        condition: "UpdatedToCompliant",
+        waitForCycles: 0
+      }
+    ]
   },
   {
     policyID: "policy-id-3",
@@ -363,6 +299,7 @@ export const mockPoliciesData = [
     },
     engine: "rego",
     rule: "cGFja2FnZSBtYWluCgppbXBvcnQgcmVnby52MQoKYWxsb3cgaWYgewoJdHJ1ZSA9PSB0cnVlCn0=",
+    triggers: [],
   },
   {
     policyID: "policy-id-4",
@@ -379,12 +316,18 @@ export const mockPoliciesData = [
     },
     engine: "rego",
     rule: "cGFja2FnZSBtYWluCgppbXBvcnQgcmVnby52MQoKYWxsb3cgaWYgewoJdHJ1ZSA9PSB0cnVlCn0=",
+    triggers: [
+      {
+        destinationIdentifiers: ["destination-id-6"],
+        condition: "EvaluatedNonCompliant",
+        waitForCycles: 3
+      }
+    ]
   },
-] as const
+];
 
-export const mockProvidersData = [
+export const mockProvidersData: ProviderTableData[] = [
   {
-    _id: "id-1",
     providerID: "provider-id-1",
     listenerID: "listener-id",
     tenantID: "tenant-id",
@@ -399,7 +342,6 @@ export const mockProvidersData = [
     policies: ["policy-id-1", "policy-id-2", "policy-id-3"],
   },
   {
-    id: "id-2",
     providerID: "provider-id-2",
     listenerID: "listener-id",
     tenantID: "tenant-id",
@@ -416,7 +358,6 @@ export const mockProvidersData = [
     policies: ["policy-id-1", "policy-id-2", "policy-id-3"],
   },
   {
-    _id: "id-3",
     providerID: "provider-id-3",
     listenerID: "listener-id",
     tenantID: "tenant-id",
@@ -428,8 +369,9 @@ export const mockProvidersData = [
     },
     policies: ["policy-id-1", "policy-id-2", "policy-id-3"],
   },
-] as const
-export const mockSecretPoliciesData = {
+];
+
+export const mockSecretPoliciesData: SecretPolicies = {
   "42bcd969-fcd7-44fc-ad37-1749c666096d": [
     {
       "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
@@ -627,9 +569,9 @@ export const mockSecretPoliciesData = {
       "timestamp": "2025-01-05T04:58:58.081000"
     }
   ]
-} as const
+};
 
-export const mockSecretPolicyLogsData = [
+export const mockSecretPolicyLogsData: PolicyDetails[] = [
   {
     "secretID": "229ce9e1-7397-4a03-9a57-d060578edd62",
     "policyID": "5d0749bc-0e6f-4c28-81d7-99d5dfbf2071",
@@ -700,9 +642,9 @@ export const mockSecretPolicyLogsData = [
     "status": "error",
     "timestamp": "2025-01-13T11:43:04.084000"
   }
-] as const
+];
 
-export const mockSecretAccessorsData = {
+export const mockSecretAccessorsData: SecretAccessors = {
   "accessor_3506": [
     {
       secretID: "dfc02f1f-eed1-4dcd-9699-0c5cc54f5827",
@@ -773,9 +715,9 @@ export const mockSecretAccessorsData = {
       timestamp: "2024-12-30T09:59:31.411000"
     }
   ]
-} as const
+};
 
-export const mockSecretAccessorLogsData = [
+export const mockSecretAccessorLogsData: AccessorDetails[] = [
   {
     "secretID": "dfc02f1f-eed1-4dcd-9699-0c5cc54f5827",
     "accessorID": "c5381f36-a7f9-4748-9d5c-842198ddab7b",
@@ -800,6 +742,6 @@ export const mockSecretAccessorLogsData = [
     "name": "accessor_3506",
     "timestamp": "2025-01-05T23:55:35.411000"
   }
-] as const
+];
 
-export const mockNetworkResponseDelay = () => new Promise(resolve => setTimeout(resolve, 500))
+export const mockNetworkResponseDelay = () => new Promise(resolve => setTimeout(resolve, 500));

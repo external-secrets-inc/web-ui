@@ -56,7 +56,7 @@ export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
       ],
     },
     {
-      label: "Secrets Ops",
+      label: "System Components",
       items: [
         {
           label: "Agents",
