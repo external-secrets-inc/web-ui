@@ -97,7 +97,7 @@ export function AuditListenerStatusBadge({
           <TooltipTrigger asChild>
             {auditListener?.status !== LISTENER_STATUS.ACTIVE ? (
               <SidebarMenuAction className="relative top-[unset] right-[unset] rounded-xs" asChild>
-                <Link to={getOrgUrl("/audit/dashboard")}>
+                <Link to={getOrgUrl("/audit/insights")}>
                   <LucideCircle
                     className={cn("w-2 box-content", config.color)}
                     fill="currentColor"
@@ -112,10 +112,10 @@ export function AuditListenerStatusBadge({
             )}
           </TooltipTrigger>
           <TooltipContent>
-            Audit {config.label}.
+            Audit {config.label}
             {auditListener?.status !== LISTENER_STATUS.ACTIVE && (
               <>
-                <br /> View Dashboard.
+                <br /> Open for more info
               </>
             )}
           </TooltipContent>

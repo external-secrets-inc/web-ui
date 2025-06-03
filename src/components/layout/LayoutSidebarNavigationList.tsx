@@ -98,7 +98,7 @@ const LeafNavItem: React.FC<BaseNavigationItemProps> = ({
     <SidebarMenuSubItem style={{ "--level": level - 1 } as React.CSSProperties}>
       <SidebarMenuSubButton asChild isActive={isActive}>
         <Link to={getOrgLink(item.url)}>
-          {IconComponent && <IconComponent className="text-primary-600 dark:text-primary-400" />}
+          {IconComponent && <IconComponent />}
           <span className="font-medium">{item.label}</span>
           <AppendContent render={item.renderAppendContent} />
         </Link>
@@ -234,7 +234,7 @@ const TopLevelGroupNavItem: React.FC<CollapsibleNavigationItemProps> = ({
         <CollapsibleTrigger asChild>
           <SidebarMenuButton
             tooltip={item.label}
-            className="[&[data-state=open]>svg]:rotate-90 [&:not(:has([data-sidebar=menu-action]:hover)):hover>svg]:opacity-100 max-md:[&[data-state=closed]>svg]:opacity-100 gap-1"
+            className="[&[data-state=open]>svg]:rotate-90 [&:not(:has([data-sidebar=menu-action]:hover)):hover>svg]:opacity-100 max-md:[&[data-state=closed]>svg]:opacity-100 gap-px"
           >
             <span>{item.label}</span>
             <LucideChevronRight className="transition-all duration-200 opacity-0" />

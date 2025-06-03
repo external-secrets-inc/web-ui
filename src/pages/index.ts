@@ -1,5 +1,5 @@
 export { PageAgents } from "./PageAgents";
-export { PageAuditDashboard } from "./PageAuditDashboard";
+export { PageAuditInsights } from "./PageAuditInsights";
 export { PageAuditDestinations } from "./PageAuditDestinations";
 export { PageAuditPolicies } from "./PageAuditPolicies";
 export { PageAuditProviders } from "./PageAuditProviders";

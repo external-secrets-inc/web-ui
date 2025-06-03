@@ -19,7 +19,7 @@ import { IS_DEV, IS_PROD } from "@/constants";
 import { ThemeProvider } from "@/context/ThemeContext";
 import {
   PageAgents,
-  PageAuditDashboard,
+  PageAuditInsights,
   PageAuditDestinations,
   PageAuditPolicies,
   PageAuditProviders,
@@ -98,8 +98,8 @@ const router = createBrowserRouter([
         ),
         children: [
           {
-            path: "audit/dashboard",
-            element: <PageAuditDashboard />,
+            path: "audit/insights",
+            element: <PageAuditInsights />,
           },
           {
             path: "audit/providers",
@@ -115,7 +115,7 @@ const router = createBrowserRouter([
           },
           {
             path: "audit",
-            element: <NavigateWithOrg to="/audit/dashboard" replace />,
+            element: <NavigateWithOrg to="/audit/insights" replace />,
           },
         ],
       },

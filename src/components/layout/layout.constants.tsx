@@ -15,60 +15,35 @@ import { AuditListenerStatusBadge } from "@/components/Audit/AuditListenerStatus
 export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
   navMain: [
     {
-      label: "Audit",
+      label: "Audit Insights",
+      url: "/audit/insights",
       renderAppendContent: <AuditListenerStatusBadge compact />,
-      items: [
-        {
-          label: "Monitoring",
-          items: [
-            {
-              label: "Dashboard",
-              url: "/audit/dashboard",
-              icon: LucideBarChart3,
-            },
-          ],
-        },
-        {
-          label: "Secrets stores",
-          items: [
-            {
-              label: "Providers",
-              url: "/audit/providers",
-              icon: LucideBookKey,
-            },
-          ],
-        },
-        {
-          label: "Policy control",
-          items: [
-            {
-              label: "Policies",
-              url: "/audit/policies",
-              icon: LucideShieldCheck,
-            },
-            {
-              label: "Destinations",
-              url: "/audit/destinations",
-              icon: LucideLocateFixed,
-            },
-          ],
-        },
-      ],
+      icon: LucideBarChart3,
     },
     {
-      label: "Secrets Ops",
-      items: [
-        {
-          label: "Agents",
-          url: "/agents",
-          icon: LucideBot,
-        },
-        {
-          label: "Reloaders",
-          url: "/reloaders",
-          icon: LucideRotateCcwKey,
-        },
-      ],
+      label: "Providers",
+      url: "/audit/providers",
+      icon: LucideBookKey,
+    },
+    {
+      label: "Policies",
+      url: "/audit/policies",
+      icon: LucideShieldCheck,
+    },
+    {
+      label: "Destinations",
+      url: "/audit/destinations",
+      icon: LucideLocateFixed,
+    },
+    {
+      label: "Agents",
+      url: "/agents",
+      icon: LucideBot,
+    },
+    {
+      label: "Reloaders",
+      url: "/reloaders",
+      icon: LucideRotateCcwKey,
     },
   ],
   navFooter: [

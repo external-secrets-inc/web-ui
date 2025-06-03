@@ -14,14 +14,14 @@ export function PageAuditPolicies() {
   const { auditListener } = useAuditContext();
   const docsLink = `${DOCS_DOMAIN}/docs/enterprise/audit/policies/quickstart`;
   const getOrglink = useOrgLink();
-  
+
   return (
     <LayoutPage
       title="Policies"
       description={
         <>
           Create and manage Rego-based compliance policies for secrets, with
-          automated triggers for policy-based actions across your{" "}
+          automated Triggers for policy-based actions across your{" "}
           <Link to={getOrglink("/audit/providers")}>Providers</Link>.
           <br />
           <a href={docsLink} target="_blank">
