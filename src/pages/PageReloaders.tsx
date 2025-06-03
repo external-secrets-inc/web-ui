@@ -11,8 +11,8 @@ export function PageReloaders() {
       title="Reloaders"
       description={
         <>
-          Reloaders listen for events from audit logs to trigger a rotation in
-          the External Secrets Operator.
+          External Secrets Reloaders listen for events from audit logs to trigger
+          a rotation in the External Secrets Operator.
           <br />
           <a href={docsLink} target="_blank">
             Quickstart guide
