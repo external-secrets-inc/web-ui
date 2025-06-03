@@ -3,11 +3,10 @@ import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
-import { useAuditMock } from '@/services/audit/context/AuditMockContext';
+import { useAuditMock } from '@/components/Audit/AuditMockContext';
 
-// TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/119
 const deleteAuditProvider = async (mock: boolean, providerId: string) => {
-  if(mock) return "MockedDeleteProviderToken"
+  if (mock) return "MockedDeleteProviderToken"
 
   const headers = await getAuthHeaders();
   const response = await axiosInstance.delete(`/api/providers/${providerId}`, { headers, backend: 'AUDIT_POC' });

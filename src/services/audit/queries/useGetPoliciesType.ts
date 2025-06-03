@@ -4,7 +4,6 @@ import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError, } from "@/types";
 import { AxiosError } from "axios";
 
-// TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/119
 const getPoliciesTypes = async (
   mock: boolean,
   signal: AbortSignal,

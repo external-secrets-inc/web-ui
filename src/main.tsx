@@ -1,6 +1,5 @@
-import ListAgents from "@/components/agents/ListAgents";
-import AppPageHeader from "@/components/AppPageHeader";
-import AuditWrapper from "@/components/audit/AuditWrapper";
+import { AuditProvider } from "@/components/Audit/AuditContext";
+import { AuditGuard } from "@/components/Audit/AuditGuard";
 import {
   AuthForgotPassword,
   AuthLayout,
@@ -10,32 +9,33 @@ import {
   AuthSignup,
   AuthVerify,
 } from "@/components/Auth";
-import AxiosInterceptor from "@/components/AxiosInterceptor";
 import BodyPortal from "@/components/BodyPortal";
 import NavigateWithOrg from "@/components/NavigateWithOrg";
 import { NotFound } from "@/components/NotFound";
 import RequireActiveUser from "@/components/RequireActiveUser";
-import ListRotators from "@/components/rotators/ListRotators";
-import Settings from "@/components/Settings";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import { Loader } from "@/components/ui/Loader";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { DOCS_DOMAIN, IS_PROD } from "@/constants";
-import { FeatureFlagProvider } from "@/context/FeatureFlagContext";
-import { LayoutProvider } from "@/context/LayoutContext";
-import { SubscriptionProvider } from "@/context/SubscriptionContext";
+import { IS_DEV, IS_PROD } from "@/constants";
+import { ThemeProvider } from "@/context/ThemeContext";
+import {
+  PageAgents,
+  PageAuditInsights,
+  PageAuditDestinations,
+  PageAuditPolicies,
+  PageAuditProviders,
+  PageReloaders,
+  PageSettings,
+} from "@/pages";
 import authStore from "@/services/auth/authStore";
 import RequireAuth from "@auth-kit/react-router/RequireAuth";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { StrictMode, Suspense, useEffect } from "react";
+import { StrictMode, useEffect } from "react";
 import AuthProvider from "react-auth-kit";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { load, page } from "./analytics";
-import App from "./App";
-import OrgRedirector from "./components/OrgRedirector";
+import { App } from "./App";
 import "./index.css";
 
 const queryClient = new QueryClient();
@@ -44,7 +44,10 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: (
-      <RequireActiveUser loginFallbackPath="/login" inactiveFallbackPath="/verify">
+      <RequireActiveUser
+        loginFallbackPath="/login"
+        inactiveFallbackPath="/verify"
+      >
         <NavigateWithOrg to="/agents" replace />
       </RequireActiveUser>
     ),
@@ -73,19 +76,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/:org",
-    element: (
-      <AxiosInterceptor>
-        <RequireActiveUser loginFallbackPath="/login" inactiveFallbackPath="/verify">
-          <OrgRedirector>
-            <SubscriptionProvider>
-              <FeatureFlagProvider>
-                <App />
-              </FeatureFlagProvider>
-            </SubscriptionProvider>
-          </OrgRedirector>
-        </RequireActiveUser>
-      </AxiosInterceptor>
-    ),
+    element: <App />,
     children: [
       {
         path: "",
@@ -93,69 +84,44 @@ const router = createBrowserRouter([
       },
       {
         path: "agents",
-        element: (
-          <>
-            <AppPageHeader
-              title="Your Agents"
-              description={
-                <>
-                  Agents deploy, maintain, and configure External Secrets Operator installations for you<br />
-                  See our <a href={`${DOCS_DOMAIN}/docs/esi-agent/quickstart`}>Quickstart guide</a> and <a href={`${DOCS_DOMAIN}/docs/esi-for-eso/quickstart`}>Exclusive Features</a> for more details
-                </>
-              }
-            />
-            <ListAgents />
-          </>
-        ),
+        element: <PageAgents />,
       },
       {
-        path: "rotators",
-        element: (
-          <>
-            <AppPageHeader
-              title="Your Async Rotators"
-              description={
-                <>
-                  Async rotators listen for events from audit logs to trigger a rotation in the External Secrets Operator<br />
-                  See our <a href={`${DOCS_DOMAIN}/docs/esi-async-rotator/quickstart`}>Quickstart guide</a> for more details
-                </>
-              }
-            />
-            <ListRotators />
-          </>
-        ),
+        path: "reloaders",
+        element: <PageReloaders />,
       },
-      // TODO: Remove mock variable when audit is ready https://github.com/external-secrets-inc/web-ui/issues/124
-      import.meta.env.VITE_MOCK_AUDIT_ROUTE ? {
-        path: 'audit',
+      {
         element: (
-          <>
-            <AppPageHeader
-              title="Audit"
-              description={
-                <>
-                  Gather insights about your secrets and policies based on audit logs from multiple providers<br />
-                  {/* TODO:  add link to quickstart guide*/}
-                </>
-              }
-            />
-            <Suspense fallback={<Loader/>}>
-              <AuditWrapper />
-            </Suspense>
-          </>
-        )
-      } : {},
+          <AuditProvider>
+            <AuditGuard />
+          </AuditProvider>
+        ),
+        children: [
+          {
+            path: "audit/insights",
+            element: <PageAuditInsights />,
+          },
+          {
+            path: "audit/providers",
+            element: <PageAuditProviders />,
+          },
+          {
+            path: "audit/policies",
+            element: <PageAuditPolicies />,
+          },
+          {
+            path: "audit/destinations",
+            element: <PageAuditDestinations />,
+          },
+          {
+            path: "audit",
+            element: <NavigateWithOrg to="/audit/insights" replace />,
+          },
+        ],
+      },
       {
         path: "settings",
-        element: (
-          <>
-            <AppPageHeader
-              title="Settings"
-              description="Manage your account settings and preferences"
-            />
-            <Settings />
-          </>
-        ),
+        element: <PageSettings />,
       },
     ],
   },
@@ -194,14 +160,16 @@ if (rootElement) {
         <ThemeProvider storageKey="ui-theme">
           <QueryClientProvider client={queryClient}>
             <TooltipProvider delayDuration={300} skipDelayDuration={300}>
-              <LayoutProvider>
-                <Main />
-                <Toaster />
-              </LayoutProvider>
+              <Main />
+              <Toaster />
             </TooltipProvider>
-            {!IS_PROD && (
+            {IS_DEV && (
               <BodyPortal>
-                <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" position="left" />
+                <ReactQueryDevtools
+                  initialIsOpen={false}
+                  buttonPosition="bottom-right"
+                  position="right"
+                />
               </BodyPortal>
             )}
           </QueryClientProvider>

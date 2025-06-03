@@ -67,7 +67,7 @@ const FeatureItemCard = forwardRef<HTMLDivElement, FeatureItemCardProps>(({
               onDeleteFeature={() => onDeleteFeature(featureID)}
             />
           </CardTitle>
-          <div className="text-sm text-slate-500">{featureID}</div>
+          <div className="text-sm text-muted-foreground">{featureID}</div>
         </CardHeader>
         <CardFooter className='mt-auto gap-2'>
           <span className='flex gap-2 items-center'>
@@ -77,6 +77,7 @@ const FeatureItemCard = forwardRef<HTMLDivElement, FeatureItemCardProps>(({
           {isPending && (
             <Button
               size="default"
+              variant="secondary"
               className="ml-auto"
               onClick={(e) => {
                 e.stopPropagation();

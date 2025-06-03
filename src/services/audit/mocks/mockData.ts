@@ -1,4 +1,4 @@
-import { AuditSecretData, AuditSecretTableData } from "@/components/audit/Audit.interfaces";
+import { AuditSecretData, AuditSecretTableData } from "@/components/Audit/Audit.interfaces";
 import { formatDate } from "@/utils/dateUtils";
 
 /**

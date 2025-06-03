@@ -44,6 +44,16 @@ alwaysApply: true
         - **Formal Documentation**: Standardized documentation formats (e.g., TSDoc/JSDoc) for public APIs, types, and significant internal constructs, focusing on contract and intent.
       </details>
     </principle>
+
+    <principle name="ai_post_edit_full_file_re_evaluation">
+      <summary>AI Post-Edit Obligation: Full File Re-Evaluation</summary>
+      <details>
+      - After this AI (Cursor) applies *any* edit to a file (whether adding, removing, or modifying code or comments), it MUST NOT assume the file is now fully compliant with this rule.
+      - Instead, this AI MUST immediately re-initiate a full evaluation (starting from `<process_for_evaluating_existing_comments>` Step 1: `identify_comment_category`) for ALL existing comments within the entirety of the modified file(s).
+      - This re-evaluation MUST occur before the AI concludes its turn for that file modification.
+      - If new violations of this `comment-strict-guidelines.mdc` rule are found during this re-evaluation, they MUST be addressed by the AI in the same turn, following the procedures outlined herein.
+      </details>
+    </principle>
   </core_principles>
 
   <process_for_evaluating_existing_comments>
@@ -227,7 +237,7 @@ alwaysApply: true
     <principle name="self_documentation_first_always">
       <summary>Prioritize Self-Documenting Code Relentlessly</summary>
       <details>
-      - Before generating ANY new comment (excluding essential formal documentation for new definitions as per below), this AI MUST first **exhaust all practical refactoring options** for the code it is generating or modifying to make it inherently self-explanatory.
+      - Before generating ANY new comment (excluding essential formal documentation for new definitions as per below, and abiding by the prohibition on AI meta-comments), this AI MUST first **exhaust all practical refactoring options** for the code it is generating or modifying to make it inherently self-explanatory.
       - The AI MUST ask itself:
           - "Can I improve naming, extract logic, or simplify structure locally so that no 'what' or 'how' comment would be needed?"
           - "Am I fully leveraging existing project patterns, utilities, helper functions, or established architectural components? Could a broader refactoring (potentially across files or introducing new shared abstractions) enhance overall clarity and obviate the need for this comment?"
@@ -255,6 +265,16 @@ alwaysApply: true
       - If, after exhausting all refactoring options (including broader contextual ones), this AI believes a comment is still necessary for reasons other than formal API documentation, it MUST fall into one of the categories from `<principle name="comments_for_the_unutterable_in_code">` (i.e., 'why' rationale, warning, irreducible complexity).
       - Such comments MUST be concise and targeted.
       - The AI SHOULD be prepared to justify why the information could not be conveyed through code refactoring.
+      </details>
+    </principle>
+
+    <principle name="prohibit_ai_meta_comments_in_code">
+      <summary>AI MUST NEVER Add Self-Referential or Action-Descriptive Comments in Code</summary>
+      <details>
+      - This AI (Cursor) is STRICTLY PROHIBITED from inserting comments into the final code that describe its own actions, the changes it has made, its development process, or any meta-commentary about the code modifications themselves (e.g., `// Removed X`, `// Refactored Y`, `// Reverted to Z`, `// Added by AI`, `// Temporary code`).
+      - Such statements belong exclusively in the AI's conversational response to the user, not within the codebase.
+      - Commented-out code is also considered a form of meta-commentary on the code's state and is covered by the "Historical/Obsolete" scenario, requiring its removal.
+      - Any such prohibited comment inadvertently added by the AI MUST be identified and removed by the AI in the same turn, ideally during the post-edit re-evaluation mandated by the `<principle name="ai_post_edit_full_file_re_evaluation">`.
       </details>
     </principle>
 

@@ -3,9 +3,9 @@ import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
-import { EditPolicyPayload } from "@/components/audit/Audit.interfaces";
+import { EditPolicyPayload } from "@/components/Audit/Audit.interfaces";
 import { mockNetworkResponseDelay } from "../mocks/mockData";
-import { useAuditMock } from "../context/AuditMockContext";
+import { useAuditMock } from '@/components/Audit/AuditMockContext';
 
 export interface EditPolicyVariables {
   policyID: string;

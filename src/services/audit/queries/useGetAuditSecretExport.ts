@@ -4,7 +4,7 @@ import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError, } from "@/types";
 import { AxiosError } from "axios";
 import { mockNetworkResponseDelay } from "../mocks/mockData";
-import { useAuditMock } from '@/services/audit/context/AuditMockContext';
+import { useAuditMock } from '@/components/Audit/AuditMockContext';
 
 const auditSecretExport = async (
   mock: boolean,
@@ -17,7 +17,7 @@ const auditSecretExport = async (
   }
 
   const headers = await getAuthHeaders();
-  const response = await axiosInstance.get(`/api/export/secrets/${secretID}`, { headers, signal, backend: 'AUDIT_POC'});
+  const response = await axiosInstance.get(`/api/export/secrets/${secretID}`, { headers, signal, backend: 'AUDIT_POC' });
   return response.data;
 }
 

@@ -65,8 +65,8 @@ Demonstrates using the `rowsAppend` prop to add content after the table body.
 - Ignores `className` height on `<DataTable>`.
 #### Sticky Header Offset (Window Mode Specific)
 - Header isn't sticky by default (shares window scroll).
-- To make it sticky & account for fixed elements above (e.g., site header), set `--window-container-header-offset` CSS variable to their combined height.
-- Apply via `style` prop (`style={{ "--window-container-header-offset": "64px" }}`) or Tailwind arbitrary class (`className="[--window-container-header-offset:64px]"`) on `DataTable` or a parent.
+- To make it sticky & account for fixed elements above (e.g., site header), set `--virtual-container-header-offset` CSS variable to their combined height.
+- Apply via `style` prop (`style={{ "--virtual-container-header-offset": "64px" }}`) or Tailwind arbitrary class (`className="[--virtual-container-header-offset:64px]"`) on `DataTable` or a parent.
 
 <Canvas of={DataTableStories.WindowVirtualization} />
 

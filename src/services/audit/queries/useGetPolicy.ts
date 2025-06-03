@@ -3,9 +3,9 @@ import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
-import { PolicyTableData } from "@/components/audit/Audit.interfaces";
+import { PolicyTableData } from "@/components/Audit/Audit.interfaces";
 import { mockNetworkResponseDelay, mockPoliciesData } from "../mocks/mockData";
-import { useAuditMock } from '@/services/audit/context/AuditMockContext';
+import { useAuditMock } from '@/components/Audit/AuditMockContext';
 
 const getPolicy = async (mock: boolean, policyId: string, signal: AbortSignal) => {
   if (mock) {

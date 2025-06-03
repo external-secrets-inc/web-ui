@@ -1,17 +1,28 @@
-import { Outlet } from 'react-router-dom';
-import AppTopBar from './components/AppTopBar';
-import ExpirySubscriptionBanner from './components/ExpirySubscriptionBanner';
+import AxiosInterceptor from "@/components/AxiosInterceptor";
+import { LayoutRoot } from "./components/layout";
+import { FeatureFlagProvider } from "@/context/FeatureFlagContext";
+import RequireActiveUser from "@/components/RequireActiveUser";
+import OrgRedirector from "@/components/OrgRedirector";
+import { SubscriptionProvider } from "@/context/SubscriptionContext";
+import { AuditMockProvider } from "@/components/Audit/AuditMockContext";
 
-const App = () => {
+export function App() {
   return (
-      <>
-        <AppTopBar />
-        <main className="container mx-auto text-left flex flex-col py-6 md:pt-11 pb-20">
-          <ExpirySubscriptionBanner />
-          <Outlet />
-        </main>
-      </>
+    <AxiosInterceptor>
+      <RequireActiveUser
+        loginFallbackPath="/login"
+        inactiveFallbackPath="/verify"
+      >
+        <OrgRedirector>
+          <SubscriptionProvider>
+            <FeatureFlagProvider>
+              <AuditMockProvider>
+                <LayoutRoot />
+              </AuditMockProvider>
+            </FeatureFlagProvider>
+          </SubscriptionProvider>
+        </OrgRedirector>
+      </RequireActiveUser>
+    </AxiosInterceptor>
   );
-};
-
-export default App;
+}

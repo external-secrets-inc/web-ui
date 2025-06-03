@@ -43,7 +43,7 @@ export function AuthCommonFieldOrganizationURL<T extends FieldValues>({
           <FormControl>
             <div
               className={cn(
-                "border-input border rounded-md flex items-baseline focus-within:ring-ring focus-within:ring-1",
+                "border-input hover:border-input-accent transition-colors border rounded-md flex items-baseline focus-within:ring-ring focus-within:ring-1",
                 className
               )}
               onClick={() => internalRef.current?.focus()}

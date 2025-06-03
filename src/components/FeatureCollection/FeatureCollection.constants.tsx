@@ -3,15 +3,15 @@ import { LucideAlertCircle, LucideCheckCircle, LucideTrash2, LucideXCircle } fro
 export const STATUS_MAP: { [key: string]: { text: string, icon: React.ReactNode } } = {
   "PROVISIONING": {
     text: "Provisioning",
-    icon: <LucideAlertCircle className="text-orange-500" />
+    icon: <LucideAlertCircle className="text-warning" />
   },
   "PENDING_REGISTRATION": {
     text: "Pending Registration",
-    icon: <LucideAlertCircle className="text-orange-500" />
+    icon: <LucideAlertCircle className="text-warning" />
   },
   "ACTIVE": {
     text: "Active",
-    icon: <LucideCheckCircle className="text-green-700" />
+    icon: <LucideCheckCircle className="text-success" />
   },
   "OFFLINE": {
     text: "Offline",

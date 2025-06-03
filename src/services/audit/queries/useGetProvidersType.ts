@@ -3,10 +3,9 @@ import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError, } from "@/types";
 import { AxiosError } from "axios";
-import { AddProviderFormSchema } from "@/components/audit/Audit.interfaces";
-import { useAuditMock } from '@/services/audit/context/AuditMockContext';
+import { AddProviderFormSchema } from "@/components/Audit/Audit.interfaces";
+import { useAuditMock } from '@/components/Audit/AuditMockContext';
 
-// TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/119
 const getProvidersTypes = async (
   mock: boolean,
   signal: AbortSignal,
@@ -29,22 +28,22 @@ const getProvidersTypes = async (
         "vaultBasePath": { "type": "string", "required": false, "default": "secret" },
         "vaultVersion": { "type": "string", "required": false, "default": "v2" },
         "socketHost": { "type": "string", "required": false, "default": "0.0.0.0" },
-        "socketPort": { "type": "number", "required": false, "default": 8000}
+        "socketPort": { "type": "number", "required": false, "default": 8000 }
       },
       "AWS Secrets Manager": {
-        "region": {"type": "string", "required": true},
-        "queue-url": {"type": "string", "required": true}
+        "region": { "type": "string", "required": true },
+        "queue-url": { "type": "string", "required": true }
       },
       "AWS Parameter Store": {
-        "region": {"type": "string", "required": true},
-        "queue-url": {"type": "string", "required": true}
+        "region": { "type": "string", "required": true },
+        "queue-url": { "type": "string", "required": true }
       },
       "Azure-KeyVault": {
-        "vaultURL": {"type": "string", "required": true},
-        "eventHubNamespaceHost": {"type": "string", "required": true},
-        "eventHubName": {"type": "string", "required": true},
-        "storageEndpoint": {"type": "string", "required": true},
-        "storageContainerName": {"type": "string", "required": true}
+        "vaultURL": { "type": "string", "required": true },
+        "eventHubNamespaceHost": { "type": "string", "required": true },
+        "eventHubName": { "type": "string", "required": true },
+        "storageEndpoint": { "type": "string", "required": true },
+        "storageContainerName": { "type": "string", "required": true }
       }
     } as AddProviderFormSchema;
   }

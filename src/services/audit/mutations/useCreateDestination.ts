@@ -3,7 +3,7 @@ import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
-import { CreateDestinationPayload, DestinationTableData } from "@/components/audit/Audit.interfaces";
+import { CreateDestinationPayload, DestinationTableData } from "@/components/Audit/Audit.interfaces";
 
 const createDestination = async (
   payload: CreateDestinationPayload,

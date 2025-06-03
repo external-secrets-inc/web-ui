@@ -3,7 +3,7 @@ import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
-import { EditDestinationPayload, DestinationTableData } from "@/components/audit/Audit.interfaces";
+import { EditDestinationPayload, DestinationTableData } from "@/components/Audit/Audit.interfaces";
 
 export interface EditDestinationVariables {
   destinationID: string;

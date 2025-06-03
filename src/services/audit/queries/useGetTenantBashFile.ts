@@ -3,14 +3,13 @@ import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError, Bash } from "@/types";
 import { AxiosError } from "axios";
-import { useAuditMock } from '@/services/audit/context/AuditMockContext';
+import { useAuditMock } from '@/components/Audit/AuditMockContext';
 
-// TODO remove mock parameter and return only valid data https://github.com/external-secrets-inc/web-ui/issues/118
-const getTenantBashFile = async (mock: boolean, signal:  AbortSignal, version: string = "latest", listenerId: string, token: string) => {
-  if(mock) return {process: 'File with bash script to install listener!'}
+const getTenantBashFile = async (mock: boolean, signal: AbortSignal, version: string = "latest", listenerId: string, token: string) => {
+  if (mock) return { process: 'File with bash script to install listener!' }
 
   const headers = await getAuthHeaders();
-  const response = await axiosInstance.get(`/api/listeners/${listenerId}/bash/${version}`, { headers, signal, params: {"token": token}});
+  const response = await axiosInstance.get(`/api/listeners/${listenerId}/bash/${version}`, { headers, signal, params: { "token": token } });
   return response.data;
 }
 
@@ -25,7 +24,7 @@ const useGetTenantBashFile = <T = Bash>(
 
   return useQuery({
     queryKey: ["audit", "useGetTenantBashFile", isMocked, token, listenerId],
-    queryFn: ({signal}) => {
+    queryFn: ({ signal }) => {
       return getTenantBashFile(isMocked, signal, version, listenerId, token)
     },
     ...options,

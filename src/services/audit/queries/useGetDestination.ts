@@ -3,9 +3,9 @@ import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
-import { DestinationTableData } from "@/components/audit/Audit.interfaces";
-import { useAuditMock } from '@/services/audit/context/AuditMockContext';
-import { AUDIT_QUERY_STALE_TIME } from "@/components/audit/Audit.constants";
+import { DestinationTableData } from "@/components/Audit/Audit.interfaces";
+import { useAuditMock } from '@/components/Audit/AuditMockContext';
+import { AUDIT_QUERY_STALE_TIME } from "@/components/Audit/Audit.constants";
 
 const getDestination = async (
   id: string,
