@@ -12,6 +12,7 @@ env:
   MOCK_AUDIT_ENABLED: "true"
   WEBSITE_URL: https://externalsecrets.com
   AUDIT_BACKEND_URL: https://audit.prod.externalsecrets.com
+  # ESO_SERVER_URL: https://eso.prod.externalsecrets.com #TODO[cfviot]: add when we have an actual eso-server url. don't forget the build-arg in the docker build step
   DOCS_URL: https://app.externalsecrets.com
 jobs:
   build-and-push:

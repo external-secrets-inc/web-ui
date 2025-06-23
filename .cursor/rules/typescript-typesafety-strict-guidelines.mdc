@@ -11,10 +11,226 @@ alwaysApply: false
   </interpretation_of_terms>
 
   <objective>
-  Write highly type-safe TypeScript code. Avoid constructs that weaken type safety (`any`, excessive assertions) and leverage TypeScript's features to ensure correctness and prevent runtime type errors.
+  Write highly type-safe TypeScript code by leveraging TypeScript's features for correctness, **and by standardizing the definition, discovery, reuse, and organization of all type definitions (both internal and from external libraries)**. This rule guides on avoiding constructs that weaken type safety (e.g., `any`, excessive assertions), promoting the reuse of existing types, and appropriately locating types within the project to ensure consistency and maintainability.
   </objective>
 
   <principles>
+    <principle name="guidance_on_type_source_investigation">
+      <summary>Strategic Approach to Finding Types: Internal, then Library</summary>
+      <details>
+      - **Cue for Internal Types First**: In MOST scenarios, when a type is needed, the primary search SHOULD be for existing **internal project types** by following the hierarchy in `<principle name="prioritize_internal_type_reuse">`.
+      - **Cue for Library Types**: If, and only if, the code being written is directly importing functionality from an external library OR is creating a custom wrapper/component around such library functionality, then this AI (or developer) MUST first investigate and prioritize using or extending types provided by that **external library**.
+          - The detailed methodology for reusing library types is covered in the `<principle name="prioritize_reusing_library_types">`. This includes exploring `node_modules` and library documentation.
+      - If a suitable library type is found, it SHOULD be used. If not, or if an internal type is more appropriate for defining the contract of custom logic (even if it consumes a library internally), then define or reuse an internal type.
+      </details>
+    </principle>
+
+    <principle name="prioritize_internal_type_reuse">
+      <summary>Actively Seek and Reuse Existing Internal Project Types First</summary>
+      <details>
+      - Before defining ANY new type, this AI (or a developer) MUST first diligently search for existing suitable types within the project. Duplication of types that serve the same purpose is STRONGLY DISCOURAGED.
+      - **Search Hierarchy for Internal Types**:
+        1.  The current file/module where the type is needed.
+        2.  The associated `[current-context].interfaces.ts` file, if one exists (see `<principle name="type_file_naming">`).
+        3.  Shared types within the immediate parent feature\'s scope (e.g., if working in `src/features/checkout/components/`, look in `src/features/checkout/types/` before looking globally. This project does not yet have a strong `src/features/` structure, but this applies if adopted).
+        4.  Globally shared types available from `src/types/index.ts` (see organization details in `<principle name="type_definition_locations">`).
+      - Only after confirming that no suitable internal type exists should one consider defining a new type or, if applicable, looking for library types (as guided by `<principle name="guidance_on_type_source_investigation">`).
+      </details>
+    </principle>
+
+    <principle name="type_definition_locations">
+      <summary>Guidelines for Initial Placement and Organization of Internal Type Definitions</summary>
+      <details>
+      The initial location for an internal type definition depends on its primary scope and usage:
+      - **Strictly Local Types**: For types used exclusively within a single `.ts` or `.tsx` file (e.g., internal state or utility types for a specific function/component that are not exported or consumed elsewhere), they MAY be defined directly within that file.
+      - **Context-Specific Types**: For types primarily associated with a specific component, service, hook, or page, but which might be imported by closely related files (e.g., its Storybook file, a dedicated test file, or a direct consumer component), they SHOULD be defined in a co-located `[context].interfaces.ts` file.
+          - Example: `MyComponent.tsx` would have its props and related types in `MyComponent.interfaces.ts`.
+          - This aligns with the `<principle name="type_file_naming">`.
+      - **Global Application-Wide Types**: For types that are broadly applicable across multiple, unrelated features or modules of the application (e.g., core data models like `User`, `Product`, common API response structures), they MUST be defined within the `src/types/` directory.
+          - Ideally, each distinct entity or group of related global types SHOULD reside in its own file (e.g., `src/types/user.types.ts`, `src/types/api.types.ts`).
+          - All such types MUST then be exported from the central `src/types/index.ts` file for consistent import paths across the project.
+          - (Self-reference from project structure analysis: The project currently defines global types directly in `src/types/index.ts` with a comment `// Eventually when this file grows, just organize into separate files with this index.ts file importing them`. This rule formalizes that future direction and encourages creation of separate files within `src/types/` as it grows.)
+      </details>
+      <good_example title="Global type definition and export from src/types/">
+        ```typescript
+        // src/types/order.types.ts
+        export interface Order {
+          id: string;
+          items: OrderItem[];
+          // ... other order properties
+        }
+
+        export interface OrderItem {
+          productId: string;
+          quantity: number;
+        }
+
+        // src/types/index.ts
+        export * from \'./order.types\';
+        // ... other global type exports from their respective files
+        ```
+      </good_example>
+    </principle>
+
+    <principle name="refactor_types_for_broader_reuse">
+      <summary>Elevate Internal Types to Shared Locations When Their Usage Expands</summary>
+      <details>
+      - If a type initially defined locally (either directly in a module or within a `[context].interfaces.ts` file) is later found to be needed by other modules or components outside its original, narrowly defined context, it MUST be refactored to a more appropriate shared location.
+      - **Determining the New Location**:
+        - **To Global `src/types/`**: If the type becomes genuinely applicable across different, unrelated parts of the application or represents a core data entity, it MUST be moved to the `src/types/` directory (into its own new `.types.ts` file or an existing relevant one) and exported from `src/types/index.ts`, as described in `<principle name="type_definition_locations">`.
+        - **To Feature-Specific Shared Types**: If the project adopts a feature-based directory structure (e.g., `src/features/my-feature/`), and a type is shared among several components/modules *within that specific feature* but not globally, it SHOULD be moved to a shared types location within that feature (e.g., `src/features/my-feature/types/index.ts`).
+      - This AI SHOULD proactively identify such refactoring opportunities and propose/apply them.
+      </details>
+      <example title="Refactoring a local interface to global types">
+        ```typescript
+        // Before: MyComponent.interfaces.ts defines Address, used only by MyComponent
+        // src/components/MyComponent/MyComponent.interfaces.ts
+        export interface Address {
+          street: string;
+          city: string;
+          zipCode: string;
+        }
+        export interface MyComponentProps {
+          userAddress: Address;
+        }
+
+        // Later: Another component, OrderSummary, also needs the Address type.
+        // AI Action:
+        // 1. Identify Address as broadly useful.
+        // 2. Move Address interface to src/types/address.types.ts (or a general common.types.ts).
+        // 3. Export Address from src/types/index.ts.
+        // 4. Update MyComponent.interfaces.ts to import Address from \'@/types\'.
+        // 5. OrderSummary component can now also import Address from \'@/types\'.
+
+        // After:
+        // src/types/address.types.ts
+        export interface Address {
+          street: string;
+          city: string;
+          zipCode: string;
+        }
+
+        // src/types/index.ts
+        export * from \'./address.types\';
+        // ...
+
+        // src/components/MyComponent/MyComponent.interfaces.ts
+        import { Address } from \'@/types\'; // Assuming path alias
+        export interface MyComponentProps {
+          userAddress: Address;
+        }
+        ```
+      </example>
+    </principle>
+
+    <principle name="prioritize_reusing_library_types">
+      <summary>Prioritize Reusing and Extending Library Types Over Local Redefinitions When Interacting with Libraries</summary>
+      <details>
+      - When code directly interacts with or wraps an external library, this AI MUST first diligently investigate whether relevant types are already provided by that library (e.g., for component props, API responses, complex data structures).
+      - **Rationale**:
+          - Reusing library types prevents unnecessary duplication of type definitions.
+          - It ensures your types are comprehensive, benefiting from the library\'s own completeness and ongoing maintenance (e.g., new properties, bug fixes in types).
+          - It improves interoperability with the library.
+      - **Discovery**:
+          - Explore the library\'s exported types directly from your `node_modules` directory (e.g., within `dist` or `src` folders, or by inspecting `.d.ts` files).
+          - Consult the library\'s official documentation for type information.
+      - **Integration Pattern (Ergonomic Wrappers)**:
+          - When creating a custom component or function that wraps a library\'s functionality, you SHOULD directly use or extend the library\'s types for your API surface.
+          - A common and RECOMMENDED pattern is to define your primary, ergonomic properties using library types (possibly picking or omitting specific ones using utility types) and then provide an additional "options" or "rest" property (e.g., `additionalLibProps`, `tableOptions`) to allow pass-through of any other underlying library properties.
+          - For example: `type MyComponentProps = Pick<LibraryComponentProps, \'coreProp1\' | \'coreProp2\'> & { customProp: string; libOptions?: Omit<LibraryComponentProps, \'coreProp1\' | \'coreProp2\'>; };` or `type MyWrapperProps = { mySpecificProp: string; } & LibraryOriginalProps;`
+          - Over time, if certain properties from such "options" are used frequently, they MAY be promoted to explicit properties on your wrapper type for better discoverability and ergonomics.
+      </details>
+      <good_example title="Extending library component props for a custom wrapper">
+        ```typescript
+        // Assuming \'ButtonProps\' is an exported type from \'some-ui-library\'
+        import { ButtonProps as LibButtonProps } from \'some-ui-library\';
+
+        // Define props for our custom button
+        interface MyCustomButtonProps extends Pick<LibButtonProps, \'variant\' | \'size\' | \'onClick\'> {
+          iconName?: string; // Our custom addition
+          // Allow passing through other underlying button props from the library
+          additionalLibProps?: Omit<LibButtonProps, \'variant\' | \'size\' | \'onClick\'>;
+        }
+
+        function MyCustomButton({ iconName, variant, size, onClick, additionalLibProps }: MyCustomButtonProps) {
+          // ... logic using iconName ...
+          return (
+            <LibButtonComponent
+              variant={variant}
+              size={size}
+              onClick={onClick}
+              {...additionalLibProps} // Spread the rest of the library props
+            >
+              {/* ... children ... */}
+            </LibButtonComponent>
+          );
+        }
+
+        // Usage:
+        // <MyCustomButton variant="primary" size="large" iconName="submit" additionalLibProps={{ \'aria-label\': \'Submit form\' }} />
+        ```
+      </good_example>
+      <bad_example title="Redefining library props locally">
+        ```typescript
+        // Bad: Redefining props that likely exist in the library
+        interface MyLocalButtonProps {
+          variant?: \'primary\' | \'secondary\'; // Library probably defines this
+          size?: \'small\' | \'medium\' | \'large\'; // And this
+          onClick?: () => void; // And this
+          iconName?: string;
+          // This approach misses out on other props the library might support (e.g., disabled, aria-attributes)
+          // and requires manual updates if the library changes its prop definitions.
+        }
+
+        function MyLocalButton(props: MyLocalButtonProps) { /* ... */ }
+        ```
+      </bad_example>
+    </principle>
+
+    <principle name="prefer_specific_types">
+      <summary>Use Specific Types over Primitives for Identifiers/States; Prefer Existing Typed Definitions</summary>
+      <details>
+      - When defining types for entity IDs, status codes, or specific named values, plain `string` or `number` MUST NOT be used if a more specific type is appropriate.
+      - `enum`, string literal unions (`\'open\' | \'closed\'`), or branded types SHOULD be used to increase type safety and prevent accidental mixing of different kinds of IDs or states.
+      - **Crucially, before creating new specific types (like enums or literal unions), always prioritize reusing existing typed definitions first**, whether they are found internally within the project or available from external libraries, as guided by the principles on type sourcing and reuse in this document (see `<principle name="guidance_on_type_source_investigation">`).
+      </details>
+      <bad_example title="Using plain string for status is less safe">
+        ```typescript
+        // Less Safe: Any string is assignable
+        type Status = string; // Avoid using plain string for statuses
+        const orderStatus: Status = "shipped"; // Typo like "shippd" would be allowed by \'Status\' type
+        ```
+      </bad_example>
+      <good_example title="Using string literal union for status enhances safety">
+        ```typescript
+        // More Safe: Only specific strings allowed
+        type OrderStatus = \'pending\' | \'processing\' | \'shipped\' | \'delivered\' | \'cancelled\';
+        const currentStatus: OrderStatus = \'shipped\'; // Typo like "shippd" causes a compile error
+        ```
+      </good_example>
+      <good_example title="Using Branded Types for distinct IDs">
+        ```typescript
+        // Even Better (Example of Branded Type for IDs):
+        type UserId = string & { readonly __brand: \'UserId\' };
+        type ProductId = string & { readonly __brand: \'ProductId\' };
+
+        function createUserId(id: string): UserId {
+          return id as UserId;
+        }
+
+        function createProductId(id: string): ProductId {
+          return id as ProductId;
+        }
+
+        const userId = createUserId("user-123");
+        const productId = createProductId("prod-456");
+
+        // function processItem(id: UserId) { /* ... */ }
+        // processItem(productId); // Compile error: Type \'ProductId\' is not assignable to type \'UserId\'.
+        ```
+      </good_example>
+    </principle>
+
     <principle name="avoid_any">
       <summary>Strictly Avoid `any`</summary>
       <details>
@@ -24,7 +240,7 @@ alwaysApply: false
       <alternatives_to_any>
         - **`unknown`**: `unknown` SHOULD be used when a type is genuinely unknown. This forces type checking or type assertion before use, maintaining safety.
         - **Generics**: Generic type parameters (`<T>`) SHOULD be used for functions or classes that can operate on various types while maintaining type relationships.
-        - **Specific Types**: Interfaces, types, or imported types from libraries SHOULD be defined. Be as specific as possible.
+        - **Specific Types**: As emphasized throughout this document, well-defined interfaces, types, or imported types (from libraries or internal modules) SHOULD be used. Be as specific as possible, prioritizing reuse.
         - **Union Types**: Union types (`string | number`) SHOULD be used when a value can be one of several known types.
         - **Type Guards**: `typeof`, `instanceof`, or custom type predicates (`value is MyType`) SHOULD be used to narrow down types within conditional blocks.
       </alternatives_to_any>
@@ -40,10 +256,10 @@ alwaysApply: false
         ```typescript
         // Good: Forces type checking
         function processDataSafe(data: unknown) {
-          if (typeof data === 'object' && data !== null && 'requiredProperty' in data) {
-             // Now 'data' is narrowed and safe to access 'requiredProperty'
+          if (typeof data === \'object\' && data !== null && \'requiredProperty\' in data) {
+             // Now \'data\' is narrowed and safe to access \'requiredProperty\'
              console.log((data as { requiredProperty: string }).requiredProperty);
-          } else if (typeof data === 'string') {
+          } else if (typeof data === \'string\') {
              console.log(data.toUpperCase());
           } else {
              console.error("Invalid data structure");
@@ -53,54 +269,11 @@ alwaysApply: false
       </good_example>
     </principle>
 
-    <principle name="prefer_specific_types">
-      <summary>Use Specific Types over Primitives for Identifiers/States</summary>
-      <details>
-      - Plain `string` or `number` MUST NOT be used for entity IDs, status codes, or specific named values where a more specific type is appropriate.
-      - `enum`, string literal unions (`'open' | 'closed'`), or branded types SHOULD be used to increase type safety and prevent accidental mixing of different kinds of IDs or states.
-      </details>
-      <bad_example title="Using plain string for status is less safe">
-        ```typescript
-        // Less Safe: Any string is assignable
-        type Status = string; // Avoid using plain string for statuses
-        const orderStatus: Status = "shipped"; // Typo like "shippd" would be allowed by 'Status' type
-        ```
-      </bad_example>
-      <good_example title="Using string literal union for status enhances safety">
-        ```typescript
-        // More Safe: Only specific strings allowed
-        type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-        const currentStatus: OrderStatus = 'shipped'; // Typo like "shippd" causes a compile error
-        ```
-      </good_example>
-      <good_example title="Using Branded Types for distinct IDs">
-        ```typescript
-        // Even Better (Example of Branded Type for IDs):
-        type UserId = string & { readonly __brand: 'UserId' };
-        type ProductId = string & { readonly __brand: 'ProductId' };
-
-        function createUserId(id: string): UserId {
-          return id as UserId;
-        }
-
-        function createProductId(id: string): ProductId {
-          return id as ProductId;
-        }
-
-        const userId = createUserId("user-123");
-        const productId = createProductId("prod-456");
-
-        // function processItem(id: UserId) { /* ... */ }
-        // processItem(productId); // Compile error: Type 'ProductId' is not assignable to type 'UserId'.
-        ```
-      </good_example>
-    </principle>
-
     <principle name="leverage_utility_types">
       <summary>Utilize Built-in Utility Types</summary>
       <details>
       - Utility types like `Partial<T>`, `Readonly<T>`, `Pick<T, K>`, `Omit<T, K>`, `Record<K, T>`, `NonNullable<T>`, etc., SHOULD be used to create new types based on existing ones without manual duplication.
-      - This improves maintainability and reduces errors.
+      - This improves maintainability and reduces errors, especially when adapting existing types (internal or library-based) for specific needs.
       </details>
       <example title="Using Pick and Readonly">
         ```typescript
@@ -112,7 +285,7 @@ alwaysApply: false
         }
 
         // Create a type with only name and email
-        type UserNameAndEmail = Pick<UserProfile, 'name' | 'email'>;
+        type UserNameAndEmail = Pick<UserProfile, \'name\' | \'email\'>;
 
         // Create a readonly version for displaying data
         function displayUser(user: Readonly<UserProfile>) {
@@ -127,7 +300,7 @@ alwaysApply: false
       <summary>Minimize Type Assertions (`as` and `!`) </summary>
       <details>
       - Type assertions (`value as Type`) tell the compiler "trust me, I know the type", bypassing static analysis. Overuse can hide errors and MUST be minimized.
-      - Type assertions SHOULD only be used when you have more information than the compiler and other methods (like type guards) are not feasible.
+      - Type assertions SHOULD only be used when you have more information than the compiler and other methods (like type guards or more precise upstream typing) are not feasible.
       - The non-null assertion operator (`value!`) asserts that a value is not `null` or `undefined`. It SHOULD be used sparingly and only when you are absolutely certain the value cannot be nullish at that point. Prefer explicit null checks or optional chaining (`?.`).
       </details>
       <bad_example title="Risky use of non-null assertions">
@@ -158,9 +331,9 @@ alwaysApply: false
       <summary>Use Type Predicates for Custom Type Guards</summary>
       <details>
       - When `typeof` or `instanceof` are insufficient for narrowing complex types, custom type guard functions using the `parameterName is Type` return type annotation SHOULD be created.
-      - This allows TypeScript to correctly narrow the type within conditional blocks based on the function's return value.
+      - This allows TypeScript to correctly narrow the type within conditional blocks based on the function\'s return value.
       </details>
-      <example title="Custom type guard with 'is'">
+      <example title="Custom type guard with \'is\'">
           ```typescript
           interface Fish { swim: () => void; }
           interface Bird { fly: () => void; }
@@ -172,9 +345,9 @@ alwaysApply: false
 
           function move(pet: Fish | Bird) {
             if (isFish(pet)) {
-              pet.swim(); // 'pet' is known to be Fish here
+              pet.swim(); // \'pet\' is known to be Fish here
             } else {
-              pet.fly(); // 'pet' is known to be Bird here
+              pet.fly(); // \'pet\' is known to be Bird here
             }
           }
           ```
@@ -182,10 +355,10 @@ alwaysApply: false
     </principle>
 
     <principle name="type_file_naming">
-      <summary>Use Specific Naming Convention for Type-Only Files</summary>
+      <summary>Use Specific Naming Convention for Context-Specific Type-Only Files</summary>
       <details>
-      - When creating files that exclusively contain TypeScript type definitions (interfaces, types, enums) related to a specific component, service, or module, the naming pattern `[context].interfaces.ts` MUST be used.
-      - This convention improves organization and makes it clear where type definitions reside.
+      - When creating files that exclusively contain TypeScript type definitions (interfaces, types, enums) related to a specific component, service, or module (as described in `<principle name="type_definition_locations">`), the naming pattern `[context].interfaces.ts` MUST be used.
+      - This convention improves organization and makes it clear where such context-specific type definitions reside.
       </details>
       <examples>
         <example title="Component Type File">`MyComponent.interfaces.ts` (Contains types/interfaces used by `MyComponent.tsx`)</example>

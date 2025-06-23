@@ -1,5 +1,5 @@
 import axios from 'axios';
-  import { TENANT_MANAGER_DOMAIN, AUDIT_POC_DOMAIN } from '@/constants';
+  import { TENANT_MANAGER_DOMAIN, AUDIT_POC_DOMAIN, ESO_SERVER_DOMAIN } from '@/constants';
 
 /**
  * Available backend services that can be targeted by axios requests
@@ -7,6 +7,7 @@ import axios from 'axios';
 const BACKEND_DOMAINS = {
   TENANT_MANAGER: TENANT_MANAGER_DOMAIN,
   AUDIT_POC: AUDIT_POC_DOMAIN,
+  ESO_SERVER: ESO_SERVER_DOMAIN,
 } as const;
 
 export type BackendType = keyof typeof BACKEND_DOMAINS;
@@ -23,6 +24,9 @@ declare module 'axios' {
      *
      * Switch to AUDIT_POC backend
      * `axios.post('/api/audit/data', data, { backend: 'AUDIT_POC' })`
+     *
+     * Switch to ESO_SERVER backend
+     * `axios.get('/api/secrets', { backend: 'ESO_SERVER' })`
      */
     backend?: BackendType;
   }
