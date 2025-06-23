@@ -1,8 +1,12 @@
 import { stripURLProtocol } from '@/helpers/stringsHelpers';
 
 // Domains and URLs
+
+// Available Backends
 export const TENANT_MANAGER_DOMAIN = import.meta.env.VITE_API_DOMAIN;
 export const AUDIT_POC_DOMAIN = import.meta.env.VITE_AUDIT_POC_DOMAIN;
+export const ESO_SERVER_DOMAIN = import.meta.env.VITE_ESO_SERVER_DOMAIN;
+
 export const API_DOMAIN = TENANT_MANAGER_DOMAIN;
 export const APP_DOMAIN = import.meta.env.VITE_APP_DOMAIN;
 export const DOCS_DOMAIN = import.meta.env.VITE_DOCS_DOMAIN;
