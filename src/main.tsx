@@ -25,6 +25,8 @@ import {
   PageAuditProviders,
   PageReloaders,
   PageSettings,
+  PageSecretStores,
+  PageSecretStoresCreate,
 } from "@/pages";
 import authStore from "@/services/auth/authStore";
 import RequireAuth from "@auth-kit/react-router/RequireAuth";
@@ -33,7 +35,12 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { StrictMode, useEffect } from "react";
 import AuthProvider from "react-auth-kit";
 import { createRoot } from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  Outlet,
+  RouterProvider,
+  UIMatch,
+} from "react-router-dom";
 import { load, page } from "./analytics";
 import { App } from "./App";
 import "./index.css";
@@ -85,12 +92,54 @@ const router = createBrowserRouter([
       {
         path: "agents",
         element: <PageAgents />,
+        handle: {
+          breadcrumb: (match: UIMatch) => ({
+            label: "Agents",
+            path: match.pathname,
+            navigatable: true,
+          }),
+        },
+      },
+      {
+        path: "secret-stores",
+        element: <Outlet />,
+        handle: {
+          breadcrumb: (match: UIMatch) => ({
+            label: "Secret Stores",
+            path: match.pathname,
+            navigatable: true,
+          }),
+        },
+        children: [
+          {
+            index: true,
+            element: <PageSecretStores />,
+          },
+          {
+            path: "create",
+            element: <PageSecretStoresCreate />,
+            handle: {
+              breadcrumb: () => ({
+                label: "New Secret Store",
+                navigatable: false,
+              }),
+            },
+          },
+        ],
       },
       {
         path: "reloaders",
         element: <PageReloaders />,
+        handle: {
+          breadcrumb: (match: UIMatch) => ({
+            label: "Reloaders",
+            path: match.pathname,
+            navigatable: true,
+          }),
+        },
       },
       {
+        path: "audit",
         element: (
           <AuditProvider>
             <AuditGuard />
@@ -98,30 +147,65 @@ const router = createBrowserRouter([
         ),
         children: [
           {
-            path: "audit/insights",
+            index: true,
+            element: <NavigateWithOrg to="insights" replace />,
+          },
+          {
+            path: "insights",
             element: <PageAuditInsights />,
+            handle: {
+              breadcrumb: (match: UIMatch) => ({
+                label: "Insights",
+                path: match.pathname,
+                navigatable: true,
+              }),
+            },
           },
           {
-            path: "audit/providers",
+            path: "providers",
             element: <PageAuditProviders />,
+            handle: {
+              breadcrumb: (match: UIMatch) => ({
+                label: "Providers",
+                path: match.pathname,
+                navigatable: true,
+              }),
+            },
           },
           {
-            path: "audit/policies",
+            path: "policies",
             element: <PageAuditPolicies />,
+            handle: {
+              breadcrumb: (match: UIMatch) => ({
+                label: "Policies",
+                path: match.pathname,
+                navigatable: true,
+              }),
+            },
           },
           {
-            path: "audit/destinations",
+            path: "destinations",
             element: <PageAuditDestinations />,
-          },
-          {
-            path: "audit",
-            element: <NavigateWithOrg to="/audit/insights" replace />,
+            handle: {
+              breadcrumb: (match: UIMatch) => ({
+                label: "Destinations",
+                path: match.pathname,
+                navigatable: true,
+              }),
+            },
           },
         ],
       },
       {
         path: "settings",
         element: <PageSettings />,
+        handle: {
+          breadcrumb: (match: UIMatch) => ({
+            label: "Settings",
+            path: match.pathname,
+            navigatable: true,
+          }),
+        },
       },
     ],
   },
