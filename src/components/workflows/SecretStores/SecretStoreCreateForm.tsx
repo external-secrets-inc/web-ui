@@ -86,7 +86,7 @@ type SecretStoreFormData = z.infer<typeof secretStoreFormSchema>;
  */
 function createDefaultYamlTemplate(): string {
   const sampleManifest = {
-    apiVersion: "external-secrets.io/v1beta1",
+    apiVersion: "external-secrets.io/v1",
     kind: "SecretStore",
     metadata: {
       name: "",

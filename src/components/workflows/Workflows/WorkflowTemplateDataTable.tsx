@@ -133,15 +133,6 @@ export function WorkflowTemplateDataTable() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex justify-end">
-        <Button
-          variant="outline"
-          onClick={() => navigate(getOrgLink("/workflows/templates/create"))}
-        >
-          <LucidePlus />
-          Add Workflow Template
-        </Button>
-      </div>
       <DataProvider
         data={workflowTemplates}
         columns={columns}
@@ -149,7 +140,16 @@ export function WorkflowTemplateDataTable() {
         isLoading={isLoadingWorkflowTemplates}
         getRowId={row => `${row.namespace}/${row.name}`}
       >
-        <DataSearch />
+        <div className="flex justify-end gap-4 items-center">
+          <DataSearch />
+          <Button
+            variant="outline"
+            onClick={() => navigate(getOrgLink("/workflows/templates/create"))}
+          >
+            <LucidePlus />
+            Add Workflow Template
+          </Button>
+        </div>
         <DataTable
           meta={workflowTemplateTableMeta}
         />
