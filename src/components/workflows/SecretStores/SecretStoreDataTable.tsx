@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { LucideMoreVertical, LucidePlus, LucideTrash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DataProvider, DataTable, defineColumns } from "@/components/ui/DataProvider";
+import { DataProvider, DataSearch, DataTable, defineColumns } from "@/components/ui/DataProvider";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { SecretStoreTableData } from "./SecretStores.interfaces";
 import { AxiosError } from "axios";
@@ -29,6 +29,43 @@ export function SecretStoreDataTable() {
     columnHelper.accessor('namespace', {
       header: 'Namespace',
       cell: info => info.getValue()
+    }),
+    columnHelper.accessor('capabilities', {
+      header: 'Available as',
+      cell: (info) => {
+        const capabilities = info.getValue()
+        let availableAs = '';
+        if (capabilities === 'ReadOnly') {
+          availableAs = "Source";
+        } else if (capabilities === 'ReadWrite') {
+          availableAs = "Source / Destination";
+        } else if (capabilities === 'WriteOnly') {
+          availableAs = "Destination";
+        }
+
+        return availableAs;
+      }
+    }),
+    columnHelper.accessor('status', {
+      header: 'Status',
+      cell: (info) => {
+        const { status, reason } = info.row.original.status;
+        let colorClass = '';
+        let displayText = '';
+
+        if (status === 'Pending') {
+          colorClass = "text-warning";
+          displayText = 'Pending';
+        } else if (status === 'True') {
+          colorClass = "text-success";
+          displayText = reason;
+        } else if (status === 'False') {
+          colorClass = "text-destructive";
+          displayText = reason;
+        }
+
+        return <span className={colorClass}>{displayText}</span>;
+      },
     }),
     columnHelper.display({
       id: 'actions',
@@ -124,6 +161,7 @@ export function SecretStoreDataTable() {
         isLoading={isLoadingSecretStores}
         getRowId={row => `${row.namespace}/${row.name}`}
       >
+        <DataSearch />
         <DataTable
           meta={secretStoreTableMeta}
         />

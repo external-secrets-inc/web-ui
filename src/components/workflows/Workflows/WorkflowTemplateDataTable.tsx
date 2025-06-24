@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { LucideMoreVertical, LucidePlus, LucideTrash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DataProvider, DataTable, defineColumns } from "@/components/ui/DataProvider";
+import { DataProvider, DataSearch, DataTable, defineColumns } from "@/components/ui/DataProvider";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { WorkflowTemplateTableData } from "./Workflows.interfaces";
 import { AxiosError } from "axios";
@@ -149,6 +149,7 @@ export function WorkflowTemplateDataTable() {
         isLoading={isLoadingWorkflowTemplates}
         getRowId={row => `${row.namespace}/${row.name}`}
       >
+        <DataSearch />
         <DataTable
           meta={workflowTemplateTableMeta}
         />
