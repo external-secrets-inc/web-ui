@@ -4,4 +4,6 @@ export { PageAuditDestinations } from "./PageAuditDestinations";
 export { PageAuditPolicies } from "./PageAuditPolicies";
 export { PageAuditProviders } from "./PageAuditProviders";
 export { PageReloaders } from "./PageReloaders";
+export { PageSecretStores } from "./PageSecretStores";
+export { PageSecretStoresCreate } from "./PageSecretStoresCreate";
 export { PageSettings } from "./PageSettings";

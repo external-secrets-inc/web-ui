@@ -1,66 +1,30 @@
-import {
-  type LayoutBreadcrumbSegment,
-  type LayoutSidebarNavigationItem,
-  findPathRecursive,
-  removeOrgPrefix,
-  useLayoutNavigation,
-} from "@/components/layout";
-import useOrgLink from "@/hooks/useOrgLink";
-import { useLocation } from "react-router-dom";
-
-const ROOT_PATH = "/";
+import { type LayoutBreadcrumbSegment } from "@/components/layout";
+import { useMatches, type UIMatch } from "react-router-dom";
 
 /**
- * Custom React hook that generates an array of breadcrumb segments based on the
- * current URL location and the application's navigation structure.
+ * A handle on a route that can specify breadcrumb information.
+ */
+interface RouteHandle {
+  breadcrumb?: (match: UIMatch) => LayoutBreadcrumbSegment;
+}
+
+/**
+ * Custom React hook that generates a breadcrumb trail by inspecting the
+ * currently matched routes. It builds the breadcrumbs declaratively from
+ * `handle.breadcrumb` properties defined directly on the route objects.
  *
- * It attempts to match the current path hierarchically within the navigation data
- * (derived from `navMain` and `navFooter`) using `findPathRecursive`. If no
- * hierarchical match is found, it falls back to attempting a direct match
- * for the current path against top-level navigation items.
- *
- * @returns An array of `LayoutBreadcrumbSegment` objects representing the
- *          breadcrumb trail for the current page. Returns an empty array if no
- *          matching path is found in the navigation structure.
+ * @returns An array of `LayoutBreadcrumbSegment` objects for the current page.
  */
 export function useLayoutBreadcrumbs(): LayoutBreadcrumbSegment[] {
-  const location = useLocation();
-  const getOrgLink = useOrgLink();
-  const { navMain, navFooter } = useLayoutNavigation(getOrgLink);
+  const matches = useMatches();
 
-  const pathWithoutOrg = removeOrgPrefix(location.pathname);
+  const breadcrumbs = matches
+    // First, filter out any matches that don't have a breadcrumb handle.
+    .filter((match): match is UIMatch<unknown, RouteHandle> =>
+      Boolean((match.handle as RouteHandle)?.breadcrumb)
+    )
+    // Then, map over the filtered matches to invoke the breadcrumb function
+    .map((match) => (match.handle as RouteHandle).breadcrumb!(match));
 
-  const allNavItems: LayoutSidebarNavigationItem[] = [
-    ...navMain,
-    ...navFooter,
-  ];
-
-  let potentialSegments: LayoutBreadcrumbSegment[] | null = findPathRecursive(
-    pathWithoutOrg,
-    allNavItems,
-    [],
-    getOrgLink,
-  );
-
-  if (!potentialSegments || potentialSegments.length === 0) {
-    // No hierarchical match, try direct match for non-root paths
-    if (location.pathname !== getOrgLink(ROOT_PATH)) {
-      const directMatch = allNavItems.find(
-        (item) => item.url && getOrgLink(item.url) === location.pathname,
-      );
-
-      if (directMatch && directMatch.url) {
-        // Found a direct match.
-        potentialSegments = [
-          {
-            label: directMatch.label,
-            path: getOrgLink(directMatch.url),
-            navigatable: true,
-          },
-        ];
-      }
-    }
-  }
-
-  return potentialSegments || [];
+  return breadcrumbs;
 }
