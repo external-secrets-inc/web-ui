@@ -1,17 +1,9 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import YAML from "yaml";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-} from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { CodeTextarea } from "@/components/ui/CodeTextarea";
+import { FieldYaml } from "@/components/ui/fields/FieldYaml";
 import useCreateSecretStore from "@/services/workflows/mutations/useCreateSecretStore";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -21,62 +13,33 @@ import { Loader } from "@/components/ui/Loader";
 import { cn } from "@/lib/utils";
 
 /**
- * Validates that the YAML content is a valid SecretStore manifest.
+ * Validates SecretStore-specific business logic.
  * @param yamlContent - The YAML string to validate.
- * @param ctx - The Zod refinement context.
+ * @param parsedYaml - The parsed YAML object.
+ * @returns Error message or null if valid.
  */
-const validateSecretStoreYaml = (yamlContent: string, ctx: z.RefinementCtx) => {
-  if (!yamlContent) {
-    return;
+const validateSecretStoreManifest = (yamlContent: string, parsedYaml?: unknown): string | null => {
+  if (!yamlContent || !parsedYaml) {
+    return null;
   }
 
-  try {
-    const doc = YAML.parseDocument(yamlContent, { strict: true, logLevel: "silent" });
+  const manifest = parsedYaml as Record<string, unknown>;
 
-    if (doc.errors.length > 0) {
-      const firstError = doc.errors[0];
-      const line = firstError.linePos?.[0]?.line ?? "YAML";
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: `Parse error near line ${line}: ${firstError.message}`,
-      });
-      return;
-    }
-
-    if (!doc.contents) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "YAML content is empty or invalid." });
-      return;
-    }
-
-    const manifest = doc.toJS();
-    if (manifest.kind !== "SecretStore") {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: `Invalid resource kind: Expected "SecretStore", got "${manifest.kind || "unknown"}".`,
-      });
-    }
-    if (!manifest.metadata?.name) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Manifest is missing required field: metadata.name",
-      });
-    }
-  } catch (e) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: e instanceof Error ? e.message : "An unknown error occurred during YAML parsing.",
-    });
+  if (manifest.kind !== "SecretStore") {
+    return `Invalid resource kind: Expected "SecretStore", got "${manifest.kind || "unknown"}".`;
   }
+
+  const metadata = manifest.metadata as Record<string, unknown> | undefined;
+  if (!metadata?.name) {
+    return "Manifest is missing required field: metadata.name";
+  }
+
+  return null;
 };
 
-const secretStoreFormSchema = z.object({
-  yamlContent: z
-    .string()
-    .min(1, { message: "Manifest cannot be empty." })
-    .superRefine(validateSecretStoreYaml),
-});
-
-type SecretStoreFormData = z.infer<typeof secretStoreFormSchema>;
+interface SecretStoreFormData {
+  yamlContent: string;
+}
 
 /**
  * Generates a default YAML template for a SecretStore.
@@ -117,7 +80,6 @@ export function SecretStoreCreateWithYaml({ onCancel }: SecretStoreCreateWithYam
   const getOrgLink = useOrgLink();
 
   const form = useForm<SecretStoreFormData>({
-    resolver: zodResolver(secretStoreFormSchema),
     defaultValues: {
       yamlContent: "",
     },
@@ -149,17 +111,19 @@ export function SecretStoreCreateWithYaml({ onCancel }: SecretStoreCreateWithYam
           toast.success("Secret Store created successfully");
           navigate(getOrgLink("/secret-stores"));
         },
-        onError: (error: unknown) => {
+                        onError: (error: unknown) => {
           let message = 'An unknown error occurred while creating the secret store.';
+
           if (typeof error === 'object' && error !== null && 'response' in error) {
             const response = (error as { response?: { data?: Record<string, unknown> } }).response;
             const errorData = response?.data;
             if (errorData) {
-              const errorsArray = errorData.errors as [{ message: string }?];
+              // Use the normalized error structure from AxiosInterceptor
+              const errorsObject = errorData.errors as { body?: string };
               message =
+                errorsObject?.body ||     // Consistent normalized format across all backends
                 (errorData.error as string) ||
                 (errorData.message as string) ||
-                (errorsArray && errorsArray[0]?.message) ||
                 message;
             }
           } else if (error instanceof Error) {
@@ -205,27 +169,25 @@ export function SecretStoreCreateWithYaml({ onCancel }: SecretStoreCreateWithYam
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
+          <FieldYaml
             name="yamlContent"
-            render={({ field, fieldState: { error } }) => (
-              <FormItem>
-                <FormLabel>Secret Store Manifest (YAML)</FormLabel>
-                <FormControl>
-                  <CodeTextarea
-                    {...field}
-                    language="yaml"
-                    placeholder="Enter YAML manifest"
-                    className="min-h-[400px]"
-                  />
-                </FormControl>
-                {error?.message && (
-                  <p className="text-sm font-medium text-destructive">
-                    {error.message}
-                  </p>
-                )}
-              </FormItem>
-            )}
+            label="Secret Store Manifest (YAML)"
+            placeholder="Enter YAML manifest"
+            className="min-h-[400px]"
+            required
+            rules={{
+              validate: (value: string) => {
+                if (!value) return true;
+
+                try {
+                  const parsedYaml = YAML.parse(value);
+                  return validateSecretStoreManifest(value, parsedYaml);
+                } catch {
+                  // YAML parsing errors are handled by FieldYaml itself
+                  return true;
+                }
+              }
+            }}
           />
         </form>
       </Form>
