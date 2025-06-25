@@ -21,7 +21,7 @@ export function SecretStoreCreateForm() {
   const [formMode, setFormMode] = useState<FormMode>("form");
 
   const handleCancel = () => {
-    navigate(getOrgLink("/secret-stores"));
+    navigate(getOrgLink("/workflows/secret-stores"));
   };
 
   return (

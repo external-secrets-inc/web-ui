@@ -111,7 +111,7 @@ export function SecretStoreDataTable() {
       <div className="flex justify-end">
         <Button
           variant="outline"
-          onClick={() => navigate(getOrgLink("/secret-stores/create"))}
+          onClick={() => navigate(getOrgLink("/workflows/secret-stores/create"))}
         >
           <LucidePlus />
           Add Secret Store

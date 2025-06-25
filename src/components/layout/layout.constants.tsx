@@ -38,7 +38,7 @@ export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
     },
     {
       label: "Secret Stores",
-      url: "/secret-stores",
+      url: "/workflows/secret-stores",
       icon: LucideBookKey,
     },
     {

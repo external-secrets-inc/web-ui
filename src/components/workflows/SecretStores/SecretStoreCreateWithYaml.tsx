@@ -99,7 +99,7 @@ export function SecretStoreCreateWithYaml({ onCancel }: SecretStoreCreateWithYam
     if (onCancel) {
       onCancel();
     } else {
-      navigate(getOrgLink("/secret-stores"));
+      navigate(getOrgLink("/workflows/secret-stores"));
     }
   };
 
@@ -109,7 +109,7 @@ export function SecretStoreCreateWithYaml({ onCancel }: SecretStoreCreateWithYam
       {
         onSuccess: () => {
           toast.success("Secret Store created successfully");
-          navigate(getOrgLink("/secret-stores"));
+          navigate(getOrgLink("/workflows/secret-stores"));
         },
                         onError: (error: unknown) => {
           let message = 'An unknown error occurred while creating the secret store.';

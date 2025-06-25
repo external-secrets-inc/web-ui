@@ -94,7 +94,7 @@ export function SecretStoreCreateWithEsiSchemaForm({ onCancel }: SecretStoreCrea
     if (onCancel) {
       onCancel();
     } else {
-      navigate(getOrgLink("/secret-stores"));
+      navigate(getOrgLink("/workflows/secret-stores"));
     }
   };
 
@@ -109,7 +109,7 @@ export function SecretStoreCreateWithEsiSchemaForm({ onCancel }: SecretStoreCrea
       {
         onSuccess: () => {
           toast.success("Secret Store created successfully");
-          navigate(getOrgLink("/secret-stores"));
+          navigate(getOrgLink("/workflows/secret-stores"));
         },
         onError: (error: unknown) => {
           const errorMessage = extractErrorMessage(error);
