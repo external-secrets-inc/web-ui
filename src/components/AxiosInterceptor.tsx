@@ -77,6 +77,14 @@ const AxiosInterceptor: React.FC<AxiosInterceptorProps> = ({ children }) => {
                 body: expectedTenantError || 'An error occurred',
               },
             };
+          } else if (backend === 'ESO_SERVER') {
+            // Normalize error response for ESO_SERVER backend
+            const expectedEsoError = error.response?.data?.error;
+            error.response.data = {
+              errors: {
+                error: expectedEsoError || 'An error occurred',
+              },
+            };
           }
         }
         return Promise.reject(error);

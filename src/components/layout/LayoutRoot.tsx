@@ -10,12 +10,25 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { LayoutTopbarActionsPortalProvider } from "@/components/layout/LayoutPortalTopbarActions";
 import { cn } from "@/lib/utils";
 import Cookies from "js-cookie";
+import { useEffect, useRef, useState } from "react";
 import { Outlet } from "react-router-dom";
 
 export function LayoutRoot() {
   const persistedSidebarOpen = Cookies.get("sidebar_state") !== "false";
+  const topbarActionsPortalTargetRef = useRef<HTMLDivElement>(null);
+  const [
+    topbarActionsPortalTargetElement,
+    setTopbarActionsPortalTargetElement,
+  ] = useState<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (topbarActionsPortalTargetRef.current) {
+      setTopbarActionsPortalTargetElement(topbarActionsPortalTargetRef.current);
+    }
+  }, []);
 
   return (
     <SidebarProvider
@@ -62,18 +75,26 @@ export function LayoutRoot() {
           <span className="h-[--layout-topbar-height] absolute top-0 left-0 right-0 z-10 backdrop-blur-xl" />
           <div className="bg-background/80 flex-none border-b border-sidebar sticky top-0 z-20 flex">
             <div
-              className="h-[--layout-topbar-height] flex items-center gap-1.5 md:gap-4"
+              className="h-[--layout-topbar-height] flex items-center gap-1.5 md:gap-4 w-full"
               data-layout-contain-on-x-scroll
             >
               <SidebarTrigger className="flex-none -ml-1.5" />
               <Separator orientation="vertical" className="mr-1.5 h-4" />
               <LayoutBreadcrumbs className="flex-1" />
+              <div
+                ref={topbarActionsPortalTargetRef}
+                className="ml-auto flex items-center gap-2"
+              />
             </div>
           </div>
           <LayoutBannerSubscription />
 
-          {/* Where the routes are rendered */}
-          <Outlet />
+          <LayoutTopbarActionsPortalProvider
+            value={topbarActionsPortalTargetElement}
+            >
+            {/* Where the routes are rendered */}
+            <Outlet />
+          </LayoutTopbarActionsPortalProvider>
 
           <ScrollBar orientation="horizontal" />
         </ScrollArea>

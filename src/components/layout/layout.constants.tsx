@@ -3,6 +3,7 @@ import {
   LucideBookKey,
   LucideBookOpen,
   LucideBot,
+  LucideFolderKey,
   LucideLocateFixed,
   LucideRotateCcwKey,
   LucideSettings,
@@ -23,7 +24,7 @@ export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
     {
       label: "Providers",
       url: "/audit/providers",
-      icon: LucideBookKey,
+      icon: LucideFolderKey,
     },
     {
       label: "Policies",
@@ -34,6 +35,16 @@ export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
       label: "Destinations",
       url: "/audit/destinations",
       icon: LucideLocateFixed,
+    },
+    {
+      label: "Secret Stores",
+      url: "/secret-stores",
+      icon: LucideBookKey,
+    },
+    {
+      label: "Workflow Templates",
+      url: "/workflows/templates",
+      icon: LucideBookKey,
     },
     {
       label: "Agents",
