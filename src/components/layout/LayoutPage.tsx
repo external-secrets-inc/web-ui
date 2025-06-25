@@ -15,17 +15,37 @@ export function useLayoutPageHeaderPortalTarget() {
   return context;
 }
 
+type LayoutPageWidth = "full-width" | "regular" | "compact" | "dense";
+
 interface LayoutPageProps extends React.HTMLAttributes<HTMLDivElement> {
   title?: string;
   description?: React.ReactNode;
   children: React.ReactNode;
+  width?: LayoutPageWidth;
 }
+
+// TODO[cfviotti]: This is a bit hacky, but it's a good starting point.
+const getContainerClasses = (width: LayoutPageWidth = "regular"): string => {
+  switch (width) {
+    case "full-width":
+      return "w-full px-[--layout-padding]";
+    case "regular":
+      return "container";
+    case "compact":
+      return "max-w-[980px] mx-auto px-[--layout-padding]";
+    case "dense":
+      return "max-w-[640px] mx-auto px-[--layout-padding]";
+    default:
+      return "container";
+  }
+};
 
 export function LayoutPage({
   title,
   description,
   children,
   className,
+  width,
   ...props
 }: LayoutPageProps) {
   const portalHeaderActionsTargetRef = useRef<HTMLDivElement>(null);
@@ -39,7 +59,7 @@ export function LayoutPage({
     if (portalHeaderActionsTargetRef.current) {
       setPortalHeaderActionsTargetElement(portalHeaderActionsTargetRef.current);
     }
-    setIsMounted(true); // Set mounted to true after ref is potentially set
+    setIsMounted(true);
   }, []);
 
   return (
@@ -47,7 +67,7 @@ export function LayoutPage({
       value={portalHeaderActionsTargetElement}
     >
       <div
-        className={cn("container flex flex-col pt-[--layout-padding] pb-16", className)}
+        className={cn(getContainerClasses(width), "flex flex-col pt-[--layout-padding] pb-16", className)}
         {...props}
       >
         <header className="mb-6" data-layout-contain-on-x-scroll>

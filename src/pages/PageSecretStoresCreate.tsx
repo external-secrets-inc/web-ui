@@ -6,6 +6,7 @@ export function PageSecretStoresCreate() {
     <LayoutPage
       title="New Secret Store"
       description="Create a new Workflow Secret Store."
+      width="compact"
     >
       <SecretStoreCreateForm />
     </LayoutPage>
