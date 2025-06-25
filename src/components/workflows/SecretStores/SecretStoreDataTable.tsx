@@ -23,6 +23,7 @@ import {
 import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction";
 import { useNavigate } from "react-router-dom";
 import useOrgLink from "@/hooks/useOrgLink";
+import { Badge, BadgeProps } from "@/components/ui/badge";
 
 interface SecretStoreTableMeta {
   renderRowActions?: (row: SecretStoreTableData) => React.ReactNode;
@@ -62,21 +63,20 @@ export function SecretStoreDataTable() {
           header: "Status",
           cell: (info) => {
             const { status, reason } = info.row.original.status;
-            let colorClass = "";
-            let displayText = "";
+            let variantClass: BadgeProps["variant"] = "default";
+            let displayText = "Not Informed";
 
             if (status === "Pending") {
-              colorClass = "text-warning";
+              variantClass = "warning";
               displayText = "Pending";
             } else if (status === "True") {
-              colorClass = "text-success";
+              variantClass = "success";
               displayText = reason;
             } else if (status === "False") {
-              colorClass = "text-destructive";
+              variantClass = "destructive";
               displayText = reason;
             }
-
-            return <span className={colorClass}>{displayText}</span>;
+            return <Badge variant={variantClass}>{displayText}</Badge>;
           },
         }),
         columnHelper.display({

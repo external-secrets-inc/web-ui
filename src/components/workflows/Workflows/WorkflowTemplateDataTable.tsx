@@ -1,7 +1,13 @@
 import { useMemo } from "react";
+import { Badge, BadgeProps } from "@/components/ui/badge";
 import { LucideMoreVertical, LucidePlus, LucideTrash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DataProvider, DataSearch, DataTable, defineColumns } from "@/components/ui/DataProvider";
+import {
+  DataProvider,
+  DataSearch,
+  DataTable,
+  defineColumns,
+} from "@/components/ui/DataProvider";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { WorkflowTemplateTableData } from "./Workflows.interfaces";
 import { AxiosError } from "axios";
@@ -9,7 +15,12 @@ import { ApiHttpError } from "@/types";
 import { toast } from "sonner";
 import useDeleteWorkflowTemplate from "@/services/workflows/mutations/useDeleteWorkflowTemplate";
 import useGetWorkflowTemplates from "@/services/workflows/queries/useGetWorkflowTemplates";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction";
 import { useNavigate } from "react-router-dom";
 import useOrgLink from "@/hooks/useOrgLink";
@@ -21,45 +32,50 @@ interface WorkflowTemplateTableMeta {
 export function WorkflowTemplateDataTable() {
   const navigate = useNavigate();
   const getOrgLink = useOrgLink();
-  const columns = useMemo(() => defineColumns<WorkflowTemplateTableData>(columnHelper => [
-    columnHelper.accessor('name', {
-      header: 'Name',
-      cell: info => <strong>{info.getValue()}</strong>
-    }),
-    columnHelper.accessor('namespace', {
-      header: 'Namespace',
-      cell: info => info.getValue()
-    }),
-    columnHelper.accessor('status', {
-      header: 'Status',
-      cell: (info) => {
-        const { status, reason } = info.row.original.status;
-        let colorClass = '';
-        let displayText = '';
+  const columns = useMemo(
+    () =>
+      defineColumns<WorkflowTemplateTableData>((columnHelper) => [
+        columnHelper.accessor("name", {
+          header: "Name",
+          cell: (info) => <strong>{info.getValue()}</strong>,
+        }),
+        columnHelper.accessor("namespace", {
+          header: "Namespace",
+          cell: (info) => info.getValue(),
+        }),
+        columnHelper.accessor("status", {
+          header: "Status",
+          cell: (info) => {
+            const { status, reason } = info.row.original.status;
+            let variantClass: BadgeProps["variant"] = "default";
+            let displayText = "Not Informed";
 
-        if (status === 'Pending') {
-          colorClass = "text-warning";
-          displayText = 'Pending';
-        } else if (status === 'True') {
-          colorClass = "text-success";
-          displayText = reason;
-        } else if (status === 'False') {
-          colorClass = "text-destructive";
-          displayText = reason;
-        }
-
-        return <span className={colorClass}>{displayText}</span>;
-      },
-    }),
-    columnHelper.display({
-      id: 'actions',
-      cell: props => (
-        <div className='flex justify-end'>
-          {(props.table.options.meta as WorkflowTemplateTableMeta)?.renderRowActions?.(props.row.original)}
-        </div>
-      )
-    })
-  ]), []);
+            if (status === "Pending") {
+              variantClass = "warning";
+              displayText = "Pending";
+            } else if (status === "True") {
+              variantClass = "success";
+              displayText = reason;
+            } else if (status === "False") {
+              variantClass = "destructive";
+              displayText = reason;
+            }
+            return <Badge variant={variantClass}>{displayText}</Badge>;
+          },
+        }),
+        columnHelper.display({
+          id: "actions",
+          cell: (props) => (
+            <div className="flex justify-end">
+              {(
+                props.table.options.meta as WorkflowTemplateTableMeta
+              )?.renderRowActions?.(props.row.original)}
+            </div>
+          ),
+        }),
+      ]),
+    []
+  );
 
   const workflowTemplateTableMeta: WorkflowTemplateTableMeta = {
     renderRowActions: (row) => (
@@ -82,21 +98,27 @@ export function WorkflowTemplateDataTable() {
               featureType={"Workflow Template"}
               featureID={`${row.namespace}/${row.name}`}
               featureName={row.name}
-              onDelete={() => { performDelete(row.namespace, row.name) }}
+              onDelete={() => {
+                performDelete(row.namespace, row.name);
+              }}
             >
               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                 <LucideTrash2 className="mr-2" />
                 Delete Workflow Template
               </DropdownMenuItem>
             </FeatureItemDeleteAction>
-            <DropdownMenuItem onSelect={() => {navigate(getOrgLink("/workflows/runs/create"))}}>
+            <DropdownMenuItem
+              onSelect={() => {
+                navigate(getOrgLink("/workflows/runs/create"));
+              }}
+            >
               <LucidePlus className="mr-2" />
               Add Workflow Run
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-    )
+    ),
   };
 
   const {
@@ -105,7 +127,7 @@ export function WorkflowTemplateDataTable() {
     isLoading: isLoadingWorkflowTemplates,
     isError: isErrorWorkflowTemplates,
     isRefetchError: isRefetchErrorWorkflowTemplates,
-    error: workflowTemplatesError
+    error: workflowTemplatesError,
   } = useGetWorkflowTemplates({
     staleTime: 30000,
   });
@@ -116,7 +138,11 @@ export function WorkflowTemplateDataTable() {
   }, [workflowTemplatesData]);
 
   const { mutate: deleteWorkflowTemplate } = useDeleteWorkflowTemplate({
-    onError: (error: AxiosError<ApiHttpError>) => handleDefaultApiHttpError(error, "Error while trying to delete Workflow Template"),
+    onError: (error: AxiosError<ApiHttpError>) =>
+      handleDefaultApiHttpError(
+        error,
+        "Error while trying to delete Workflow Template"
+      ),
     onSuccess: () => {
       workflowTemplatesRefetch();
       toast.success("Workflow Template deleted successfully");
@@ -128,7 +154,10 @@ export function WorkflowTemplateDataTable() {
   };
 
   if (isErrorWorkflowTemplates || isRefetchErrorWorkflowTemplates) {
-    handleDefaultApiHttpError(workflowTemplatesError, "Error while fetching Workflow Templates data");
+    handleDefaultApiHttpError(
+      workflowTemplatesError,
+      "Error while fetching Workflow Templates data"
+    );
   }
 
   return (
@@ -136,9 +165,9 @@ export function WorkflowTemplateDataTable() {
       <DataProvider
         data={workflowTemplates}
         columns={columns}
-        initialSort={{ id: 'name', desc: false }}
+        initialSort={{ id: "name", desc: false }}
         isLoading={isLoadingWorkflowTemplates}
-        getRowId={row => `${row.namespace}/${row.name}`}
+        getRowId={(row) => `${row.namespace}/${row.name}`}
       >
         <div className="flex justify-end gap-4 items-center">
           <DataSearch />
@@ -150,9 +179,7 @@ export function WorkflowTemplateDataTable() {
             Add Workflow Template
           </Button>
         </div>
-        <DataTable
-          meta={workflowTemplateTableMeta}
-        />
+        <DataTable meta={workflowTemplateTableMeta} />
       </DataProvider>
     </div>
   );
