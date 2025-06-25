@@ -44,6 +44,8 @@ import {
 import { load, page } from "./analytics";
 import { App } from "./App";
 import "./index.css";
+import { PageWorkflowTemplates } from "./pages/PageWorkflowTemplates";
+import { PageWorkflowTemplatesCreate } from "./pages/PageWorkflowTemplatesCreate";
 
 const queryClient = new QueryClient();
 
@@ -113,7 +115,7 @@ const router = createBrowserRouter([
             element: <Outlet />,
             handle: {
               breadcrumb: (match: UIMatch) => ({
-                label: "Secret Stores",
+                label: "Workflow Secret Stores",
                 path: match.pathname,
                 navigatable: true,
               }),
@@ -129,6 +131,33 @@ const router = createBrowserRouter([
                 handle: {
                   breadcrumb: () => ({
                     label: "New Secret Store",
+                    navigatable: false,
+                  }),
+                },
+              },
+            ],
+          },
+          {
+            path: "templates",
+            element: <Outlet />,
+            handle: {
+              breadcrumb: (match: UIMatch) => ({
+                label: "Workflow Templates",
+                path: match.pathname,
+                navigatable: true,
+              }),
+            },
+            children: [
+              {
+                index: true,
+                element: <PageWorkflowTemplates />,
+              },
+              {
+                path: "create",
+                element: <PageWorkflowTemplatesCreate />,
+                handle: {
+                  breadcrumb: () => ({
+                    label: "New Workflow Template",
                     navigatable: false,
                   }),
                 },

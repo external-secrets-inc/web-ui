@@ -1,5 +1,5 @@
 import { LayoutPage } from "@/components/layout";
-import { SecretStoreCreateForm } from "@/components/workflows/SecretStores/SecretStoreCreateForm";
+import { SecretStoreCreateForm } from "@/components/workflows/SecretStores";
 
 export function PageSecretStoresCreate() {
   return (
