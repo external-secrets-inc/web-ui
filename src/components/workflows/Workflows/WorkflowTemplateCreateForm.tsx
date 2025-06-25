@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { CodeTextarea } from "@/components/ui/CodeTextarea";
-import useCreateSecretStore from "@/services/workflows/mutations/useCreateSecretStore";
+import useCreateWorkflowTemplate from "@/services/workflows/mutations/useCreateWorkflowTemplate";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import useOrgLink from "@/hooks/useOrgLink";
@@ -21,18 +21,24 @@ import { Loader } from "@/components/ui/Loader";
 import { cn } from "@/lib/utils";
 
 /**
- * Validates that the YAML content is a valid SecretStore manifest.
+ * Validates that the YAML content is a valid WorkflowTemplate manifest.
  * @param yamlContent - The YAML string to validate.
  * @param ctx - The Zod refinement context.
  */
-const validateSecretStoreYaml = (yamlContent: string, ctx: z.RefinementCtx) => {
+const validateWorkflowTemplateYaml = (
+  yamlContent: string,
+  ctx: z.RefinementCtx
+) => {
   if (!yamlContent) {
     // Let the min(1) check handle the empty case.
     return;
   }
 
   try {
-    const doc = YAML.parseDocument(yamlContent, { strict: true, logLevel: "silent" });
+    const doc = YAML.parseDocument(yamlContent, {
+      strict: true,
+      logLevel: "silent",
+    });
 
     if (doc.errors.length > 0) {
       // Show only the first parse error for simplicity.
@@ -46,15 +52,20 @@ const validateSecretStoreYaml = (yamlContent: string, ctx: z.RefinementCtx) => {
     }
 
     if (!doc.contents) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "YAML content is empty or invalid." });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "YAML content is empty or invalid.",
+      });
       return;
     }
 
     const manifest = doc.toJS();
-    if (manifest.kind !== "SecretStore") {
+    if (manifest.kind !== "WorkflowTemplate") {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: `Invalid resource kind: Expected "SecretStore", got "${manifest.kind || "unknown"}".`,
+        message: `Invalid resource kind: Expected "WorkflowTemplate", got "${
+          manifest.kind || "unknown"
+        }".`,
       });
     }
     if (!manifest.metadata?.name) {
@@ -66,42 +77,65 @@ const validateSecretStoreYaml = (yamlContent: string, ctx: z.RefinementCtx) => {
   } catch (e) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: e instanceof Error ? e.message : "An unknown error occurred during YAML parsing.",
+      message:
+        e instanceof Error
+          ? e.message
+          : "An unknown error occurred during YAML parsing.",
     });
   }
 };
 
-const secretStoreFormSchema = z.object({
+const workflowTemplateFormSchema = z.object({
   yamlContent: z
     .string()
     .min(1, { message: "Manifest cannot be empty." })
-    .superRefine(validateSecretStoreYaml),
+    .superRefine(validateWorkflowTemplateYaml),
 });
 
-type SecretStoreFormData = z.infer<typeof secretStoreFormSchema>;
+type WorkflowTemplateFormData = z.infer<typeof workflowTemplateFormSchema>;
 
 /**
- * Generates a default YAML template for a SecretStore.
+ * Generates a default YAML template for a WorkflowTemplate.
  * @returns A string containing the YAML template.
  */
 function createDefaultYamlTemplate(): string {
   const sampleManifest = {
-    apiVersion: "external-secrets.io/v1",
-    kind: "SecretStore",
+    apiVersion: "workflows.external-secrets.io/v1alpha1",
+    kind: "WorkflowTemplate",
     metadata: {
-      name: "",
+      name: "my-template",
       namespace: "default",
     },
     spec: {
-      provider: {
-        aws: {
-          service: "SecretsManager",
-          region: "us-east-1",
-          auth: {
-            secretRef: {
-              accessKeyIDSecretRef: { name: "awssm-secret", key: "accessKeyID" },
-              secretAccessKeySecretRef: { name: "awssm-secret", key: "secretAccessKey" },
-            },
+      name: "job-1",
+      version: "v1",
+      parameters: [
+        {
+          name: "image",
+          description: "The container image to use",
+          required: true,
+          default: "nginx:latest",
+        },
+        {
+          name: "replicas",
+          description: "Number of replicas",
+          required: false,
+          default: "1",
+        },
+      ],
+      jobs: {
+        job1: {
+          standard: {
+            steps: [
+              {
+                name: "step1",
+                javascript: {
+                  script: `console.log("Using image: " + params.image);
+console.log("Replicas: " + params.replicas);
+return { message: "Template processed successfully" };`
+                },
+              },
+            ],
           },
         },
       },
@@ -110,45 +144,53 @@ function createDefaultYamlTemplate(): string {
   return YAML.stringify(sampleManifest);
 }
 
-export function SecretStoreCreateForm() {
+export function WorkflowTemplateCreateForm() {
   const navigate = useNavigate();
   const getOrgLink = useOrgLink();
 
-  const form = useForm<SecretStoreFormData>({
-    resolver: zodResolver(secretStoreFormSchema),
+  const form = useForm<WorkflowTemplateFormData>({
+    resolver: zodResolver(workflowTemplateFormSchema),
     defaultValues: {
       yamlContent: "",
     },
     mode: "onSubmit",
   });
 
-  const { mutate: createSecretStore, isPending } = useCreateSecretStore();
+  const { mutate: createWorkflowTemplate, isPending } =
+    useCreateWorkflowTemplate();
 
   useEffect(() => {
     // Only set the default value once on initial mount.
-    if (!form.getValues('yamlContent')) {
+    if (!form.getValues("yamlContent")) {
       const initialTemplate = createDefaultYamlTemplate();
-      form.setValue('yamlContent', initialTemplate);
+      form.setValue("yamlContent", initialTemplate);
     }
   }, [form]);
 
   const handleCancel = () => {
-    navigate(getOrgLink("/secret-stores"));
+    navigate(getOrgLink("/workflows/templates"));
   };
 
-  const onSubmit = (data: SecretStoreFormData) => {
-    createSecretStore(
+  const onSubmit = (data: WorkflowTemplateFormData) => {
+    createWorkflowTemplate(
       { manifest: data.yamlContent },
       {
         onSuccess: () => {
-          toast.success("Secret Store created successfully");
-          navigate(getOrgLink("/secret-stores"));
+          toast.success("Workflow Template created successfully");
+          navigate(getOrgLink("/workflows/templates"));
         },
         onError: (error: unknown) => {
           // Keep error handling simple and self-contained.
-          let message = 'An unknown error occurred while creating the secret store.';
-          if (typeof error === 'object' && error !== null && 'response' in error) {
-            const response = (error as { response?: { data?: Record<string, unknown> } }).response;
+          let message =
+            "An unknown error occurred while creating the workflow template.";
+          if (
+            typeof error === "object" &&
+            error !== null &&
+            "response" in error
+          ) {
+            const response = (
+              error as { response?: { data?: Record<string, unknown> } }
+            ).response;
             const errorData = response?.data;
             if (errorData) {
               const errorsArray = errorData.errors as [{ message: string }?];
@@ -162,12 +204,12 @@ export function SecretStoreCreateForm() {
             message = error.message;
           }
 
-          form.setError('yamlContent', {
-            type: 'server',
+          form.setError("yamlContent", {
+            type: "server",
             message,
           });
         },
-      },
+      }
     );
   };
 
@@ -191,7 +233,7 @@ export function SecretStoreCreateForm() {
           >
             {isPending && <Loader className="[grid-area:1/1]" />}
             <span className={cn(isPending && "invisible", "[grid-area:1/1]")}>
-              Create Secret Store
+              Create Workflow Template
             </span>
           </Button>
         </div>
@@ -203,7 +245,7 @@ export function SecretStoreCreateForm() {
             name="yamlContent"
             render={({ field, fieldState: { error } }) => (
               <FormItem>
-                <FormLabel>Secret Store Manifest (YAML)</FormLabel>
+                <FormLabel>Workflow Template Manifest (YAML)</FormLabel>
                 <FormControl>
                   <CodeTextarea
                     {...field}

@@ -1,17 +1,16 @@
 import { Status } from "../Common.interfaces";
 
-export interface SecretStoreTableData {
+export interface WorkflowTemplateTableData {
   name: string;
   namespace: string;
-  capabilities: string;
   status: Status
 }
 
-export interface CreateSecretStorePayload {
+export interface CreateWorkflowTemplatePayload {
   manifest: string;
 }
 
-export interface DeleteSecretStorePayload {
+export interface DeleteWorkflowTemplatePayload {
   namespace: string;
   name: string;
 }

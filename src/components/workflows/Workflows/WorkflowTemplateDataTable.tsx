@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { Badge, BadgeProps } from "@/components/ui/badge";
 import { LucideMoreVertical, LucidePlus, LucideTrash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,12 +9,12 @@ import {
   defineColumns,
 } from "@/components/ui/DataProvider";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
-import { SecretStoreTableData } from "./SecretStores.interfaces";
+import { WorkflowTemplateTableData } from "./Workflows.interfaces";
 import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
 import { toast } from "sonner";
-import useDeleteSecretStore from "@/services/workflows/mutations/useDeleteSecretStore";
-import useGetSecretStores from "@/services/workflows/queries/useGetSecretStores";
+import useDeleteWorkflowTemplate from "@/services/workflows/mutations/useDeleteWorkflowTemplate";
+import useGetWorkflowTemplates from "@/services/workflows/queries/useGetWorkflowTemplates";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,18 +24,17 @@ import {
 import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction";
 import { useNavigate } from "react-router-dom";
 import useOrgLink from "@/hooks/useOrgLink";
-import { Badge, BadgeProps } from "@/components/ui/badge";
 
-interface SecretStoreTableMeta {
-  renderRowActions?: (row: SecretStoreTableData) => React.ReactNode;
+interface WorkflowTemplateTableMeta {
+  renderRowActions?: (row: WorkflowTemplateTableData) => React.ReactNode;
 }
 
-export function SecretStoreDataTable() {
+export function WorkflowTemplateDataTable() {
   const navigate = useNavigate();
   const getOrgLink = useOrgLink();
   const columns = useMemo(
     () =>
-      defineColumns<SecretStoreTableData>((columnHelper) => [
+      defineColumns<WorkflowTemplateTableData>((columnHelper) => [
         columnHelper.accessor("name", {
           header: "Name",
           cell: (info) => <strong>{info.getValue()}</strong>,
@@ -42,22 +42,6 @@ export function SecretStoreDataTable() {
         columnHelper.accessor("namespace", {
           header: "Namespace",
           cell: (info) => info.getValue(),
-        }),
-        columnHelper.accessor("capabilities", {
-          header: "Available as",
-          cell: (info) => {
-            const capabilities = info.getValue();
-            let availableAs = "";
-            if (capabilities === "ReadOnly") {
-              availableAs = "Source";
-            } else if (capabilities === "ReadWrite") {
-              availableAs = "Source / Destination";
-            } else if (capabilities === "WriteOnly") {
-              availableAs = "Destination";
-            }
-
-            return availableAs;
-          },
         }),
         columnHelper.accessor("status", {
           header: "Status",
@@ -84,7 +68,7 @@ export function SecretStoreDataTable() {
           cell: (props) => (
             <div className="flex justify-end">
               {(
-                props.table.options.meta as SecretStoreTableMeta
+                props.table.options.meta as WorkflowTemplateTableMeta
               )?.renderRowActions?.(props.row.original)}
             </div>
           ),
@@ -93,7 +77,7 @@ export function SecretStoreDataTable() {
     []
   );
 
-  const secretStoreTableMeta: SecretStoreTableMeta = {
+  const workflowTemplateTableMeta: WorkflowTemplateTableMeta = {
     renderRowActions: (row) => (
       <div className="flex items-center gap-2">
         <DropdownMenu>
@@ -111,7 +95,7 @@ export function SecretStoreDataTable() {
             onCloseAutoFocus={(event) => event.preventDefault()}
           >
             <FeatureItemDeleteAction
-              featureType={"Secret Store"}
+              featureType={"Workflow Template"}
               featureID={`${row.namespace}/${row.name}`}
               featureName={row.name}
               onDelete={() => {
@@ -120,9 +104,17 @@ export function SecretStoreDataTable() {
             >
               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                 <LucideTrash2 className="mr-2" />
-                Delete Secret Store
+                Delete Workflow Template
               </DropdownMenuItem>
             </FeatureItemDeleteAction>
+            <DropdownMenuItem
+              onSelect={() => {
+                navigate(getOrgLink("/workflows/runs/create"));
+              }}
+            >
+              <LucidePlus className="mr-2" />
+              Add Workflow Run
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -130,64 +122,64 @@ export function SecretStoreDataTable() {
   };
 
   const {
-    data: secretStoresData,
-    refetch: secretStoresRefetch,
-    isLoading: isLoadingSecretStores,
-    isError: isErrorSecretStores,
-    isRefetchError: isRefetchErrorSecretStores,
-    error: secretStoresError,
-  } = useGetSecretStores({
+    data: workflowTemplatesData,
+    refetch: workflowTemplatesRefetch,
+    isLoading: isLoadingWorkflowTemplates,
+    isError: isErrorWorkflowTemplates,
+    isRefetchError: isRefetchErrorWorkflowTemplates,
+    error: workflowTemplatesError,
+  } = useGetWorkflowTemplates({
     staleTime: 30000,
   });
 
-  const secretStores = useMemo(() => {
-    if (!secretStoresData) return [];
-    return secretStoresData;
-  }, [secretStoresData]);
+  const workflowTemplates = useMemo(() => {
+    if (!workflowTemplatesData) return [];
+    return workflowTemplatesData;
+  }, [workflowTemplatesData]);
 
-  const { mutate: deleteSecretStore } = useDeleteSecretStore({
+  const { mutate: deleteWorkflowTemplate } = useDeleteWorkflowTemplate({
     onError: (error: AxiosError<ApiHttpError>) =>
       handleDefaultApiHttpError(
         error,
-        "Error while trying to delete Secret Store"
+        "Error while trying to delete Workflow Template"
       ),
     onSuccess: () => {
-      secretStoresRefetch();
-      toast.success("Secret Store deleted successfully");
+      workflowTemplatesRefetch();
+      toast.success("Workflow Template deleted successfully");
     },
   });
 
   const performDelete = (namespace: string, name: string) => {
-    deleteSecretStore({ namespace, name });
+    deleteWorkflowTemplate({ namespace, name });
   };
 
-  if (isErrorSecretStores || isRefetchErrorSecretStores) {
+  if (isErrorWorkflowTemplates || isRefetchErrorWorkflowTemplates) {
     handleDefaultApiHttpError(
-      secretStoresError,
-      "Error while fetching Secret Stores data"
+      workflowTemplatesError,
+      "Error while fetching Workflow Templates data"
     );
   }
 
   return (
     <div className="flex flex-col gap-4">
       <DataProvider
-        data={secretStores}
+        data={workflowTemplates}
         columns={columns}
         initialSort={{ id: "name", desc: false }}
-        isLoading={isLoadingSecretStores}
+        isLoading={isLoadingWorkflowTemplates}
         getRowId={(row) => `${row.namespace}/${row.name}`}
       >
         <div className="flex justify-end gap-4 items-center">
           <DataSearch />
           <Button
             variant="outline"
-            onClick={() => navigate(getOrgLink("/secret-stores/create"))}
+            onClick={() => navigate(getOrgLink("/workflows/templates/create"))}
           >
             <LucidePlus />
-            Add Secret Store
+            Add Workflow Template
           </Button>
         </div>
-        <DataTable meta={secretStoreTableMeta} />
+        <DataTable meta={workflowTemplateTableMeta} />
       </DataProvider>
     </div>
   );
