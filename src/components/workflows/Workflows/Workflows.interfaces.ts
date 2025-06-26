@@ -36,7 +36,7 @@ export interface WorkflowRunData {
   startTime?: string;
   completionTime?: string;
   createdFromTemplate?: boolean;
-  emplateRef?: TemplateRef;
+  templateRef?: TemplateRef;
   workflowRunRef?: WorkflowRunRef;
   variables?: Record<string, string>;
 }

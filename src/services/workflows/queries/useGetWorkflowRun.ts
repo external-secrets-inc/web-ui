@@ -3,9 +3,9 @@ import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
-import { GetWorkflowRunPayload, WorkflowTemplateTableData } from "@/components/workflows/Workflows/Workflows.interfaces";
+import { GetWorkflowRunPayload, WorkflowRunData } from "@/components/workflows/Workflows/Workflows.interfaces";
 
-const getWorkflowRun = async (signal: AbortSignal, payload: GetWorkflowRunPayload): Promise<WorkflowTemplateTableData[]> => {
+const getWorkflowRun = async (signal: AbortSignal, payload: GetWorkflowRunPayload): Promise<WorkflowRunData> => {
   const headers = await getAuthHeaders();
   const response = await axiosInstance.get(`/api/v1/workflows/${payload.namespace}/${payload.name}`, {
     headers,
@@ -17,7 +17,7 @@ const getWorkflowRun = async (signal: AbortSignal, payload: GetWorkflowRunPayloa
 
 const useGetWorkflowRun = (
   payload: GetWorkflowRunPayload,
-  options?: Omit<UseQueryOptions<WorkflowTemplateTableData[], AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<WorkflowRunData, AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
 ) => {
   return useQuery({
     queryKey: ["workflows", "useGetWorkflowRun"],
