@@ -172,8 +172,10 @@ export function SecretStoreCreateWithYaml({ onCancel }: SecretStoreCreateWithYam
           <FieldYaml
             name="yamlContent"
             label="Secret Store Manifest (YAML)"
+            description="Write your Secret Store configuration directly in YAML format. Perfect for power users who want full control, or when importing existing secret stores. Alternatively, you may use the Form Builder for a guided experience."
             placeholder="Enter YAML manifest"
             className="min-h-[400px]"
+            descriptionInline={true}
             required
             rules={{
               validate: (value: string) => {

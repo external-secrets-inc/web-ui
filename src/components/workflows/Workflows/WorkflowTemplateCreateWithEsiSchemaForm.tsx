@@ -10,7 +10,6 @@ import useOrgLink from "@/hooks/useOrgLink";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
 import { Loader } from "@/components/ui/Loader";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface WorkflowTemplateCreateWithEsiSchemaFormProps {
@@ -165,9 +164,17 @@ export function WorkflowTemplateCreateWithEsiSchemaForm({ onCancel }: WorkflowTe
       </LayoutPortalTopbarActions>
 
       <div className="space-y-6">
+        {/* TODO[cfviotti]: Remove this alert when the generated schema for Workflow Templates is fully implemented */}
+        <Alert variant="warning">
+          <AlertTitle>Experimental Feature</AlertTitle>
+          <AlertDescription className="font-medium">
+            Form Builder for Workflow Templates is experimental and may not work as expected. <br />
+            Prefer to use the Raw YAML Manifest editor instead.
+          </AlertDescription>
+        </Alert>
+
         {serverError && (
           <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
             <AlertTitle>Server Error</AlertTitle>
             <AlertDescription className="font-medium">
               {serverError}

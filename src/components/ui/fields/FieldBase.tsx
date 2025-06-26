@@ -27,6 +27,7 @@ interface WithStandardLayout extends BaseProps {
   label: string;
   description?: string;
   required?: boolean;
+  descriptionInline?: boolean;
 }
 
 interface WithCustomLayout extends BaseProps {
@@ -56,7 +57,7 @@ export function FieldBase(props: FieldBaseProps) {
     );
   }
 
-  const { label, description, required } = props;
+  const { label, description, required, descriptionInline } = props;
   return (
     <FormField
       control={control}
@@ -69,6 +70,7 @@ export function FieldBase(props: FieldBaseProps) {
             label={label}
             description={description}
             required={required}
+            descriptionInline={descriptionInline}
           />
           <FormControl>{children}</FormControl>
           {!hideMessage && <FormMessage />}

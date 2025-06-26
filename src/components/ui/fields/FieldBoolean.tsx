@@ -12,6 +12,7 @@ export interface FieldBooleanProps {
   required?: boolean;
   rules?: Record<string, unknown>;
   defaultValue?: boolean;
+  descriptionInline?: boolean;
 }
 
 export function FieldBoolean({
@@ -21,6 +22,7 @@ export function FieldBoolean({
   required,
   rules,
   defaultValue,
+  descriptionInline,
 }: FieldBooleanProps) {
   const { field } = useController({
     name,
@@ -36,6 +38,7 @@ export function FieldBoolean({
       required={required}
       rules={rules}
       defaultValue={defaultValue ?? false}
+      descriptionInline={descriptionInline}
     >
       <FormControl>
         <Switch

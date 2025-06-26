@@ -19,6 +19,7 @@ export interface FieldKeyValueProps {
   required?: boolean;
   rules?: Record<string, unknown>;
   defaultValue?: Array<{ key: string; value: string }>;
+  descriptionInline?: boolean;
 }
 
 export function FieldKeyValue({
@@ -28,6 +29,7 @@ export function FieldKeyValue({
   required,
   rules,
   defaultValue,
+  descriptionInline,
 }: FieldKeyValueProps) {
   const { control, formState } = useFormContext();
   const { fields, append, remove } = useFieldArray({
@@ -62,6 +64,7 @@ export function FieldKeyValue({
           required={required}
           error={error}
           labelAsText
+          descriptionInline={descriptionInline}
         />
         <FormControl>
           <div

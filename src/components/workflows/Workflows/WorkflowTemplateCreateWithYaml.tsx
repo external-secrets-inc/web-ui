@@ -193,8 +193,10 @@ export function WorkflowTemplateCreateWithYaml({ onCancel }: WorkflowTemplateCre
           <FieldYaml
             name="yamlContent"
             label="Workflow Template Manifest (YAML)"
+            description="Write your Workflow Template configuration directly in YAML format. Perfect for power users who want full control, or when importing existing templates. Alternatively, you may use the Form Builder for a guided experience."
             placeholder="Enter YAML manifest"
             className="min-h-[400px]"
+            descriptionInline
             required
             rules={{
               validate: (value: string) => {

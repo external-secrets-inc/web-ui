@@ -3,8 +3,8 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useNavigate } from "react-router-dom";
 import useOrgLink from "@/hooks/useOrgLink";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
-import { SecretStoreCreateWithYaml } from "./SecretStoreCreateWithYaml";
-import { SecretStoreCreateWithEsiSchemaForm } from "./SecretStoreCreateWithEsiSchemaForm";
+import { WorkflowTemplateCreateWithYaml } from "./WorkflowTemplateCreateWithYaml";
+import { WorkflowTemplateCreateWithEsiSchemaForm } from "./WorkflowTemplateCreateWithEsiSchemaForm";
 import { LucideSquareCode, LucideTextCursorInput } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -15,13 +15,13 @@ import {
 
 type FormMode = "yaml" | "form";
 
-export function SecretStoreCreateForm() {
+export function WorkflowTemplateCreate() {
   const navigate = useNavigate();
   const getOrgLink = useOrgLink();
-  const [formMode, setFormMode] = useState<FormMode>("form");
+  const [formMode, setFormMode] = useState<FormMode>("yaml");
 
   const handleCancel = () => {
-    navigate(getOrgLink("/workflows/secret-stores"));
+    navigate(getOrgLink("/workflows/templates"));
   };
 
   return (
@@ -60,9 +60,9 @@ export function SecretStoreCreateForm() {
       </LayoutPortalTopbarActions>
 
       {formMode === "yaml" ? (
-        <SecretStoreCreateWithYaml onCancel={handleCancel} />
+        <WorkflowTemplateCreateWithYaml onCancel={handleCancel} />
       ) : (
-        <SecretStoreCreateWithEsiSchemaForm onCancel={handleCancel} />
+        <WorkflowTemplateCreateWithEsiSchemaForm onCancel={handleCancel} />
       )}
     </>
   );

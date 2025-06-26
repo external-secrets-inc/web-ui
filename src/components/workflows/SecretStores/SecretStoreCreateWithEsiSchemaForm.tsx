@@ -10,7 +10,6 @@ import useOrgLink from "@/hooks/useOrgLink";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
 import { Loader } from "@/components/ui/Loader";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SecretStoreCreateWithEsiSchemaFormProps {
@@ -167,7 +166,6 @@ export function SecretStoreCreateWithEsiSchemaForm({ onCancel }: SecretStoreCrea
       <div className="space-y-6">
         {serverError && (
           <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
             <AlertTitle>Server Error</AlertTitle>
             <AlertDescription className="font-medium">
               {serverError}
