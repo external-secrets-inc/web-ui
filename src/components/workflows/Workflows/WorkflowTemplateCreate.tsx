@@ -1,27 +1,25 @@
 import { useState } from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useNavigate } from "react-router-dom";
-import useOrgLink from "@/hooks/useOrgLink";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
 import { WorkflowTemplateCreateWithYaml } from "./WorkflowTemplateCreateWithYaml";
 import { WorkflowTemplateCreateWithEsiSchemaForm } from "./WorkflowTemplateCreateWithEsiSchemaForm";
 import { LucideSquareCode, LucideTextCursorInput } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 type FormMode = "yaml" | "form";
 
 export function WorkflowTemplateCreate() {
   const navigate = useNavigate();
-  const getOrgLink = useOrgLink();
   const [formMode, setFormMode] = useState<FormMode>("yaml");
 
   const handleCancel = () => {
-    navigate(getOrgLink("/workflows/templates"));
+    navigate("..");
   };
 
   return (
@@ -56,13 +54,23 @@ export function WorkflowTemplateCreate() {
             <TooltipContent>Raw YAML Manifest</TooltipContent>
           </Tooltip>
         </ToggleGroup>
-        <Separator orientation="vertical" className="h-4" />
       </LayoutPortalTopbarActions>
 
       {formMode === "yaml" ? (
         <WorkflowTemplateCreateWithYaml onCancel={handleCancel} />
       ) : (
-        <WorkflowTemplateCreateWithEsiSchemaForm onCancel={handleCancel} />
+        <>
+          {/* TODO[cfviotti]: Remove this alert when the generated schema for Workflow Templates is fully implemented */}
+          <Alert variant="warning" className="mb-6">
+            <AlertTitle>Experimental Feature</AlertTitle>
+            <AlertDescription className="font-medium">
+              Form Builder for Workflow Templates is experimental and may not
+              work as expected. <br />
+              Prefer to use the Raw YAML Manifest editor instead.
+            </AlertDescription>
+          </Alert>
+          <WorkflowTemplateCreateWithEsiSchemaForm onCancel={handleCancel} />
+        </>
       )}
     </>
   );

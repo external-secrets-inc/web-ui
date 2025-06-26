@@ -1,91 +1,29 @@
-import { useState } from "react";
 import YAML from "yaml";
 import { Button } from "@/components/ui/button";
-import { EsiSchemaForm, type KubernetesManifest } from "@/components/EsiSchemaForm";
+import {
+  EsiSchemaForm,
+  type KubernetesManifest,
+} from "@/components/EsiSchemaForm";
 import useCreateWorkflowTemplate from "@/services/workflows/mutations/useCreateWorkflowTemplate";
 import useGetUISchema from "@/services/esi-schemas/queries/useGetUISchema";
-import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import useOrgLink from "@/hooks/useOrgLink";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
 import { Loader } from "@/components/ui/Loader";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
 
 interface WorkflowTemplateCreateWithEsiSchemaFormProps {
   onCancel?: () => void;
 }
 
-/**
- * Extracts a user-friendly error message from API error responses.
- * This function handles various error formats, including plain text responses
- * and common JSON error structures.
- * @param error - The error object from the API response.
- * @returns A formatted error message string.
- */
-function extractErrorMessage(error: unknown): string {
-  const defaultMessage = 'An unknown error occurred while creating the workflow template.';
-
-  if (typeof error === 'object' && error !== null && 'response' in error) {
-    const errorData = (error as { response?: { data?: unknown } }).response?.data;
-
-    if (!errorData) {
-      return defaultMessage;
-    }
-
-    let potentialObject = errorData;
-    let message: string | null = null;
-
-    if (typeof errorData === 'string' && errorData.length > 0) {
-      try {
-        const parsed = JSON.parse(errorData);
-        if (typeof parsed === 'object' && parsed !== null) {
-          potentialObject = parsed;
-        } else {
-          message = errorData;
-        }
-      } catch {
-        message = errorData;
-      }
-    }
-
-    if (typeof potentialObject === 'object' && potentialObject !== null) {
-      const data = potentialObject as Record<string, unknown>;
-
-      if (typeof data.message === 'string' && data.message) {
-        message = data.message;
-      } else if (typeof data.error === 'string' && data.error) {
-        message = data.error;
-      } else if (Array.isArray(data.errors) && data.errors.length > 0 && typeof data.errors[0]?.message === 'string') {
-        message = data.errors[0].message;
-      } else if (typeof data.errors === 'object' && data.errors !== null) {
-        const nestedError = (data.errors as Record<string, unknown>).error;
-        if (typeof nestedError === 'string') {
-          message = nestedError;
-        }
-      }
-    }
-
-    // Replace literal '\\n' with actual newlines for proper rendering.
-    if (message) {
-      return message.replace(/\\n/g, '\n');
-    }
-  }
-
-  if (error instanceof Error) {
-    return error.message.replace(/\\n/g, '\n');
-  }
-
-  return defaultMessage;
-}
-
-export function WorkflowTemplateCreateWithEsiSchemaForm({ onCancel }: WorkflowTemplateCreateWithEsiSchemaFormProps) {
+export function WorkflowTemplateCreateWithEsiSchemaForm({
+  onCancel,
+}: WorkflowTemplateCreateWithEsiSchemaFormProps) {
   const navigate = useNavigate();
-  const getOrgLink = useOrgLink();
-  const [serverError, setServerError] = useState<string | null>(null);
 
   const { data: schema, isLoading, error } = useGetUISchema("workflowtemplate");
-  const { mutate: createWorkflowTemplate, isPending } = useCreateWorkflowTemplate();
+  const { mutateAsync: createWorkflowTemplate, isPending } =
+    useCreateWorkflowTemplate();
 
   const formId = "workflow-template-form";
 
@@ -93,30 +31,17 @@ export function WorkflowTemplateCreateWithEsiSchemaForm({ onCancel }: WorkflowTe
     if (onCancel) {
       onCancel();
     } else {
-      navigate(getOrgLink("/workflows/templates"));
+      navigate("..");
     }
   };
 
-  const handleSubmit = (manifest: KubernetesManifest) => {
-    // Clear any previous server errors
-    setServerError(null);
-
+  const handleSubmit = async (manifest: KubernetesManifest) => {
     const yamlContent = YAML.stringify(manifest);
+    await createWorkflowTemplate({ manifest: yamlContent });
+  };
 
-    createWorkflowTemplate(
-      { manifest: yamlContent },
-      {
-        onSuccess: () => {
-          toast.success("Workflow Template created successfully");
-          navigate(getOrgLink("/workflows/templates"));
-        },
-        onError: (error: unknown) => {
-          const errorMessage = extractErrorMessage(error);
-          setServerError(errorMessage);
-          toast.error("Failed to create Workflow Template");
-        },
-      }
-    );
+  const handleSuccess = () => {
+    navigate("..");
   };
 
   if (isLoading) {
@@ -138,6 +63,7 @@ export function WorkflowTemplateCreateWithEsiSchemaForm({ onCancel }: WorkflowTe
   return (
     <>
       <LayoutPortalTopbarActions>
+        <Separator orientation="vertical" className="h-4" />
         <div className="flex items-center gap-2">
           <Button
             type="button"
@@ -164,24 +90,6 @@ export function WorkflowTemplateCreateWithEsiSchemaForm({ onCancel }: WorkflowTe
       </LayoutPortalTopbarActions>
 
       <div className="space-y-6">
-        {/* TODO[cfviotti]: Remove this alert when the generated schema for Workflow Templates is fully implemented */}
-        <Alert variant="warning">
-          <AlertTitle>Experimental Feature</AlertTitle>
-          <AlertDescription className="font-medium">
-            Form Builder for Workflow Templates is experimental and may not work as expected. <br />
-            Prefer to use the Raw YAML Manifest editor instead.
-          </AlertDescription>
-        </Alert>
-
-        {serverError && (
-          <Alert variant="destructive">
-            <AlertTitle>Server Error</AlertTitle>
-            <AlertDescription className="font-medium">
-              {serverError}
-            </AlertDescription>
-          </Alert>
-        )}
-
         <EsiSchemaForm
           schema={schema}
           resourceType="workflowtemplate"
@@ -189,6 +97,7 @@ export function WorkflowTemplateCreateWithEsiSchemaForm({ onCancel }: WorkflowTe
           formId={formId}
           disabled={isPending}
           hideSubmitButton
+          onSuccess={handleSuccess}
         />
       </div>
     </>

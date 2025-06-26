@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useNavigate } from "react-router-dom";
-import useOrgLink from "@/hooks/useOrgLink";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
 import { SecretStoreCreateWithYaml } from "./SecretStoreCreateWithYaml";
 import { SecretStoreCreateWithEsiSchemaForm } from "./SecretStoreCreateWithEsiSchemaForm";
 import { LucideSquareCode, LucideTextCursorInput } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
   TooltipContent,
@@ -17,11 +15,10 @@ type FormMode = "yaml" | "form";
 
 export function SecretStoreCreate() {
   const navigate = useNavigate();
-  const getOrgLink = useOrgLink();
   const [formMode, setFormMode] = useState<FormMode>("form");
 
   const handleCancel = () => {
-    navigate(getOrgLink("/workflows/secret-stores"));
+    navigate("..");
   };
 
   return (
@@ -56,7 +53,6 @@ export function SecretStoreCreate() {
             <TooltipContent>Raw YAML Manifest</TooltipContent>
           </Tooltip>
         </ToggleGroup>
-        <Separator orientation="vertical" className="h-4" />
       </LayoutPortalTopbarActions>
 
       {formMode === "yaml" ? (

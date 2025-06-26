@@ -11,6 +11,7 @@ import useOrgLink from "@/hooks/useOrgLink";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
 import { Loader } from "@/components/ui/Loader";
 import { cn } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
 
 interface WorkflowTemplateCreateWithYamlProps {
   onCancel?: () => void;
@@ -163,6 +164,7 @@ export function WorkflowTemplateCreateWithYaml({ onCancel }: WorkflowTemplateCre
   return (
     <>
       <LayoutPortalTopbarActions>
+        <Separator orientation="vertical" className="h-4" />
         <div className="flex items-center gap-2">
           <Button
             type="button"
@@ -209,7 +211,7 @@ export function WorkflowTemplateCreateWithYaml({ onCancel }: WorkflowTemplateCre
                   // YAML parsing errors are handled by FieldYaml itself
                   return true;
                 }
-              }
+              },
             }}
           />
         </form>
