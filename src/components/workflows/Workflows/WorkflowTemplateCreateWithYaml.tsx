@@ -4,7 +4,7 @@ import YAML from "yaml";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { FieldYaml } from "@/components/ui/fields/FieldYaml";
-import useCreateSecretStore from "@/services/workflows/mutations/useCreateSecretStore";
+import useCreateWorkflowTemplate from "@/services/workflows/mutations/useCreateWorkflowTemplate";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import useOrgLink from "@/hooks/useOrgLink";
@@ -12,21 +12,25 @@ import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopba
 import { Loader } from "@/components/ui/Loader";
 import { cn } from "@/lib/utils";
 
+interface WorkflowTemplateCreateWithYamlProps {
+  onCancel?: () => void;
+}
+
 /**
- * Validates SecretStore-specific business logic.
+ * Validates WorkflowTemplate-specific business logic.
  * @param yamlContent - The YAML string to validate.
  * @param parsedYaml - The parsed YAML object.
  * @returns Error message or null if valid.
  */
-const validateSecretStoreManifest = (yamlContent: string, parsedYaml?: unknown): string | null => {
+const validateWorkflowTemplateManifest = (yamlContent: string, parsedYaml?: unknown): string | null => {
   if (!yamlContent || !parsedYaml) {
     return null;
   }
 
   const manifest = parsedYaml as Record<string, unknown>;
 
-  if (manifest.kind !== "SecretStore") {
-    return `Invalid resource kind: Expected "SecretStore", got "${manifest.kind || "unknown"}".`;
+  if (manifest.kind !== "WorkflowTemplate") {
+    return `Invalid resource kind: Expected "WorkflowTemplate", got "${manifest.kind || "unknown"}".`;
   }
 
   const metadata = manifest.metadata as Record<string, unknown> | undefined;
@@ -37,32 +41,52 @@ const validateSecretStoreManifest = (yamlContent: string, parsedYaml?: unknown):
   return null;
 };
 
-interface SecretStoreFormData {
+interface WorkflowTemplateFormData {
   yamlContent: string;
 }
 
 /**
- * Generates a default YAML template for a SecretStore.
+ * Generates a default YAML template for a WorkflowTemplate.
  * @returns A string containing the YAML template.
  */
 function createDefaultYamlTemplate(): string {
   const sampleManifest = {
-    apiVersion: "external-secrets.io/v1beta1",
-    kind: "SecretStore",
+    apiVersion: "workflows.external-secrets.io/v1alpha1",
+    kind: "WorkflowTemplate",
     metadata: {
       name: "",
       namespace: "default",
     },
     spec: {
-      provider: {
-        aws: {
-          service: "SecretsManager",
-          region: "us-east-1",
-          auth: {
-            secretRef: {
-              accessKeyIDSecretRef: { name: "awssm-secret", key: "accessKeyID" },
-              secretAccessKeySecretRef: { name: "awssm-secret", key: "secretAccessKey" },
-            },
+      name: "job-1",
+      version: "v1",
+      parameters: [
+        {
+          name: "image",
+          description: "The container image to use",
+          required: true,
+          default: "nginx:latest",
+        },
+        {
+          name: "replicas",
+          description: "Number of replicas",
+          required: false,
+          default: "1",
+        },
+      ],
+      jobs: {
+        job1: {
+          standard: {
+            steps: [
+              {
+                name: "step1",
+                javascript: {
+                  script: `console.log("Using image: " + params.image);
+console.log("Replicas: " + params.replicas);
+return { message: "Template processed successfully" };`
+                },
+              },
+            ],
           },
         },
       },
@@ -71,22 +95,19 @@ function createDefaultYamlTemplate(): string {
   return YAML.stringify(sampleManifest);
 }
 
-interface SecretStoreCreateWithYamlProps {
-  onCancel?: () => void;
-}
-
-export function SecretStoreCreateWithYaml({ onCancel }: SecretStoreCreateWithYamlProps) {
+export function WorkflowTemplateCreateWithYaml({ onCancel }: WorkflowTemplateCreateWithYamlProps) {
   const navigate = useNavigate();
   const getOrgLink = useOrgLink();
 
-  const form = useForm<SecretStoreFormData>({
+  const form = useForm<WorkflowTemplateFormData>({
     defaultValues: {
       yamlContent: "",
     },
     mode: "onSubmit",
   });
 
-  const { mutate: createSecretStore, isPending } = useCreateSecretStore();
+  const { mutate: createWorkflowTemplate, isPending } =
+    useCreateWorkflowTemplate();
 
   useEffect(() => {
     if (!form.getValues('yamlContent')) {
@@ -99,20 +120,20 @@ export function SecretStoreCreateWithYaml({ onCancel }: SecretStoreCreateWithYam
     if (onCancel) {
       onCancel();
     } else {
-      navigate(getOrgLink("/workflows/secret-stores"));
+      navigate(getOrgLink("/workflows/templates"));
     }
   };
 
-  const onSubmit = (data: SecretStoreFormData) => {
-    createSecretStore(
+  const onSubmit = (data: WorkflowTemplateFormData) => {
+    createWorkflowTemplate(
       { manifest: data.yamlContent },
       {
         onSuccess: () => {
-          toast.success("Secret Store created successfully");
-          navigate(getOrgLink("/workflows/secret-stores"));
+          toast.success("Workflow Template created successfully");
+          navigate(getOrgLink("/workflows/templates"));
         },
-                        onError: (error: unknown) => {
-          let message = 'An unknown error occurred while creating the secret store.';
+        onError: (error: unknown) => {
+          let message = 'An unknown error occurred while creating the workflow template.';
 
           if (typeof error === 'object' && error !== null && 'response' in error) {
             const response = (error as { response?: { data?: Record<string, unknown> } }).response;
@@ -135,7 +156,7 @@ export function SecretStoreCreateWithYaml({ onCancel }: SecretStoreCreateWithYam
             message,
           });
         },
-      },
+      }
     );
   };
 
@@ -161,7 +182,7 @@ export function SecretStoreCreateWithYaml({ onCancel }: SecretStoreCreateWithYam
           >
             {isPending && <Loader className="[grid-area:1/1]" />}
             <span className={cn(isPending && "invisible", "[grid-area:1/1]")}>
-              Create Secret Store
+              Create Workflow Template
             </span>
           </Button>
         </div>
@@ -171,11 +192,11 @@ export function SecretStoreCreateWithYaml({ onCancel }: SecretStoreCreateWithYam
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FieldYaml
             name="yamlContent"
-            label="Secret Store Manifest (YAML)"
-            description="Write your Secret Store configuration directly in YAML format. Perfect for power users who want full control, or when importing existing secret stores. Alternatively, you may use the Form Builder for a guided experience."
+            label="Workflow Template Manifest (YAML)"
+            description="Write your Workflow Template configuration directly in YAML format. Perfect for power users who want full control, or when importing existing templates. Alternatively, you may use the Form Builder for a guided experience."
             placeholder="Enter YAML manifest"
             className="min-h-[400px]"
-            descriptionInline={true}
+            descriptionInline
             required
             rules={{
               validate: (value: string) => {
@@ -183,7 +204,7 @@ export function SecretStoreCreateWithYaml({ onCancel }: SecretStoreCreateWithYam
 
                 try {
                   const parsedYaml = YAML.parse(value);
-                  return validateSecretStoreManifest(value, parsedYaml);
+                  return validateWorkflowTemplateManifest(value, parsedYaml);
                 } catch {
                   // YAML parsing errors are handled by FieldYaml itself
                   return true;

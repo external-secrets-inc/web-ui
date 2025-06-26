@@ -20,6 +20,7 @@ export interface FieldArrayProps {
   rules?: Record<string, unknown>;
   field: UISchemaField;
   defaultValue?: unknown[];
+  descriptionInline?: boolean;
 }
 
 export function FieldArray({
@@ -30,6 +31,7 @@ export function FieldArray({
   rules,
   field,
   defaultValue,
+  descriptionInline,
 }: FieldArrayProps) {
   const { control, getValues, formState } = useFormContext();
   const { fields, append, remove } = useFieldArray({
@@ -38,7 +40,6 @@ export function FieldArray({
   });
 
   const error = !!formState.errors[name];
-
 
   const itemSchema = field.items || field.fields?.[0];
 
@@ -75,7 +76,8 @@ export function FieldArray({
           required={required}
           error={error}
           labelAsText
-          />
+          descriptionInline={descriptionInline}
+        />
         <div
           className="p-3 border border-dashed border-border rounded-md gap-6 flex flex-col"
           data-nested-group

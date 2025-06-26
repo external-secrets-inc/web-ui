@@ -13,6 +13,7 @@ export interface FieldObjectProps {
   field: UISchemaField;
   defaultValue?: Record<string, unknown>;
   rules?: Record<string, unknown>;
+  descriptionInline?: boolean;
 }
 
 export function FieldObject({
@@ -22,7 +23,8 @@ export function FieldObject({
   required,
   field,
   defaultValue,
-  rules
+  rules,
+  descriptionInline
 }: FieldObjectProps) {
   const { setValue, getValues, formState } = useFormContext();
   const error = !!formState.errors[name];
@@ -54,7 +56,7 @@ export function FieldObject({
           description={description}
           required={required}
           labelAsText
-          descriptionInline
+          descriptionInline={descriptionInline}
           error={error}
         />
         <div className="pl-3 pt-4 border-l border-border space-y-6" data-nested-group>

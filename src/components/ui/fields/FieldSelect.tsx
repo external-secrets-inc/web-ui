@@ -39,6 +39,7 @@ export interface FieldSelectProps {
   emptyMessage?: string;
   customContent?: React.ReactNode;
   onValueChange?: (value: string) => void;
+  descriptionInline?: boolean;
 }
 
 export function FieldSelect({
@@ -56,6 +57,7 @@ export function FieldSelect({
   emptyMessage = "No options available",
   customContent,
   onValueChange,
+  descriptionInline,
 }: FieldSelectProps) {
   const { field } = useController({
     name,
@@ -140,6 +142,7 @@ export function FieldSelect({
           label={label}
           description={description}
           required={required}
+          descriptionInline={descriptionInline}
         />
         <div className="relative">
           <Select

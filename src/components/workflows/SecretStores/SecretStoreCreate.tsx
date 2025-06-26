@@ -15,7 +15,7 @@ import {
 
 type FormMode = "yaml" | "form";
 
-export function SecretStoreCreateForm() {
+export function SecretStoreCreate() {
   const navigate = useNavigate();
   const getOrgLink = useOrgLink();
   const [formMode, setFormMode] = useState<FormMode>("form");

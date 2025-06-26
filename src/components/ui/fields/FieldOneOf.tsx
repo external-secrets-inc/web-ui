@@ -14,6 +14,7 @@ export interface FieldOneOfProps {
   rules?: Record<string, unknown>;
   field: UISchemaField;
   defaultValue?: string;
+  descriptionInline?: boolean;
 }
 
 export function FieldOneOf({
@@ -24,6 +25,7 @@ export function FieldOneOf({
   rules,
   field,
   defaultValue,
+  descriptionInline,
 }: FieldOneOfProps) {
   const { setValue, getValues } = useFormContext();
 
@@ -156,6 +158,7 @@ export function FieldOneOf({
               selectionField.onChange(value);
             }}
             emptyMessage="No valid options available for this field."
+            descriptionInline={descriptionInline}
           />
 
           {selectedField && selectedField.id && (

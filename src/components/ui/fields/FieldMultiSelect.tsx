@@ -11,6 +11,7 @@ export interface FieldMultiSelectProps {
   options: { label: string; value: string }[];
   placeholder?: string;
   defaultValue?: string[];
+  descriptionInline?: boolean;
 }
 
 export function FieldMultiSelect({
@@ -21,7 +22,8 @@ export function FieldMultiSelect({
   rules,
   options,
   placeholder,
-  defaultValue
+  defaultValue,
+  descriptionInline
 }: FieldMultiSelectProps) {
   const { field } = useController({
     name,
@@ -37,6 +39,7 @@ export function FieldMultiSelect({
       required={required}
       rules={rules}
       defaultValue={defaultValue ?? []}
+      descriptionInline={descriptionInline}
     >
       <MultiSelect
         options={options}

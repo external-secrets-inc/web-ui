@@ -11,10 +11,11 @@ export interface FieldTextareaProps extends Omit<ComponentPropsWithoutRef<typeof
   required?: boolean;
   rules?: Record<string, unknown>;
   defaultValue?: string;
+  descriptionInline?: boolean;
 }
 
 export const FieldTextarea = forwardRef<HTMLTextAreaElement, FieldTextareaProps>(
-  ({ name, label, description, required, rules, defaultValue, ...textareaProps }, ref) => {
+  ({ name, label, description, required, rules, defaultValue, descriptionInline, ...textareaProps }, ref) => {
     const { field } = useController({
       name,
       rules,
@@ -29,6 +30,7 @@ export const FieldTextarea = forwardRef<HTMLTextAreaElement, FieldTextareaProps>
         required={required}
         rules={rules}
         defaultValue={defaultValue ?? ""}
+        descriptionInline={descriptionInline}
       >
         <Textarea
           {...textareaProps}

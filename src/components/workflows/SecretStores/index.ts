@@ -1,5 +1,5 @@
 export { SecretStoreDataTable } from "./SecretStoreDataTable";
-export { SecretStoreCreateForm } from './SecretStoreCreateForm';
+export { SecretStoreCreate } from './SecretStoreCreate';
 export { SecretStoreCreateWithYaml } from './SecretStoreCreateWithYaml';
 export { SecretStoreCreateWithEsiSchemaForm } from './SecretStoreCreateWithEsiSchemaForm';
 export * from "./SecretStores.interfaces";

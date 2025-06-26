@@ -9,6 +9,7 @@ export interface FieldJsonProps {
   required?: boolean;
   rules?: Record<string, unknown>;
   defaultValue?: unknown;
+  descriptionInline?: boolean;
 }
 
 export function FieldJson({
@@ -17,7 +18,8 @@ export function FieldJson({
   description,
   required,
   rules,
-  defaultValue
+  defaultValue,
+  descriptionInline
 }: FieldJsonProps) {
   const { field } = useController({
     name,
@@ -33,6 +35,7 @@ export function FieldJson({
       required={required}
       rules={rules}
       defaultValue={defaultValue ?? ""}
+      descriptionInline={descriptionInline}
     >
       <CodeTextarea
         language="json"
