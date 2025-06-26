@@ -1,0 +1,302 @@
+import { useMemo } from "react";
+import { Badge, BadgeProps } from "@/components/ui/badge";
+import { LucideMoreVertical, LucidePlus, LucideTrash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DataProvider,
+  DataSearch,
+  DataTable,
+  defineColumns,
+} from "@/components/ui/DataProvider";
+import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
+import {
+  WorkflowRunData,
+  WorkflowRunTemplateTableData,
+} from "./Workflows.interfaces";
+import { AxiosError } from "axios";
+import { ApiHttpError } from "@/types";
+import { toast } from "sonner";
+import useDeleteWorkflowRunTemplate from "@/services/workflows/mutations/useDeleteWorkflowRunTemplate";
+import useGetWorkflowRunTemplates from "@/services/workflows/queries/useGetWorkflowRunTemplates";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import useOrgLink from "@/hooks/useOrgLink";
+import { format } from "date-fns";
+
+interface WorkflowRunTemplateTableMeta {
+  renderRowActions?: (row: WorkflowRunTemplateTableData) => React.ReactNode;
+}
+
+export function WorkflowRunTemplateDataTable() {
+  const navigate = useNavigate();
+  const getOrgLink = useOrgLink();
+  const { templateNamespace, templateName } = useParams();
+
+  const columns = useMemo(
+    () =>
+      defineColumns<WorkflowRunTemplateTableData>((columnHelper) => [
+        columnHelper.accessor("name", {
+          header: "Name",
+          cell: (info) => <strong>{info.getValue()}</strong>,
+        }),
+        columnHelper.accessor("namespace", {
+          header: "Namespace",
+          cell: (info) => info.getValue(),
+        }),
+        columnHelper.accessor("status", {
+          header: "Status",
+          cell: (info) => {
+            const { status, reason } = info.row.original.status;
+            let variantClass: BadgeProps["variant"] = "default";
+            let displayText = "Not Informed";
+
+            if (status === "Pending") {
+              variantClass = "warning";
+              displayText = "Pending";
+            } else if (status === "True") {
+              variantClass = "success";
+              displayText = reason;
+            } else if (status === "False") {
+              variantClass = "destructive";
+              displayText = reason;
+            }
+            return <Badge variant={variantClass}>{displayText}</Badge>;
+          },
+        }),
+        columnHelper.accessor("runPolicy", {
+          header: "Run Policy",
+          cell: (info) =>
+            info.getValue() == "" ? (
+              <span className="text-muted-foreground">No policy</span>
+            ) : (
+              info.getValue()
+            ),
+        }),
+        columnHelper.accessor("lastRuns", {
+          header: "Last Runs",
+          cell: (info) => {
+            const runs: WorkflowRunData[] = info.getValue();
+
+            const testRuns: WorkflowRunData[] = [
+              {
+                name: "run-success-1",
+                namespace: "default",
+                templateRef: { name: "template-a", namespace: "default" },
+                parameters: {},
+                variables: {},
+                phase: "Succeeded",
+                startTime: new Date("2025-06-20T10:00:00Z"),
+                completionTime: new Date("2025-06-20T10:05:00Z"),
+              },
+              {
+                name: "run-pending-1",
+                namespace: "default",
+                templateRef: { name: "template-b", namespace: "default" },
+                parameters: {},
+                variables: {},
+                phase: "Pending",
+                startTime: new Date("2025-06-21T11:00:00Z"),
+                completionTime: undefined,
+              },
+              {
+                name: "run-failed-1",
+                namespace: "default",
+                templateRef: { name: "template-c", namespace: "default" },
+                parameters: {},
+                variables: {},
+                phase: "Failed",
+                startTime: new Date("2025-06-22T12:00:00Z"),
+                completionTime: new Date("2025-06-22T12:03:00Z"),
+              },
+              {
+                name: "run-success-2",
+                namespace: "default",
+                templateRef: { name: "template-d", namespace: "default" },
+                parameters: {},
+                variables: {},
+                phase: "Succeeded",
+                startTime: new Date("2025-06-23T13:00:00Z"),
+                completionTime: new Date("2025-06-23T13:05:00Z"),
+              },
+              {
+                name: "run-other-1",
+                namespace: "default",
+                templateRef: { name: "template-e", namespace: "default" },
+                parameters: {},
+                variables: {},
+                phase: "Unknown",
+                startTime: new Date("2025-06-24T14:00:00Z"),
+                completionTime: new Date("2025-06-24T14:04:00Z"),
+              },
+            ];
+
+            if (!testRuns && (!runs || runs.length === 0)) {
+              return <span className="text-muted-foreground">No runs</span>;
+            }
+
+            return (
+              <div className="flex flex-wrap gap-1">
+                {testRuns.slice(-5).map((run, index) => {
+                  let variant: "warning" | "success" | "destructive";
+
+                  switch (run.phase) {
+                    case "Pending":
+                      variant = "warning";
+                      break;
+                    case "Succeeded":
+                      variant = "success";
+                      break;
+                    default:
+                      variant = "destructive";
+                      break;
+                  }
+
+                  const tooltip = `Name: ${run.name}
+Phase: ${run.phase}
+Start: ${run.startTime ? format(new Date(run.startTime), "Pp") : "N/A"}
+End: ${
+                    run.completionTime
+                      ? format(new Date(run.completionTime), "Pp")
+                      : "N/A"
+                  }`;
+
+                  return (
+                    <Link
+                      to=""
+                      key={`${run.namespace}/${run.name}`}
+                      className="inline-block"
+                      title={tooltip}
+                    >
+                      <Badge variant={variant}>{index + 1}</Badge>
+                    </Link>
+                  );
+                })}
+              </div>
+            );
+          },
+        }),
+        columnHelper.display({
+          id: "actions",
+          cell: (props) => (
+            <div className="flex justify-end">
+              {(
+                props.table.options.meta as WorkflowRunTemplateTableMeta
+              )?.renderRowActions?.(props.row.original)}
+            </div>
+          ),
+        }),
+      ]),
+    []
+  );
+
+  const workflowRunTemplateTableMeta: WorkflowRunTemplateTableMeta = {
+    renderRowActions: (row) => (
+      <div className="flex items-center gap-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <LucideMoreVertical />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            onClick={(event) => event.stopPropagation()}
+            onCloseAutoFocus={(event) => event.preventDefault()}
+          >
+            <FeatureItemDeleteAction
+              featureType={"Workflow Template"}
+              featureID={`${row.namespace}/${row.name}`}
+              featureName={row.name}
+              onDelete={() => {
+                performDelete(row.namespace, row.name);
+              }}
+            >
+              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                <LucideTrash2 className="mr-2" />
+                Delete Workflow Template
+              </DropdownMenuItem>
+            </FeatureItemDeleteAction>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    ),
+  };
+
+  const {
+    data: workflowRunTemplatesData,
+    refetch: workflowRunTemplatesRefetch,
+    isLoading: isLoadingWorkflowRunTemplates,
+    isError: isErrorWorkflowRunTemplates,
+    isRefetchError: isRefetchErrorWorkflowRunTemplates,
+    error: workflowRunTemplatesError,
+  } = useGetWorkflowRunTemplates({
+    staleTime: 30000,
+  });
+
+  const workflowRunTemplates = useMemo(() => {
+    if (!workflowRunTemplatesData) return [];
+    return workflowRunTemplatesData;
+  }, [workflowRunTemplatesData]);
+
+  const { mutate: deleteWorkflowRunTemplate } = useDeleteWorkflowRunTemplate({
+    onError: (error: AxiosError<ApiHttpError>) =>
+      handleDefaultApiHttpError(
+        error,
+        "Error while trying to delete Workflow Template"
+      ),
+    onSuccess: () => {
+      workflowRunTemplatesRefetch();
+      toast.success("Workflow Template deleted successfully");
+    },
+  });
+
+  const performDelete = (namespace: string, name: string) => {
+    deleteWorkflowRunTemplate({ namespace, name });
+  };
+
+  if (isErrorWorkflowRunTemplates || isRefetchErrorWorkflowRunTemplates) {
+    handleDefaultApiHttpError(
+      workflowRunTemplatesError,
+      "Error while fetching Workflow Templates data"
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <DataProvider
+        data={workflowRunTemplates}
+        columns={columns}
+        initialSort={{ id: "name", desc: false }}
+        isLoading={isLoadingWorkflowRunTemplates}
+        getRowId={(row) => `${row.namespace}/${row.name}`}
+      >
+        <div className="flex justify-end gap-4 items-center">
+          <DataSearch />
+          <Button
+            variant="outline"
+            onClick={() =>
+              navigate(
+                getOrgLink(
+                  `/workflows/templates/runtemplates/${templateNamespace}/${templateName}/create`
+                )
+              )
+            }
+          >
+            <LucidePlus />
+            Add Workflow Run Template
+          </Button>
+        </div>
+        <DataTable meta={workflowRunTemplateTableMeta} />
+      </DataProvider>
+    </div>
+  );
+}
