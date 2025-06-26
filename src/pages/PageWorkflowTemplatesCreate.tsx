@@ -6,6 +6,7 @@ export function PageWorkflowTemplatesCreate() {
     <LayoutPage
       title="New Workflow Template"
       description="Create a new Workflow Template."
+      width="compact"
     >
       <WorkflowTemplateCreateForm />
     </LayoutPage>

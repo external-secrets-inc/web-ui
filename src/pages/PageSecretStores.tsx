@@ -14,7 +14,7 @@ export function PageSecretStores() {
 
   return (
     <LayoutPage
-      title="Secret Stores"
+      title="Workflow Secret Stores"
       description="Manage your External Secrets Operator Secret Stores. Secret Stores define how External Secrets can fetch secrets from external systems."
     >
       <LayoutPortalTopbarActions>

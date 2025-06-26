@@ -82,7 +82,7 @@ const AxiosInterceptor: React.FC<AxiosInterceptorProps> = ({ children }) => {
             const expectedEsoError = error.response?.data?.error;
             error.response.data = {
               errors: {
-                error: expectedEsoError || 'An error occurred',
+                body: expectedEsoError || 'An error occurred',
               },
             };
           }

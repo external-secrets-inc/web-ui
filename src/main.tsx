@@ -103,56 +103,66 @@ const router = createBrowserRouter([
         },
       },
       {
-        path: "secret-stores",
+        path: "workflows",
         element: <Outlet />,
-        handle: {
-          breadcrumb: (match: UIMatch) => ({
-            label: "Secret Stores",
-            path: match.pathname,
-            navigatable: true,
-          }),
-        },
         children: [
           {
             index: true,
-            element: <PageSecretStores />,
+            element: <NavigateWithOrg to="workflows/secret-stores" replace />,
           },
           {
-            path: "create",
-            element: <PageSecretStoresCreate />,
+            path: "secret-stores",
+            element: <Outlet />,
             handle: {
-              breadcrumb: () => ({
-                label: "New Secret Store",
-                navigatable: false,
+              breadcrumb: (match: UIMatch) => ({
+                label: "Workflow Secret Stores",
+                path: match.pathname,
+                navigatable: true,
               }),
             },
+            children: [
+              {
+                index: true,
+                element: <PageSecretStores />,
+              },
+              {
+                path: "create",
+                element: <PageSecretStoresCreate />,
+                handle: {
+                  breadcrumb: () => ({
+                    label: "New Secret Store",
+                    navigatable: false,
+                  }),
+                },
+              },
+            ],
           },
-        ],
-      },
-      {
-        path: "workflows/templates",
-        element: <Outlet />,
-        handle: {
-          breadcrumb: (match: UIMatch) => ({
-            label: "Workflow Templates",
-            path: match.pathname,
-            navigatable: true,
-          }),
-        },
-        children: [
           {
-            index: true,
-            element: <PageWorkflowTemplates />,
-          },
-          {
-            path: "create",
-            element: <PageWorkflowTemplatesCreate />,
+            path: "templates",
+            element: <Outlet />,
             handle: {
-              breadcrumb: () => ({
-                label: "New Workflow Template",
-                navigatable: false,
+              breadcrumb: (match: UIMatch) => ({
+                label: "Workflow Templates",
+                path: match.pathname,
+                navigatable: true,
               }),
             },
+            children: [
+              {
+                index: true,
+                element: <PageWorkflowTemplates />,
+              },
+              {
+                path: "create",
+                element: <PageWorkflowTemplatesCreate />,
+                handle: {
+                  breadcrumb: () => ({
+                    label: "New Workflow Template",
+                    navigatable: false,
+                  }),
+                },
+              },
+            ],
           },
         ],
       },
@@ -177,7 +187,7 @@ const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <NavigateWithOrg to="insights" replace />,
+            element: <NavigateWithOrg to="audit/insights" replace />,
           },
           {
             path: "insights",
@@ -235,6 +245,27 @@ const router = createBrowserRouter([
             navigatable: true,
           }),
         },
+      },
+      // Smart redirects for unique child routes
+      {
+        path: "insights",
+        element: <NavigateWithOrg to="audit/insights" replace />,
+      },
+      {
+        path: "providers",
+        element: <NavigateWithOrg to="audit/providers" replace />,
+      },
+      {
+        path: "policies",
+        element: <NavigateWithOrg to="audit/policies" replace />,
+      },
+      {
+        path: "destinations",
+        element: <NavigateWithOrg to="audit/destinations" replace />,
+      },
+      {
+        path: "secret-stores",
+        element: <NavigateWithOrg to="workflows/secret-stores" replace />,
       },
     ],
   },

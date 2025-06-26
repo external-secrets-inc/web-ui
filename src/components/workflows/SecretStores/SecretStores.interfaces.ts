@@ -4,7 +4,7 @@ export interface SecretStoreTableData {
   name: string;
   namespace: string;
   capabilities: string;
-  status: Status
+  status?: Status;
 }
 
 export interface CreateSecretStorePayload {

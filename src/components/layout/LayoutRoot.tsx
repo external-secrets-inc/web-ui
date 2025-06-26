@@ -83,7 +83,7 @@ export function LayoutRoot() {
               <LayoutBreadcrumbs className="flex-1" />
               <div
                 ref={topbarActionsPortalTargetRef}
-                className="ml-auto flex items-center gap-2"
+                className="ml-auto flex items-center gap-4"
               />
             </div>
           </div>

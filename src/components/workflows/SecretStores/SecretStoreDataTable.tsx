@@ -62,7 +62,12 @@ export function SecretStoreDataTable() {
         columnHelper.accessor("status", {
           header: "Status",
           cell: (info) => {
-            const { status, reason } = info.row.original.status;
+            const statusData = info.row.original.status;
+            if (!statusData) {
+              return <Badge variant="secondary">Unknown</Badge>;
+            }
+
+            const { status, reason } = statusData;
             let variantClass: BadgeProps["variant"] = "default";
             let displayText = "Not Informed";
 
@@ -71,10 +76,10 @@ export function SecretStoreDataTable() {
               displayText = "Pending";
             } else if (status === "True") {
               variantClass = "success";
-              displayText = reason;
+              displayText = reason || "Ready";
             } else if (status === "False") {
               variantClass = "destructive";
-              displayText = reason;
+              displayText = reason || "Error";
             }
             return <Badge variant={variantClass}>{displayText}</Badge>;
           },
@@ -95,21 +100,15 @@ export function SecretStoreDataTable() {
 
   const secretStoreTableMeta: SecretStoreTableMeta = {
     renderRowActions: (row) => (
-      <div className="flex items-center gap-2">
+      <div className="flex items-center">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(event) => event.stopPropagation()}
-            >
-              <LucideMoreVertical />
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <LucideMoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent
-            onClick={(event) => event.stopPropagation()}
-            onCloseAutoFocus={(event) => event.preventDefault()}
-          >
+          <DropdownMenuContent align="end">
             <FeatureItemDeleteAction
               featureType={"Secret Store"}
               featureID={`${row.namespace}/${row.name}`}
@@ -120,7 +119,7 @@ export function SecretStoreDataTable() {
             >
               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                 <LucideTrash2 className="mr-2" />
-                Delete Secret Store
+                Delete
               </DropdownMenuItem>
             </FeatureItemDeleteAction>
           </DropdownMenuContent>
@@ -141,8 +140,7 @@ export function SecretStoreDataTable() {
   });
 
   const secretStores = useMemo(() => {
-    if (!secretStoresData) return [];
-    return secretStoresData;
+    return secretStoresData || [];
   }, [secretStoresData]);
 
   const { mutate: deleteSecretStore } = useDeleteSecretStore({
@@ -181,7 +179,7 @@ export function SecretStoreDataTable() {
           <DataSearch />
           <Button
             variant="outline"
-            onClick={() => navigate(getOrgLink("/secret-stores/create"))}
+            onClick={() => navigate(getOrgLink("/workflows/secret-stores/create"))}
           >
             <LucidePlus />
             Add Secret Store
