@@ -7,7 +7,27 @@
  * Also, the validation rules are a bit messy and could be improved.
  */
 
-import type { UISchemaField, KubernetesResourceType, KubernetesManifest } from './EsiSchemaForm.interfaces';
+import type { UISchemaField, KubernetesResourceType, KubernetesManifest, OneOfOption, OneOfStaticOption, OneOfApiOption } from './EsiSchemaForm.interfaces';
+
+/**
+ * Utility functions for working with oneOf field options.
+ */
+export const OneOfUtils = {
+  /**
+   * Checks if a oneOf option is a static option (has id property).
+   */
+  isStaticOption(option: OneOfOption): option is OneOfStaticOption {
+    return 'id' in option && typeof option.id === 'string';
+  },
+
+  /**
+   * Checks if a oneOf option is an API option (has href and labelRef properties).
+   */
+  isApiOption(option: OneOfOption): option is OneOfApiOption {
+    return 'href' in option && 'labelRef' in option &&
+           typeof option.href === 'string' && typeof option.labelRef === 'string';
+  },
+};
 
 /**
  * Creates validation rules for a field based on its schema definition.
@@ -126,7 +146,11 @@ export function createFieldValidation(field: UISchemaField) {
           if (!value || value === '') {
             return `${field.label || field.id} is required`;
           }
-          if (!field.oneOf!.includes(value)) {
+          // Check if the value matches any static option id
+          const isValidOption = field.oneOf!.some(option =>
+            OneOfUtils.isStaticOption(option) && option.id === value
+          );
+          if (!isValidOption) {
             return `Invalid option for ${field.label || field.id}`;
           }
           return true;

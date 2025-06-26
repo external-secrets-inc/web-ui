@@ -9,7 +9,7 @@ export interface UISchemaField {
   properties?: Record<string, unknown>;
   fields?: UISchemaField[];
   items?: UISchemaField;
-  oneOf?: string[];
+  oneOf?: OneOfOption[];
   visibleWhen?: {
     field: string;
     equals: unknown;
@@ -21,6 +21,33 @@ export interface UISchemaField {
   minLength?: number;
   maxLength?: number;
   pattern?: string;
+}
+
+/**
+ * Represents the different types of oneOf options supported in UI schemas.
+ *
+ * Static options use an 'id' field that references existing field definitions,
+ * while API options use 'href' to fetch data from an API endpoint and
+ * 'labelRef' to specify which property to use as the display label.
+ */
+export type OneOfOption = OneOfStaticOption | OneOfApiOption;
+
+/**
+ * Static oneOf option that references a field by its id.
+ * Used for predefined field choices that don't require API calls.
+ */
+export interface OneOfStaticOption {
+  id: string;
+}
+
+/**
+ * API oneOf option that fetches choices from an API endpoint.
+ * The API should return an array of objects, and labelRef specifies
+ * which property to use as the display label.
+ */
+export interface OneOfApiOption {
+  href: string;
+  labelRef: string;
 }
 
 export interface UISchemaGroup {
