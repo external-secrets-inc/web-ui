@@ -3,9 +3,9 @@ import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
-import { GetWorkflowRunPayload, WorkflowRunData } from "@/components/workflows/Workflows/Workflows.interfaces";
+import { GetWorkflowPayload, WorkflowData } from "@/components/workflows/Workflows/Workflows.interfaces";
 
-const getWorkflowRun = async (signal: AbortSignal, payload: GetWorkflowRunPayload): Promise<WorkflowRunData> => {
+const getWorkflow = async (signal: AbortSignal, payload: GetWorkflowPayload): Promise<WorkflowData> => {
   const headers = await getAuthHeaders();
   const response = await axiosInstance.get(`/api/v1/workflows/${payload.namespace}/${payload.name}`, {
     headers,
@@ -15,15 +15,15 @@ const getWorkflowRun = async (signal: AbortSignal, payload: GetWorkflowRunPayloa
   return response.data;
 };
 
-const useGetWorkflowRun = (
-  payload: GetWorkflowRunPayload,
-  options?: Omit<UseQueryOptions<WorkflowRunData, AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
+const useGetWorkflow = (
+  payload: GetWorkflowPayload,
+  options?: Omit<UseQueryOptions<WorkflowData, AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
 ) => {
   return useQuery({
-    queryKey: ["workflows", "useGetWorkflowRun"],
-    queryFn: ({ signal }) => getWorkflowRun(signal, payload),
+    queryKey: ["workflows", "useGetWorkflow"],
+    queryFn: ({ signal }) => getWorkflow(signal, payload),
     ...options,
   });
 };
 
-export default useGetWorkflowRun;
+export default useGetWorkflow;

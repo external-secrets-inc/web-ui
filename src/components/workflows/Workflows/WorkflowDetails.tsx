@@ -13,8 +13,8 @@ import { useFeatureFlag } from "@/context/FeatureFlagContext";
 import { cn } from "@/lib/utils";
 import { AUDIT_QUERY_STALE_TIME } from "@/components/Audit/Audit.constants";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { WorkflowRunGraph } from "./WorkflowRunGraph";
-import useGetWorkflowRun from "@/services/workflows/queries/useGetWorkflowRun";
+import { WorkflowGraph } from "./WorkflowGraph";
+import useGetWorkflow from "@/services/workflows/queries/useGetWorkflow";
 
 export default function AuditWorkflowDetails({
   name,
@@ -24,29 +24,29 @@ export default function AuditWorkflowDetails({
   namespace: string;
 }) {
   const {
-    data: workflowRunData,
-    refetch: workflowRunRefetch,
-    isLoading: isLoadingWorkflowRun,
-    isError: isErrorWorkflowRun,
-    isRefetchError: isRefetchErrorWorkflowRun,
-    error: workflowRunError,
-  } = useGetWorkflowRun({name: name, namespace: namespace}, {
+    data: workflowData,
+    refetch: workflowRefetch,
+    isLoading: isLoadingWorkflow,
+    isError: isErrorWorkflow,
+    isRefetchError: isRefetchErrorWorkflow,
+    error: workflowError,
+  } = useGetWorkflow({name: name, namespace: namespace}, {
     staleTime: 30000,
   });
 
   useEffect(() => {
-    if (workflowRunError) {
+    if (workflowError) {
       handleDefaultApiHttpError(
-        workflowRunError,
+        workflowError,
         `Error while fetching workflow data`
       );
     }
-  }, [workflowRunError]);
+  }, [workflowError]);
 
   if (!name || !namespace) return null;
 
   return (
-    workflowRunData &&
-    <WorkflowRunGraph workflow={workflowRunData}/>
+    workflowData &&
+    <WorkflowGraph workflow={workflowData}/>
   );
 }

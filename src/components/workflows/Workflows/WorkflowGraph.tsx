@@ -14,10 +14,10 @@ import {
   Handle,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { WorkflowJob, WorkflowRunData, WorkflowStep } from "./Workflows.interfaces";
+import { WorkflowJob, WorkflowData, WorkflowStep } from "./Workflows.interfaces";
 
-interface WorkflowRunDetailsProps {
-  workflow: WorkflowRunData
+interface WorkflowGraphProps {
+  workflow: WorkflowData
 }
 
 export type JobNodeData = {
@@ -114,7 +114,7 @@ const createEdge = (source: string, target: string, status: string): Edge => ({
   style: { stroke: getStatusColor(status) },
 });
 
-const createWorkflowStartNode = (workflow: WorkflowRunData, yPosition: number): Node => {
+const createWorkflowStartNode = (workflow: WorkflowData, yPosition: number): Node => {
   return {
     id: 'workflow-start',
     type: 'container',
@@ -163,7 +163,7 @@ const createStepNode = (jobName: string, stepName: string, stepStatus: WorkflowS
   };
 };
 
-export function WorkflowRunDetails({ workflow }: WorkflowRunDetailsProps) {
+export function WorkflowGraph({ workflow }: WorkflowGraphProps) {
   const [nodes, setNodes, onNodesChangeDefault] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 

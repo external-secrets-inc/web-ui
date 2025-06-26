@@ -17,7 +17,7 @@ export interface DeleteWorkflowTemplatePayload {
 }
 
 // Workflows
-export interface WorkflowRunTableData {
+export interface WorkflowTableData {
   name: string;
   namespace: string;
   status: Status;
@@ -26,7 +26,7 @@ export interface WorkflowRunTableData {
   completionTime: string;
 }
 
-export interface WorkflowRunData {
+export interface WorkflowData {
   name: string;
   namespace: string;
   status: Status;
@@ -57,7 +57,7 @@ export interface WorkflowStep {
   outputs: Record<string, unknown>;
 }
 
-export interface GetWorkflowRunPayload {
+export interface GetWorkflowPayload {
   namespace: string;
   name: string;
 }
