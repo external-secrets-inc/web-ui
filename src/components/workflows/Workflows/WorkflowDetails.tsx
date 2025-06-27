@@ -16,7 +16,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { WorkflowGraph } from "./WorkflowGraph";
 import useGetWorkflow from "@/services/workflows/queries/useGetWorkflow";
 
-export default function AuditWorkflowDetails({
+export function WorkflowDetails({
   name,
   namespace,
 }: {

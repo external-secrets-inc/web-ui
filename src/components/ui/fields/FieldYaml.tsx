@@ -12,6 +12,7 @@ export interface FieldYamlProps {
   defaultValue?: unknown;
   placeholder?: string;
   className?: string;
+  descriptionInline?: boolean;
 }
 
 export function FieldYaml({
@@ -22,7 +23,8 @@ export function FieldYaml({
   rules,
   defaultValue,
   placeholder = "# Enter YAML content here",
-  className
+  className,
+  descriptionInline
 }: FieldYamlProps) {
     const { field } = useController({
     name,
@@ -71,6 +73,7 @@ export function FieldYaml({
       required={required}
       rules={rules}
       defaultValue={defaultValue ?? ""}
+      descriptionInline={descriptionInline}
     >
       <CodeTextarea
         language="yaml"

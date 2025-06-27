@@ -11,10 +11,11 @@ export interface FieldTextProps extends Omit<ComponentPropsWithoutRef<typeof Inp
   required?: boolean;
   rules?: Record<string, unknown>;
   defaultValue?: string | number;
+  descriptionInline?: boolean;
 }
 
 export const FieldText = forwardRef<HTMLInputElement, FieldTextProps>(
-  ({ name, label, description, required, rules, defaultValue, ...inputProps }, ref) => {
+  ({ name, label, description, required, rules, defaultValue, descriptionInline, ...inputProps }, ref) => {
     const { field } = useController({
       name,
       rules,
@@ -29,6 +30,7 @@ export const FieldText = forwardRef<HTMLInputElement, FieldTextProps>(
         required={required}
         rules={rules}
         defaultValue={defaultValue ?? ""}
+        descriptionInline={descriptionInline}
       >
         <Input
           {...field}

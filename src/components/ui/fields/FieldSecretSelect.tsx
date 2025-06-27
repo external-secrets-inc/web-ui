@@ -11,6 +11,7 @@ export interface FieldSecretSelectProps {
   description?: string;
   required?: boolean;
   rules?: Record<string, unknown>;
+  descriptionInline?: boolean;
 }
 
 interface Secret {
@@ -23,7 +24,8 @@ export function FieldSecretSelect({
   label,
   description,
   required,
-  rules
+  rules,
+  descriptionInline
 }: FieldSecretSelectProps) {
   const { formState } = useFormContext();
   const [secrets, setSecrets] = useState<Secret[]>([]);
@@ -69,6 +71,7 @@ export function FieldSecretSelect({
           required={required}
           labelAsText
           error={fieldError}
+          descriptionInline={descriptionInline}
         />
         <div className="pl-3 pt-2 border-l border-border space-y-6" data-nested-group>
           <div className="flex space-x-2">

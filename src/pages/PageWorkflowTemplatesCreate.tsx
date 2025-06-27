@@ -1,5 +1,5 @@
 import { LayoutPage } from "@/components/layout";
-import { WorkflowTemplateCreateForm } from "@/components/workflows/Workflows/WorkflowTemplateCreateForm";
+import { WorkflowTemplateCreate } from "@/components/workflows/Workflows/WorkflowTemplateCreate";
 
 export function PageWorkflowTemplatesCreate() {
   return (
@@ -8,7 +8,7 @@ export function PageWorkflowTemplatesCreate() {
       description="Create a new Workflow Template."
       width="compact"
     >
-      <WorkflowTemplateCreateForm />
+      <WorkflowTemplateCreate />
     </LayoutPage>
   );
 }

@@ -11,10 +11,11 @@ export interface FieldDateTimeProps extends Omit<ComponentPropsWithoutRef<typeof
   required?: boolean;
   rules?: Record<string, unknown>;
   defaultValue?: string;
+  descriptionInline?: boolean;
 }
 
 export const FieldDateTime = forwardRef<HTMLInputElement, FieldDateTimeProps>(
-  ({ name, label, description, required, rules, defaultValue, ...inputProps }, ref) => {
+  ({ name, label, description, required, rules, defaultValue, descriptionInline, ...inputProps }, ref) => {
     const { field } = useController({
       name,
       rules,
@@ -29,6 +30,7 @@ export const FieldDateTime = forwardRef<HTMLInputElement, FieldDateTimeProps>(
         required={required}
         rules={rules}
         defaultValue={defaultValue ?? ""}
+        descriptionInline={descriptionInline}
       >
         <Input
           {...inputProps}

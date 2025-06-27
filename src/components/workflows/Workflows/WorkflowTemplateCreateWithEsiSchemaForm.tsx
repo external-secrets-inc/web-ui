@@ -2,7 +2,7 @@ import { useState } from "react";
 import YAML from "yaml";
 import { Button } from "@/components/ui/button";
 import { EsiSchemaForm, type KubernetesManifest } from "@/components/EsiSchemaForm";
-import useCreateSecretStore from "@/services/workflows/mutations/useCreateSecretStore";
+import useCreateWorkflowTemplate from "@/services/workflows/mutations/useCreateWorkflowTemplate";
 import useGetUISchema from "@/services/esi-schemas/queries/useGetUISchema";
 import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
  * @returns A formatted error message string.
  */
 function extractErrorMessage(error: unknown): string {
-  const defaultMessage = 'An unknown error occurred while creating the secret store.';
+  const defaultMessage = 'An unknown error occurred while creating the workflow template.';
 
   if (typeof error === 'object' && error !== null && 'response' in error) {
     const errorData = (error as { response?: { data?: unknown } }).response?.data;
@@ -74,14 +74,14 @@ function extractErrorMessage(error: unknown): string {
   return defaultMessage;
 }
 
-export function SecretStoreCreateWithEsiSchemaForm() {
+export function WorkflowTemplateCreateWithEsiSchemaForm() {
   const navigate = useNavigate();
   const [serverError, setServerError] = useState<string | null>(null);
 
-  const { data: schema, isLoading, error } = useGetUISchema("secretstore");
-  const { mutate: createSecretStore, isPending } = useCreateSecretStore();
+  const { data: schema, isLoading, error } = useGetUISchema("workflowtemplate");
+  const { mutate: createWorkflowTemplate, isPending } = useCreateWorkflowTemplate();
 
-  const formId = "secret-store-form";
+  const formId = "workflow-template-form";
 
   const handleSubmit = (manifest: KubernetesManifest) => {
     // Clear any previous server errors
@@ -89,17 +89,17 @@ export function SecretStoreCreateWithEsiSchemaForm() {
 
     const yamlContent = YAML.stringify(manifest);
 
-    createSecretStore(
+    createWorkflowTemplate(
       { manifest: yamlContent },
       {
         onSuccess: () => {
-          toast.success("Secret Store created successfully");
+          toast.success("Workflow Template created successfully");
           navigate("..");
         },
         onError: (error: unknown) => {
           const errorMessage = extractErrorMessage(error);
           setServerError(errorMessage);
-          toast.error("Failed to create Secret Store");
+          toast.error("Failed to create Workflow Template");
         },
       }
     );
@@ -143,13 +143,22 @@ export function SecretStoreCreateWithEsiSchemaForm() {
           >
             {isPending && <Loader className="[grid-area:1/1]" />}
             <span className={cn(isPending && "invisible", "[grid-area:1/1]")}>
-              Create Secret Store
+              Create Workflow Template
             </span>
           </Button>
         </div>
       </LayoutPortalTopbarActions>
 
       <div className="space-y-6">
+        {/* TODO[cfviotti]: Remove this alert when the generated schema for Workflow Templates is fully implemented */}
+        <Alert variant="warning">
+          <AlertTitle>Experimental Feature</AlertTitle>
+          <AlertDescription className="font-medium">
+            Form Builder for Workflow Templates is experimental and may not work as expected. <br />
+            Prefer to use the Raw YAML Manifest editor instead.
+          </AlertDescription>
+        </Alert>
+
         {serverError && (
           <Alert variant="destructive">
             <AlertTitle>Server Error</AlertTitle>
@@ -161,7 +170,7 @@ export function SecretStoreCreateWithEsiSchemaForm() {
 
         <EsiSchemaForm
           schema={schema}
-          resourceType="secretstore"
+          resourceType="workflowtemplate"
           onSubmit={handleSubmit}
           formId={formId}
           disabled={isPending}

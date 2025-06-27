@@ -27,6 +27,11 @@ import {
   PageSettings,
   PageSecretStores,
   PageSecretStoresCreate,
+  PageWorkflowTemplates,
+  PageWorkflowTemplatesCreate,
+  PageWorkflowTemplateDetails,
+  PageWorkflowRunTemplatesCreate,
+  PageWorkflowGraphDemo
 } from "@/pages";
 import authStore from "@/services/auth/authStore";
 import RequireAuth from "@auth-kit/react-router/RequireAuth";
@@ -44,9 +49,6 @@ import {
 import { load, page } from "./analytics";
 import { App } from "./App";
 import "./index.css";
-import { PageWorkflowTemplates } from "./pages/PageWorkflowTemplates";
-import { PageWorkflowTemplatesCreate } from "./pages/PageWorkflowTemplatesCreate";
-import { PageWorkflowGraphDemo } from "./pages/PageWorkflowGraphDemo";
 
 const queryClient = new QueryClient();
 
@@ -162,6 +164,33 @@ const router = createBrowserRouter([
                     navigatable: false,
                   }),
                 },
+              },
+              {
+                path: ":templateNamespace/:templateName/runtemplates",
+                element: <Outlet/>,
+                handle: {
+                  breadcrumb: (match: UIMatch) => ({
+                    label: `${match.params.templateNamespace}/${match.params.templateName}`,
+                    path: match.pathname,
+                    navigatable: true,
+                  }),
+                },
+                children: [
+                  {
+                    index: true,
+                    element: <PageWorkflowTemplateDetails />,
+                  },
+                  {
+                    path: "create",
+                    element: <PageWorkflowRunTemplatesCreate />,
+                    handle: {
+                      breadcrumb: () => ({
+                        label: "New Workflow Run Template",
+                        navigatable: false,
+                      }),
+                    },
+                  },
+                ]
               },
             ],
           },
