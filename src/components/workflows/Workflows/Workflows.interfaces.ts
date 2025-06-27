@@ -90,8 +90,8 @@ export interface WorkflowRunData {
   parameters: Record<string, string>;
   variables: Record<string, string>;
   phase: string;
-  startTime?: Date;
-  completionTime?: Date;
+  startTime?: string;
+  completionTime?: string;
   workflowRef?: WorkflowRef;
 }
 
@@ -114,4 +114,9 @@ export interface CreateWorkflowRunFromRunTemplatePayload {
   runTemplateName: string;
   runTemplateNamespace: string;
   runName: string;
+}
+
+export interface GetWorkflowRunPayload {
+  namespace: string;
+  name: string;
 }

@@ -34,7 +34,11 @@ import useOrgLink from "@/hooks/useOrgLink";
 import { formatDate } from "@/utils/dateUtils";
 import useCreateWorkflowRunFromRunTemplate from "@/services/workflows/mutations/useCreateWorkflowRunFromRunTemplate";
 import useGetWorkflowRunTemplatesByTemplate from "@/services/workflows/queries/useGetWorkflowRunTemplatesByTemplate";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface WorkflowRunTemplateTableMeta {
   renderRowActions?: (row: WorkflowRunTemplateTableData) => React.ReactNode;
@@ -124,8 +128,8 @@ export function WorkflowRunTemplateDataTable() {
                 parameters: {},
                 variables: {},
                 phase: "Succeeded",
-                startTime: new Date("2025-06-20T10:00:00Z"),
-                completionTime: new Date("2025-06-20T10:05:00Z"),
+                startTime: "2025-06-20T10:00:00Z",
+                completionTime: "2025-06-20T10:05:00Z",
               },
               {
                 name: "run-pending-1",
@@ -134,7 +138,7 @@ export function WorkflowRunTemplateDataTable() {
                 parameters: {},
                 variables: {},
                 phase: "Pending",
-                startTime: new Date("2025-06-21T11:00:00Z"),
+                startTime: "2025-06-21T11:00:00Z",
                 completionTime: undefined,
               },
               {
@@ -144,8 +148,8 @@ export function WorkflowRunTemplateDataTable() {
                 parameters: {},
                 variables: {},
                 phase: "Failed",
-                startTime: new Date("2025-06-22T12:00:00Z"),
-                completionTime: new Date("2025-06-22T12:03:00Z"),
+                startTime: "2025-06-22T12:00:00Z",
+                completionTime: "2025-06-22T12:03:00Z",
               },
               {
                 name: "run-success-2",
@@ -154,8 +158,8 @@ export function WorkflowRunTemplateDataTable() {
                 parameters: {},
                 variables: {},
                 phase: "Succeeded",
-                startTime: new Date("2025-06-23T13:00:00Z"),
-                completionTime: new Date("2025-06-23T13:05:00Z"),
+                startTime: "2025-06-23T13:00:00Z",
+                completionTime: "2025-06-23T13:05:00Z",
               },
               {
                 name: "run-other-1",
@@ -164,8 +168,8 @@ export function WorkflowRunTemplateDataTable() {
                 parameters: {},
                 variables: {},
                 phase: "Unknown",
-                startTime: new Date("2025-06-24T14:00:00Z"),
-                completionTime: new Date("2025-06-24T14:04:00Z"),
+                startTime: "2025-06-24T14:00:00Z",
+                completionTime: "2025-06-24T14:04:00Z",
               },
             ];
 
@@ -196,7 +200,7 @@ export function WorkflowRunTemplateDataTable() {
                         <Link
                           to={{
                             pathname: getOrgLink(
-                              `/workflows/templates/runtemplates/${templateNamespace}/${templateName}/runs/${run.namespace}/${run.name}`
+                              `/workflows/templates/${templateNamespace}/${templateName}/runtemplates/runs/${run.namespace}/${run.name}`
                             ),
                             search: location.search,
                           }}
@@ -207,20 +211,21 @@ export function WorkflowRunTemplateDataTable() {
                         </Link>
                       </TooltipTrigger>
                       <TooltipContent>
-                          Name: {run.name}<br/>
-                          Phase: {run.phase}<br/>
-                          Start: {
-                            run.startTime
-                              ? formatDate(run.startTime, { format: "full" })
-                              : "N/A"
-                          }<br/>
-                          End: {
-                            run.completionTime
-                              ? formatDate(run.completionTime, {
-                                  format: "full",
-                                })
-                              : "N/A"
-                          }
+                        Name: {run.name}
+                        <br />
+                        Phase: {run.phase}
+                        <br />
+                        Start:{" "}
+                        {run.startTime
+                          ? formatDate(run.startTime, { format: "full" })
+                          : "N/A"}
+                        <br />
+                        End:{" "}
+                        {run.completionTime
+                          ? formatDate(run.completionTime, {
+                              format: "full",
+                            })
+                          : "N/A"}
                       </TooltipContent>
                     </Tooltip>
                   );
@@ -358,9 +363,7 @@ export function WorkflowRunTemplateDataTable() {
       >
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="font-bold w-auto">
-              Run Templates
-            </h2>
+            <h2 className="font-bold w-auto">Run Templates</h2>
           </div>
           <div className="flex justify-end gap-4">
             <DataSearch />

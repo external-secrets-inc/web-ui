@@ -1,5 +1,6 @@
 export { WorkflowDetails } from "./WorkflowDetails";
 export { WorkflowGraph } from "./WorkflowGraph";
+export { WorkflowRunDetails } from "./WorkflowRunDetails";
 export { WorkflowRunTemplateCreate } from "./WorkflowRunTemplateCreate";
 export { WorkflowRunTemplateCreateWithYaml } from "./WorkflowRunTemplateCreateWithYaml";
 export { WorkflowRunTemplateDataTable } from "./WorkflowRunTemplateDataTable";

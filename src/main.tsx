@@ -31,7 +31,8 @@ import {
   PageWorkflowTemplatesCreate,
   PageWorkflowTemplateDetails,
   PageWorkflowRunTemplatesCreate,
-  PageWorkflowGraphDemo
+  PageWorkflowGraphDemo,
+  PageWorkflowRunDetails
 } from "@/pages";
 import authStore from "@/services/auth/authStore";
 import RequireAuth from "@auth-kit/react-router/RequireAuth";
@@ -186,6 +187,16 @@ const router = createBrowserRouter([
                     handle: {
                       breadcrumb: () => ({
                         label: "New Workflow Run Template",
+                        navigatable: false,
+                      }),
+                    },
+                  },
+                  {
+                    path: "runs/:workflowRunNamespace/:workflowRunName",
+                    element: <PageWorkflowRunDetails />,
+                    handle: {
+                      breadcrumb: (match: UIMatch) => ({
+                        label: `${match.params.workflowRunNamespace}/${match.params.workflowRunName}`,
                         navigatable: false,
                       }),
                     },

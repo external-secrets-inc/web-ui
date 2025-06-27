@@ -22,8 +22,8 @@ export function PageWorkflowTemplateDetails() {
 
   return (
     <LayoutPage
-      title={`${templateNamespace}/${templateName}`}
-      description="Manage your External Secrets Operator Workflow Run Templates."
+      title={`${templateName}`}
+      description={`Namespace: ${templateNamespace}`}
     >
       <LayoutPortalTopbarActions>
         <Button variant="secondary" onClick={handleRefresh}>
