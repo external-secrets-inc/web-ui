@@ -74,7 +74,7 @@ export function WorkflowTemplateDataTable() {
                   e.stopPropagation();
                   navigate(
                     getOrgLink(
-                      `/workflows/templates/runtemplates/${props.row.original.namespace}/${props.row.original.name}/create`
+                      `/workflows/templates/${props.row.original.namespace}/${props.row.original.name}/runtemplates/create`
                     )
                   );
                 }}
@@ -128,7 +128,7 @@ export function WorkflowTemplateDataTable() {
               onSelect={() => {
                 navigate(
                   getOrgLink(
-                    `/workflows/templates/runtemplates/${row.namespace}/${row.name}/create`
+                    `/workflows/templates/${row.namespace}/${row.name}/runtemplates/create`
                   )
                 );
               }}
@@ -205,9 +205,9 @@ export function WorkflowTemplateDataTable() {
           onRowClick={(row) =>
             navigate(
               getOrgLink(
-                `/workflows/templates/runtemplates/${
+                `/workflows/templates/${
                   (row as WorkflowTemplateTableData).namespace
-                }/${(row as WorkflowTemplateTableData).name}`
+                }/${(row as WorkflowTemplateTableData).name}/runtemplates`
               )
             )
           }

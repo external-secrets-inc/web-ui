@@ -44,18 +44,18 @@ interface WorkflowRunTemplateFormData {
  * Generates a default YAML template for a WorkflowRunTemplate.
  * @returns A string containing the YAML template.
  */
-function createDefaultYamlTemplate(namespace: string, name: string): string {
+function createDefaultYamlTemplate(templateNamespace: string, templateName: string): string {
   const sampleManifest = {
     apiVersion: "workflows.external-secrets.io/v1alpha1",
     kind: "WorkflowRunTemplate",
     metadata: {
-      name: name + "-run-template",
-      namespace: namespace,
+      name: templateName + "-run-template",
+      namespace: templateNamespace,
     },
     spec: {
       runSpec: {
         templateRef: {
-          name: name,
+          name: templateName,
         },
         arguments: {
           storeName: "vault-backend",

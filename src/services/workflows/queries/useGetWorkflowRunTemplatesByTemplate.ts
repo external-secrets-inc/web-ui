@@ -32,7 +32,11 @@ const useGetWorkflowRunTemplatesByTemplate = (
   >
 ) => {
   return useQuery({
-    queryKey: ["workflows", "useGetWorkflowRunTemplates"],
+    queryKey: [
+      "workflows",
+      "useGetWorkflowRunTemplates",
+      `useGetWorkflowRunTemplates${payload.templateNamespace}/${payload.templateName}`,
+    ],
     queryFn: ({ signal }) => getWorkflowRunTemplatesByTemplate(signal, payload),
     ...options,
   });

@@ -165,11 +165,11 @@ const router = createBrowserRouter([
                 },
               },
               {
-                path: "runtemplates/:templateNamespace/:templateName",
+                path: ":templateNamespace/:templateName/runtemplates",
                 element: <Outlet/>,
                 handle: {
                   breadcrumb: (match: UIMatch) => ({
-                    label: "Workflow Run Templates",
+                    label: `${match.params.templateNamespace}/${match.params.templateName}`,
                     path: match.pathname,
                     navigatable: true,
                   }),

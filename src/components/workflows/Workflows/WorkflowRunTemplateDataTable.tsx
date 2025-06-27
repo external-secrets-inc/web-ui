@@ -22,7 +22,6 @@ import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
 import { toast } from "sonner";
 import useDeleteWorkflowRunTemplate from "@/services/workflows/mutations/useDeleteWorkflowRunTemplate";
-import useGetWorkflowRunTemplates from "@/services/workflows/queries/useGetWorkflowRunTemplates";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,6 +33,7 @@ import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import useOrgLink from "@/hooks/useOrgLink";
 import { formatDate } from "@/utils/dateUtils";
 import useCreateWorkflowRunFromRunTemplate from "@/services/workflows/mutations/useCreateWorkflowRunFromRunTemplate";
+import useGetWorkflowRunTemplatesByTemplate from "@/services/workflows/queries/useGetWorkflowRunTemplatesByTemplate";
 
 interface WorkflowRunTemplateTableMeta {
   renderRowActions?: (row: WorkflowRunTemplateTableData) => React.ReactNode;
@@ -45,17 +45,18 @@ export function WorkflowRunTemplateDataTable() {
   const getOrgLink = useOrgLink();
   const { templateNamespace, templateName } = useParams();
 
-  const { mutate: createWorkflowRunFromRunTemplate } = useCreateWorkflowRunFromRunTemplate({
-    onError: (error: AxiosError<ApiHttpError>) =>
-      handleDefaultApiHttpError(
-        error,
-        "Error while trying to create Workflow Run"
-      ),
-    onSuccess: () => {
-      workflowRunTemplatesRefetch();
-      toast.success("Workflow Run created successfully");
-    },
-  });
+  const { mutate: createWorkflowRunFromRunTemplate } =
+    useCreateWorkflowRunFromRunTemplate({
+      onError: (error: AxiosError<ApiHttpError>) =>
+        handleDefaultApiHttpError(
+          error,
+          "Error while trying to create Workflow Run"
+        ),
+      onSuccess: () => {
+        workflowRunTemplatesRefetch();
+        toast.success("Workflow Run created successfully");
+      },
+    });
 
   const performCreateWorkflowRunFromRunTemplate = useCallback(
     (namespace: string, name: string) => {
@@ -190,10 +191,16 @@ export function WorkflowRunTemplateDataTable() {
 
                   const tooltip = `Name: ${run.name}
 Phase: ${run.phase}
-Start: ${run.startTime ? formatDate(run.startTime, { format: 'americanDate' }) : "N/A"}
+Start: ${
+                    run.startTime
+                      ? formatDate(run.startTime, { format: "americanDate" })
+                      : "N/A"
+                  }
 End: ${
                     run.completionTime
-                      ? formatDate(run.completionTime, { format: 'americanDate' })
+                      ? formatDate(run.completionTime, {
+                          format: "americanDate",
+                        })
                       : "N/A"
                   }`;
 
@@ -224,7 +231,12 @@ End: ${
               <Button
                 size="sm"
                 variant="secondary"
-                onClick={() => performCreateWorkflowRunFromRunTemplate(props.row.original.namespace, props.row.original.name)}
+                onClick={() =>
+                  performCreateWorkflowRunFromRunTemplate(
+                    props.row.original.namespace,
+                    props.row.original.name
+                  )
+                }
               >
                 <LucidePlay />
                 Start Workflow Run
@@ -238,7 +250,13 @@ End: ${
           ),
         }),
       ]),
-    [getOrgLink, performCreateWorkflowRunFromRunTemplate, location, templateNamespace, templateName]
+    [
+      getOrgLink,
+      performCreateWorkflowRunFromRunTemplate,
+      location,
+      templateNamespace,
+      templateName,
+    ]
   );
 
   const workflowRunTemplateTableMeta: WorkflowRunTemplateTableMeta = {
@@ -277,7 +295,6 @@ End: ${
     ),
   };
 
-  // TODO[iurisevero]: Update to useGetWorkflowRunTemplatesByTemplate
   const {
     data: workflowRunTemplatesData,
     refetch: workflowRunTemplatesRefetch,
@@ -285,9 +302,16 @@ End: ${
     isError: isErrorWorkflowRunTemplates,
     isRefetchError: isRefetchErrorWorkflowRunTemplates,
     error: workflowRunTemplatesError,
-  } = useGetWorkflowRunTemplates({
-    staleTime: 30000,
-  });
+  } = useGetWorkflowRunTemplatesByTemplate(
+    {
+      templateNamespace: templateNamespace ?? "",
+      templateName: templateName ?? "",
+    },
+    {
+      staleTime: 30000,
+      enabled: !!templateNamespace && !!templateName,
+    }
+  );
 
   const workflowRunTemplates = useMemo(() => {
     if (!workflowRunTemplatesData) return [];
@@ -325,11 +349,12 @@ End: ${
         initialSort={{ id: "name", desc: false }}
         isLoading={isLoadingWorkflowRunTemplates}
         getRowId={(row) => `${row.namespace}/${row.name}`}
+        emptyMessage={"No Workflow Run Template available"}
       >
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="font-bold">
-              Workflow Template: {templateNamespace}/{templateName}
+            <h2 className="font-bold w-auto">
+              Run Templates
             </h2>
           </div>
           <div className="flex justify-end gap-4">
@@ -339,7 +364,7 @@ End: ${
               onClick={() =>
                 navigate(
                   getOrgLink(
-                    `/workflows/templates/runtemplates/${templateNamespace}/${templateName}/create`
+                    `/workflows/templates/${templateNamespace}/${templateName}/runtemplates/create`
                   )
                 )
               }
