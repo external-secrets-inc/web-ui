@@ -1,27 +1,93 @@
-import {useCallback, useEffect, useMemo} from 'react';
+import {useCallback, useEffect} from 'react';
 import {
-  ReactFlow,
   Background,
   Controls,
   Edge,
   Node,
   NodeTypes,
   Position,
+  ReactFlow,
   ReactFlowProvider,
   useEdgesState,
   useNodesState,
   NodeChange,
+  Handle,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import ContainerNode, {ContainerData} from "./nodes/Container";
-import { WorkflowData } from "./Workflows.interfaces";
+import { WorkflowJob, WorkflowData, WorkflowStep } from "./Workflows.interfaces";
 
 interface WorkflowGraphProps {
-  workflow: WorkflowData;
+  workflow: WorkflowData
 }
 
-const NODE_TYPES: NodeTypes = {container: ContainerNode} as const;
-const EDGE_TYPES: Record<string, never> = Object.freeze({});
+export type JobNodeData = {
+    startNode: boolean;
+    nodeType: string;
+    name: string;
+    phase: string;
+    numSteps: number;
+}
+
+const JobNode = ({ data }: { data: JobNodeData }) => {
+  const borderColor = data.phase === "Succeeded"
+        ? "border-success"
+        : "border-destructive";
+
+  return (
+    <div className={`flex items-center px-2 py-2 shadow-md rounded-md bg-white border-2 ${borderColor}`}>
+        <div style={{height: `${data.numSteps * 80}px`}}>
+            <div className="flex items-center w-full">
+                <div className="ml-2 flex-1">
+                    <div className="items-center text-sm font-bold w-full">
+                        <p className="text-xs">[{data.nodeType.toUpperCase()}]</p>
+                        <p>{data.name}</p>
+                    </div>
+                </div>
+            </div>
+            {!data.startNode &&
+            <Handle
+                type="target"
+                position={Position.Left}
+                className="w-16 !bg-teal-500"
+            />}
+            <Handle
+                type="source"
+                position={Position.Right}
+                className="w-16 !bg-teal-500"
+            />
+        </div>
+        </div>
+    );
+};
+
+export type StepNodeData = {
+    nodeType: string;
+    name: string;
+    phase: string;
+}
+
+const StepNode = ({data}: {data: StepNodeData}) => {
+    const borderColor = data.phase === "Succeeded"
+        ? "border-success"
+        : "border-destructive";
+
+    return (
+      <div className={`flex items-center px-2 py-2 shadow-md rounded-md bg-white border-2 ${borderColor}`}>
+        <div className="text-xs">
+            <div className="flex items-center">
+                <div className="ml-2">
+                  <p className="text-xs">[{data.nodeType.toUpperCase()}]</p>
+                    <div className="font-bold">{data.name}</div>
+                    <div className="text-gray-500">{data.phase}</div>
+                </div>
+            </div>
+        </div>
+        </div>
+    );
+};
+
+const nodeTypes: NodeTypes = {jobNode: JobNode, stepNode: StepNode};
+const edgeTypes: Record<string, never> = Object.freeze({});
 const NODE_WIDTH = 250;
 const SPACING = 100;
 
@@ -48,7 +114,7 @@ const createEdge = (source: string, target: string, status: string): Edge => ({
   style: { stroke: getStatusColor(status) },
 });
 
-const createWorkflowStartNode = (workflow: WorkflowData, yPosition: number): Node<ContainerData> => {
+const createWorkflowStartNode = (workflow: WorkflowData, yPosition: number): Node => {
   return {
     id: 'workflow-start',
     type: 'container',
@@ -66,12 +132,12 @@ const calculateNodeHeight = (nodeType: string, numSteps: number): number => {
   if (nodeType === 'start') {
     return 48; // Approximate height of start node
   }
-  
+
   // For job nodes (standard, switch, loop), height depends on number of steps
   return numSteps * 80;
 };
 
-const createJobNode = (index: number, jobName: string, jobStatus: any, yPosition: number): Node<ContainerData> => {
+const createJobNode = (index: number, jobName: string, jobStatus: WorkflowJob, yPosition: number): Node => {
   const phase = jobStatus.phase || 'Pending';
   const numberOfSteps = Object.keys(jobStatus.steps).length
   return {
@@ -85,7 +151,7 @@ const createJobNode = (index: number, jobName: string, jobStatus: any, yPosition
   };
 };
 
-const createStepNode = (jobName: string, stepName: string, stepStatus: any, stepIndex: number): Node<ContainerData> => {
+const createStepNode = (jobName: string, stepName: string, stepStatus: WorkflowStep, stepIndex: number): Node => {
   return {
     id: `step-${jobName}-${stepName}`,
     type: 'container',
@@ -97,33 +163,30 @@ const createStepNode = (jobName: string, stepName: string, stepStatus: any, step
   };
 };
 
-export function WorkflowGraph({workflow}: WorkflowGraphProps) {
-  const [nodes, setNodes, onNodesChangeDefault] = useNodesState<Node<ContainerData>>([]);
+export function WorkflowGraph({ workflow }: WorkflowGraphProps) {
+  const [nodes, setNodes, onNodesChangeDefault] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
-  const nodeTypes = useMemo(() => NODE_TYPES, []);
-  const edgeTypes = useMemo(() => EDGE_TYPES, []);
-  
   // Custom onNodesChange handler that prevents step nodes from being moved
   const onNodesChange = useCallback(
-    (changes: NodeChange<Node<ContainerData>>[]) => {
+    (changes: NodeChange[]) => {
       // Filter out position changes for step nodes
       const filteredChanges = changes.filter(change => {
         // Allow all non-position changes
         if (change.type !== 'position') return true;
-        
+
         // Find the node being changed
         const node = nodes.find(n => n.id === change.id);
-        
+
         // If it's a step node (has a parentId), prevent position change
         if (node && node.id.startsWith('step-')) {
           return false;
         }
-        
+
         // Allow position changes for other nodes
         return true;
       });
-      
+
       // Apply the filtered changes
       onNodesChangeDefault(filteredChanges);
     },
@@ -133,22 +196,22 @@ export function WorkflowGraph({workflow}: WorkflowGraphProps) {
   const createNodesAndEdges = useCallback(() => {
     if (!workflow) return;
 
-    const newNodes: Node<ContainerData>[] = [];
+    const newNodes: Node[] = [];
     const newEdges: Edge[] = [];
 
     // Calculate heights for all nodes to determine vertical alignment
     const startNodeHeight = calculateNodeHeight('start', 0);
-    
+
     // Calculate heights for all job nodes
     const jobs = Object.entries(workflow.jobs);
-    const jobHeights = jobs.map(([_, jobStatus]) => {
+    const jobHeights = jobs.map(([, jobStatus]) => {
       const numberOfSteps = Object.keys(jobStatus.steps || {}).length;
       return calculateNodeHeight(jobStatus.type, numberOfSteps);
     });
-    
+
     // Find the maximum height to use as reference for centering
     const maxHeight = Math.max(startNodeHeight, ...jobHeights);
-    
+
     // Create the workflow start node with centered y position
     const startNodeYPosition = (maxHeight - startNodeHeight) / 2;
     const workflowStartNode = createWorkflowStartNode(workflow, startNodeYPosition);
@@ -159,7 +222,7 @@ export function WorkflowGraph({workflow}: WorkflowGraphProps) {
       const numberOfSteps = Object.keys(jobStatus.steps || {}).length;
       const jobHeight = calculateNodeHeight(jobStatus.type, numberOfSteps);
       const jobNodeYPosition = (maxHeight - jobHeight) / 2;
-      
+
       const jobNode = createJobNode(index, jobName, jobStatus, jobNodeYPosition);
       newNodes.push(jobNode);
 
@@ -210,5 +273,3 @@ export function WorkflowGraph({workflow}: WorkflowGraphProps) {
       </ReactFlowProvider>
   );
 }
-
-export default WorkflowGraph;

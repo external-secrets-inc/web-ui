@@ -7,3 +7,6 @@ export { PageReloaders } from "./PageReloaders";
 export { PageSecretStores } from "./PageSecretStores";
 export { PageSecretStoresCreate } from "./PageSecretStoresCreate";
 export { PageSettings } from "./PageSettings";
+export { PageWorkflowTemplates } from "./PageWorkflowTemplates";
+export { PageWorkflowTemplatesCreate } from "./PageWorkflowTemplatesCreate";
+export { PageWorkflowGraphDemo } from "./PageWorkflowGraphDemo";

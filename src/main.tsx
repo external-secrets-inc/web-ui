@@ -46,6 +46,7 @@ import { App } from "./App";
 import "./index.css";
 import { PageWorkflowTemplates } from "./pages/PageWorkflowTemplates";
 import { PageWorkflowTemplatesCreate } from "./pages/PageWorkflowTemplatesCreate";
+import { PageWorkflowGraphDemo } from "./pages/PageWorkflowGraphDemo";
 
 const queryClient = new QueryClient();
 
@@ -163,6 +164,17 @@ const router = createBrowserRouter([
                 },
               },
             ],
+          },
+          {
+            path: "graph-demo",
+            element: <PageWorkflowGraphDemo />,
+            handle: {
+              breadcrumb: (match: UIMatch) => ({
+                label: "Workflow Graph Demo",
+                path: match.pathname,
+                navigatable: true,
+              }),
+            },
           },
         ],
       },
