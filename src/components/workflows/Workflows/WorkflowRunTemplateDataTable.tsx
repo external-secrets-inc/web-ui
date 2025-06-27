@@ -34,6 +34,7 @@ import useOrgLink from "@/hooks/useOrgLink";
 import { formatDate } from "@/utils/dateUtils";
 import useCreateWorkflowRunFromRunTemplate from "@/services/workflows/mutations/useCreateWorkflowRunFromRunTemplate";
 import useGetWorkflowRunTemplatesByTemplate from "@/services/workflows/queries/useGetWorkflowRunTemplatesByTemplate";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface WorkflowRunTemplateTableMeta {
   renderRowActions?: (row: WorkflowRunTemplateTableData) => React.ReactNode;
@@ -189,35 +190,39 @@ export function WorkflowRunTemplateDataTable() {
                       break;
                   }
 
-                  const tooltip = `Name: ${run.name}
-Phase: ${run.phase}
-Start: ${
-                    run.startTime
-                      ? formatDate(run.startTime, { format: "americanDate" })
-                      : "N/A"
-                  }
-End: ${
-                    run.completionTime
-                      ? formatDate(run.completionTime, {
-                          format: "americanDate",
-                        })
-                      : "N/A"
-                  }`;
-
                   return (
-                    <Link
-                      to={{
-                        pathname: getOrgLink(
-                          `/workflows/templates/runtemplates/${templateNamespace}/${templateName}/runs/${run.namespace}/${run.name}`
-                        ),
-                        search: location.search,
-                      }}
-                      key={`${run.namespace}/${run.name}`}
-                      className="inline-block"
-                      title={tooltip}
-                    >
-                      <Badge variant={variant}>{index + 1}</Badge>
-                    </Link>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Link
+                          to={{
+                            pathname: getOrgLink(
+                              `/workflows/templates/runtemplates/${templateNamespace}/${templateName}/runs/${run.namespace}/${run.name}`
+                            ),
+                            search: location.search,
+                          }}
+                          key={`${run.namespace}/${run.name}`}
+                          className="inline-block"
+                        >
+                          <Badge variant={variant}>{index + 1}</Badge>
+                        </Link>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                          Name: {run.name}<br/>
+                          Phase: {run.phase}<br/>
+                          Start: {
+                            run.startTime
+                              ? formatDate(run.startTime, { format: "full" })
+                              : "N/A"
+                          }<br/>
+                          End: {
+                            run.completionTime
+                              ? formatDate(run.completionTime, {
+                                  format: "full",
+                                })
+                              : "N/A"
+                          }
+                      </TooltipContent>
+                    </Tooltip>
                   );
                 })}
               </div>
