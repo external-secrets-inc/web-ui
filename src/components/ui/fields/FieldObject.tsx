@@ -24,7 +24,7 @@ export function FieldObject({
   field,
   defaultValue,
   rules,
-  descriptionInline
+  descriptionInline = true,
 }: FieldObjectProps) {
   const { setValue, getValues, formState } = useFormContext();
   const error = !!formState.errors[name];

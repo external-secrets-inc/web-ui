@@ -4,12 +4,12 @@ import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopba
 import { WorkflowTemplateCreateWithYaml } from "./WorkflowTemplateCreateWithYaml";
 import { WorkflowTemplateCreateWithEsiSchemaForm } from "./WorkflowTemplateCreateWithEsiSchemaForm";
 import { LucideSquareCode, LucideTextCursorInput } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 type FormMode = "yaml" | "form";
 
@@ -48,13 +48,23 @@ export function WorkflowTemplateCreate() {
             <TooltipContent>Raw YAML Manifest</TooltipContent>
           </Tooltip>
         </ToggleGroup>
-        <Separator orientation="vertical" className="h-4" />
       </LayoutPortalTopbarActions>
 
       {formMode === "yaml" ? (
         <WorkflowTemplateCreateWithYaml />
       ) : (
-        <WorkflowTemplateCreateWithEsiSchemaForm />
+        <>
+          {/* TODO[cfviotti]: Remove this alert when the generated schema for Workflow Templates is fully implemented */}
+          <Alert variant="warning" className="mb-6">
+            <AlertTitle>Experimental Feature</AlertTitle>
+            <AlertDescription className="font-medium">
+              Form Builder for Workflow Templates is experimental and may not
+              work as expected. <br />
+              Prefer to use the Raw YAML Manifest editor instead.
+            </AlertDescription>
+          </Alert>
+          <WorkflowTemplateCreateWithEsiSchemaForm />
+        </>
       )}
     </>
   );

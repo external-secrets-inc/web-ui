@@ -7,7 +7,109 @@
  * Also, the validation rules are a bit messy and could be improved.
  */
 
-import type { UISchemaField, KubernetesResourceType, KubernetesManifest } from './EsiSchemaForm.interfaces';
+import type { UISchemaField, KubernetesResourceType, KubernetesManifest, OneOfOption, OneOfStaticOption, OneOfApiOption } from './EsiSchemaForm.interfaces';
+
+
+// Constants & Configuration
+/**
+ * Centralized configuration for all Kubernetes resource types.
+ * Single source of truth for API versions, kinds, and display names.
+ */
+const KUBERNETES_RESOURCE_CONFIG: Record<KubernetesResourceType, {
+  apiVersion: string;
+  kind: string;
+  displayName: string;
+}> = {
+  secretstore: {
+    apiVersion: 'external-secrets.io/v1',
+    kind: 'SecretStore',
+    displayName: 'Secret Store',
+  },
+  clustersecretstore: {
+    apiVersion: 'external-secrets.io/v1',
+    kind: 'ClusterSecretStore',
+    displayName: 'Cluster Secret Store',
+  },
+  externalsecret: {
+    apiVersion: 'external-secrets.io/v1',
+    kind: 'ExternalSecret',
+    displayName: 'External Secret',
+  },
+  pushsecret: {
+    apiVersion: 'external-secrets.io/v1',
+    kind: 'PushSecret',
+    displayName: 'Push Secret',
+  },
+  workflow: {
+    apiVersion: 'eso.external-secrets.io/v1alpha1',
+    kind: 'Workflow',
+    displayName: 'Workflow',
+  },
+  workflowtemplate: {
+    apiVersion: 'eso.external-secrets.io/v1alpha1',
+    kind: 'WorkflowTemplate',
+    displayName: 'Workflow Template',
+  },
+  workflowrun: {
+    apiVersion: 'eso.external-secrets.io/v1alpha1',
+    kind: 'WorkflowRun',
+    displayName: 'Workflow Run',
+  },
+};
+
+
+// Kubernetes Resource Utilities
+export function getApiVersionFromResourceType(
+  resourceType: KubernetesResourceType
+): string {
+  return KUBERNETES_RESOURCE_CONFIG[resourceType].apiVersion;
+}
+
+export function getKindFromResourceType(
+  resourceType: KubernetesResourceType
+): string {
+  return KUBERNETES_RESOURCE_CONFIG[resourceType].kind;
+}
+
+/**
+ * Gets the complete resource configuration for a given resource type.
+ * @param resourceType - The Kubernetes resource type.
+ * @returns The complete configuration object with apiVersion, kind, and displayName.
+ */
+export function getResourceConfig(resourceType: KubernetesResourceType) {
+  return KUBERNETES_RESOURCE_CONFIG[resourceType];
+}
+
+/**
+ * Generates a success message based on the resource type.
+ * @param resourceType - The Kubernetes resource type.
+ * @returns A formatted success message.
+ */
+export function getSuccessMessage(resourceType: KubernetesResourceType): string {
+  return `${KUBERNETES_RESOURCE_CONFIG[resourceType].displayName} created successfully`;
+}
+
+
+// Field Validation Utilities
+/**
+ * Utility functions for working with oneOf field options.
+ */
+export const OneOfUtils = {
+  /**
+   * Checks if a oneOf option is a static option (has id property).
+   */
+  isStaticOption(option: OneOfOption): option is OneOfStaticOption {
+    return 'id' in option && typeof option.id === 'string';
+  },
+
+  /**
+   * Checks if a oneOf option is an API option (has href and labelRef properties).
+   */
+  isApiOption(option: OneOfOption): option is OneOfApiOption {
+    return 'href' in option && 'labelRef' in option &&
+      typeof option.href === 'string' && typeof option.labelRef === 'string';
+  },
+};
 
 /**
  * Creates validation rules for a field based on its schema definition.
@@ -126,7 +228,11 @@ export function createFieldValidation(field: UISchemaField) {
           if (!value || value === '') {
             return `${field.label || field.id} is required`;
           }
-          if (!field.oneOf!.includes(value)) {
+          // Check if the value matches any static option id
+          const isValidOption = field.oneOf!.some(option =>
+            OneOfUtils.isStaticOption(option) && option.id === value
+          );
+          if (!isValidOption) {
             return `Invalid option for ${field.label || field.id}`;
           }
           return true;
@@ -228,6 +334,8 @@ export function createSchemaResolver() {
   return undefined; // No resolver needed - fields validate themselves
 }
 
+
+// Data Transformation Utilities
 /**
  * Recursively removes undefined, null, NaN, and empty values from an object or array.
  * This prevents these values from appearing in the final YAML output.
@@ -368,47 +476,6 @@ export function transformData(
   return cleanEmptyValues(result) as Record<string, unknown> ?? {};
 }
 
-export function getApiVersionFromResourceType(
-  resourceType: KubernetesResourceType
-): string {
-  switch (resourceType) {
-    case 'secretstore':
-    case 'clustersecretstore':
-    case 'externalsecret':
-    case 'pushsecret':
-      return 'external-secrets.io/v1';
-    case 'workflow':
-    case 'workflowtemplate':
-    case 'workflowrun':
-      return 'eso.external-secrets.io/v1alpha1';
-    default:
-      return '';
-  }
-}
-
-export function getKindFromResourceType(
-  resourceType: KubernetesResourceType
-): string {
-  switch (resourceType) {
-    case 'secretstore':
-      return 'SecretStore';
-    case 'clustersecretstore':
-      return 'ClusterSecretStore';
-    case 'externalsecret':
-      return 'ExternalSecret';
-    case 'pushsecret':
-      return 'PushSecret';
-    case 'workflow':
-      return 'Workflow';
-    case 'workflowtemplate':
-      return 'WorkflowTemplate';
-    case 'workflowrun':
-      return 'WorkflowRun';
-    default:
-      return '';
-  }
-}
-
 /**
  * Assembles the final Kubernetes manifest from form data.
  * @param formData - The validated data from the form.
@@ -449,6 +516,8 @@ export function assembleManifest(
   return manifest;
 }
 
+
+// Form/UI Utilities
 /**
  * Checks if a field should be visible based on dependencies.
  * @param visibleWhen - The visibility condition from the schema.
@@ -464,4 +533,76 @@ export function isFieldVisible(
   }
   const { field, equals } = visibleWhen;
   return formValues[field] === equals;
+}
+
+
+// Error Handling Utilities
+/**
+ * Extracts a user-friendly error message from API error responses.
+ * This function handles various error formats, including plain text responses
+ * and common JSON error structures.
+ * @param error - The error object from the API response.
+ * @returns A formatted error message string.
+ */
+export function extractErrorMessage(error: unknown): string {
+  const defaultMessage = 'An unknown error occurred while processing the request.';
+
+  if (typeof error === 'object' && error !== null && 'response' in error) {
+    const errorData = (error as { response?: { data?: unknown } }).response?.data;
+
+    if (!errorData) {
+      return defaultMessage;
+    }
+
+    let potentialObject = errorData;
+    let message: string | null = null;
+
+    if (typeof errorData === 'string' && errorData.length > 0) {
+      try {
+        const parsed = JSON.parse(errorData);
+        if (typeof parsed === 'object' && parsed !== null) {
+          potentialObject = parsed;
+        } else {
+          message = errorData;
+        }
+      } catch {
+        message = errorData;
+      }
+    }
+
+    if (typeof potentialObject === 'object' && potentialObject !== null) {
+      const data = potentialObject as Record<string, unknown>;
+
+      if (typeof data.message === 'string' && data.message) {
+        message = data.message;
+      } else if (typeof data.error === 'string' && data.error) {
+        message = data.error;
+      } else if (typeof data.detail === 'string' && data.detail) {
+        message = data.detail;
+      } else if (Array.isArray(data.errors) && data.errors.length > 0) {
+        if (typeof data.errors[0] === 'string') {
+          message = data.errors[0];
+        } else if (typeof data.errors[0]?.message === 'string') {
+          message = data.errors[0].message;
+        }
+      } else if (typeof data.errors === 'object' && data.errors !== null) {
+        const errorsObj = data.errors as Record<string, unknown>;
+        if (typeof errorsObj.body === 'string') {
+          message = errorsObj.body;
+        } else if (typeof errorsObj.error === 'string') {
+          message = errorsObj.error;
+        }
+      }
+    }
+
+    if (message) {
+      return message.replace(/\\n/g, '\n');
+    }
+  }
+
+  if (error instanceof Error) {
+    return error.message.replace(/\\n/g, '\n');
+  }
+
+  return defaultMessage;
 }
