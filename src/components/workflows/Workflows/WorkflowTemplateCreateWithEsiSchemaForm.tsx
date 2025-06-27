@@ -5,16 +5,11 @@ import { EsiSchemaForm, type KubernetesManifest } from "@/components/EsiSchemaFo
 import useCreateWorkflowTemplate from "@/services/workflows/mutations/useCreateWorkflowTemplate";
 import useGetUISchema from "@/services/esi-schemas/queries/useGetUISchema";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
-import useOrgLink from "@/hooks/useOrgLink";
+import { Link, useNavigate } from "react-router-dom";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
 import { Loader } from "@/components/ui/Loader";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
-
-interface WorkflowTemplateCreateWithEsiSchemaFormProps {
-  onCancel?: () => void;
-}
 
 /**
  * Extracts a user-friendly error message from API error responses.
@@ -79,23 +74,14 @@ function extractErrorMessage(error: unknown): string {
   return defaultMessage;
 }
 
-export function WorkflowTemplateCreateWithEsiSchemaForm({ onCancel }: WorkflowTemplateCreateWithEsiSchemaFormProps) {
+export function WorkflowTemplateCreateWithEsiSchemaForm() {
   const navigate = useNavigate();
-  const getOrgLink = useOrgLink();
   const [serverError, setServerError] = useState<string | null>(null);
 
   const { data: schema, isLoading, error } = useGetUISchema("workflowtemplate");
   const { mutate: createWorkflowTemplate, isPending } = useCreateWorkflowTemplate();
 
   const formId = "workflow-template-form";
-
-  const handleCancel = () => {
-    if (onCancel) {
-      onCancel();
-    } else {
-      navigate(getOrgLink("/workflows/templates"));
-    }
-  };
 
   const handleSubmit = (manifest: KubernetesManifest) => {
     // Clear any previous server errors
@@ -108,7 +94,7 @@ export function WorkflowTemplateCreateWithEsiSchemaForm({ onCancel }: WorkflowTe
       {
         onSuccess: () => {
           toast.success("Workflow Template created successfully");
-          navigate(getOrgLink("/workflows/templates"));
+          navigate("..");
         },
         onError: (error: unknown) => {
           const errorMessage = extractErrorMessage(error);
@@ -143,10 +129,10 @@ export function WorkflowTemplateCreateWithEsiSchemaForm({ onCancel }: WorkflowTe
             type="button"
             size="sm"
             variant="outline"
-            onClick={handleCancel}
             disabled={isPending}
-          >
-            Cancel
+            asChild
+            >
+            <Link to="..">Cancel</Link>
           </Button>
           <Button
             type="submit"

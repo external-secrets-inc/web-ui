@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { useNavigate } from "react-router-dom";
-import useOrgLink from "@/hooks/useOrgLink";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
 import { SecretStoreCreateWithYaml } from "./SecretStoreCreateWithYaml";
 import { SecretStoreCreateWithEsiSchemaForm } from "./SecretStoreCreateWithEsiSchemaForm";
@@ -16,13 +14,7 @@ import {
 type FormMode = "yaml" | "form";
 
 export function SecretStoreCreate() {
-  const navigate = useNavigate();
-  const getOrgLink = useOrgLink();
   const [formMode, setFormMode] = useState<FormMode>("form");
-
-  const handleCancel = () => {
-    navigate(getOrgLink("/workflows/secret-stores"));
-  };
 
   return (
     <>
@@ -60,9 +52,9 @@ export function SecretStoreCreate() {
       </LayoutPortalTopbarActions>
 
       {formMode === "yaml" ? (
-        <SecretStoreCreateWithYaml onCancel={handleCancel} />
+        <SecretStoreCreateWithYaml />
       ) : (
-        <SecretStoreCreateWithEsiSchemaForm onCancel={handleCancel} />
+        <SecretStoreCreateWithEsiSchemaForm />
       )}
     </>
   );
