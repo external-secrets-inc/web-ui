@@ -4,29 +4,28 @@ import YAML from "yaml";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { FieldYaml } from "@/components/ui/fields/FieldYaml";
-import useCreateWorkflowTemplate from "@/services/workflows/mutations/useCreateWorkflowTemplate";
+import useCreateWorkflowRunTemplate from "@/services/workflows/mutations/useCreateWorkflowRunTemplate";
 import { toast } from "sonner";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
 import { Loader } from "@/components/ui/Loader";
 import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
 
 /**
- * Validates WorkflowTemplate-specific business logic.
+ * Validates WorkflowRunTemplate-specific business logic.
  * @param yamlContent - The YAML string to validate.
  * @param parsedYaml - The parsed YAML object.
  * @returns Error message or null if valid.
  */
-const validateWorkflowTemplateManifest = (yamlContent: string, parsedYaml?: unknown): string | null => {
+const validateWorkflowRunTemplateManifest = (yamlContent: string, parsedYaml?: unknown): string | null => {
   if (!yamlContent || !parsedYaml) {
     return null;
   }
 
   const manifest = parsedYaml as Record<string, unknown>;
 
-  if (manifest.kind !== "WorkflowTemplate") {
-    return `Invalid resource kind: Expected "WorkflowTemplate", got "${manifest.kind || "unknown"}".`;
+  if (manifest.kind !== "WorkflowRunTemplate") {
+    return `Invalid resource kind: Expected "WorkflowRunTemplate", got "${manifest.kind || "unknown"}".`;
   }
 
   const metadata = manifest.metadata as Record<string, unknown> | undefined;
@@ -37,86 +36,70 @@ const validateWorkflowTemplateManifest = (yamlContent: string, parsedYaml?: unkn
   return null;
 };
 
-interface WorkflowTemplateFormData {
+interface WorkflowRunTemplateFormData {
   yamlContent: string;
 }
 
 /**
- * Generates a default YAML template for a WorkflowTemplate.
+ * Generates a default YAML template for a WorkflowRunTemplate.
  * @returns A string containing the YAML template.
  */
-function createDefaultYamlTemplate(): string {
+function createDefaultYamlTemplate(templateNamespace: string, templateName: string): string {
   const sampleManifest = {
     apiVersion: "workflows.external-secrets.io/v1alpha1",
-    kind: "WorkflowTemplate",
+    kind: "WorkflowRunTemplate",
     metadata: {
-      name: "",
-      namespace: "default",
+      name: templateName + "-run-template",
+      namespace: templateNamespace,
     },
     spec: {
-      name: "job-1",
-      version: "v1",
-      parameters: [
-        {
-          name: "image",
-          description: "The container image to use",
-          required: true,
-          default: "nginx:latest",
+      runSpec: {
+        templateRef: {
+          name: templateName,
         },
-        {
-          name: "replicas",
-          description: "Number of replicas",
-          required: false,
-          default: "1",
+        arguments: {
+          storeName: "vault-backend",
+          storesToDistribute: "k8s-store-market,k8s-store-shopping,k8s-store-shoeshop",
+          keyToDistribute: "my-secret",
         },
-      ],
-      jobs: {
-        job1: {
-          standard: {
-            steps: [
-              {
-                name: "step1",
-                javascript: {
-                  script: `console.log("Using image: " + params.image);
-console.log("Replicas: " + params.replicas);
-return { message: "Template processed successfully" };`
-                },
-              },
-            ],
-          },
-        },
+      },
+      revisionHistoryLimit: 1,
+      runPolicy: {
+        once: {},
       },
     },
   };
+
   return YAML.stringify(sampleManifest);
 }
 
-export function WorkflowTemplateCreateWithYaml() {
+export function WorkflowRunTemplateCreateWithYaml() {
   const navigate = useNavigate();
+  const { templateNamespace, templateName } = useParams();
 
-  const form = useForm<WorkflowTemplateFormData>({
+  const form = useForm<WorkflowRunTemplateFormData>({
     defaultValues: {
       yamlContent: "",
     },
     mode: "onSubmit",
   });
 
-  const { mutate: createWorkflowTemplate, isPending } =
-    useCreateWorkflowTemplate();
+  const { mutate: createWorkflowRunTemplate, isPending } =
+    useCreateWorkflowRunTemplate();
 
   useEffect(() => {
     if (!form.getValues('yamlContent')) {
-      const initialTemplate = createDefaultYamlTemplate();
+      const initialTemplate = createDefaultYamlTemplate(templateNamespace?? "", templateName?? "");
       form.setValue('yamlContent', initialTemplate);
     }
-  }, [form]);
+  }, [form, templateNamespace, templateName]);
 
-  const onSubmit = (data: WorkflowTemplateFormData) => {
-    createWorkflowTemplate(
+  const onSubmit = (data: WorkflowRunTemplateFormData) => {
+    createWorkflowRunTemplate(
       { manifest: data.yamlContent },
       {
         onSuccess: () => {
-          toast.success("Workflow Template created successfully");
+          toast.success("Workflow Run Template created successfully");
           navigate("..");
         },
         onError: (error: unknown) => {
@@ -150,7 +133,6 @@ export function WorkflowTemplateCreateWithYaml() {
   return (
     <>
       <LayoutPortalTopbarActions>
-        <Separator orientation="vertical" className="h-4" />
         <div className="flex items-center gap-2">
           <Button
             type="button"
@@ -170,7 +152,7 @@ export function WorkflowTemplateCreateWithYaml() {
           >
             {isPending && <Loader className="[grid-area:1/1]" />}
             <span className={cn(isPending && "invisible", "[grid-area:1/1]")}>
-              Create Workflow Template
+              Create Workflow Run Template
             </span>
           </Button>
         </div>
@@ -192,12 +174,12 @@ export function WorkflowTemplateCreateWithYaml() {
 
                 try {
                   const parsedYaml = YAML.parse(value);
-                  return validateWorkflowTemplateManifest(value, parsedYaml);
+                  return validateWorkflowRunTemplateManifest(value, parsedYaml);
                 } catch {
                   // YAML parsing errors are handled by FieldYaml itself
                   return true;
                 }
-              },
+              }
             }}
           />
         </form>

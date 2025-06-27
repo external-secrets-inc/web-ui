@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { useNavigate } from "react-router-dom";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
 import { WorkflowTemplateCreateWithYaml } from "./WorkflowTemplateCreateWithYaml";
 import { WorkflowTemplateCreateWithEsiSchemaForm } from "./WorkflowTemplateCreateWithEsiSchemaForm";
@@ -15,12 +14,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 type FormMode = "yaml" | "form";
 
 export function WorkflowTemplateCreate() {
-  const navigate = useNavigate();
   const [formMode, setFormMode] = useState<FormMode>("yaml");
-
-  const handleCancel = () => {
-    navigate("..");
-  };
 
   return (
     <>
@@ -57,7 +51,7 @@ export function WorkflowTemplateCreate() {
       </LayoutPortalTopbarActions>
 
       {formMode === "yaml" ? (
-        <WorkflowTemplateCreateWithYaml onCancel={handleCancel} />
+        <WorkflowTemplateCreateWithYaml />
       ) : (
         <>
           {/* TODO[cfviotti]: Remove this alert when the generated schema for Workflow Templates is fully implemented */}
@@ -69,7 +63,7 @@ export function WorkflowTemplateCreate() {
               Prefer to use the Raw YAML Manifest editor instead.
             </AlertDescription>
           </Alert>
-          <WorkflowTemplateCreateWithEsiSchemaForm onCancel={handleCancel} />
+          <WorkflowTemplateCreateWithEsiSchemaForm />
         </>
       )}
     </>

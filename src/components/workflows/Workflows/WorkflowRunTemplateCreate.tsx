@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
-import { SecretStoreCreateWithYaml } from "./SecretStoreCreateWithYaml";
-import { SecretStoreCreateWithEsiSchemaForm } from "./SecretStoreCreateWithEsiSchemaForm";
+import { WorkflowRunTemplateCreateWithYaml } from "./WorkflowRunTemplateCreateWithYaml";
+// import { WorkflowRunTemplateCreateWithEsiSchemaForm } from "./WorkflowRunTemplateCreateWithEsiSchemaForm";
 import { LucideSquareCode, LucideTextCursorInput } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
   TooltipContent,
@@ -12,8 +13,8 @@ import {
 
 type FormMode = "yaml" | "form";
 
-export function SecretStoreCreate() {
-  const [formMode, setFormMode] = useState<FormMode>("form");
+export function WorkflowRunTemplateCreate() {
+  const [formMode, setFormMode] = useState<FormMode>("yaml");
 
   return (
     <>
@@ -47,12 +48,14 @@ export function SecretStoreCreate() {
             <TooltipContent>Raw YAML Manifest</TooltipContent>
           </Tooltip>
         </ToggleGroup>
+        <Separator orientation="vertical" className="h-4" />
       </LayoutPortalTopbarActions>
 
       {formMode === "yaml" ? (
-        <SecretStoreCreateWithYaml />
+        <WorkflowRunTemplateCreateWithYaml />
       ) : (
-        <SecretStoreCreateWithEsiSchemaForm />
+        // <WorkflowRunTemplateCreateWithEsiSchemaForm />
+        <p>Nothing yet</p>
       )}
     </>
   );

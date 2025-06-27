@@ -6,19 +6,12 @@ import {
 } from "@/components/EsiSchemaForm";
 import useCreateWorkflowTemplate from "@/services/workflows/mutations/useCreateWorkflowTemplate";
 import useGetUISchema from "@/services/esi-schemas/queries/useGetUISchema";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
 import { Loader } from "@/components/ui/Loader";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-
-interface WorkflowTemplateCreateWithEsiSchemaFormProps {
-  onCancel?: () => void;
-}
-
-export function WorkflowTemplateCreateWithEsiSchemaForm({
-  onCancel,
-}: WorkflowTemplateCreateWithEsiSchemaFormProps) {
+export function WorkflowTemplateCreateWithEsiSchemaForm() {
   const navigate = useNavigate();
 
   const { data: schema, isLoading, error } = useGetUISchema("workflowtemplate");
@@ -26,14 +19,6 @@ export function WorkflowTemplateCreateWithEsiSchemaForm({
     useCreateWorkflowTemplate();
 
   const formId = "workflow-template-form";
-
-  const handleCancel = () => {
-    if (onCancel) {
-      onCancel();
-    } else {
-      navigate("..");
-    }
-  };
 
   const handleSubmit = async (manifest: KubernetesManifest) => {
     const yamlContent = YAML.stringify(manifest);
@@ -69,10 +54,10 @@ export function WorkflowTemplateCreateWithEsiSchemaForm({
             type="button"
             size="sm"
             variant="outline"
-            onClick={handleCancel}
             disabled={isPending}
+            asChild
           >
-            Cancel
+            <Link to="..">Cancel</Link>
           </Button>
           <Button
             type="submit"

@@ -4,30 +4,19 @@ import { EsiSchemaForm, type KubernetesManifest } from "@/components/EsiSchemaFo
 import useCreateSecretStore from "@/services/workflows/mutations/useCreateSecretStore";
 import useGetUISchema from "@/services/esi-schemas/queries/useGetUISchema";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
 import { Loader } from "@/components/ui/Loader";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 
-interface SecretStoreCreateWithEsiSchemaFormProps {
-  onCancel?: () => void;
-}
-
-export function SecretStoreCreateWithEsiSchemaForm({ onCancel }: SecretStoreCreateWithEsiSchemaFormProps) {
+export function SecretStoreCreateWithEsiSchemaForm() {
   const navigate = useNavigate();
 
   const { data: schema, isLoading, error } = useGetUISchema("secretstore");
   const { mutateAsync: createSecretStore, isPending } = useCreateSecretStore();
 
   const formId = "secret-store-form";
-
-  const handleCancel = () => {
-    if (onCancel) {
-      onCancel();
-    } else {
-      navigate("..");
-    }
-  };
 
   const handleSubmit = async (manifest: KubernetesManifest) => {
     const yamlContent = YAML.stringify(manifest);
@@ -63,10 +52,10 @@ export function SecretStoreCreateWithEsiSchemaForm({ onCancel }: SecretStoreCrea
             type="button"
             size="sm"
             variant="outline"
-            onClick={handleCancel}
             disabled={isPending}
-          >
-            Cancel
+            asChild
+            >
+            <Link to="..">Cancel</Link>
           </Button>
           <Button
             type="submit"
