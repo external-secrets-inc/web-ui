@@ -6,8 +6,7 @@ import { Button } from "@/components/ui/button";
 import { FieldYaml } from "@/components/ui/fields/FieldYaml";
 import useCreateSecretStore from "@/services/workflows/mutations/useCreateSecretStore";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
-import useOrgLink from "@/hooks/useOrgLink";
+import { Link, useNavigate } from "react-router-dom";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
 import { Loader } from "@/components/ui/Loader";
 import { cn } from "@/lib/utils";
@@ -47,7 +46,7 @@ interface SecretStoreFormData {
  */
 function createDefaultYamlTemplate(): string {
   const sampleManifest = {
-    apiVersion: "external-secrets.io/v1beta1",
+    apiVersion: "external-secrets.io/v1",
     kind: "SecretStore",
     metadata: {
       name: "",
@@ -71,13 +70,8 @@ function createDefaultYamlTemplate(): string {
   return YAML.stringify(sampleManifest);
 }
 
-interface SecretStoreCreateWithYamlProps {
-  onCancel?: () => void;
-}
-
-export function SecretStoreCreateWithYaml({ onCancel }: SecretStoreCreateWithYamlProps) {
+export function SecretStoreCreateWithYaml() {
   const navigate = useNavigate();
-  const getOrgLink = useOrgLink();
 
   const form = useForm<SecretStoreFormData>({
     defaultValues: {
@@ -95,21 +89,13 @@ export function SecretStoreCreateWithYaml({ onCancel }: SecretStoreCreateWithYam
     }
   }, [form]);
 
-  const handleCancel = () => {
-    if (onCancel) {
-      onCancel();
-    } else {
-      navigate(getOrgLink("/workflows/secret-stores"));
-    }
-  };
-
   const onSubmit = (data: SecretStoreFormData) => {
     createSecretStore(
       { manifest: data.yamlContent },
       {
         onSuccess: () => {
           toast.success("Secret Store created successfully");
-          navigate(getOrgLink("/workflows/secret-stores"));
+          navigate("..");
         },
                         onError: (error: unknown) => {
           let message = 'An unknown error occurred while creating the secret store.';
@@ -147,10 +133,10 @@ export function SecretStoreCreateWithYaml({ onCancel }: SecretStoreCreateWithYam
             type="button"
             size="sm"
             variant="outline"
-            onClick={handleCancel}
             disabled={isPending}
-          >
-            Cancel
+            asChild
+            >
+            <Link to="..">Cancel</Link>
           </Button>
           <Button
             type="submit"

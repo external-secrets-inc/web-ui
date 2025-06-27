@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { useNavigate } from "react-router-dom";
-import useOrgLink from "@/hooks/useOrgLink";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
 import { WorkflowTemplateCreateWithYaml } from "./WorkflowTemplateCreateWithYaml";
 import { WorkflowTemplateCreateWithEsiSchemaForm } from "./WorkflowTemplateCreateWithEsiSchemaForm";
@@ -16,13 +14,7 @@ import {
 type FormMode = "yaml" | "form";
 
 export function WorkflowTemplateCreate() {
-  const navigate = useNavigate();
-  const getOrgLink = useOrgLink();
   const [formMode, setFormMode] = useState<FormMode>("yaml");
-
-  const handleCancel = () => {
-    navigate(getOrgLink("/workflows/templates"));
-  };
 
   return (
     <>
@@ -60,9 +52,9 @@ export function WorkflowTemplateCreate() {
       </LayoutPortalTopbarActions>
 
       {formMode === "yaml" ? (
-        <WorkflowTemplateCreateWithYaml onCancel={handleCancel} />
+        <WorkflowTemplateCreateWithYaml />
       ) : (
-        <WorkflowTemplateCreateWithEsiSchemaForm onCancel={handleCancel} />
+        <WorkflowTemplateCreateWithEsiSchemaForm />
       )}
     </>
   );

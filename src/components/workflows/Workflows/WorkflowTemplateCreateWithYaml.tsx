@@ -6,15 +6,10 @@ import { Button } from "@/components/ui/button";
 import { FieldYaml } from "@/components/ui/fields/FieldYaml";
 import useCreateWorkflowTemplate from "@/services/workflows/mutations/useCreateWorkflowTemplate";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
-import useOrgLink from "@/hooks/useOrgLink";
+import { Link, useNavigate } from "react-router-dom";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
 import { Loader } from "@/components/ui/Loader";
 import { cn } from "@/lib/utils";
-
-interface WorkflowTemplateCreateWithYamlProps {
-  onCancel?: () => void;
-}
 
 /**
  * Validates WorkflowTemplate-specific business logic.
@@ -95,9 +90,8 @@ return { message: "Template processed successfully" };`
   return YAML.stringify(sampleManifest);
 }
 
-export function WorkflowTemplateCreateWithYaml({ onCancel }: WorkflowTemplateCreateWithYamlProps) {
+export function WorkflowTemplateCreateWithYaml() {
   const navigate = useNavigate();
-  const getOrgLink = useOrgLink();
 
   const form = useForm<WorkflowTemplateFormData>({
     defaultValues: {
@@ -116,21 +110,13 @@ export function WorkflowTemplateCreateWithYaml({ onCancel }: WorkflowTemplateCre
     }
   }, [form]);
 
-  const handleCancel = () => {
-    if (onCancel) {
-      onCancel();
-    } else {
-      navigate(getOrgLink("/workflows/templates"));
-    }
-  };
-
   const onSubmit = (data: WorkflowTemplateFormData) => {
     createWorkflowTemplate(
       { manifest: data.yamlContent },
       {
         onSuccess: () => {
           toast.success("Workflow Template created successfully");
-          navigate(getOrgLink("/workflows/templates"));
+          navigate("..");
         },
         onError: (error: unknown) => {
           let message = 'An unknown error occurred while creating the workflow template.';
@@ -168,10 +154,10 @@ export function WorkflowTemplateCreateWithYaml({ onCancel }: WorkflowTemplateCre
             type="button"
             size="sm"
             variant="outline"
-            onClick={handleCancel}
             disabled={isPending}
-          >
-            Cancel
+            asChild
+            >
+            <Link to="..">Cancel</Link>
           </Button>
           <Button
             type="submit"
