@@ -91,7 +91,7 @@ export function WorkflowTemplateDataTable() {
           ),
         }),
       ]),
-    []
+    [getOrgLink, navigate]
   );
 
   const workflowTemplateTableMeta: WorkflowTemplateTableMeta = {
