@@ -66,10 +66,27 @@ export function WorkflowTemplateDataTable() {
         columnHelper.display({
           id: "actions",
           cell: (props) => (
-            <div className="flex justify-end">
-              {(
-                props.table.options.meta as WorkflowTemplateTableMeta
-              )?.renderRowActions?.(props.row.original)}
+            <div className="flex justify-end gap-2 items-center">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(
+                    getOrgLink(
+                      `/workflows/templates/runtemplates/${props.row.original.namespace}/${props.row.original.name}/create`
+                    )
+                  );
+                }}
+              >
+                <LucidePlus />
+                Add Workflow Run Template
+              </Button>
+              <div>
+                {(
+                  props.table.options.meta as WorkflowTemplateTableMeta
+                )?.renderRowActions?.(props.row.original)}
+              </div>
             </div>
           ),
         }),
@@ -109,11 +126,15 @@ export function WorkflowTemplateDataTable() {
             </FeatureItemDeleteAction>
             <DropdownMenuItem
               onSelect={() => {
-                navigate(getOrgLink("/workflows/runs/create"));
+                navigate(
+                  getOrgLink(
+                    `/workflows/templates/runtemplates/${row.namespace}/${row.name}/create`
+                  )
+                );
               }}
             >
               <LucidePlus className="mr-2" />
-              Add Workflow Run
+              Add Workflow Run Template
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -179,7 +200,18 @@ export function WorkflowTemplateDataTable() {
             Add Workflow Template
           </Button>
         </div>
-        <DataTable meta={workflowTemplateTableMeta} />
+        <DataTable
+          meta={workflowTemplateTableMeta}
+          onRowClick={(row) =>
+            navigate(
+              getOrgLink(
+                `/workflows/templates/runtemplates/${
+                  (row as WorkflowTemplateTableData).namespace
+                }/${(row as WorkflowTemplateTableData).name}`
+              )
+            )
+          }
+        />
       </DataProvider>
     </div>
   );

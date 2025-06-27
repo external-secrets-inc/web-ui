@@ -58,3 +58,9 @@ export interface WorkflowRef {
   name: string;
   namespace: string;
 }
+
+export interface CreateWorkflowRunFromRunTemplatePayload {
+  runTemplateName: string;
+  runTemplateNamespace: string;
+  runName: string;
+}

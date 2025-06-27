@@ -1,6 +1,11 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { Badge, BadgeProps } from "@/components/ui/badge";
-import { LucideMoreVertical, LucidePlus, LucideTrash2 } from "lucide-react";
+import {
+  LucideMoreVertical,
+  LucidePlay,
+  LucidePlus,
+  LucideTrash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DataProvider,
@@ -25,9 +30,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import useOrgLink from "@/hooks/useOrgLink";
-import { format } from "date-fns";
+import { formatDate } from "@/utils/dateUtils";
+import useCreateWorkflowRunFromRunTemplate from "@/services/workflows/mutations/useCreateWorkflowRunFromRunTemplate";
 
 interface WorkflowRunTemplateTableMeta {
   renderRowActions?: (row: WorkflowRunTemplateTableData) => React.ReactNode;
@@ -35,8 +41,32 @@ interface WorkflowRunTemplateTableMeta {
 
 export function WorkflowRunTemplateDataTable() {
   const navigate = useNavigate();
+  const location = useLocation();
   const getOrgLink = useOrgLink();
   const { templateNamespace, templateName } = useParams();
+
+  const { mutate: createWorkflowRunFromRunTemplate } = useCreateWorkflowRunFromRunTemplate({
+    onError: (error: AxiosError<ApiHttpError>) =>
+      handleDefaultApiHttpError(
+        error,
+        "Error while trying to create Workflow Run"
+      ),
+    onSuccess: () => {
+      workflowRunTemplatesRefetch();
+      toast.success("Workflow Run created successfully");
+    },
+  });
+
+  const performCreateWorkflowRunFromRunTemplate = useCallback(
+    (namespace: string, name: string) => {
+      createWorkflowRunFromRunTemplate({
+        runTemplateNamespace: namespace,
+        runTemplateName: name,
+        runName: name + "-ui-triggered",
+      });
+    },
+    [createWorkflowRunFromRunTemplate]
+  );
 
   const columns = useMemo(
     () =>
@@ -83,6 +113,7 @@ export function WorkflowRunTemplateDataTable() {
           cell: (info) => {
             const runs: WorkflowRunData[] = info.getValue();
 
+            // TODO[iurisevero]: Remove test runs
             const testRuns: WorkflowRunData[] = [
               {
                 name: "run-success-1",
@@ -159,16 +190,21 @@ export function WorkflowRunTemplateDataTable() {
 
                   const tooltip = `Name: ${run.name}
 Phase: ${run.phase}
-Start: ${run.startTime ? format(new Date(run.startTime), "Pp") : "N/A"}
+Start: ${run.startTime ? formatDate(run.startTime, { format: 'americanDate' }) : "N/A"}
 End: ${
                     run.completionTime
-                      ? format(new Date(run.completionTime), "Pp")
+                      ? formatDate(run.completionTime, { format: 'americanDate' })
                       : "N/A"
                   }`;
 
                   return (
                     <Link
-                      to=""
+                      to={{
+                        pathname: getOrgLink(
+                          `/workflows/templates/runtemplates/${templateNamespace}/${templateName}/runs/${run.namespace}/${run.name}`
+                        ),
+                        search: location.search,
+                      }}
                       key={`${run.namespace}/${run.name}`}
                       className="inline-block"
                       title={tooltip}
@@ -184,15 +220,25 @@ End: ${
         columnHelper.display({
           id: "actions",
           cell: (props) => (
-            <div className="flex justify-end">
-              {(
-                props.table.options.meta as WorkflowRunTemplateTableMeta
-              )?.renderRowActions?.(props.row.original)}
+            <div className="flex justify-end gap-2 items-center">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => performCreateWorkflowRunFromRunTemplate(props.row.original.namespace, props.row.original.name)}
+              >
+                <LucidePlay />
+                Start Workflow Run
+              </Button>
+              <div>
+                {(
+                  props.table.options.meta as WorkflowRunTemplateTableMeta
+                )?.renderRowActions?.(props.row.original)}
+              </div>
             </div>
           ),
         }),
       ]),
-    []
+    [getOrgLink, performCreateWorkflowRunFromRunTemplate, location, templateNamespace, templateName]
   );
 
   const workflowRunTemplateTableMeta: WorkflowRunTemplateTableMeta = {
@@ -222,7 +268,7 @@ End: ${
             >
               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                 <LucideTrash2 className="mr-2" />
-                Delete Workflow Template
+                Delete Workflow Run Template
               </DropdownMenuItem>
             </FeatureItemDeleteAction>
           </DropdownMenuContent>
@@ -231,6 +277,7 @@ End: ${
     ),
   };
 
+  // TODO[iurisevero]: Update to useGetWorkflowRunTemplatesByTemplate
   const {
     data: workflowRunTemplatesData,
     refetch: workflowRunTemplatesRefetch,
@@ -251,11 +298,11 @@ End: ${
     onError: (error: AxiosError<ApiHttpError>) =>
       handleDefaultApiHttpError(
         error,
-        "Error while trying to delete Workflow Template"
+        "Error while trying to delete Workflow Run Template"
       ),
     onSuccess: () => {
       workflowRunTemplatesRefetch();
-      toast.success("Workflow Template deleted successfully");
+      toast.success("Workflow Run Template deleted successfully");
     },
   });
 
@@ -279,21 +326,28 @@ End: ${
         isLoading={isLoadingWorkflowRunTemplates}
         getRowId={(row) => `${row.namespace}/${row.name}`}
       >
-        <div className="flex justify-end gap-4 items-center">
-          <DataSearch />
-          <Button
-            variant="outline"
-            onClick={() =>
-              navigate(
-                getOrgLink(
-                  `/workflows/templates/runtemplates/${templateNamespace}/${templateName}/create`
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="font-bold">
+              Workflow Template: {templateNamespace}/{templateName}
+            </h2>
+          </div>
+          <div className="flex justify-end gap-4">
+            <DataSearch />
+            <Button
+              variant="outline"
+              onClick={() =>
+                navigate(
+                  getOrgLink(
+                    `/workflows/templates/runtemplates/${templateNamespace}/${templateName}/create`
+                  )
                 )
-              )
-            }
-          >
-            <LucidePlus />
-            Add Workflow Run Template
-          </Button>
+              }
+            >
+              <LucidePlus />
+              Add Workflow Run Template
+            </Button>
+          </div>
         </div>
         <DataTable meta={workflowRunTemplateTableMeta} />
       </DataProvider>

@@ -14,7 +14,7 @@ const getWorkflowRunTemplatesByTemplate = async (
 ): Promise<WorkflowRunTemplateTableData[]> => {
   const headers = await getAuthHeaders();
   const response = await axiosInstance.get(
-    `/api/v1/workflowruntemplates/by-template?templateName=${payload.templateName}&templateNamespace=${payload.templateNamespace}`,
+    `/api/v1/workflowruntemplates/by-template?templateNamespace=${payload.templateNamespace}&templateName=${payload.templateName}`,
     {
       headers,
       signal,

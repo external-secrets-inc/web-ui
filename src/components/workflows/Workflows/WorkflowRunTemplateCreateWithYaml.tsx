@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { FieldYaml } from "@/components/ui/fields/FieldYaml";
 import useCreateWorkflowRunTemplate from "@/services/workflows/mutations/useCreateWorkflowRunTemplate";
 import { toast } from "sonner";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
 import { Loader } from "@/components/ui/Loader";
 import { cn } from "@/lib/utils";
@@ -44,18 +44,18 @@ interface WorkflowRunTemplateFormData {
  * Generates a default YAML template for a WorkflowRunTemplate.
  * @returns A string containing the YAML template.
  */
-function createDefaultYamlTemplate(): string {
+function createDefaultYamlTemplate(namespace: string, name: string): string {
   const sampleManifest = {
     apiVersion: "workflows.external-secrets.io/v1alpha1",
     kind: "WorkflowRunTemplate",
     metadata: {
-      name: "distribution-workflow-template",
-      namespace: "default",
+      name: name + "-run-template",
+      namespace: namespace,
     },
     spec: {
       runSpec: {
         templateRef: {
-          name: "distribution-workflow",
+          name: name,
         },
         arguments: {
           storeName: "vault-backend",
@@ -75,6 +75,7 @@ function createDefaultYamlTemplate(): string {
 
 export function WorkflowRunTemplateCreateWithYaml() {
   const navigate = useNavigate();
+  const { templateNamespace, templateName } = useParams();
 
   const form = useForm<WorkflowRunTemplateFormData>({
     defaultValues: {
@@ -88,10 +89,10 @@ export function WorkflowRunTemplateCreateWithYaml() {
 
   useEffect(() => {
     if (!form.getValues('yamlContent')) {
-      const initialTemplate = createDefaultYamlTemplate();
+      const initialTemplate = createDefaultYamlTemplate(templateNamespace?? "", templateName?? "");
       form.setValue('yamlContent', initialTemplate);
     }
-  }, [form]);
+  }, [form, templateNamespace, templateName]);
 
   const onSubmit = (data: WorkflowRunTemplateFormData) => {
     createWorkflowRunTemplate(
