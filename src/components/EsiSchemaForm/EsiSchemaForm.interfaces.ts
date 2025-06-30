@@ -22,6 +22,7 @@ export interface UISchemaField {
   minLength?: number;
   maxLength?: number;
   pattern?: string;
+  allowEmpty?: boolean;
 }
 
 /**
