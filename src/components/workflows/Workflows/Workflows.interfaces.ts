@@ -1,9 +1,10 @@
 import { Status } from "../Common.interfaces";
 
+// Workflow Templates
 export interface WorkflowTemplateTableData {
   name: string;
   namespace: string;
-  status: Status
+  status: Status;
 }
 
 export interface CreateWorkflowTemplatePayload {
@@ -15,6 +16,51 @@ export interface DeleteWorkflowTemplatePayload {
   name: string;
 }
 
+// Workflows
+export interface WorkflowTableData {
+  name: string;
+  namespace: string;
+  status: Status;
+  phase: string;
+  startTime: string;
+  completionTime: string;
+}
+
+export interface WorkflowData {
+  name: string;
+  namespace: string;
+  status: Status;
+  manifest: string;
+  phase: string;
+  jobs: Record<string, WorkflowJob>;
+  startTime?: string;
+  completionTime?: string;
+  createdFromTemplate?: boolean;
+  templateRef?: TemplateRef;
+  workflowRunRef?: WorkflowRunRef;
+  variables?: Record<string, string>;
+}
+
+export interface WorkflowJob {
+  phase: string;
+  startTime?: Date;
+  completionTime?: Date;
+  type: string;
+  steps: Record<string, WorkflowStep>;
+}
+
+export interface WorkflowStep {
+  type: string;
+  phase: string;
+  startTime?: Date;
+  completionTime?: Date;
+  outputs: Record<string, unknown>;
+}
+
+export interface GetWorkflowPayload {
+  namespace: string;
+  name: string;
+}
 export interface WorkflowRunTemplateTableData {
   name: string;
   namespace: string;
@@ -44,14 +90,19 @@ export interface WorkflowRunData {
   parameters: Record<string, string>;
   variables: Record<string, string>;
   phase: string;
-  startTime?: Date;
-  completionTime?: Date;
+  startTime?: string;
+  completionTime?: string;
   workflowRef?: WorkflowRef;
 }
 
 export interface TemplateRef {
   name: string;
   namespace: string;
+}
+
+export interface WorkflowRunRef {
+    name: string;
+    namespace: string;
 }
 
 export interface WorkflowRef {
@@ -63,4 +114,9 @@ export interface CreateWorkflowRunFromRunTemplatePayload {
   runTemplateName: string;
   runTemplateNamespace: string;
   runName: string;
+}
+
+export interface GetWorkflowRunPayload {
+  namespace: string;
+  name: string;
 }

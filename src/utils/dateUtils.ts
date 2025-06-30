@@ -35,7 +35,7 @@ export const formatDate = (
   let formatString: string;
   switch (options.format) {
     case 'full':
-      formatString = 'MMM/dd/yyyy HH:mm'; // Example: Jan/10/2025 12:34
+      formatString = 'MMM/dd/yyyy HH:mm:ss'; // Example: Jan/10/2025 12:34
       break;
     case 'timeOnly':
       formatString = 'HH:mm:ss'; // Example: 12:34:56
