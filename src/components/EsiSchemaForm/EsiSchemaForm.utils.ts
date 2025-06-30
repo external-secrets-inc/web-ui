@@ -337,6 +337,35 @@ export function createSchemaResolver() {
 
 // Data Transformation Utilities
 /**
+ * Recursively removes all UI state fields from a data structure.
+ * This ensures no internal UI state leaks into the final manifest.
+ */
+function removeUIStateFields(obj: unknown): unknown {
+  if (obj === null || obj === undefined || typeof obj !== 'object') {
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(item => removeUIStateFields(item));
+  }
+
+  const result: Record<string, unknown> = {};
+  const objValue = obj as Record<string, unknown>;
+
+  for (const key in objValue) {
+    if (Object.prototype.hasOwnProperty.call(objValue, key)) {
+      // Skip any UI state fields at any level
+      if (key.includes('__ui_state')) {
+        continue;
+      }
+      result[key] = removeUIStateFields(objValue[key]);
+    }
+  }
+
+  return result;
+}
+
+/**
  * Recursively removes undefined, null, NaN, and empty values from an object or array.
  * This prevents these values from appearing in the final YAML output.
  */
@@ -387,9 +416,12 @@ export function transformData(
     return {};
   }
 
-  // If no schema provided, return data as-is
+  // Remove all UI state fields first - this handles all __ui_state filtering in one place
+  const cleanData = removeUIStateFields(data) as Record<string, unknown>;
+
+  // If no schema provided, return cleaned data as-is
   if (!schema || !Array.isArray(schema)) {
-    return cleanEmptyValues(data) as Record<string, unknown> ?? {};
+    return cleanEmptyValues(cleanData) as Record<string, unknown> ?? {};
   }
 
   /**
@@ -413,8 +445,8 @@ export function transformData(
       }, {} as Record<string, string>);
     }
 
-    // Recursively transform object fields
-    if (fieldSchema.type === 'object' && value && typeof value === 'object' && !Array.isArray(value)) {
+    // Recursively transform any object, regardless of schema type (for robustness)
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
       const result: Record<string, unknown> = {};
       const objValue = value as Record<string, unknown>;
 
@@ -460,15 +492,10 @@ export function transformData(
   // Transform the root data
   const result: Record<string, unknown> = {};
 
-  for (const key in data) {
-    if (Object.prototype.hasOwnProperty.call(data, key)) {
-      // Skip internal UI state fields
-      if (key.includes('.__selection')) {
-        continue;
-      }
-
+  for (const key in cleanData) {
+    if (Object.prototype.hasOwnProperty.call(cleanData, key)) {
       const fieldSchema = schemaMap.get(key);
-      result[key] = transformValue(data[key], fieldSchema);
+      result[key] = transformValue(cleanData[key], fieldSchema);
     }
   }
 
