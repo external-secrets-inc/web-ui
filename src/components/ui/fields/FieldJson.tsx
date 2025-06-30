@@ -10,6 +10,7 @@ export interface FieldJsonProps {
   rules?: Record<string, unknown>;
   defaultValue?: unknown;
   descriptionInline?: boolean;
+  disabled?: boolean;
 }
 
 export function FieldJson({
@@ -19,7 +20,8 @@ export function FieldJson({
   required,
   rules,
   defaultValue,
-  descriptionInline
+  descriptionInline,
+  disabled
 }: FieldJsonProps) {
   const { field } = useController({
     name,
@@ -41,6 +43,7 @@ export function FieldJson({
         language="json"
         placeholder={`{\n  "key": "value"\n}`}
         className="min-h-[120px]"
+        disabled={disabled}
         value={typeof field.value === 'object' && field.value !== null
           ? JSON.stringify(field.value, null, 2)
           : (field.value || '')
