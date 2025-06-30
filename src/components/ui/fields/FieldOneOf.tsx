@@ -2,8 +2,7 @@ import type { UISchemaField } from "@/components/EsiSchemaForm/EsiSchemaForm.int
 import { OneOfUtils } from "@/components/EsiSchemaForm/EsiSchemaForm.utils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useController, useFormContext } from "react-hook-form";
-import { FieldBase } from "./FieldBase";
+import { useFormContext } from "react-hook-form";
 import { FieldRenderer } from "./FieldRenderer";
 import { FieldSelect, SelectOption } from "./FieldSelect";
 
@@ -14,7 +13,6 @@ export interface FieldOneOfProps {
   required?: boolean;
   rules?: Record<string, unknown>;
   field: UISchemaField;
-  defaultValue?: string;
   descriptionInline?: boolean;
 }
 
@@ -25,7 +23,6 @@ export function FieldOneOf({
   required,
   rules,
   field,
-  defaultValue,
   descriptionInline,
 }: FieldOneOfProps) {
   const { setValue, getValues } = useFormContext();
@@ -53,6 +50,7 @@ export function FieldOneOf({
     if (!oneOfFields || oneOfFields.length === 0) return "";
 
     try {
+      // First, check if there's an existing form value
       const existingValueField = oneOfFields.find((f) => {
         if (!f || !f.id) return false;
         const propertyName = getPropertyName(f.id);
@@ -60,7 +58,20 @@ export function FieldOneOf({
         const value = getValues(`${name}.${propertyName}`);
         return value !== undefined && value !== null;
       });
-      return existingValueField?.id || "";
+
+      if (existingValueField?.id) {
+        return existingValueField.id;
+      }
+
+      // If no existing value, check for schema default
+      if (field.default && typeof field.default === "string") {
+        const defaultFieldExists = oneOfFields.some(f => f?.id === field.default);
+        if (defaultFieldExists) {
+          return field.default;
+        }
+      }
+
+      return "";
     } catch (error) {
       console.warn("Error finding existing value field:", error);
       return "";
@@ -108,11 +119,14 @@ export function FieldOneOf({
     setSelectedFieldId(value);
   }, [selectedField, getPropertyName, setValue, name]);
 
-  const selectionFieldName = `${name}.__selection`;
-  const { field: selectionField } = useController({
-    name: selectionFieldName,
-    defaultValue: selectedFieldId || "",
-  });
+  const selectionFieldName = `${name}.__ui_state`;
+
+  // Initialize UI state field with selected field ID
+  useEffect(() => {
+    if (selectedFieldId) {
+      setValue(selectionFieldName, selectedFieldId, { shouldValidate: false });
+    }
+  }, [selectedFieldId, selectionFieldName, setValue]);
 
   const validOneOfFields = useMemo(() => {
     return oneOfFields.filter((f) => f && f.id && f.label);
@@ -153,44 +167,32 @@ export function FieldOneOf({
   }
 
   return (
-    <FieldBase
-      name={selectionFieldName}
-      defaultValue={defaultValue ?? ""}
-      renderCustomLayout
-      rules={rules}
-      hideMessage
-    >
-      <>
-        <div className="space-y-6">
-          <FieldSelect
-            name={selectionFieldName}
-            label={label}
-            description={description}
-            required={required}
-            options={selectOptions}
-            placeholder="Select an option..."
-            defaultValue={selectedFieldId || ""}
-            onValueChange={(value) => {
-              handleSelectionChange(value);
-              selectionField.onChange(value);
-            }}
-            emptyMessage="No valid options available for this field."
-            descriptionInline={descriptionInline}
-          />
+    <div className="space-y-6">
+      <FieldSelect
+        name={selectionFieldName}
+        label={label}
+        description={description}
+        required={required}
+        options={selectOptions}
+        placeholder="Select an option..."
+        defaultValue={selectedFieldId || ""}
+        onValueChange={handleSelectionChange}
+        emptyMessage="No valid options available for this field."
+        descriptionInline={descriptionInline}
+        rules={rules}
+      />
 
-          {selectedField && selectedField.id && (
-            <div className="mt-4">
-              <FieldRenderer
-                key={selectedField.id}
-                field={{
-                  ...selectedField,
-                  id: `${name}.${getPropertyName(selectedField.id)}`,
-                }}
-              />
-            </div>
-          )}
+      {selectedField && selectedField.id && (
+        <div className="mt-4">
+          <FieldRenderer
+            key={selectedField.id}
+            field={{
+              ...selectedField,
+              id: `${name}.${getPropertyName(selectedField.id)}`,
+            }}
+          />
         </div>
-      </>
-    </FieldBase>
+      )}
+    </div>
   );
 }
