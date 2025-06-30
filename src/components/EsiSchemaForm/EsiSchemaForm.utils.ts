@@ -101,7 +101,7 @@ export const OptionUtils = {
   /**
    * Checks if an option is an API option (has href and labelRef properties).
    */
-    isApiOption(option: unknown): option is ApiOptionLike {
+  isApiOption(option: unknown): option is ApiOptionLike {
     return typeof option === 'object' && option !== null &&
       'href' in option && 'labelRef' in option &&
       typeof (option as Record<string, unknown>).href === 'string' &&
@@ -279,13 +279,23 @@ export function createFieldValidation(field: UISchemaField) {
     }
     case 'multi-select': {
       if (field.required) {
-        rules.validate = (value: string[]) => {
-          if (!Array.isArray(value) || value.length === 0) {
+        rules.validate = (value: string[] | string) => {
+          // Check if this field uses API options
+          const isApiOption = OptionUtils.getAnyOfApiOption(field) !== null;
+
+          // Handle both array (static options) and comma-separated string (API options) formats
+          // TODO[cfviotti]: In the future, API options for anyOf should store proper arrays instead of comma-separated strings
+          const normalizedValue = Array.isArray(value)
+            ? value
+            : (typeof value === 'string' ? value.split(',').filter(Boolean) : []);
+
+          if (normalizedValue.length === 0) {
             return `${field.label || field.id} must have at least one selection`;
           }
-          // Validate that all values are from the allowed options
-          if (field.options && field.options.length > 0) {
-            const invalidOptions = value.filter(v => !field.options!.includes(v));
+
+          // Validate that all values are from the allowed options (only for static options, not API options)
+          if (!isApiOption && field.options && field.options.length > 0) {
+            const invalidOptions = normalizedValue.filter(v => !field.options!.includes(v));
             if (invalidOptions.length > 0) {
               return `Invalid options: ${invalidOptions.join(', ')}`;
             }
