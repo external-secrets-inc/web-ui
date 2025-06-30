@@ -1,5 +1,7 @@
-import type { UISchemaField } from "@/components/EsiSchemaForm/EsiSchemaForm.interfaces";
-import { OneOfUtils } from "@/components/EsiSchemaForm/EsiSchemaForm.utils";
+import type {
+  UISchemaField,
+  OneOfStaticOption,
+} from "@/components/EsiSchemaForm/EsiSchemaForm.interfaces";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useFormContext } from "react-hook-form";
@@ -34,16 +36,15 @@ export function FieldOneOf({
   }, []);
 
   const oneOfFields = useMemo(() => {
-    if (!field.oneOf || !Array.isArray(field.oneOf) || !field.fields || !Array.isArray(field.fields)) {
+    if (!field.oneOf || !field.fields) {
       return [];
     }
-
-    // Handle new object format - only process static options for now
-    const staticOptions = field.oneOf.filter(OneOfUtils.isStaticOption);
-    return field.fields.filter((f) => {
-      if (!f || !f.id) return false;
-      return staticOptions.some(option => option.id === f.id);
-    });
+    const validOptionIds = field.oneOf.map(
+      (option) => (option as OneOfStaticOption).id
+    );
+    return field.fields.filter(
+      (f) => f && f.id && validOptionIds.includes(f.id)
+    );
   }, [field.oneOf, field.fields]);
 
   const [selectedFieldId, setSelectedFieldId] = useState<string>(() => {
@@ -138,24 +139,6 @@ export function FieldOneOf({
       label: oneOfField.label || oneOfField.id || "Unknown",
     }));
   }, [validOneOfFields]);
-
-  // Check if there are API options that need special handling
-  const hasApiOptions = useMemo(() => {
-    if (!field.oneOf) return false;
-    return field.oneOf.some(OneOfUtils.isApiOption);
-  }, [field.oneOf]);
-
-  if (hasApiOptions) {
-    return (
-      <Alert variant="warning">
-        <AlertTitle>API oneOf options not yet implemented</AlertTitle>
-        <AlertDescription>
-          This field uses API options (href/labelRef) which are not yet supported.
-          Field: {field.id}
-        </AlertDescription>
-      </Alert>
-    );
-  }
 
   if (!validOneOfFields || validOneOfFields.length === 0) {
     return (

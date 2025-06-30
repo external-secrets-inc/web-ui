@@ -109,6 +109,19 @@ export const OneOfUtils = {
     return 'href' in option && 'labelRef' in option &&
       typeof option.href === 'string' && typeof option.labelRef === 'string';
   },
+
+  /**
+   * Extracts API option configuration from a field's oneOf array.
+   * Returns the first API option found, or null if none exist.
+   */
+  getApiOption(field: UISchemaField): OneOfApiOption | null {
+    if (!field.oneOf || !Array.isArray(field.oneOf) || field.oneOf.length === 0) {
+      return null;
+    }
+
+    const apiOptions = field.oneOf.filter(this.isApiOption);
+    return apiOptions.length > 0 ? apiOptions[0] as OneOfApiOption : null;
+  },
 };
 
 /**

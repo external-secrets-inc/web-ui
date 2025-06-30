@@ -18,6 +18,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Loader } from "@/components/ui/Loader";
+import useGetEsiSchemaOptionsFromApi from "@/services/esi-schemas/queries/useGetEsiSchemaOptionsFromApi";
+import { useMemo, useState } from "react";
 
 export interface SelectOption {
   value: string;
@@ -40,6 +42,19 @@ export interface FieldSelectProps {
   customContent?: React.ReactNode;
   onValueChange?: (value: string) => void;
   descriptionInline?: boolean;
+  /**
+   * TODO[cfviotti]: These components should not really care if they have
+   * static or async options. This should be something dealt with better at
+   * a top level instead.
+   *
+   * API configuration for fetching options.
+   * When provided, options will be fetched from the API instead of using the static `options` prop.
+   * The API call is triggered lazily when the user opens the select.
+   */
+  apiOptions?: {
+    href: string;
+    labelRef: string;
+  };
 }
 
 export function FieldSelect({
@@ -58,6 +73,7 @@ export function FieldSelect({
   customContent,
   onValueChange,
   descriptionInline,
+  apiOptions,
 }: FieldSelectProps) {
   const { field } = useController({
     name,
@@ -65,22 +81,55 @@ export function FieldSelect({
     defaultValue: defaultValue ?? "",
   });
 
-  // Normalize options to SelectOption format
-  const normalizedOptions: SelectOption[] = Array.isArray(options)
-    ? options.map((option) => {
-        if (typeof option === "string") {
-          return { value: option, label: option };
-        }
-        return option;
-      }).filter(
-        (option) =>
-          option &&
-          option.value !== null &&
-          option.value !== undefined &&
-          typeof option.value === "string" &&
-          option.value.trim() !== "" // Empty strings are invalid for Radix UI Select
-      )
-    : [];
+  const [isOpen, setIsOpen] = useState(false);
+
+  const {
+    data: apiData,
+    isLoading: apiLoading,
+    error: apiError,
+  } = useGetEsiSchemaOptionsFromApi(apiOptions?.href, {
+    enabled: !!apiOptions?.href && isOpen,
+  });
+
+  const normalizedOptions: SelectOption[] = useMemo(() => {
+    if (apiOptions && apiData) {
+      return apiData
+        .map((item: Record<string, unknown>) => {
+          const labelValue = item[apiOptions.labelRef];
+          const value =
+            typeof labelValue === "string" ? labelValue : String(labelValue);
+
+          if (!value || value.trim() === "") {
+            // Radix Select doesn't support empty values, so we need to filter them out.
+            return null;
+          }
+
+          return {
+            value,
+            label: value,
+          };
+        })
+        .filter((option): option is SelectOption => option !== null);
+    }
+
+    return Array.isArray(options)
+      ? options
+          .map((option) => {
+            if (typeof option === "string") {
+              return { value: option, label: option };
+            }
+            return option;
+          })
+          .filter(
+            (option) =>
+              option &&
+              option.value !== null &&
+              option.value !== undefined &&
+              typeof option.value === "string" &&
+              option.value.trim() !== ""
+          )
+      : [];
+  }, [options, apiOptions, apiData]);
 
   const handleClear = () => {
     field.onChange("");
@@ -94,12 +143,16 @@ export function FieldSelect({
 
   const showClearButton = allowClear && field.value && field.value !== "";
 
+  const isLoading = loading || apiLoading;
+  const combinedError =
+    error || (apiError ? `Failed to load options: ${apiError.message}` : null);
+
   const renderSelectContent = () => {
     if (customContent) {
       return customContent;
     }
 
-    if (loading) {
+    if (isLoading) {
       return (
         <div className="flex items-center justify-center py-4 text-sm text-muted-foreground">
           <Loader />
@@ -107,10 +160,10 @@ export function FieldSelect({
       );
     }
 
-    if (error) {
+    if (combinedError) {
       return (
         <div className="flex items-center justify-center py-4 text-sm text-destructive">
-          {error}
+          {combinedError}
         </div>
       );
     }
@@ -149,6 +202,11 @@ export function FieldSelect({
             name={field.name}
             value={field.value || ""}
             onValueChange={handleValueChange}
+            onOpenChange={(open) => {
+              if (open && !isOpen) {
+                setIsOpen(true);
+              }
+            }}
           >
             <FormControl>
               <SelectTrigger
@@ -158,9 +216,7 @@ export function FieldSelect({
                 <SelectValue placeholder={placeholder} />
               </SelectTrigger>
             </FormControl>
-            <SelectContent>
-              {renderSelectContent()}
-            </SelectContent>
+            <SelectContent>{renderSelectContent()}</SelectContent>
           </Select>
           {allowClear && (
             <div className="absolute right-0 top-0 overflow-clip">

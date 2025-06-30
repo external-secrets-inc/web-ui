@@ -14,6 +14,7 @@ import { FieldMultiSelect } from "./FieldMultiSelect";
 import { FieldDuration } from "./FieldDuration";
 import { FieldDateTime } from "./FieldDateTime";
 import { FieldNumber } from "./FieldNumber";
+import { OneOfUtils } from "@/components/EsiSchemaForm/EsiSchemaForm.utils";
 
 export interface FieldRendererProps {
   field: UISchemaField;
@@ -45,16 +46,22 @@ export function FieldRenderer({ field }: FieldRendererProps) {
         <FieldTextarea {...baseProps} defaultValue={field.default as string} />
       );
 
-    case "select":
-      // Handle oneOf constraint for object fields
-      if (field.oneOf && field.oneOf.length > 0) {
+    case "select": {
+      const apiOption = OneOfUtils.getApiOption(field);
+      if (apiOption) {
         return (
-          <FieldOneOf
+          <FieldSelect
             {...baseProps}
-            field={field}
+            defaultValue={field.default as string}
+            apiOptions={apiOption}
           />
         );
       }
+
+      if (field.oneOf && field.oneOf.length > 0) {
+        return <FieldOneOf {...baseProps} field={field} />;
+      }
+
       return (
         <FieldSelect
           {...baseProps}
@@ -62,6 +69,7 @@ export function FieldRenderer({ field }: FieldRendererProps) {
           defaultValue={field.default as string}
         />
       );
+    }
 
     case "checkbox":
       return (
@@ -96,14 +104,9 @@ export function FieldRenderer({ field }: FieldRendererProps) {
       );
 
     case "object":
-      // Handle oneOf constraint for object fields
+      // Handle oneOf constraint for object fields TODO[cfviotti]: This is supposedly for legacy schemas. It will always be for `select` fields now instead.
       if (field.oneOf && field.oneOf.length > 0) {
-        return (
-          <FieldOneOf
-            {...baseProps}
-            field={field}
-          />
-        );
+        return <FieldOneOf {...baseProps} field={field} />;
       }
       return (
         <FieldObject
@@ -117,12 +120,7 @@ export function FieldRenderer({ field }: FieldRendererProps) {
       return <FieldJson {...baseProps} defaultValue={field.default} />;
 
     case "one-of":
-      return (
-        <FieldOneOf
-          {...baseProps}
-          field={field}
-        />
-      );
+      return <FieldOneOf {...baseProps} field={field} />;
 
     case "secret-selector":
       return <FieldSecretSelect {...baseProps} />;
@@ -144,7 +142,6 @@ export function FieldRenderer({ field }: FieldRendererProps) {
     case "datetime":
       return <FieldDateTime {...baseProps} />;
 
-    // TODO[cfviotti]: check why gustavo added this on services/schema/schema.go in eso-server
     case "service-account-selector":
       return (
         <div className="p-4 border border-orange-200 bg-orange-50 rounded-md">
