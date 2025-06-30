@@ -7,7 +7,7 @@
  * Also, the validation rules are a bit messy and could be improved.
  */
 
-import type { UISchemaField, KubernetesResourceType, KubernetesManifest, OneOfOption, OneOfStaticOption, OneOfApiOption } from './EsiSchemaForm.interfaces';
+import type { UISchemaField, KubernetesResourceType, KubernetesManifest, OneOfApiOption, AnyOfApiOption } from './EsiSchemaForm.interfaces';
 
 
 // Constants & Configuration
@@ -91,30 +91,28 @@ export function getSuccessMessage(resourceType: KubernetesResourceType): string 
 
 
 // Field Validation Utilities
-/**
- * Utility functions for working with oneOf field options.
- */
-export const OneOfUtils = {
-  /**
-   * Checks if a oneOf option is a static option (has id property).
-   */
-  isStaticOption(option: OneOfOption): option is OneOfStaticOption {
-    return 'id' in option && typeof option.id === 'string';
-  },
+type ApiOptionLike = OneOfApiOption | AnyOfApiOption;
 
+/**
+ * Common utilities for working with option arrays that may contain API options.
+ * Works with both oneOf and anyOf since they share the same API option structure.
+ */
+export const OptionUtils = {
   /**
-   * Checks if a oneOf option is an API option (has href and labelRef properties).
+   * Checks if an option is an API option (has href and labelRef properties).
    */
-  isApiOption(option: OneOfOption): option is OneOfApiOption {
-    return 'href' in option && 'labelRef' in option &&
-      typeof option.href === 'string' && typeof option.labelRef === 'string';
+    isApiOption(option: unknown): option is ApiOptionLike {
+    return typeof option === 'object' && option !== null &&
+      'href' in option && 'labelRef' in option &&
+      typeof (option as Record<string, unknown>).href === 'string' &&
+      typeof (option as Record<string, unknown>).labelRef === 'string';
   },
 
   /**
    * Extracts API option configuration from a field's oneOf array.
    * Returns the first API option found, or null if none exist.
    */
-  getApiOption(field: UISchemaField): OneOfApiOption | null {
+  getOneOfApiOption(field: UISchemaField): OneOfApiOption | null {
     if (!field.oneOf || !Array.isArray(field.oneOf) || field.oneOf.length === 0) {
       return null;
     }
@@ -122,7 +120,22 @@ export const OneOfUtils = {
     const apiOptions = field.oneOf.filter(this.isApiOption);
     return apiOptions.length > 0 ? apiOptions[0] as OneOfApiOption : null;
   },
+
+  /**
+   * Extracts API option configuration from a field's anyOf array.
+   * Returns the first API option found, or null if none exist.
+   */
+  getAnyOfApiOption(field: UISchemaField): AnyOfApiOption | null {
+    if (!field.anyOf || !Array.isArray(field.anyOf) || field.anyOf.length === 0) {
+      return null;
+    }
+
+    const apiOptions = field.anyOf.filter(this.isApiOption);
+    return apiOptions.length > 0 ? apiOptions[0] as AnyOfApiOption : null;
+  },
 };
+
+
 
 /**
  * Creates validation rules for a field based on its schema definition.
@@ -243,7 +256,7 @@ export function createFieldValidation(field: UISchemaField) {
           }
           // Check if the value matches any static option id
           const isValidOption = field.oneOf!.some(option =>
-            OneOfUtils.isStaticOption(option) && option.id === value
+            'id' in option && typeof option.id === 'string' && option.id === value
           );
           if (!isValidOption) {
             return `Invalid option for ${field.label || field.id}`;

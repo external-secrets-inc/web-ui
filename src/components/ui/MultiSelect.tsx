@@ -89,7 +89,7 @@ interface MultiSelectContextValue {
   toggleOption: (value: string) => void;
   clearExtraOptions: () => void;
   handleClear: () => void;
-  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsOpen: (openOrUpdater: boolean | ((prev: boolean) => boolean)) => void;
   updateSelection: (values: string[]) => void;
   itemRefs: React.MutableRefObject<Map<string, CommandItemRef>>;
   visibleBadgesCount: number;
@@ -169,6 +169,21 @@ interface MultiSelectProps extends React.ButtonHTMLAttributes<HTMLButtonElement>
    * Optional, can be used to add custom styles.
    */
   className?: string;
+
+  /**
+   * The controlled open state of the popover. Must be used in conjunction with onOpenChange.
+   */
+  open?: boolean;
+
+  /**
+   * Event handler called when the open state of the popover changes.
+   */
+  onOpenChange?: (open: boolean) => void;
+
+  /**
+   * The open state of the popover when it is initially rendered. Use when you do not need to control its open state.
+   */
+  defaultOpen?: boolean;
 }
 
 // Components
@@ -180,11 +195,29 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
   maxCount,
   modalPopover = true,
   className,
+  open,
+  onOpenChange,
+  defaultOpen = false,
   ...props
 }, ref) => {
   const [selectedValues, setSelectedValues] = React.useState<string[]>(defaultValue);
-  const [isOpen, setIsOpen] = React.useState(false);
+  const [internalIsOpen, setInternalIsOpen] = React.useState(defaultOpen);
   const [computedMaxCount, setComputedMaxCount] = React.useState<number | undefined>(typeof maxCount === "number" ? maxCount : undefined);
+
+  // Use controlled open state if provided, otherwise use internal state
+  const isOpen = open !== undefined ? open : internalIsOpen;
+
+  const handleOpenChange = React.useCallback((openOrUpdater: boolean | ((prev: boolean) => boolean)) => {
+    const newOpen = typeof openOrUpdater === 'function' ? openOrUpdater(isOpen) : openOrUpdater;
+
+    // Update internal state only if not controlled
+    if (open === undefined) {
+      setInternalIsOpen(newOpen);
+    }
+
+    // Always call the callback
+    onOpenChange?.(newOpen);
+  }, [onOpenChange, isOpen, open]);
 
   const isAutoMaxCount = maxCount === "auto";
   const visibleBadgesCount = computedMaxCount !== undefined ? Math.min(computedMaxCount, selectedValues.length) : selectedValues.length;
@@ -228,7 +261,7 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
     toggleOption,
     clearExtraOptions,
     handleClear,
-    setIsOpen,
+    setIsOpen: handleOpenChange,
     updateSelection,
     itemRefs,
     visibleBadgesCount,
@@ -247,7 +280,7 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
     toggleOption,
     clearExtraOptions,
     handleClear,
-    setIsOpen,
+    handleOpenChange,
     updateSelection,
     visibleBadgesCount,
     extraBadgesCount,
@@ -321,7 +354,7 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
     <MultiSelectContext.Provider value={contextValue}>
       <Popover
         open={isOpen}
-        onOpenChange={setIsOpen}
+        onOpenChange={handleOpenChange}
         modal={modalPopover}
       >
         <MultiSelectPopoverTrigger
