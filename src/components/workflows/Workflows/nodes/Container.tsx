@@ -8,6 +8,7 @@ import TransformStep, {TransformNodeData} from "./steps/Transform";
 import ScriptStep, {ScriptNodeData} from "./steps/Script";
 import GenerateStep, {GenerateNodeData} from "./steps/Generate";
 import PushStep, {PushNodeData} from "./steps/Push";
+import Unknown, { UnknownNodeData } from './Unknown';
 
 export type ContainerData =
     StartNodeData
@@ -18,7 +19,8 @@ export type ContainerData =
     | TransformNodeData
     | ScriptNodeData
     | GenerateNodeData
-    | PushNodeData;
+    | PushNodeData
+    | UnknownNodeData;
 
 const Node = ({data}: {data: ContainerData}) => {
     const borderColor = data.phase === "Succeeded"
@@ -56,7 +58,7 @@ const Node = ({data}: {data: ContainerData}) => {
             NodeComponent = <PushStep data={data as PushNodeData} />;
             break;
         default:
-            NodeComponent = <div>Unknown node type</div>;
+            NodeComponent = <Unknown data={data as UnknownNodeData} />;
     }
 
     return (

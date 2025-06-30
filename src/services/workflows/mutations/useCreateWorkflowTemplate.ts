@@ -7,7 +7,7 @@ import { CreateWorkflowTemplatePayload } from "@/components/workflows/Workflows/
 
 const createWorkflowTemplate = async (payload: CreateWorkflowTemplatePayload): Promise<void> => {
   const headers = await getAuthHeaders();
-  await axiosInstance.post('/api/v1/workflows/templates', payload, {
+  await axiosInstance.post('/api/v1/workflowtemplates', payload, {
     headers,
     backend: 'ESO_SERVER'
   });

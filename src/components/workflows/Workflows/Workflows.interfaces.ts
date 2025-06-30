@@ -45,7 +45,7 @@ export interface WorkflowJob {
   phase: string;
   startTime?: Date;
   completionTime?: Date;
-  type: "standard" | "loop" | "switch";
+  type: string;
   steps: Record<string, WorkflowStep>;
 }
 

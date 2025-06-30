@@ -1,5 +1,5 @@
-export { WorkflowDetails } from "./WorkflowDetails";
-export { WorkflowGraph } from "./WorkflowGraph";
+export { WorkflowJobsDetails as WorkflowDetails } from "./WorkflowJobsDetails";
+export { WorkflowJobsGraph as WorkflowGraph } from "./WorkflowJobsGraph";
 export { WorkflowRunDetails } from "./WorkflowRunDetails";
 export { WorkflowRunTemplateCreate } from "./WorkflowRunTemplateCreate";
 export { WorkflowRunTemplateCreateWithYaml } from "./WorkflowRunTemplateCreateWithYaml";

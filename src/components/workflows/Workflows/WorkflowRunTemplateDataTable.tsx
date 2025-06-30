@@ -119,67 +119,13 @@ export function WorkflowRunTemplateDataTable() {
           cell: (info) => {
             const runs: WorkflowRunData[] = info.getValue();
 
-            // TODO[iurisevero]: Remove test runs
-            const testRuns: WorkflowRunData[] = [
-              {
-                name: "run-success-1",
-                namespace: "default",
-                templateRef: { name: "template-a", namespace: "default" },
-                parameters: {},
-                variables: {},
-                phase: "Succeeded",
-                startTime: "2025-06-20T10:00:00Z",
-                completionTime: "2025-06-20T10:05:00Z",
-              },
-              {
-                name: "run-pending-1",
-                namespace: "default",
-                templateRef: { name: "template-b", namespace: "default" },
-                parameters: {},
-                variables: {},
-                phase: "Pending",
-                startTime: "2025-06-21T11:00:00Z",
-                completionTime: undefined,
-              },
-              {
-                name: "run-failed-1",
-                namespace: "default",
-                templateRef: { name: "template-c", namespace: "default" },
-                parameters: {},
-                variables: {},
-                phase: "Failed",
-                startTime: "2025-06-22T12:00:00Z",
-                completionTime: "2025-06-22T12:03:00Z",
-              },
-              {
-                name: "run-success-2",
-                namespace: "default",
-                templateRef: { name: "template-d", namespace: "default" },
-                parameters: {},
-                variables: {},
-                phase: "Succeeded",
-                startTime: "2025-06-23T13:00:00Z",
-                completionTime: "2025-06-23T13:05:00Z",
-              },
-              {
-                name: "run-other-1",
-                namespace: "default",
-                templateRef: { name: "template-e", namespace: "default" },
-                parameters: {},
-                variables: {},
-                phase: "Unknown",
-                startTime: "2025-06-24T14:00:00Z",
-                completionTime: "2025-06-24T14:04:00Z",
-              },
-            ];
-
-            if (!testRuns && (!runs || runs.length === 0)) {
+            if (!runs || runs.length === 0) {
               return <span className="text-muted-foreground">No runs</span>;
             }
 
             return (
               <div className="flex flex-wrap gap-1">
-                {testRuns.slice(-5).map((run, index) => {
+                {runs.slice(-5).map((run, index) => {
                   let variant: "warning" | "success" | "destructive";
 
                   switch (run.phase) {

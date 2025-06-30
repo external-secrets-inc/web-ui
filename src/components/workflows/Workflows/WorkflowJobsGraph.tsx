@@ -14,7 +14,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import ContainerNode, { ContainerData } from "./nodes/Container";
-import { WorkflowData } from "./Workflows.interfaces";
+import { WorkflowData, WorkflowJob, WorkflowStep } from "./Workflows.interfaces";
 
 interface WorkflowGraphProps {
   workflow: WorkflowData;
@@ -79,7 +79,7 @@ const calculateNodeHeight = (nodeType: string, numSteps: number): number => {
 const createJobNode = (
   index: number,
   jobName: string,
-  jobStatus: any,
+  jobStatus: WorkflowJob,
   yPosition: number
 ): Node<ContainerData> => {
   const phase = jobStatus.phase || "Pending";
@@ -88,7 +88,7 @@ const createJobNode = (
     id: `job-${jobName}`,
     type: "container",
     data: {
-      nodeType: jobStatus.type,
+      nodeType: jobStatus.type as ContainerData["nodeType"],
       name: jobName,
       phase,
       numSteps: numberOfSteps,
@@ -103,25 +103,46 @@ const createJobNode = (
 const createStepNode = (
   jobName: string,
   stepName: string,
-  stepStatus: any,
+  stepStatus: WorkflowStep,
   stepIndex: number
 ): Node<ContainerData> => {
+  let data: ContainerData;
+
+  switch (stepStatus.type) {
+    case "javascript":
+      data = {
+        nodeType: "javascript",
+        name: stepName,
+        phase: stepStatus.phase,
+        numSteps: Object.keys(stepStatus.outputs || {}).length,
+      };
+      break;
+
+    case "transform":
+    case "debug":
+    case "push":
+    case "generator":
+    default:
+      data = {
+        nodeType: stepStatus.type,
+        name: stepName,
+        phase: stepStatus.phase,
+      } as ContainerData; // safe because these types require only name + phase
+      break;
+  }
+
   return {
     id: `step-${jobName}-${stepName}`,
     type: "container",
     parentId: `job-${jobName}`,
-    data: {
-      nodeType: stepStatus.type,
-      name: stepName,
-      phase: stepStatus.phase,
-    },
+    data,
     targetPosition: Position.Top,
     position: { x: 20, y: stepIndex * 50 + (stepIndex - 1) * 20 },
     className: `step-node status-${stepStatus.phase.toLowerCase()}`,
   };
 };
 
-export function WorkflowGraph({ workflow }: WorkflowGraphProps) {
+export function WorkflowJobsGraph({ workflow }: WorkflowGraphProps) {
   const [nodes, setNodes, onNodesChangeDefault] = useNodesState<
     Node<ContainerData>
   >([]);
@@ -167,7 +188,7 @@ export function WorkflowGraph({ workflow }: WorkflowGraphProps) {
 
     // Calculate heights for all job nodes
     const jobs = Object.entries(workflow.jobs);
-    const jobHeights = jobs?.map(([_, jobStatus]) => {
+    const jobHeights = jobs?.map(([, jobStatus]) => {
       const numberOfSteps = Object.keys(jobStatus.steps || {}).length;
       return calculateNodeHeight(jobStatus.type, numberOfSteps);
     });
@@ -251,4 +272,4 @@ export function WorkflowGraph({ workflow }: WorkflowGraphProps) {
   );
 }
 
-export default WorkflowGraph;
+export default WorkflowJobsGraph;
