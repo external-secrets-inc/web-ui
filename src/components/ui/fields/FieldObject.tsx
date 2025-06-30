@@ -74,7 +74,7 @@ export function FieldObject({
             })
           ) : (
             <div className="text-sm text-gray-500 italic">
-              No fields defined for this object
+              No additional fields needed to be configured 🥳
             </div>
           )}
         </div>
