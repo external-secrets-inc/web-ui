@@ -7,7 +7,7 @@ import { WorkflowTemplateTableData } from "@/components/workflows/Workflows/Work
 
 const getWorkflowTemplates = async (signal: AbortSignal): Promise<WorkflowTemplateTableData[]> => {
   const headers = await getAuthHeaders();
-  const response = await axiosInstance.get('/api/v1/workflows/templates', {
+  const response = await axiosInstance.get('/api/v1/workflowtemplates', {
     headers,
     signal,
     backend: 'ESO_SERVER'
