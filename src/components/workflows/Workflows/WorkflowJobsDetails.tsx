@@ -5,10 +5,15 @@ import {
   WorkflowStep,
 } from "./Workflows.interfaces";
 import { formatDate } from "@/utils/dateUtils";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const getStatusColor = (status: string): string => {
-  const statusLower = status.toLowerCase();
-  switch (statusLower) {
+  switch (status.toLowerCase()) {
     case "succeeded":
     case "completed":
       return "bg-green-100 text-green-800";
@@ -41,7 +46,7 @@ const StepDetails: React.FC<{ name: string; step: WorkflowStep }> = ({
   const hasOutputs = step.outputs && Object.keys(step.outputs).length > 0;
 
   return (
-    <div className="border-l-2 pl-4 py-2 ml-4">
+    <div className="border-l pl-4 py-2 ml-4">
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-2">
           <span className="font-medium">{name}</span>
@@ -51,22 +56,32 @@ const StepDetails: React.FC<{ name: string; step: WorkflowStep }> = ({
         {hasOutputs && (
           <button
             onClick={() => setShowOutputs(!showOutputs)}
-            className="text-xs text-blue-600 hover:text-blue-800"
+            className="text-xs text-blue-600 hover:underline"
           >
             {showOutputs ? "Hide Outputs" : "Show Outputs"}
           </button>
         )}
       </div>
 
-      <div className="text-xs text-gray-600 mt-1 space-y-1">
-        <div>Start: {formatDate(step.startTime)}</div>
-        <div>Completion: {formatDate(step.completionTime)}</div>
+      <div className="text-xs text-muted-foreground mt-1 space-y-1">
+        <div>
+          Start:{" "}
+          {step.startTime
+            ? formatDate(step.startTime, { format: "full" })
+            : "No data available"}
+        </div>
+        <div>
+          Completion:{" "}
+          {step.completionTime
+            ? formatDate(step.completionTime, { format: "full" })
+            : "No data available"}
+        </div>
       </div>
 
       {showOutputs && hasOutputs && (
-        <div className="mt-2 p-2 rounded text-xs">
+        <div className="mt-2 p-2 rounded text-xs bg-muted max-w-full overflow-hidden">
           <div className="font-medium mb-1">Outputs:</div>
-          <pre className="overflow-auto max-h-40">
+          <pre className="overflow-auto max-h-40 max-w-full break-words whitespace-pre-wrap bg-muted rounded border p-2">
             {JSON.stringify(step.outputs, null, 2)}
           </pre>
         </div>
@@ -75,52 +90,52 @@ const StepDetails: React.FC<{ name: string; step: WorkflowStep }> = ({
   );
 };
 
-const JobDetails: React.FC<{ name: string; job: WorkflowJob }> = ({
+const JobAccordionItem: React.FC<{ name: string; job: WorkflowJob }> = ({
   name,
   job,
 }) => {
-  const [expanded, setExpanded] = useState(true);
   const stepCount = Object.keys(job.steps).length;
 
   return (
-    <div className="border rounded-md mb-4">
-      <div
-        className="flex justify-between items-center p-3 cursor-pointer"
-        onClick={() => setExpanded(!expanded)}
-      >
-        <div className="flex items-center space-x-3">
-          <span className="font-medium">{name}</span>
+    <AccordionItem value={name}>
+      <AccordionTrigger>
+        <div className="flex items-center gap-3">
+          <span className="text-base font-medium">{name}</span>
           <StatusBadge status={job.phase} />
           <span className="text-sm">Type: {job.type}</span>
           <span className="text-sm">
             {stepCount} step{stepCount !== 1 ? "s" : ""}
           </span>
         </div>
-        <div className="flex items-center space-x-4">
-          <div className="text-sm">{expanded ? "▼" : "►"}</div>
-        </div>
-      </div>
-
-      {expanded && (
-        <div className="p-3 border-t">
-          <div className="text-sm mb-3 grid grid-cols-2 gap-2">
-            <div>Start Time: {formatDate(job.startTime)}</div>
-            <div>Completion Time: {formatDate(job.completionTime)}</div>
+      </AccordionTrigger>
+      <AccordionContent>
+        <div className="text-sm mb-3 grid grid-cols-2 gap-2">
+          <div>
+            Start Time:{" "}
+            {job.startTime
+              ? formatDate(job.startTime, { format: "full" })
+              : "No data available"}
           </div>
-
-          <div className="mt-3">
-            <div className="text-sm font-medium mb-2">Steps:</div>
-            {Object.entries(job.steps).length > 0 ? (
-              Object.entries(job.steps).map(([stepName, step]) => (
-                <StepDetails key={stepName} name={stepName} step={step} />
-              ))
-            ) : (
-              <div className="text-sm italic">No steps found</div>
-            )}
+          <div>
+            Completion Time:{" "}
+            {job.completionTime
+              ? formatDate(job.completionTime, { format: "full" })
+              : "No data available"}
           </div>
         </div>
-      )}
-    </div>
+
+        <div className="mt-3">
+          <div className="text-sm font-medium mb-2">Steps:</div>
+          {Object.entries(job.steps).length > 0 ? (
+            Object.entries(job.steps).map(([stepName, step]) => (
+              <StepDetails key={stepName} name={stepName} step={step} />
+            ))
+          ) : (
+            <div className="text-sm italic">No steps found</div>
+          )}
+        </div>
+      </AccordionContent>
+    </AccordionItem>
   );
 };
 
@@ -129,13 +144,15 @@ export function WorkflowJobsDetails({ workflow }: { workflow: WorkflowData }) {
     <div className="flex flex-col gap-4">
       <section className="bg-card rounded-lg border p-6">
         {Object.entries(workflow.jobs).length > 0 ? (
-          <ul className="space-y-4">
+          <Accordion
+            type="multiple"
+            className="w-full"
+            defaultValue={Object.keys(workflow.jobs)}
+          >
             {Object.entries(workflow.jobs).map(([jobName, job]) => (
-              <li key={jobName}>
-                <JobDetails name={jobName} job={job} />
-              </li>
+              <JobAccordionItem key={jobName} name={jobName} job={job} />
             ))}
-          </ul>
+          </Accordion>
         ) : (
           <p className="italic text-muted-foreground">No jobs found</p>
         )}

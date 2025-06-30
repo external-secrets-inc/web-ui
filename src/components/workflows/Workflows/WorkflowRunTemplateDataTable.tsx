@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { Badge, BadgeProps } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 import {
   LucideMoreVertical,
   LucidePlay,
@@ -85,26 +85,6 @@ export function WorkflowRunTemplateDataTable() {
           header: "Namespace",
           cell: (info) => info.getValue(),
         }),
-        columnHelper.accessor("status", {
-          header: "Status",
-          cell: (info) => {
-            const { status, reason } = info.row.original.status;
-            let variantClass: BadgeProps["variant"] = "default";
-            let displayText = "Not Informed";
-
-            if (status === "Pending") {
-              variantClass = "warning";
-              displayText = "Pending";
-            } else if (status === "True") {
-              variantClass = "success";
-              displayText = reason;
-            } else if (status === "False") {
-              variantClass = "destructive";
-              displayText = reason;
-            }
-            return <Badge variant={variantClass}>{displayText}</Badge>;
-          },
-        }),
         columnHelper.accessor("runPolicy", {
           header: "Run Policy",
           cell: (info) =>
@@ -146,7 +126,7 @@ export function WorkflowRunTemplateDataTable() {
                         <Link
                           to={{
                             pathname: getOrgLink(
-                              `/workflows/templates/${templateNamespace}/${templateName}/runtemplates/runs/${run.namespace}/${run.name}`
+                              `/workflows/templates/${templateNamespace}/${templateName}/runs/${run.namespace}/${run.name}`
                             ),
                             search: location.search,
                           }}
@@ -318,7 +298,7 @@ export function WorkflowRunTemplateDataTable() {
               onClick={() =>
                 navigate(
                   getOrgLink(
-                    `/workflows/templates/${templateNamespace}/${templateName}/runtemplates/create`
+                    `/workflows/templates/${templateNamespace}/${templateName}/create`
                   )
                 )
               }

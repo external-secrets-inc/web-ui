@@ -163,7 +163,7 @@ export function WorkflowRunDetails() {
                   <span className="font-medium">Start Time:</span>
                   <span className="ml-2 font-medium">
                     {workflow.startTime
-                      ? formatDate(workflow.startTime)
+                      ? formatDate(workflow.startTime, { format: "full"})
                       : "No data available"}
                   </span>
                 </div>
@@ -171,7 +171,7 @@ export function WorkflowRunDetails() {
                   <span className="font-medium">Completion Time:</span>
                   <span className="ml-2 font-medium">
                     {workflow.completionTime
-                      ? formatDate(workflow.completionTime)
+                      ? formatDate(workflow.completionTime, { format: "full"})
                       : "No data available"}
                   </span>
                 </div>
@@ -209,9 +209,9 @@ export function WorkflowRunDetails() {
             onValueChange={onTabChange}
             value={activeTab}
           >
-            <TabsList className="mb-2 w-full">
-              <TabsTrigger className="w-full" value="details">Details</TabsTrigger>
-              <TabsTrigger className="w-full" value="graph">Graph</TabsTrigger>
+            <TabsList className="mb-2">
+              <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="graph">Graph</TabsTrigger>
             </TabsList>
             <TabsContent
               className="data-[state=active]:grid min-h-0"

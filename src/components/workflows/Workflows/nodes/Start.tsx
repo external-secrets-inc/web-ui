@@ -19,7 +19,7 @@ const Start = ({data}: {data: StartNodeData}) => {
             <Handle
                 type="source"
                 position={Position.Right}
-                className="w-16 !bg-teal-500"
+                className="!bg-teal-500"
             />
         </div>
     );

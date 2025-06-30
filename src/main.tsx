@@ -31,7 +31,6 @@ import {
   PageWorkflowTemplatesCreate,
   PageWorkflowTemplateDetails,
   PageWorkflowRunTemplatesCreate,
-  PageWorkflowGraphDemo,
   PageWorkflowRunDetails
 } from "@/pages";
 import authStore from "@/services/auth/authStore";
@@ -167,7 +166,7 @@ const router = createBrowserRouter([
                 },
               },
               {
-                path: ":templateNamespace/:templateName/runtemplates",
+                path: ":templateNamespace/:templateName",
                 element: <Outlet/>,
                 handle: {
                   breadcrumb: (match: UIMatch) => ({
@@ -204,17 +203,6 @@ const router = createBrowserRouter([
                 ]
               },
             ],
-          },
-          {
-            path: "graph-demo",
-            element: <PageWorkflowGraphDemo />,
-            handle: {
-              breadcrumb: (match: UIMatch) => ({
-                label: "Workflow Graph Demo",
-                path: match.pathname,
-                navigatable: true,
-              }),
-            },
           },
         ],
       },

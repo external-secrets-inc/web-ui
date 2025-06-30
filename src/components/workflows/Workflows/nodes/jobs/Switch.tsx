@@ -25,12 +25,12 @@ const SwitchJob = ({data}: {data: SwitchJobNodeData}) => {
             <Handle
                 type="target"
                 position={Position.Left}
-                className="w-16 !bg-teal-500"
+                className="!bg-teal-500"
             />
             <Handle
                 type="source"
                 position={Position.Right}
-                className="w-16 !bg-teal-500"
+                className="!bg-teal-500"
             />
         </div>
     );

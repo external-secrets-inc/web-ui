@@ -14,7 +14,11 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import ContainerNode, { ContainerData } from "./nodes/Container";
-import { WorkflowData, WorkflowJob, WorkflowStep } from "./Workflows.interfaces";
+import {
+  WorkflowData,
+  WorkflowJob,
+  WorkflowStep,
+} from "./Workflows.interfaces";
 
 interface WorkflowGraphProps {
   workflow: WorkflowData;
