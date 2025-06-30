@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { Badge, BadgeProps } from "@/components/ui/badge";
 import { LucideMoreVertical, LucidePlus, LucideTrash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,26 +42,6 @@ export function WorkflowTemplateDataTable() {
           header: "Namespace",
           cell: (info) => info.getValue(),
         }),
-        columnHelper.accessor("status", {
-          header: "Status",
-          cell: (info) => {
-            const { status, reason } = info.row.original.status;
-            let variantClass: BadgeProps["variant"] = "default";
-            let displayText = "Not Informed";
-
-            if (status === "Pending") {
-              variantClass = "warning";
-              displayText = "Pending";
-            } else if (status === "True") {
-              variantClass = "success";
-              displayText = reason;
-            } else if (status === "False") {
-              variantClass = "destructive";
-              displayText = reason;
-            }
-            return <Badge variant={variantClass}>{displayText}</Badge>;
-          },
-        }),
         columnHelper.display({
           id: "actions",
           cell: (props) => (
@@ -74,7 +53,7 @@ export function WorkflowTemplateDataTable() {
                   e.stopPropagation();
                   navigate(
                     getOrgLink(
-                      `/workflows/templates/${props.row.original.namespace}/${props.row.original.name}/runtemplates/create`
+                      `/workflows/templates/${props.row.original.namespace}/${props.row.original.name}/create`
                     )
                   );
                 }}
@@ -128,7 +107,7 @@ export function WorkflowTemplateDataTable() {
               onSelect={() => {
                 navigate(
                   getOrgLink(
-                    `/workflows/templates/${row.namespace}/${row.name}/runtemplates/create`
+                    `/workflows/templates/${row.namespace}/${row.name}/create`
                   )
                 );
               }}
@@ -207,7 +186,7 @@ export function WorkflowTemplateDataTable() {
               getOrgLink(
                 `/workflows/templates/${
                   (row as WorkflowTemplateTableData).namespace
-                }/${(row as WorkflowTemplateTableData).name}/runtemplates`
+                }/${(row as WorkflowTemplateTableData).name}`
               )
             )
           }

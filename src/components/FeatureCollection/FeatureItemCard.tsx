@@ -30,6 +30,10 @@ const FeatureItemCard = forwardRef<HTMLDivElement, FeatureItemCardProps>(({
   const { openFeatureItemDialog } = useFeatureItemDialog();
   const isPending = ['PENDING_REGISTRATION', 'PROVISIONING'].includes(featureStatus.toUpperCase());
 
+  // Normalize status and provide fallback to prevent undefined access
+  const normalizedStatus = featureStatus?.toUpperCase() || 'OFFLINE';
+  const statusInfo = STATUS_MAP[normalizedStatus] || STATUS_MAP['OFFLINE'];
+
   const handleFeatureItemOpenDialog = (tab = 'details') => {
     openFeatureItemDialog({
       featureID,
@@ -71,8 +75,8 @@ const FeatureItemCard = forwardRef<HTMLDivElement, FeatureItemCardProps>(({
         </CardHeader>
         <CardFooter className='mt-auto gap-2'>
           <span className='flex gap-2 items-center'>
-            {STATUS_MAP[featureStatus].icon}
-            {STATUS_MAP[featureStatus].text}
+            {statusInfo.icon}
+            {statusInfo.text}
           </span>
           {isPending && (
             <Button

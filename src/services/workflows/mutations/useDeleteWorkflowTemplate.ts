@@ -7,7 +7,7 @@ import { DeleteWorkflowTemplatePayload } from "@/components/workflows/Workflows/
 
 const deleteWorkflowTemplate = async (payload: DeleteWorkflowTemplatePayload): Promise<void> => {
   const headers = await getAuthHeaders();
-  await axiosInstance.delete(`/api/v1/workflows/templates/${payload.namespace}/${payload.name}`, {
+  await axiosInstance.delete(`/api/v1/workflowtemplates/${payload.namespace}/${payload.name}`, {
     headers,
     backend: 'ESO_SERVER'
   });

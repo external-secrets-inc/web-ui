@@ -1,5 +1,11 @@
-export { WorkflowTemplateDataTable } from "./WorkflowTemplateDataTable";
+export { WorkflowJobsDetails } from "./WorkflowJobsDetails";
+export { WorkflowJobsGraph } from "./WorkflowJobsGraph";
+export { WorkflowRunDetails } from "./WorkflowRunDetails";
+export { WorkflowRunTemplateCreate } from "./WorkflowRunTemplateCreate";
+export { WorkflowRunTemplateCreateWithYaml } from "./WorkflowRunTemplateCreateWithYaml";
+export { WorkflowRunTemplateDataTable } from "./WorkflowRunTemplateDataTable";
+export * from "./Workflows.interfaces";
 export { WorkflowTemplateCreate } from "./WorkflowTemplateCreate";
 export { WorkflowTemplateCreateWithEsiSchemaForm } from "./WorkflowTemplateCreateWithEsiSchemaForm";
 export { WorkflowTemplateCreateWithYaml } from "./WorkflowTemplateCreateWithYaml";
-export * from "./Workflows.interfaces";
+export { WorkflowTemplateDataTable } from "./WorkflowTemplateDataTable";

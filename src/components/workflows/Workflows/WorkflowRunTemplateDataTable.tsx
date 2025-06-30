@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { Badge, BadgeProps } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 import {
   LucideMoreVertical,
   LucidePlay,
@@ -34,7 +34,11 @@ import useOrgLink from "@/hooks/useOrgLink";
 import { formatDate } from "@/utils/dateUtils";
 import useCreateWorkflowRunFromRunTemplate from "@/services/workflows/mutations/useCreateWorkflowRunFromRunTemplate";
 import useGetWorkflowRunTemplatesByTemplate from "@/services/workflows/queries/useGetWorkflowRunTemplatesByTemplate";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface WorkflowRunTemplateTableMeta {
   renderRowActions?: (row: WorkflowRunTemplateTableData) => React.ReactNode;
@@ -81,26 +85,6 @@ export function WorkflowRunTemplateDataTable() {
           header: "Namespace",
           cell: (info) => info.getValue(),
         }),
-        columnHelper.accessor("status", {
-          header: "Status",
-          cell: (info) => {
-            const { status, reason } = info.row.original.status;
-            let variantClass: BadgeProps["variant"] = "default";
-            let displayText = "Not Informed";
-
-            if (status === "Pending") {
-              variantClass = "warning";
-              displayText = "Pending";
-            } else if (status === "True") {
-              variantClass = "success";
-              displayText = reason;
-            } else if (status === "False") {
-              variantClass = "destructive";
-              displayText = reason;
-            }
-            return <Badge variant={variantClass}>{displayText}</Badge>;
-          },
-        }),
         columnHelper.accessor("runPolicy", {
           header: "Run Policy",
           cell: (info) =>
@@ -115,67 +99,13 @@ export function WorkflowRunTemplateDataTable() {
           cell: (info) => {
             const runs: WorkflowRunData[] = info.getValue();
 
-            // TODO[iurisevero]: Remove test runs
-            const testRuns: WorkflowRunData[] = [
-              {
-                name: "run-success-1",
-                namespace: "default",
-                templateRef: { name: "template-a", namespace: "default" },
-                parameters: {},
-                variables: {},
-                phase: "Succeeded",
-                startTime: new Date("2025-06-20T10:00:00Z"),
-                completionTime: new Date("2025-06-20T10:05:00Z"),
-              },
-              {
-                name: "run-pending-1",
-                namespace: "default",
-                templateRef: { name: "template-b", namespace: "default" },
-                parameters: {},
-                variables: {},
-                phase: "Pending",
-                startTime: new Date("2025-06-21T11:00:00Z"),
-                completionTime: undefined,
-              },
-              {
-                name: "run-failed-1",
-                namespace: "default",
-                templateRef: { name: "template-c", namespace: "default" },
-                parameters: {},
-                variables: {},
-                phase: "Failed",
-                startTime: new Date("2025-06-22T12:00:00Z"),
-                completionTime: new Date("2025-06-22T12:03:00Z"),
-              },
-              {
-                name: "run-success-2",
-                namespace: "default",
-                templateRef: { name: "template-d", namespace: "default" },
-                parameters: {},
-                variables: {},
-                phase: "Succeeded",
-                startTime: new Date("2025-06-23T13:00:00Z"),
-                completionTime: new Date("2025-06-23T13:05:00Z"),
-              },
-              {
-                name: "run-other-1",
-                namespace: "default",
-                templateRef: { name: "template-e", namespace: "default" },
-                parameters: {},
-                variables: {},
-                phase: "Unknown",
-                startTime: new Date("2025-06-24T14:00:00Z"),
-                completionTime: new Date("2025-06-24T14:04:00Z"),
-              },
-            ];
-
-            if (!testRuns && (!runs || runs.length === 0)) {
+            if (!runs || runs.length === 0) {
               return <span className="text-muted-foreground">No runs</span>;
             }
 
             return (
               <div className="flex flex-wrap gap-1">
-                {testRuns.slice(-5).map((run, index) => {
+                {runs.slice(-5).map((run, index) => {
                   let variant: "warning" | "success" | "destructive";
 
                   switch (run.phase) {
@@ -196,7 +126,7 @@ export function WorkflowRunTemplateDataTable() {
                         <Link
                           to={{
                             pathname: getOrgLink(
-                              `/workflows/templates/runtemplates/${templateNamespace}/${templateName}/runs/${run.namespace}/${run.name}`
+                              `/workflows/templates/${templateNamespace}/${templateName}/runs/${run.namespace}/${run.name}`
                             ),
                             search: location.search,
                           }}
@@ -207,20 +137,21 @@ export function WorkflowRunTemplateDataTable() {
                         </Link>
                       </TooltipTrigger>
                       <TooltipContent>
-                          Name: {run.name}<br/>
-                          Phase: {run.phase}<br/>
-                          Start: {
-                            run.startTime
-                              ? formatDate(run.startTime, { format: "full" })
-                              : "N/A"
-                          }<br/>
-                          End: {
-                            run.completionTime
-                              ? formatDate(run.completionTime, {
-                                  format: "full",
-                                })
-                              : "N/A"
-                          }
+                        Name: {run.name}
+                        <br />
+                        Phase: {run.phase}
+                        <br />
+                        Start:{" "}
+                        {run.startTime
+                          ? formatDate(run.startTime, { format: "full" })
+                          : "N/A"}
+                        <br />
+                        End:{" "}
+                        {run.completionTime
+                          ? formatDate(run.completionTime, {
+                              format: "full",
+                            })
+                          : "N/A"}
                       </TooltipContent>
                     </Tooltip>
                   );
@@ -358,9 +289,7 @@ export function WorkflowRunTemplateDataTable() {
       >
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="font-bold w-auto">
-              Run Templates
-            </h2>
+            <h2 className="font-bold w-auto">Run Templates</h2>
           </div>
           <div className="flex justify-end gap-4">
             <DataSearch />
@@ -369,7 +298,7 @@ export function WorkflowRunTemplateDataTable() {
               onClick={() =>
                 navigate(
                   getOrgLink(
-                    `/workflows/templates/${templateNamespace}/${templateName}/runtemplates/create`
+                    `/workflows/templates/${templateNamespace}/${templateName}/create`
                   )
                 )
               }

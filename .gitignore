@@ -136,3 +136,10 @@ dist
 
 # macOS
 .DS_Store
+/.idea/inspectionProfiles/Project_Default.xml
+/.idea/.gitignore
+/.idea/markdown.xml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/vcs.xml
+/.idea/web-ui.iml
