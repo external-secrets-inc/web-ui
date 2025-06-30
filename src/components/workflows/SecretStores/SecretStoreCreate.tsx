@@ -4,7 +4,6 @@ import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopba
 import { SecretStoreCreateWithYaml } from "./SecretStoreCreateWithYaml";
 import { SecretStoreCreateWithEsiSchemaForm } from "./SecretStoreCreateWithEsiSchemaForm";
 import { LucideSquareCode, LucideTextCursorInput } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
   TooltipContent,
@@ -48,7 +47,6 @@ export function SecretStoreCreate() {
             <TooltipContent>Raw YAML Manifest</TooltipContent>
           </Tooltip>
         </ToggleGroup>
-        <Separator orientation="vertical" className="h-4" />
       </LayoutPortalTopbarActions>
 
       {formMode === "yaml" ? (

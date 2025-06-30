@@ -10,6 +10,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
 import { Loader } from "@/components/ui/Loader";
 import { cn } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
 
 /**
  * Validates SecretStore-specific business logic.
@@ -128,6 +129,7 @@ export function SecretStoreCreateWithYaml() {
   return (
     <>
       <LayoutPortalTopbarActions>
+        <Separator orientation="vertical" className="h-4" />
         <div className="flex items-center gap-2">
           <Button
             type="button"
