@@ -111,7 +111,7 @@ export function WorkflowTemplateDetails() {
             </AccordionTrigger>
             <AccordionContent>
               <CodeTextarea
-                className="max-h-72 overflow-auto"
+                className="max-h-72 !overflow-auto"
                 language="yaml"
                 value={yamlString}
                 disabled

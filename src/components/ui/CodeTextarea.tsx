@@ -34,7 +34,6 @@ const CodeTextarea = forwardRef<HTMLTextAreaElement, CodeTextareaProps>(
         ref={ref}
         language={language}
         data-color-mode={theme === 'system' ? undefined : theme}
-        style={{ overflow: "auto" }} // Ensure scrollbars appear when needed
         className={cn(
           // Base container styles mimicking our field styles with !important overrides for the editor inline styles
           "!bg-muted/50 rounded-md !text-sm !border !border-input hover:!border-input-accent !transition-colors shadow-sm px-3 py-2 placeholder:text-muted-foreground focus-within:!outline-none focus-within:!ring-1 focus-within:!ring-ring disabled:cursor-not-allowed disabled:opacity-50",
