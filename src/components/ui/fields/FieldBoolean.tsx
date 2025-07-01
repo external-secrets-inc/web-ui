@@ -5,6 +5,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { useController } from "react-hook-form";
 
+
 export interface FieldBooleanProps {
   name: string;
   label: string;
@@ -13,6 +14,7 @@ export interface FieldBooleanProps {
   rules?: Record<string, unknown>;
   defaultValue?: boolean;
   descriptionInline?: boolean;
+  disabled?: boolean;
 }
 
 export function FieldBoolean({
@@ -23,6 +25,7 @@ export function FieldBoolean({
   rules,
   defaultValue,
   descriptionInline,
+  disabled,
 }: FieldBooleanProps) {
   const { field } = useController({
     name,
@@ -45,6 +48,7 @@ export function FieldBoolean({
           name={field.name}
           checked={field.value}
           onCheckedChange={field.onChange}
+          disabled={disabled}
           className="block"
         />
       </FormControl>

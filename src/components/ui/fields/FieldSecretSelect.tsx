@@ -11,7 +11,9 @@ export interface FieldSecretSelectProps {
   description?: string;
   required?: boolean;
   rules?: Record<string, unknown>;
+  defaultValue?: string;
   descriptionInline?: boolean;
+  disabled?: boolean;
 }
 
 interface Secret {
@@ -25,7 +27,8 @@ export function FieldSecretSelect({
   description,
   required,
   rules,
-  descriptionInline
+  descriptionInline,
+  disabled
 }: FieldSecretSelectProps) {
   const { formState } = useFormContext();
   const [secrets, setSecrets] = useState<Secret[]>([]);
@@ -89,6 +92,7 @@ export function FieldSecretSelect({
                 error={error}
                 emptyMessage="No secrets available. Create secrets in your cluster first."
                 allowClear={false}
+                disabled={disabled}
               />
             </div>
             <div className="flex-1">
@@ -100,6 +104,7 @@ export function FieldSecretSelect({
                   required: required ? "Secret key is required" : false,
                 }}
                 placeholder="Secret key"
+                disabled={disabled}
               />
             </div>
           </div>

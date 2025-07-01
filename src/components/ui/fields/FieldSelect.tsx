@@ -42,6 +42,7 @@ export interface FieldSelectProps {
   customContent?: React.ReactNode;
   onValueChange?: (value: string) => void;
   descriptionInline?: boolean;
+  disabled?: boolean;
   /**
    * TODO[cfviotti]: These components should not really care if they have
    * static or async options. This should be something dealt with better at
@@ -73,6 +74,7 @@ export function FieldSelect({
   customContent,
   onValueChange,
   descriptionInline,
+  disabled,
   apiOptions,
 }: FieldSelectProps) {
   const { field } = useController({
@@ -207,6 +209,7 @@ export function FieldSelect({
                 setIsOpen(true);
               }
             }}
+            disabled={disabled}
           >
             <FormControl>
               <SelectTrigger

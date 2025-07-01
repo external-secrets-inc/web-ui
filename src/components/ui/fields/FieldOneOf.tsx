@@ -16,6 +16,7 @@ export interface FieldOneOfProps {
   rules?: Record<string, unknown>;
   field: UISchemaField;
   descriptionInline?: boolean;
+  disabled?: boolean;
 }
 
 export function FieldOneOf({
@@ -26,6 +27,7 @@ export function FieldOneOf({
   rules,
   field,
   descriptionInline,
+  disabled,
 }: FieldOneOfProps) {
   const { setValue, getValues } = useFormContext();
 
@@ -163,6 +165,7 @@ export function FieldOneOf({
         emptyMessage="No valid options available for this field."
         descriptionInline={descriptionInline}
         rules={rules}
+        disabled={disabled}
       />
 
       {selectedField && selectedField.id && (
@@ -172,6 +175,7 @@ export function FieldOneOf({
             field={{
               ...selectedField,
               id: `${name}.${getPropertyName(selectedField.id)}`,
+              readOnly: disabled || selectedField.readOnly,
             }}
           />
         </div>

@@ -404,16 +404,29 @@ function removeUIStateFields(obj: unknown): unknown {
 /**
  * Recursively removes undefined, null, NaN, and empty values from an object or array.
  * This prevents these values from appearing in the final YAML output.
+ * Respects the allowEmpty flag from schema fields to preserve empty values when explicitly allowed.
  */
-function cleanEmptyValues(obj: unknown): unknown {
+function cleanEmptyValues(
+  obj: unknown,
+  schemaMap?: Map<string, UISchemaField>,
+  currentPath = ''
+): unknown {
   if (obj === null || obj === undefined || Number.isNaN(obj)) {
     return undefined;
   }
 
+  const currentField = schemaMap?.get(currentPath);
+
   if (Array.isArray(obj)) {
     const cleaned = obj
-      .map(item => cleanEmptyValues(item))
+      .map((item, index) => cleanEmptyValues(item, schemaMap, `${currentPath}[${index}]`))
       .filter(item => item !== undefined);
+
+    // If allowEmpty is true for this array field, preserve empty arrays
+    if (cleaned.length === 0 && currentField?.allowEmpty) {
+      return [];
+    }
+
     return cleaned.length > 0 ? cleaned : undefined;
   }
 
@@ -422,11 +435,17 @@ function cleanEmptyValues(obj: unknown): unknown {
     let hasValidProperties = false;
 
     for (const [key, value] of Object.entries(obj)) {
-      const cleanedValue = cleanEmptyValues(value);
+      const childPath = currentPath ? `${currentPath}.${key}` : key;
+      const cleanedValue = cleanEmptyValues(value, schemaMap, childPath);
       if (cleanedValue !== undefined) {
         cleaned[key] = cleanedValue;
         hasValidProperties = true;
       }
+    }
+
+    // If allowEmpty is true for this object field, preserve empty objects
+    if (!hasValidProperties && currentField?.allowEmpty) {
+      return {};
     }
 
     return hasValidProperties ? cleaned : undefined;
@@ -434,6 +453,10 @@ function cleanEmptyValues(obj: unknown): unknown {
 
   // For primitive values (string, number, boolean), return as-is unless they're empty strings
   if (typeof obj === 'string' && obj.trim() === '') {
+    // If allowEmpty is true for this string field, preserve empty strings
+    if (currentField?.allowEmpty) {
+      return obj;
+    }
     return undefined;
   }
 
@@ -455,7 +478,7 @@ export function transformData(
   // Remove all UI state fields first - this handles all __ui_state filtering in one place
   const cleanData = removeUIStateFields(data) as Record<string, unknown>;
 
-  // If no schema provided, return cleaned data as-is
+  // If no schema provided, return cleaned data as-is (no allowEmpty support)
   if (!schema || !Array.isArray(schema)) {
     return cleanEmptyValues(cleanData) as Record<string, unknown> ?? {};
   }
@@ -535,8 +558,8 @@ export function transformData(
     }
   }
 
-  // Clean empty values from the final result
-  return cleanEmptyValues(result) as Record<string, unknown> ?? {};
+  // Clean empty values from the final result, respecting allowEmpty flags
+  return cleanEmptyValues(result, schemaMap) as Record<string, unknown> ?? {};
 }
 
 /**
