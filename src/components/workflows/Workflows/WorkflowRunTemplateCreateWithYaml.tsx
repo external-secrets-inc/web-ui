@@ -152,7 +152,7 @@ export function WorkflowRunTemplateCreateWithYaml() {
           >
             {isPending && <Loader className="[grid-area:1/1]" />}
             <span className={cn(isPending && "invisible", "[grid-area:1/1]")}>
-              Create Workflow Run Template
+              Create Run Template
             </span>
           </Button>
         </div>

@@ -246,7 +246,7 @@ export function WorkflowRunTemplateDataTable() {
             >
               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                 <LucideTrash2 className="mr-2" />
-                Delete Workflow Run Template
+                Delete Run Template
               </DropdownMenuItem>
             </FeatureItemDeleteAction>
           </DropdownMenuContent>
@@ -282,11 +282,11 @@ export function WorkflowRunTemplateDataTable() {
     onError: (error: AxiosError<ApiHttpError>) =>
       handleDefaultApiHttpError(
         error,
-        "Error while trying to delete Workflow Run Template"
+        "Error while trying to delete Run Template"
       ),
     onSuccess: () => {
       workflowRunTemplatesRefetch();
-      toast.success("Workflow Run Template deleted successfully");
+      toast.success("Run Template deleted successfully");
     },
   });
 
@@ -309,11 +309,11 @@ export function WorkflowRunTemplateDataTable() {
         initialSort={{ id: "name", desc: false }}
         isLoading={isLoadingWorkflowRunTemplates}
         getRowId={(row) => `${row.namespace}/${row.name}`}
-        emptyMessage={"No Workflow Run Template available"}
+        emptyMessage={"No Run Template available"}
       >
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="font-bold w-auto">Run Templates</h2>
+            <h2 className="font-bold w-auto">Run Templates associated</h2>
           </div>
           <div className="flex justify-end gap-4">
             <DataSearch />
@@ -328,7 +328,7 @@ export function WorkflowRunTemplateDataTable() {
               }
             >
               <LucidePlus />
-              Add Workflow Run Template
+              Add Run Template
             </Button>
           </div>
         </div>

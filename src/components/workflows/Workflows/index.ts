@@ -2,6 +2,7 @@ export { WorkflowJobsDetails } from "./WorkflowJobsDetails";
 export { WorkflowJobsGraph } from "./WorkflowJobsGraph";
 export { WorkflowRunDetails } from "./WorkflowRunDetails";
 export { WorkflowRunTemplateCreate } from "./WorkflowRunTemplateCreate";
+export { WorkflowRunTemplateCreateWithEsiSchemaForm } from "./WorkflowRunTemplateCreateWithEsiSchemaForm";
 export { WorkflowRunTemplateCreateWithYaml } from "./WorkflowRunTemplateCreateWithYaml";
 export { WorkflowRunTemplateDataTable } from "./WorkflowRunTemplateDataTable";
 export * from "./Workflows.interfaces";
