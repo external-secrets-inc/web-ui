@@ -55,7 +55,7 @@ export function WorkflowTemplateDetails() {
   const { yamlString, specName, specVersion } = useMemo(() => {
     try {
       const parsed = JSON.parse(workflowTemplate.manifest || "{}");
-      const yamlStr = YAML.stringify(parsed);
+      const yamlStr = YAML.stringify({ spec: parsed.spec || {} });
       return {
         yamlString: yamlStr,
         specName: parsed?.spec?.name ?? "Unknown name",
@@ -107,10 +107,15 @@ export function WorkflowTemplateDetails() {
           </AccordionItem>
           <AccordionItem value="manifest">
             <AccordionTrigger className="font-bold text-base">
-              Manifest
+              Manifest Spec
             </AccordionTrigger>
             <AccordionContent>
-                <CodeTextarea language="yaml" value={yamlString} disabled/>
+              <CodeTextarea
+                className="max-h-72 overflow-auto"
+                language="yaml"
+                value={yamlString}
+                disabled
+              />
             </AccordionContent>
           </AccordionItem>
         </Accordion>
