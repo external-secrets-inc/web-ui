@@ -14,6 +14,7 @@ export interface FieldObjectProps {
   defaultValue?: Record<string, unknown>;
   rules?: Record<string, unknown>;
   descriptionInline?: boolean;
+  disabled?: boolean;
 }
 
 export function FieldObject({
@@ -25,6 +26,7 @@ export function FieldObject({
   defaultValue,
   rules,
   descriptionInline = true,
+  disabled,
 }: FieldObjectProps) {
   const { setValue, getValues, formState } = useFormContext();
   const error = !!formState.errors[name];
@@ -68,7 +70,7 @@ export function FieldObject({
               return (
                 <FieldRenderer
                   key={dynamicId}
-                  field={{ ...subField, id: dynamicId }}
+                  field={{ ...subField, id: dynamicId, readOnly: disabled || subField.readOnly }}
                 />
               );
             })

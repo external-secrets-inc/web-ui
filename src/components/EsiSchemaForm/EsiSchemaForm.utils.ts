@@ -7,7 +7,7 @@
  * Also, the validation rules are a bit messy and could be improved.
  */
 
-import type { UISchemaField, KubernetesResourceType, KubernetesManifest, OneOfOption, OneOfStaticOption, OneOfApiOption } from './EsiSchemaForm.interfaces';
+import type { UISchemaField, KubernetesResourceType, KubernetesManifest, OneOfApiOption, AnyOfApiOption } from './EsiSchemaForm.interfaces';
 
 
 // Constants & Configuration
@@ -91,25 +91,51 @@ export function getSuccessMessage(resourceType: KubernetesResourceType): string 
 
 
 // Field Validation Utilities
+type ApiOptionLike = OneOfApiOption | AnyOfApiOption;
+
 /**
- * Utility functions for working with oneOf field options.
+ * Common utilities for working with option arrays that may contain API options.
+ * Works with both oneOf and anyOf since they share the same API option structure.
  */
-export const OneOfUtils = {
+export const OptionUtils = {
   /**
-   * Checks if a oneOf option is a static option (has id property).
+   * Checks if an option is an API option (has href and labelRef properties).
    */
-  isStaticOption(option: OneOfOption): option is OneOfStaticOption {
-    return 'id' in option && typeof option.id === 'string';
+  isApiOption(option: unknown): option is ApiOptionLike {
+    return typeof option === 'object' && option !== null &&
+      'href' in option && 'labelRef' in option &&
+      typeof (option as Record<string, unknown>).href === 'string' &&
+      typeof (option as Record<string, unknown>).labelRef === 'string';
   },
 
   /**
-   * Checks if a oneOf option is an API option (has href and labelRef properties).
+   * Extracts API option configuration from a field's oneOf array.
+   * Returns the first API option found, or null if none exist.
    */
-  isApiOption(option: OneOfOption): option is OneOfApiOption {
-    return 'href' in option && 'labelRef' in option &&
-      typeof option.href === 'string' && typeof option.labelRef === 'string';
+  getOneOfApiOption(field: UISchemaField): OneOfApiOption | null {
+    if (!field.oneOf || !Array.isArray(field.oneOf) || field.oneOf.length === 0) {
+      return null;
+    }
+
+    const apiOptions = field.oneOf.filter(this.isApiOption);
+    return apiOptions.length > 0 ? apiOptions[0] as OneOfApiOption : null;
+  },
+
+  /**
+   * Extracts API option configuration from a field's anyOf array.
+   * Returns the first API option found, or null if none exist.
+   */
+  getAnyOfApiOption(field: UISchemaField): AnyOfApiOption | null {
+    if (!field.anyOf || !Array.isArray(field.anyOf) || field.anyOf.length === 0) {
+      return null;
+    }
+
+    const apiOptions = field.anyOf.filter(this.isApiOption);
+    return apiOptions.length > 0 ? apiOptions[0] as AnyOfApiOption : null;
   },
 };
+
+
 
 /**
  * Creates validation rules for a field based on its schema definition.
@@ -230,7 +256,7 @@ export function createFieldValidation(field: UISchemaField) {
           }
           // Check if the value matches any static option id
           const isValidOption = field.oneOf!.some(option =>
-            OneOfUtils.isStaticOption(option) && option.id === value
+            'id' in option && typeof option.id === 'string' && option.id === value
           );
           if (!isValidOption) {
             return `Invalid option for ${field.label || field.id}`;
@@ -253,13 +279,23 @@ export function createFieldValidation(field: UISchemaField) {
     }
     case 'multi-select': {
       if (field.required) {
-        rules.validate = (value: string[]) => {
-          if (!Array.isArray(value) || value.length === 0) {
+        rules.validate = (value: string[] | string) => {
+          // Check if this field uses API options
+          const isApiOption = OptionUtils.getAnyOfApiOption(field) !== null;
+
+          // Handle both array (static options) and comma-separated string (API options) formats
+          // TODO[cfviotti]: In the future, API options for anyOf should store proper arrays instead of comma-separated strings
+          const normalizedValue = Array.isArray(value)
+            ? value
+            : (typeof value === 'string' ? value.split(',').filter(Boolean) : []);
+
+          if (normalizedValue.length === 0) {
             return `${field.label || field.id} must have at least one selection`;
           }
-          // Validate that all values are from the allowed options
-          if (field.options && field.options.length > 0) {
-            const invalidOptions = value.filter(v => !field.options!.includes(v));
+
+          // Validate that all values are from the allowed options (only for static options, not API options)
+          if (!isApiOption && field.options && field.options.length > 0) {
+            const invalidOptions = normalizedValue.filter(v => !field.options!.includes(v));
             if (invalidOptions.length > 0) {
               return `Invalid options: ${invalidOptions.join(', ')}`;
             }
@@ -368,16 +404,29 @@ function removeUIStateFields(obj: unknown): unknown {
 /**
  * Recursively removes undefined, null, NaN, and empty values from an object or array.
  * This prevents these values from appearing in the final YAML output.
+ * Respects the allowEmpty flag from schema fields to preserve empty values when explicitly allowed.
  */
-function cleanEmptyValues(obj: unknown): unknown {
+function cleanEmptyValues(
+  obj: unknown,
+  schemaMap?: Map<string, UISchemaField>,
+  currentPath = ''
+): unknown {
   if (obj === null || obj === undefined || Number.isNaN(obj)) {
     return undefined;
   }
 
+  const currentField = schemaMap?.get(currentPath);
+
   if (Array.isArray(obj)) {
     const cleaned = obj
-      .map(item => cleanEmptyValues(item))
+      .map((item, index) => cleanEmptyValues(item, schemaMap, `${currentPath}[${index}]`))
       .filter(item => item !== undefined);
+
+    // If allowEmpty is true for this array field, preserve empty arrays
+    if (cleaned.length === 0 && currentField?.allowEmpty) {
+      return [];
+    }
+
     return cleaned.length > 0 ? cleaned : undefined;
   }
 
@@ -386,11 +435,17 @@ function cleanEmptyValues(obj: unknown): unknown {
     let hasValidProperties = false;
 
     for (const [key, value] of Object.entries(obj)) {
-      const cleanedValue = cleanEmptyValues(value);
+      const childPath = currentPath ? `${currentPath}.${key}` : key;
+      const cleanedValue = cleanEmptyValues(value, schemaMap, childPath);
       if (cleanedValue !== undefined) {
         cleaned[key] = cleanedValue;
         hasValidProperties = true;
       }
+    }
+
+    // If allowEmpty is true for this object field, preserve empty objects
+    if (!hasValidProperties && currentField?.allowEmpty) {
+      return {};
     }
 
     return hasValidProperties ? cleaned : undefined;
@@ -398,6 +453,10 @@ function cleanEmptyValues(obj: unknown): unknown {
 
   // For primitive values (string, number, boolean), return as-is unless they're empty strings
   if (typeof obj === 'string' && obj.trim() === '') {
+    // If allowEmpty is true for this string field, preserve empty strings
+    if (currentField?.allowEmpty) {
+      return obj;
+    }
     return undefined;
   }
 
@@ -419,7 +478,7 @@ export function transformData(
   // Remove all UI state fields first - this handles all __ui_state filtering in one place
   const cleanData = removeUIStateFields(data) as Record<string, unknown>;
 
-  // If no schema provided, return cleaned data as-is
+  // If no schema provided, return cleaned data as-is (no allowEmpty support)
   if (!schema || !Array.isArray(schema)) {
     return cleanEmptyValues(cleanData) as Record<string, unknown> ?? {};
   }
@@ -499,8 +558,8 @@ export function transformData(
     }
   }
 
-  // Clean empty values from the final result
-  return cleanEmptyValues(result) as Record<string, unknown> ?? {};
+  // Clean empty values from the final result, respecting allowEmpty flags
+  return cleanEmptyValues(result, schemaMap) as Record<string, unknown> ?? {};
 }
 
 /**

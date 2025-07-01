@@ -21,6 +21,7 @@ export interface FieldArrayProps {
   field: UISchemaField;
   defaultValue?: unknown[];
   descriptionInline?: boolean;
+  disabled?: boolean;
 }
 
 export function FieldArray({
@@ -32,6 +33,7 @@ export function FieldArray({
   field,
   defaultValue,
   descriptionInline,
+  disabled,
 }: FieldArrayProps) {
   const { control, getValues, formState } = useFormContext();
   const { fields, append, remove } = useFieldArray({
@@ -107,6 +109,7 @@ export function FieldArray({
                               field={{
                                 ...subField,
                                 id: fieldId,
+                                readOnly: disabled || subField.readOnly,
                               }}
                             />
                           );
@@ -119,6 +122,7 @@ export function FieldArray({
                             variant="ghost"
                             size="icon"
                             onClick={() => remove(index)}
+                            disabled={disabled}
                             className="absolute !m-0 -top-px -right-px size-8 text-destructive hover:text-destructive hover:border-destructive/40"
                           >
                             <LucideTrash2 />
@@ -143,6 +147,7 @@ export function FieldArray({
                       }),
                       id: `${name}.${index}`,
                       label: `#${index + 1}`,
+                      readOnly: disabled || itemSchema?.readOnly,
                     }}
                   />
                   <Tooltip>
@@ -152,6 +157,7 @@ export function FieldArray({
                         variant="ghost"
                         size="icon"
                         onClick={() => remove(index)}
+                        disabled={disabled}
                         className="absolute !mt-0.5 top-5 -right-px size-9 text-destructive hover:text-destructive hover:border-destructive/40"
                       >
                         <LucideTrash2 />
@@ -174,6 +180,7 @@ export function FieldArray({
                 size="icon"
                 className="size-8 self-center [not(:first-of-type):is(:last-child)]:!mt-3"
                 onClick={() => append(createTemplateItem())}
+                disabled={disabled}
               >
                 <LucidePlus />
               </Button>

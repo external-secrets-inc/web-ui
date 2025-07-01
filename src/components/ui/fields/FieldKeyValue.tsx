@@ -20,6 +20,7 @@ export interface FieldKeyValueProps {
   rules?: Record<string, unknown>;
   defaultValue?: Array<{ key: string; value: string }>;
   descriptionInline?: boolean;
+  disabled?: boolean;
 }
 
 export function FieldKeyValue({
@@ -30,6 +31,7 @@ export function FieldKeyValue({
   rules,
   defaultValue,
   descriptionInline,
+  disabled,
 }: FieldKeyValueProps) {
   const { control, formState } = useFormContext();
   const { fields, append, remove } = useFieldArray({
@@ -80,6 +82,7 @@ export function FieldKeyValue({
                     required
                     rules={{ required: "Key is required" }}
                     placeholder="Enter key"
+                    disabled={disabled}
                   />
                 </div>
                 <div className="flex-1">
@@ -89,6 +92,7 @@ export function FieldKeyValue({
                     required
                     rules={{ required: "Value is required" }}
                     placeholder="Enter value"
+                    disabled={disabled}
                   />
                 </div>
                 <Tooltip>
@@ -98,6 +102,7 @@ export function FieldKeyValue({
                       variant="outline"
                       size="icon"
                       onClick={() => remove(index)}
+                      disabled={disabled}
                       className="size-9 text-destructive hover:text-destructive hover:border-destructive/40 mt-auto"
                     >
                       <LucideTrash2 />
@@ -117,6 +122,7 @@ export function FieldKeyValue({
                   size="icon"
                   className="size-8 self-center [not(:first-of-type)]:!mt-3"
                   onClick={addItem}
+                  disabled={disabled}
                 >
                   <LucidePlus />
                 </Button>

@@ -12,10 +12,11 @@ export interface FieldDateTimeProps extends Omit<ComponentPropsWithoutRef<typeof
   rules?: Record<string, unknown>;
   defaultValue?: string;
   descriptionInline?: boolean;
+  disabled?: boolean;
 }
 
 export const FieldDateTime = forwardRef<HTMLInputElement, FieldDateTimeProps>(
-  ({ name, label, description, required, rules, defaultValue, descriptionInline, ...inputProps }, ref) => {
+  ({ name, label, description, required, rules, defaultValue, disabled, descriptionInline, ...inputProps }, ref) => {
     const { field } = useController({
       name,
       rules,
@@ -37,6 +38,7 @@ export const FieldDateTime = forwardRef<HTMLInputElement, FieldDateTimeProps>(
           {...field}
           ref={ref}
           type="datetime-local"
+          disabled={disabled}
         />
       </FieldBase>
     );

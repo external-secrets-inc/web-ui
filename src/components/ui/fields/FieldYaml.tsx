@@ -13,6 +13,7 @@ export interface FieldYamlProps {
   placeholder?: string;
   className?: string;
   descriptionInline?: boolean;
+  disabled?: boolean;
 }
 
 export function FieldYaml({
@@ -24,7 +25,8 @@ export function FieldYaml({
   defaultValue,
   placeholder = "# Enter YAML content here",
   className,
-  descriptionInline
+  descriptionInline,
+  disabled
 }: FieldYamlProps) {
     const { field } = useController({
     name,
@@ -79,6 +81,7 @@ export function FieldYaml({
         language="yaml"
         placeholder={placeholder}
         className={className}
+        disabled={disabled}
         value={field.value || ''}
         onChange={(e) => {
           // Always store as string to preserve formatting and cursor position
