@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  WorkflowData,
   WorkflowJob,
   WorkflowStep,
 } from "./Workflows.interfaces";
@@ -139,17 +138,17 @@ const JobAccordionItem: React.FC<{ name: string; job: WorkflowJob }> = ({
   );
 };
 
-export function WorkflowJobsDetails({ workflow }: { workflow: WorkflowData }) {
+export function WorkflowJobsDetails({jobs }: { jobs: Record<string, WorkflowJob> }) {
   return (
     <div className="flex flex-col gap-4">
       <section className="bg-card rounded-lg border p-6">
-        {Object.entries(workflow.jobs).length > 0 ? (
+        {Object.entries(jobs).length > 0 ? (
           <Accordion
             type="multiple"
             className="w-full"
-            defaultValue={Object.keys(workflow.jobs)}
+            defaultValue={Object.keys(jobs)}
           >
-            {Object.entries(workflow.jobs).map(([jobName, job]) => (
+            {Object.entries(jobs).map(([jobName, job]) => (
               <JobAccordionItem key={jobName} name={jobName} job={job} />
             ))}
           </Accordion>

@@ -47,6 +47,7 @@ export interface WorkflowJob {
   completionTime?: Date;
   type: string;
   steps: Record<string, WorkflowStep>;
+  dependsOn: string[];
 }
 
 export interface WorkflowStep {
