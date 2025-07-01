@@ -1,9 +1,9 @@
-import { FieldBase } from './FieldBase';
-import { MultiSelect } from '@/components/ui/MultiSelect';
-import { useController } from 'react-hook-form';
-import useGetEsiSchemaOptionsFromApi from '@/services/esi-schemas/queries/useGetEsiSchemaOptionsFromApi';
-import type { AnyOfApiOption } from '@/components/EsiSchemaForm/EsiSchemaForm.interfaces';
-import { useMemo, useState } from 'react';
+import { FieldBase } from "./FieldBase";
+import { MultiSelect } from "@/components/ui/MultiSelect";
+import { useController } from "react-hook-form";
+import useGetEsiSchemaOptionsFromApi from "@/services/esi-schemas/queries/useGetEsiSchemaOptionsFromApi";
+import type { AnyOfApiOption } from "@/components/EsiSchemaForm/EsiSchemaForm.interfaces";
+import { useMemo, useState } from "react";
 
 export interface MultiSelectOption {
   value: string;
@@ -16,12 +16,14 @@ export interface FieldMultiSelectProps {
   description?: string;
   required?: boolean;
   rules?: Record<string, unknown>;
-  options?: string[] | MultiSelectOption[];
+  options?: MultiSelectOption[];
   placeholder?: string;
   defaultValue?: string[];
   onValueChange?: (value: string[]) => void;
   descriptionInline?: boolean;
+  disabled?: boolean;
   // TODO: Add loading, error, emptyMessage props when MultiSelect component supports them
+
   /**
    * API configuration for fetching options.
    * When provided, options will be fetched from the API instead of using the static `options` prop.
@@ -41,22 +43,21 @@ export function FieldMultiSelect({
   defaultValue,
   onValueChange,
   descriptionInline,
+  disabled,
   apiOptions,
 }: FieldMultiSelectProps) {
   const { field } = useController({
     name,
     rules,
-    defaultValue: defaultValue ?? []
+    defaultValue: defaultValue ?? [],
   });
 
   const [isOpen, setIsOpen] = useState(false);
 
-  const {
-    data: apiData,
-    isLoading: apiLoading,
-  } = useGetEsiSchemaOptionsFromApi(apiOptions?.href, {
-    enabled: !!apiOptions?.href && isOpen,
-  });
+  const { data: apiData, isLoading: apiLoading } =
+    useGetEsiSchemaOptionsFromApi(apiOptions?.href, {
+      enabled: !!apiOptions?.href && isOpen,
+    });
 
   const normalizedOptions: MultiSelectOption[] = useMemo(() => {
     if (apiOptions && apiData) {
@@ -101,7 +102,7 @@ export function FieldMultiSelect({
   const handleValueChange = (selectedValues: string[]) => {
     // For anyOf API options, store as comma-separated string for submission
     if (apiOptions) {
-      field.onChange(selectedValues.join(','));
+      field.onChange(selectedValues.join(","));
     } else {
       // For regular options, keep as array
       field.onChange(selectedValues);
@@ -111,8 +112,10 @@ export function FieldMultiSelect({
 
   // Convert stored value back to array for the MultiSelect component
   const currentValue = apiOptions
-    ? (typeof field.value === 'string' ? field.value.split(',').filter(Boolean) : [])
-    : (field.value || []);
+    ? typeof field.value === "string"
+      ? field.value.split(",").filter(Boolean)
+      : []
+    : field.value || [];
 
   return (
     <FieldBase
@@ -124,18 +127,19 @@ export function FieldMultiSelect({
       defaultValue={defaultValue ?? []}
       descriptionInline={descriptionInline}
     >
-              <MultiSelect
-          options={normalizedOptions}
-          onValueChange={handleValueChange}
-          defaultValue={currentValue}
-          placeholder={apiLoading ? "Loading options..." : placeholder} // TODO[cfviotti]: Use proper inner loading state inside multiselect open content when available
-          onOpenChange={(open) => {
-            if (open && !isOpen) {
-              setIsOpen(true);
-            }
-          }}
-          open={apiLoading ? false : undefined} // TODO: Remove this defer once MultiSelect supports proper loading states - it's REALLY BAD waiting for select to open
-        />
+      <MultiSelect
+        options={normalizedOptions}
+        onValueChange={handleValueChange}
+        defaultValue={currentValue}
+        placeholder={apiLoading ? "Loading options..." : placeholder} // TODO[cfviotti]: Use proper inner loading state inside multiselect open content when available
+        onOpenChange={(open) => {
+          if (open && !isOpen) {
+            setIsOpen(true);
+          }
+        }}
+        open={apiLoading ? false : undefined} // TODO: Remove this defer once MultiSelect supports proper loading states - it's REALLY BAD waiting for select to open
+        disabled={disabled}
+      />
     </FieldBase>
   );
 }

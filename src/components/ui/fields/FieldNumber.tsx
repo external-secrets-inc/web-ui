@@ -12,10 +12,11 @@ export interface FieldNumberProps extends Omit<ComponentPropsWithoutRef<typeof I
   rules?: Record<string, unknown>;
   defaultValue?: number;
   descriptionInline?: boolean;
+  disabled?: boolean;
 }
 
 export const FieldNumber = forwardRef<HTMLInputElement, FieldNumberProps>(
-  ({ name, label, description, required, rules, defaultValue, descriptionInline, ...inputProps }, ref) => {
+  ({ name, label, description, required, rules, defaultValue, disabled, descriptionInline, ...inputProps }, ref) => {
     const { field } = useController({
       name,
       rules,
@@ -51,6 +52,7 @@ export const FieldNumber = forwardRef<HTMLInputElement, FieldNumberProps>(
           type="number"
           value={field.value ?? ""}
           onChange={handleChange}
+          disabled={disabled}
         />
       </FieldBase>
     );

@@ -27,6 +27,7 @@ export function FieldRenderer({ field }: FieldRendererProps) {
     description: field.description,
     required: field.required,
     rules: createFieldValidation(field),
+    disabled: field.readOnly,
   };
 
   switch (field.type) {

@@ -12,10 +12,11 @@ export interface FieldDurationProps extends Omit<ComponentPropsWithoutRef<typeof
   rules?: Record<string, unknown>;
   defaultValue?: string;
   descriptionInline?: boolean;
+  disabled?: boolean;
 }
 
 export const FieldDuration = forwardRef<HTMLInputElement, FieldDurationProps>(
-  ({ name, label, description, required, rules, defaultValue, descriptionInline, ...inputProps }, ref) => {
+  ({ name, label, description, required, rules, defaultValue, disabled, descriptionInline, ...inputProps }, ref) => {
     const { field } = useController({
       name,
       rules,
@@ -37,6 +38,7 @@ export const FieldDuration = forwardRef<HTMLInputElement, FieldDurationProps>(
           {...field}
           ref={ref}
           placeholder="e.g., 1d2h30m15s"
+          disabled={disabled}
         />
       </FieldBase>
     );
