@@ -1,5 +1,44 @@
 # Changelog
 
+## [0.16.0](https://github.com/external-secrets-inc/web-ui/compare/v0.15.0...v0.16.0) (2025-07-01)
+
+
+### Features
+
+* :lipstick: add components necessary for sidebar ([5f37462](https://github.com/external-secrets-inc/web-ui/commit/5f374627ec67165fd10a7058ce8dcf35743366cd))
+* :sparkles: add google oauth login only support ([a704b7c](https://github.com/external-secrets-inc/web-ui/commit/a704b7c0dda2b1d94d4c7e20af7cafb31fb2e49a))
+* :sparkles: dynamic form baseline for workflow template ([#385](https://github.com/external-secrets-inc/web-ui/issues/385)) ([e991265](https://github.com/external-secrets-inc/web-ui/commit/e991265a8098140d57f15598e8fdd96e912c8195))
+* :sparkles: suppor readOnly for fields in schema form ([3bf8245](https://github.com/external-secrets-inc/web-ui/commit/3bf824567c686cc0a5233bc1c0c58818fa06499c))
+* :sparkles: support schema form for run templates ([17e1388](https://github.com/external-secrets-inc/web-ui/commit/17e1388fc0f01cef9ebdbb15738e3917967e90e7))
+* ✨ support eso server as a backend ([#379](https://github.com/external-secrets-inc/web-ui/issues/379)) ([a7238b9](https://github.com/external-secrets-inc/web-ui/commit/a7238b9199c8b7e0b485a12272e2f63e1be4eecb))
+* ✨ workflows secret stores ([#380](https://github.com/external-secrets-inc/web-ui/issues/380)) ([6ede07a](https://github.com/external-secrets-inc/web-ui/commit/6ede07a00e45499fd458e82d556a1fb1bcacd35e))
+* add components necessary for sidebar ([#364](https://github.com/external-secrets-inc/web-ui/issues/364)) ([5f37462](https://github.com/external-secrets-inc/web-ui/commit/5f374627ec67165fd10a7058ce8dcf35743366cd))
+* add list workflow template ([#381](https://github.com/external-secrets-inc/web-ui/issues/381)) ([74e889f](https://github.com/external-secrets-inc/web-ui/commit/74e889f6ddf662de17b427932e60121e1e6f32d7))
+* add more details to workflow template screen ([#395](https://github.com/external-secrets-inc/web-ui/issues/395)) ([3ed2f45](https://github.com/external-secrets-inc/web-ui/commit/3ed2f45c2c245216ce1188ad52b9b3a03ebaf686))
+* **auth:** 1 overhaul authentication flow and components ([#359](https://github.com/external-secrets-inc/web-ui/issues/359)) ([a704b7c](https://github.com/external-secrets-inc/web-ui/commit/a704b7c0dda2b1d94d4c7e20af7cafb31fb2e49a))
+* **data-provider:** 1 DataProvider refactor with virtualization strategies ([#353](https://github.com/external-secrets-inc/web-ui/issues/353)) ([12efe90](https://github.com/external-secrets-inc/web-ui/commit/12efe9095b5c63106fea2904f312018ebd31a823))
+* **data-provider:** 2 refactored DataProvider new stories ([#354](https://github.com/external-secrets-inc/web-ui/issues/354)) ([03fba51](https://github.com/external-secrets-inc/web-ui/commit/03fba51a4a5f23d911c2173e5c7d933925c37ca1))
+* **data-provider:** 3 audit mocks and feature flag improvements ([#355](https://github.com/external-secrets-inc/web-ui/issues/355)) ([a4b1b42](https://github.com/external-secrets-inc/web-ui/commit/a4b1b42e1256cd934c7da5e39c37a92727e7e5c6))
+* job status ordering by dependsOn ([#398](https://github.com/external-secrets-inc/web-ui/issues/398)) ([3d5eb7a](https://github.com/external-secrets-inc/web-ui/commit/3d5eb7ab8ff2db464567070310070df25420244a))
+* redesign UI with new layout and theme ([#365](https://github.com/external-secrets-inc/web-ui/issues/365)) ([59b0c27](https://github.com/external-secrets-inc/web-ui/commit/59b0c2779601b30f3bf61761a99045e20e6ccf4f))
+* support api options for selects with href in oneOf ([#391](https://github.com/external-secrets-inc/web-ui/issues/391)) ([3bf8245](https://github.com/external-secrets-inc/web-ui/commit/3bf824567c686cc0a5233bc1c0c58818fa06499c))
+* support dynamic forms for secret stores ([#382](https://github.com/external-secrets-inc/web-ui/issues/382)) ([5c1a3e2](https://github.com/external-secrets-inc/web-ui/commit/5c1a3e2b26ee0163e4c320fd890304289f280d6b))
+* support schema form for run templates ([#401](https://github.com/external-secrets-inc/web-ui/issues/401)) ([17e1388](https://github.com/external-secrets-inc/web-ui/commit/17e1388fc0f01cef9ebdbb15738e3917967e90e7))
+* workflow run screen ([#384](https://github.com/external-secrets-inc/web-ui/issues/384)) ([cb89375](https://github.com/external-secrets-inc/web-ui/commit/cb89375b2980a27c41a7ca29ddf85267db690778))
+* workflow run template list ([#387](https://github.com/external-secrets-inc/web-ui/issues/387)) ([7201032](https://github.com/external-secrets-inc/web-ui/commit/72010324321eefcd8e03fecb80a1e2c721830d5c))
+
+
+### Bug Fixes
+
+* :bug: allow filtering out fields that includes __ui_state in their name ([678b289](https://github.com/external-secrets-inc/web-ui/commit/678b289b26c79ff4aa18fa9a4cbeca9d4c03005b))
+* :label: fix all consumers of DataProvider to use defineColumns type abstraction ([12efe90](https://github.com/external-secrets-inc/web-ui/commit/12efe9095b5c63106fea2904f312018ebd31a823))
+* allow filtering out fields that includes __ui_state in their name ([#389](https://github.com/external-secrets-inc/web-ui/issues/389)) ([678b289](https://github.com/external-secrets-inc/web-ui/commit/678b289b26c79ff4aa18fa9a4cbeca9d4c03005b))
+* eso-server url on webui builds ([#400](https://github.com/external-secrets-inc/web-ui/issues/400)) ([7f7ccaa](https://github.com/external-secrets-inc/web-ui/commit/7f7ccaa6b55448409a54141c80bd6f5a3096d6cc))
+* one of id support and general improvements ([#386](https://github.com/external-secrets-inc/web-ui/issues/386)) ([3429ab3](https://github.com/external-secrets-inc/web-ui/commit/3429ab3b0ed44feee0e960ab36176846582dc6f3))
+* policies trigger mocks and quick code improvements ([#366](https://github.com/external-secrets-inc/web-ui/issues/366)) ([521413b](https://github.com/external-secrets-inc/web-ui/commit/521413bb81bb0adbcb6d5096f7745ed6a3f744bc))
+* provider type mock key values ([#350](https://github.com/external-secrets-inc/web-ui/issues/350)) ([0a76464](https://github.com/external-secrets-inc/web-ui/commit/0a764640f50adb6c8599369e71fdbebfb78b9c17))
+* small fixes :partying_face: ([#390](https://github.com/external-secrets-inc/web-ui/issues/390)) ([55371a2](https://github.com/external-secrets-inc/web-ui/commit/55371a2c1a71e6d8d0816aec20e252e69591aa49))
+
 ## [0.15.0](https://github.com/external-secrets-inc/web-ui/compare/v0.14.1...v0.15.0) (2025-04-24)
 
 
