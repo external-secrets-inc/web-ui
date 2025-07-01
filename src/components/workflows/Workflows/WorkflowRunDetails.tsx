@@ -1,7 +1,11 @@
 import { Loader } from "@/components/ui/Loader";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { useEffect, useMemo, useState } from "react";
-import { WorkflowData, WorkflowJob, WorkflowRunData } from "./Workflows.interfaces";
+import {
+  WorkflowData,
+  WorkflowJob,
+  WorkflowRunData,
+} from "./Workflows.interfaces";
 import { useParams } from "react-router-dom";
 import useGetWorkflowRun from "@/services/workflows/queries/useGetWorkflowRun";
 import { WorkflowJobsDetails } from "./WorkflowJobsDetails";
@@ -76,7 +80,7 @@ export function WorkflowRunDetails() {
         completionTime: "",
       } as WorkflowRunData;
 
-      return workflowRunData;
+    return workflowRunData;
   }, [
     workflowRunData,
     workflowRunName,
@@ -192,7 +196,7 @@ export function WorkflowRunDetails() {
                   <span className="font-medium">Start Time:</span>
                   <span className="ml-2 font-medium">
                     {workflow.startTime
-                      ? formatDate(workflow.startTime, { format: "full"})
+                      ? formatDate(workflow.startTime, { format: "full" })
                       : "No data available"}
                   </span>
                 </div>
@@ -200,7 +204,7 @@ export function WorkflowRunDetails() {
                   <span className="font-medium">Completion Time:</span>
                   <span className="ml-2 font-medium">
                     {workflow.completionTime
-                      ? formatDate(workflow.completionTime, { format: "full"})
+                      ? formatDate(workflow.completionTime, { format: "full" })
                       : "No data available"}
                   </span>
                 </div>
@@ -227,39 +231,39 @@ export function WorkflowRunDetails() {
             </div>
           </div>
           <div>
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="text-lg font-bold">Jobs</h3>
-            <div className="text-sm">
-              {Object.keys(workflow.jobs).length} job(s)
-            </div>
-          </div>
-          <Tabs
-            defaultValue={defaultTab}
-            onValueChange={onTabChange}
-            value={activeTab}
-          >
-            <TabsList className="mb-2">
-              <TabsTrigger value="details">Details</TabsTrigger>
-              <TabsTrigger value="graph">Graph</TabsTrigger>
-            </TabsList>
-            <TabsContent
-              className="data-[state=active]:grid min-h-0"
-              value="details"
-            >
-              <WorkflowJobsDetails jobs={orderedJobs} />
-            </TabsContent>
-            <TabsContent
-              className="data-[state=active]:grid min-h-0"
-              value="graph"
-            >
-                    <div className="bg-card rounded-lg border p-4">
-                <div className="h-[600px] w-full">
-                  <WorkflowJobsGraph workflow={workflow} jobs={orderedJobs} />
-                </div>
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-lg font-bold">Jobs</h3>
+              <div className="text-sm">
+                {Object.keys(workflow.jobs).length} job(s)
               </div>
-            </TabsContent>
-          </Tabs>
-        </div>
+            </div>
+            <Tabs
+              defaultValue={defaultTab}
+              onValueChange={onTabChange}
+              value={activeTab}
+            >
+              <TabsList className="mb-2">
+                <TabsTrigger value="details">Details</TabsTrigger>
+                <TabsTrigger value="graph">Graph</TabsTrigger>
+              </TabsList>
+              <TabsContent
+                className="data-[state=active]:grid min-h-0"
+                value="details"
+              >
+                <WorkflowJobsDetails jobs={orderedJobs} />
+              </TabsContent>
+              <TabsContent
+                className="data-[state=active]:grid min-h-0"
+                value="graph"
+              >
+                <div className="bg-card rounded-lg border p-4">
+                  <div className="h-[600px] w-full">
+                    <WorkflowJobsGraph workflow={workflow} jobs={orderedJobs} />
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
       )}
     </>

@@ -133,7 +133,7 @@ export function WorkflowRunTemplateDataTable() {
                   }
 
                   return (
-                    <Tooltip>
+                    <Tooltip key={`${run.namespace}/${run.name}`}>
                       <TooltipTrigger>
                         <Link
                           to={{
