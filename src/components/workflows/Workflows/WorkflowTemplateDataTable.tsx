@@ -59,7 +59,7 @@ export function WorkflowTemplateDataTable() {
                 }}
               >
                 <LucidePlus />
-                Add Workflow Run Template
+                Add Run Template
               </Button>
               <div>
                 {(
@@ -113,7 +113,7 @@ export function WorkflowTemplateDataTable() {
               }}
             >
               <LucidePlus className="mr-2" />
-              Add Workflow Run Template
+              Add Run Template
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

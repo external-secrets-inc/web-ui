@@ -1,21 +1,22 @@
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { Form } from '@/components/ui/form';
-import { Button } from '@/components/ui/button';
-import { FieldRenderer } from '@/components/ui/fields/FieldRenderer';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { FieldRenderer } from "@/components/ui/fields/FieldRenderer";
+import { Form } from "@/components/ui/form";
+import { useEffect, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import type {
+  KubernetesManifest,
+  KubernetesResourceType,
+  UISchema,
+} from "./EsiSchemaForm.interfaces";
 import {
   assembleManifest,
-  isFieldVisible,
   extractErrorMessage,
+  getResourceConfig,
   getSuccessMessage,
-} from './EsiSchemaForm.utils';
-import type {
-  UISchema,
-  KubernetesResourceType,
-  KubernetesManifest,
-} from './EsiSchemaForm.interfaces';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { toast } from 'sonner';
+  isFieldVisible,
+} from "./EsiSchemaForm.utils";
 
 export interface EsiSchemaFormProps {
   schema?: UISchema;
@@ -50,32 +51,52 @@ export function EsiSchemaForm({
   schema,
   resourceType,
   onSubmit,
-  submitButtonText = 'Create',
-  formId = 'esi-schema-form',
+  submitButtonText = "Create",
+  formId = "esi-schema-form",
   disabled = false,
   hideSubmitButton = false,
   successMessage,
   onSuccess,
   onError,
 }: EsiSchemaFormProps) {
-  const [serverError, setServerError] = useState<string | null>(null);
+  const [errorState, setErrorState] = useState<{
+    message: string;
+    isClientError: boolean;
+  } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const alertRef = useRef<HTMLDivElement>(null);
+
+  // Focus on alert when error state changes to show error
+  useEffect(() => {
+    if (errorState && alertRef.current) {
+      alertRef.current.focus();
+    }
+  }, [errorState]);
 
   // Field components handle their own defaults when they mount, so we use empty form defaults
   const defaultValues = {};
 
   const methods = useForm({
     defaultValues,
-    mode: 'onChange',
+    mode: "onChange",
   });
 
   const handleSubmit = async (data: Record<string, unknown>) => {
-    setServerError(null);
     setIsSubmitting(true);
 
+    let backendCallAttempted = false;
+
     try {
+      // First, try to assemble the manifest (client-side validation)
       const manifest = assembleManifest(data, resourceType, schema?.fields);
+
+      // If we reach here, manifest assembly succeeded, now try the backend call
+      backendCallAttempted = true;
       await onSubmit(manifest);
+
+      // Only clear error state on successful submission
+      setErrorState(null);
 
       const message = successMessage || getSuccessMessage(resourceType);
       toast.success(message);
@@ -85,8 +106,18 @@ export function EsiSchemaForm({
       }
     } catch (error) {
       const errorMessage = extractErrorMessage(error);
-      setServerError(errorMessage);
-      toast.error(`Failed to create ${resourceType}`);
+      const isClientError = !backendCallAttempted;
+
+      setErrorState({ message: errorMessage, isClientError });
+
+      let resourceName: string;
+      try {
+        resourceName = getResourceConfig(resourceType).displayName;
+      } catch {
+        resourceName = resourceType;
+      }
+
+      toast.error(`Failed to create ${resourceName}`);
 
       if (onError) {
         onError(errorMessage);
@@ -115,11 +146,15 @@ export function EsiSchemaForm({
         onSubmit={methods.handleSubmit(handleSubmit)}
         className="space-y-6 [&_[data-nested-group]:hover:not(:has([data-nested-group]:hover))]:border-input-accent [&_[data-nested-group]:has([data-nested-group]:hover)]:border-muted"
       >
-        {serverError && (
-          <Alert variant="destructive">
-            <AlertTitle>Server Error</AlertTitle>
+        {errorState && (
+          <Alert ref={alertRef} variant="destructive" tabIndex={-1}>
+            <AlertTitle>
+              {errorState.isClientError
+                ? "Data Processing Error"
+                : "Server Error"}
+            </AlertTitle>
             <AlertDescription className="font-medium">
-              {serverError}
+              {errorState.message}
             </AlertDescription>
           </Alert>
         )}
@@ -133,11 +168,11 @@ export function EsiSchemaForm({
         </div>
 
         {!hideSubmitButton && (
-        <div className="flex justify-end">
-          <Button type="submit" disabled={isFormDisabled}>
-            {submitButtonText}
-          </Button>
-        </div>
+          <div className="flex justify-end">
+            <Button type="submit" disabled={isFormDisabled}>
+              {submitButtonText}
+            </Button>
+          </div>
         )}
       </form>
     </Form>

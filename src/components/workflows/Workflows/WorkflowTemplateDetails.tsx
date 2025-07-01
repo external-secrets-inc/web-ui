@@ -3,7 +3,7 @@ import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import useGetWorkflowTemplate from "@/services/workflows/queries/useGetWorkflowTemplate";
 import { useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { WorkflowTemplateData } from "./Workflows.interfaces";
+import { WorkflowTemplateData, WorkflowTemplateParameter } from "./Workflows.interfaces";
 import { WorkflowRunTemplateDataTable } from "./WorkflowRunTemplateDataTable";
 import {
   Accordion,
@@ -42,8 +42,8 @@ export function WorkflowTemplateDetails() {
   const workflowTemplate = useMemo(() => {
     if (!workflowTemplateData)
       return {
-        name: templateName,
-        namespace: templateNamespace,
+        name: templateName ?? "",
+        namespace: templateNamespace ?? "",
         status: { status: "Unknown", reason: "No data" },
         manifest: "",
         parameters: [],
@@ -88,7 +88,7 @@ export function WorkflowTemplateDetails() {
               Details
             </AccordionTrigger>
             <AccordionContent>
-              {workflowTemplate.parameters.map((param) => (
+              {workflowTemplate.parameters?.map((param: WorkflowTemplateParameter) => (
                 <div key={param.ID} className="mb-4">
                   <div className="font-semibold mb-2">
                     {param.name} {param.required ? "(Required)" : ""}
@@ -102,7 +102,7 @@ export function WorkflowTemplateDetails() {
                     </div>
                   )}
                 </div>
-              ))}
+              )) || <div className="text-muted-foreground">Failed to load details</div>}
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="manifest">
