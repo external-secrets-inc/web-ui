@@ -83,6 +83,7 @@ export interface GetWorkflowPayload {
   namespace: string;
   name: string;
 }
+
 export interface WorkflowRunTemplateTableData {
   name: string;
   namespace: string;

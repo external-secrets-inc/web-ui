@@ -121,7 +121,8 @@ export type KubernetesResourceType =
   | 'pushsecret'
   | 'workflow'
   | 'workflowtemplate'
-  | 'workflowrun';
+  | 'workflowrun'
+  | 'workflowruntemplate';
 
 export interface EsiSchemaFormProps {
   resourceType: KubernetesResourceType;

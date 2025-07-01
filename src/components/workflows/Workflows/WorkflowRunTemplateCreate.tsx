@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
 import { WorkflowRunTemplateCreateWithYaml } from "./WorkflowRunTemplateCreateWithYaml";
-// import { WorkflowRunTemplateCreateWithEsiSchemaForm } from "./WorkflowRunTemplateCreateWithEsiSchemaForm";
+import { WorkflowRunTemplateCreateWithEsiSchemaForm } from "./WorkflowRunTemplateCreateWithEsiSchemaForm";
 import { LucideSquareCode, LucideTextCursorInput } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -14,7 +14,7 @@ import {
 type FormMode = "yaml" | "form";
 
 export function WorkflowRunTemplateCreate() {
-  const [formMode, setFormMode] = useState<FormMode>("yaml");
+  const [formMode, setFormMode] = useState<FormMode>("form");
 
   return (
     <>
@@ -54,8 +54,7 @@ export function WorkflowRunTemplateCreate() {
       {formMode === "yaml" ? (
         <WorkflowRunTemplateCreateWithYaml />
       ) : (
-        // <WorkflowRunTemplateCreateWithEsiSchemaForm />
-        <p>Nothing yet</p>
+        <WorkflowRunTemplateCreateWithEsiSchemaForm />
       )}
     </>
   );

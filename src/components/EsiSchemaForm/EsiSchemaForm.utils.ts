@@ -55,6 +55,11 @@ const KUBERNETES_RESOURCE_CONFIG: Record<KubernetesResourceType, {
     kind: 'WorkflowRun',
     displayName: 'Workflow Run',
   },
+  workflowruntemplate: {
+    apiVersion: 'workflows.external-secrets.io/v1alpha1',
+    kind: 'WorkflowRunTemplate',
+    displayName: 'Run Template',
+  },
 };
 
 

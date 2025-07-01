@@ -185,7 +185,7 @@ const router = createBrowserRouter([
                     element: <PageWorkflowRunTemplatesCreate />,
                     handle: {
                       breadcrumb: () => ({
-                        label: "New Workflow Run Template",
+                        label: "New Run Template",
                         navigatable: false,
                       }),
                     },
