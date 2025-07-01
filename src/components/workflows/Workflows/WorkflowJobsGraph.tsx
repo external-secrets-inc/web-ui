@@ -22,6 +22,7 @@ import {
 
 interface WorkflowGraphProps {
   workflow: WorkflowData;
+  jobs: Record<string, WorkflowJob>;
 }
 
 const NODE_TYPES: NodeTypes = { container: ContainerNode } as const;
@@ -146,7 +147,7 @@ const createStepNode = (
   };
 };
 
-export function WorkflowJobsGraph({ workflow }: WorkflowGraphProps) {
+export function WorkflowJobsGraph({ workflow, jobs }: WorkflowGraphProps) {
   const [nodes, setNodes, onNodesChangeDefault] = useNodesState<
     Node<ContainerData>
   >([]);
@@ -181,7 +182,7 @@ export function WorkflowJobsGraph({ workflow }: WorkflowGraphProps) {
     [nodes, onNodesChangeDefault]
   );
 
-  const createNodesAndEdges = useCallback(() => {
+  const createNodesAndEdges = useCallback((workflowJobs: Record<string, WorkflowJob>) => {
     if (!workflow) return;
 
     const newNodes: Node<ContainerData>[] = [];
@@ -191,7 +192,7 @@ export function WorkflowJobsGraph({ workflow }: WorkflowGraphProps) {
     const startNodeHeight = calculateNodeHeight("start", 0);
 
     // Calculate heights for all job nodes
-    const jobs = Object.entries(workflow.jobs);
+    const jobs = Object.entries(workflowJobs);
     const jobHeights = jobs?.map(([, jobStatus]) => {
       const numberOfSteps = Object.keys(jobStatus.steps || {}).length;
       return calculateNodeHeight(jobStatus.type, numberOfSteps);
@@ -248,8 +249,8 @@ export function WorkflowJobsGraph({ workflow }: WorkflowGraphProps) {
   }, [workflow, setNodes, setEdges]);
 
   useEffect(() => {
-    createNodesAndEdges();
-  }, [workflow, createNodesAndEdges]);
+    createNodesAndEdges(jobs);
+  }, [workflow, createNodesAndEdges, jobs]);
 
   return (
     <ReactFlowProvider>
