@@ -14,7 +14,7 @@ import { FieldMultiSelect } from "./FieldMultiSelect";
 import { FieldDuration } from "./FieldDuration";
 import { FieldDateTime } from "./FieldDateTime";
 import { FieldNumber } from "./FieldNumber";
-import { OneOfUtils } from "@/components/EsiSchemaForm/EsiSchemaForm.utils";
+import { OptionUtils } from "@/components/EsiSchemaForm/EsiSchemaForm.utils";
 
 export interface FieldRendererProps {
   field: UISchemaField;
@@ -47,7 +47,7 @@ export function FieldRenderer({ field }: FieldRendererProps) {
       );
 
     case "select": {
-      const apiOption = OneOfUtils.getApiOption(field);
+      const apiOption = OptionUtils.getOneOfApiOption(field);
       if (apiOption) {
         return (
           <FieldSelect
@@ -125,7 +125,18 @@ export function FieldRenderer({ field }: FieldRendererProps) {
     case "secret-selector":
       return <FieldSecretSelect {...baseProps} />;
 
-    case "multi-select":
+    case "multi-select": {
+      const apiOption = OptionUtils.getAnyOfApiOption(field);
+      if (apiOption) {
+        return (
+          <FieldMultiSelect
+            {...baseProps}
+            apiOptions={apiOption}
+            defaultValue={field.default as string[]}
+          />
+        );
+      }
+
       return (
         <FieldMultiSelect
           {...baseProps}
@@ -135,6 +146,7 @@ export function FieldRenderer({ field }: FieldRendererProps) {
           defaultValue={field.default as string[]}
         />
       );
+    }
 
     case "duration":
       return <FieldDuration {...baseProps} />;

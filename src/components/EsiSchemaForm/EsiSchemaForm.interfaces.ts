@@ -10,6 +10,7 @@ export interface UISchemaField {
   fields?: UISchemaField[];
   items?: UISchemaField;
   oneOf?: OneOfOption[];
+  anyOf?: AnyOfOption[];
   visibleWhen?: {
     field: string;
     equals: unknown;
@@ -46,6 +47,35 @@ export interface OneOfStaticOption {
  * which property to use as the display label.
  */
 export interface OneOfApiOption {
+  href: string;
+  labelRef: string;
+}
+
+/**
+ * Represents the different types of anyOf options supported in UI schemas.
+ * anyOf is used for multi-select scenarios where multiple values can be selected.
+ *
+ * Static options provide predefined choices,
+ * while API options fetch data from an API endpoint and use
+ * 'labelRef' to specify which property to use as the display label.
+ */
+export type AnyOfOption = AnyOfStaticOption | AnyOfApiOption;
+
+/**
+ * Static anyOf option with predefined choices.
+ * Used for multi-select fields with fixed options.
+ */
+export interface AnyOfStaticOption {
+  label: string;
+  value: string;
+}
+
+/**
+ * API anyOf option that fetches choices from an API endpoint.
+ * The API should return an array of objects, and labelRef specifies
+ * which property to use as the display label.
+ */
+export interface AnyOfApiOption {
   href: string;
   labelRef: string;
 }
