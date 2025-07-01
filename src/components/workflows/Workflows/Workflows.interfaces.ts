@@ -7,6 +7,27 @@ export interface WorkflowTemplateTableData {
   status: Status;
 }
 
+export interface WorkflowTemplateData {
+  name: string;
+  namespace: string;
+  status: Status;
+  manifest: string;
+  parameters: WorkflowTemplateParameter[];
+}
+
+export interface WorkflowTemplateParameter {
+  ID: string;
+  name: string;
+  description: string;
+  required: boolean;
+  defaultValue: string;
+}
+
+export interface GetWorkflowTemplatePayload {
+  namespace: string;
+  name: string;
+}
+
 export interface CreateWorkflowTemplatePayload {
   manifest: string;
 }
@@ -65,7 +86,7 @@ export interface GetWorkflowPayload {
 export interface WorkflowRunTemplateTableData {
   name: string;
   namespace: string;
-  status: Status
+  status: Status;
   runPolicy: string;
   lastRuns: WorkflowRunData[];
 }
@@ -102,8 +123,8 @@ export interface TemplateRef {
 }
 
 export interface WorkflowRunRef {
-    name: string;
-    namespace: string;
+  name: string;
+  namespace: string;
 }
 
 export interface WorkflowRef {

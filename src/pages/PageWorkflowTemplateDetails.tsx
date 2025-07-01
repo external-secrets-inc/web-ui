@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 import { LucideRefreshCw } from "lucide-react";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
-import { WorkflowRunTemplateDataTable } from "@/components/workflows/Workflows/WorkflowRunTemplateDataTable";
 import { useParams } from "react-router-dom";
+import { WorkflowTemplateDetails } from "@/components/workflows/Workflows";
 
 export function PageWorkflowTemplateDetails() {
   const queryClient = useQueryClient();
@@ -15,7 +15,15 @@ export function PageWorkflowTemplateDetails() {
       queryKey: [
         "workflows",
         "useGetWorkflowRunTemplates",
-        `useGetWorkflowRunTemplates${templateNamespace}/${templateName}`,
+        `useGetWorkflowRunTemplates/${templateNamespace}/${templateName}`,
+      ],
+    });
+
+    queryClient.invalidateQueries({
+      queryKey: [
+        "workflows",
+        "useGetWorkflowTemplate",
+        `useGetWorkflowTemplate/${templateNamespace}/${templateName}`,
       ],
     });
   };
@@ -31,7 +39,7 @@ export function PageWorkflowTemplateDetails() {
           Refresh Data
         </Button>
       </LayoutPortalTopbarActions>
-      <WorkflowRunTemplateDataTable />
+      <WorkflowTemplateDetails />
     </LayoutPage>
   );
 }

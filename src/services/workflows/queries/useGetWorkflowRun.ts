@@ -20,7 +20,7 @@ const useGetWorkflowRun = (
   options?: Omit<UseQueryOptions<WorkflowRunData, AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
 ) => {
   return useQuery({
-    queryKey: ["workflows", "useGetWorkflowRun", `useGetWorkflowRun${payload.namespace}/${payload.name}`],
+    queryKey: ["workflows", "useGetWorkflowRun", `useGetWorkflowRun/${payload.namespace}/${payload.name}`],
     queryFn: ({ signal }) => getWorkflowRun(signal, payload),
     ...options,
   });

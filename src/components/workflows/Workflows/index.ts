@@ -9,3 +9,4 @@ export { WorkflowTemplateCreate } from "./WorkflowTemplateCreate";
 export { WorkflowTemplateCreateWithEsiSchemaForm } from "./WorkflowTemplateCreateWithEsiSchemaForm";
 export { WorkflowTemplateCreateWithYaml } from "./WorkflowTemplateCreateWithYaml";
 export { WorkflowTemplateDataTable } from "./WorkflowTemplateDataTable";
+export { WorkflowTemplateDetails } from "./WorkflowTemplateDetails";

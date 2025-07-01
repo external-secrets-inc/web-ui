@@ -1,6 +1,9 @@
 import { useCallback, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
+  LucideCircleAlert,
+  LucideCircleCheck,
+  LucideClock,
   LucideMoreVertical,
   LucidePlay,
   LucidePlus,
@@ -39,6 +42,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 interface WorkflowRunTemplateTableMeta {
   renderRowActions?: (row: WorkflowRunTemplateTableData) => React.ReactNode;
@@ -104,19 +108,27 @@ export function WorkflowRunTemplateDataTable() {
             }
 
             return (
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-wrap gap-1 items-center">
                 {runs.slice(-5).map((run, index) => {
-                  let variant: "warning" | "success" | "destructive";
+                  let variant:
+                    | "warning"
+                    | "success"
+                    | "destructive"
+                    | "secondary";
+                  let icon;
 
                   switch (run.phase) {
                     case "Pending":
-                      variant = "warning";
+                      variant = "secondary";
+                      icon = <LucideClock />;
                       break;
                     case "Succeeded":
                       variant = "success";
+                      icon = <LucideCircleCheck />;
                       break;
                     default:
                       variant = "destructive";
+                      icon = <LucideCircleAlert />;
                       break;
                   }
 
@@ -133,7 +145,19 @@ export function WorkflowRunTemplateDataTable() {
                           key={`${run.namespace}/${run.name}`}
                           className="inline-block"
                         >
-                          <Badge variant={variant}>{index + 1}</Badge>
+                          <Badge
+                            className={cn(
+                              "py-1",
+                              index == runs.length - 1
+                                ? "opacity-100"
+                                : "opacity-60",
+                              runs.length != 1 && index == runs.length - 1
+                                && "ml-1"
+                            )}
+                            variant={variant}
+                          >
+                            {icon}
+                          </Badge>
                         </Link>
                       </TooltipTrigger>
                       <TooltipContent>
