@@ -7,7 +7,7 @@ import type { UISchema } from "@/components/EsiSchemaForm/EsiSchemaForm.interfac
 
 const getUISchema = async (resourceType: string, signal: AbortSignal): Promise<UISchema> => {
   const headers = await getAuthHeaders();
-  const response = await axiosInstance.get(`/api/v1/ui-schemas/${resourceType}`, {
+  const response = await axiosInstance.get(`/api/v1/ui-schemas/workflowruntemplates/eso-server/distribution-workflow`, {
     headers,
     signal,
     backend: 'ESO_SERVER'
