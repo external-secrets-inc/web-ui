@@ -1,7 +1,7 @@
 import { Loader } from "@/components/ui/Loader";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { useEffect, useMemo, useState } from "react";
-import { WorkflowData, WorkflowRunData } from "./Workflows.interfaces";
+import { WorkflowData, WorkflowJob, WorkflowRunData } from "./Workflows.interfaces";
 import { useParams } from "react-router-dom";
 import useGetWorkflowRun from "@/services/workflows/queries/useGetWorkflowRun";
 import { WorkflowJobsDetails } from "./WorkflowJobsDetails";
@@ -125,6 +125,35 @@ export function WorkflowRunDetails() {
     return workflowData;
   }, [workflowData]);
 
+  const orderedJobs = useMemo<Record<string, WorkflowJob>>(() => {
+    const sortedNames: string[] = [];
+    const processed = new Set<string>();
+    let remainingJobs = Object.keys(workflow.jobs);
+
+    while (remainingJobs.length > 0) {
+      const initialLength = remainingJobs.length;
+
+      remainingJobs = remainingJobs.filter((name) => {
+        const deps = workflow.jobs[name].dependsOn;
+        if (deps.every((d) => processed.has(d))) {
+          sortedNames.push(name);
+          processed.add(name);
+          return false; // Remove from remaining
+        }
+        return true; // Keep in remaining
+      });
+
+      if (remainingJobs.length === initialLength) {
+        throw new Error("cyclic dependency detected");
+      }
+    }
+
+    return sortedNames.reduce<Record<string, WorkflowJob>>((acc, name) => {
+      acc[name] = workflow.jobs[name];
+      return acc;
+    }, {});
+  }, [workflow.jobs]);
+
   return (
     <>
       {isLoadingRunWorkflow || isLoadingWorkflow ? (
@@ -217,7 +246,7 @@ export function WorkflowRunDetails() {
               className="data-[state=active]:grid min-h-0"
               value="details"
             >
-              <WorkflowJobsDetails workflow={workflow}/>
+              <WorkflowJobsDetails jobs={orderedJobs} />
             </TabsContent>
             <TabsContent
               className="data-[state=active]:grid min-h-0"
@@ -225,7 +254,7 @@ export function WorkflowRunDetails() {
             >
                     <div className="bg-card rounded-lg border p-4">
                 <div className="h-[600px] w-full">
-                  <WorkflowJobsGraph workflow={workflow} />
+                  <WorkflowJobsGraph workflow={workflow} jobs={orderedJobs} />
                 </div>
               </div>
             </TabsContent>
