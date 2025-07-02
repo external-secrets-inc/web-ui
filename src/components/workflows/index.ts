@@ -1,4 +1,3 @@
-// YAML Form utilities
 export { YamlFormWrapper } from "./YamlFormWrapper";
 export {
   useYamlForm,

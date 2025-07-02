@@ -1,4 +1,5 @@
 import {
+  LucideAtom,
   LucideBarChart3,
   LucideBookKey,
   LucideBookOpen,
@@ -40,6 +41,11 @@ export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
       label: "Workflow Secret Stores",
       url: "/workflows/secret-stores",
       icon: LucideBookKey,
+    },
+    {
+      label: "Workflow Generators",
+      url: "/workflows/generators",
+      icon: LucideAtom,
     },
     {
       label: "Workflow Templates",

@@ -1,3 +1,38 @@
+/**
+ * Simple string-based option for select fields.
+ * Used when the value and display label are the same.
+ */
+export type SimpleSelectOptions = string[];
+
+/**
+ * Rich option object for select fields with separate value and label.
+ * Used when the internal value differs from what users should see.
+ */
+export interface SelectOption {
+  value: string;
+  label: string;
+}
+
+/**
+ * Array of rich option objects for select fields.
+ * Provides better UX by showing user-friendly labels while storing technical values.
+ */
+export type RichSelectOptions = SelectOption[];
+
+/**
+ * Union type for all possible select field option formats.
+ * The UI components automatically handle both formats:
+ * - Simple strings are converted to {value: string, label: string} format
+ * - Rich objects are used as-is
+ * - For simple cases where value === label, use string array
+ * - For user-friendly labels with technical values, use SelectOption array
+ * - Not used for fields with oneOf/anyOf (those have their own option systems)
+ *
+ * Prefer RichSelectOptions for better UX when values differ from labels.
+ * Use SimpleSelectOptions only when value === label for all options.
+ */
+export type SelectFieldOptions = SimpleSelectOptions | RichSelectOptions;
+
 export interface UISchemaField {
   id: string;
   label: string;
@@ -5,7 +40,7 @@ export interface UISchemaField {
   required: boolean;
   description?: string;
   default?: unknown;
-  options?: string[];
+  options?: SelectFieldOptions;
   properties?: Record<string, unknown>;
   fields?: UISchemaField[];
   items?: UISchemaField;
@@ -119,6 +154,7 @@ export type KubernetesResourceType =
   | 'clustersecretstore'
   | 'externalsecret'
   | 'pushsecret'
+  | 'generators'
   | 'workflow'
   | 'workflowtemplate'
   | 'workflowrun'

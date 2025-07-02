@@ -23,6 +23,8 @@ import {
   PageAuditDestinations,
   PageAuditPolicies,
   PageAuditProviders,
+  PageGenerators,
+  PageGeneratorsCreate,
   PageReloaders,
   PageSettings,
   PageSecretStores,
@@ -204,6 +206,33 @@ const router = createBrowserRouter([
               },
             ],
           },
+          {
+            path: "generators",
+            element: <Outlet />,
+            handle: {
+              breadcrumb: (match: UIMatch) => ({
+                label: "Workflow Generators",
+                path: match.pathname,
+                navigatable: true,
+              }),
+            },
+            children: [
+              {
+                index: true,
+                element: <PageGenerators />,
+              },
+              {
+                path: "create",
+                element: <PageGeneratorsCreate />,
+                handle: {
+                  breadcrumb: () => ({
+                    label: "New Generator",
+                    navigatable: false,
+                  }),
+                },
+              },
+            ],
+          },
         ],
       },
       {
@@ -306,6 +335,10 @@ const router = createBrowserRouter([
       {
         path: "secret-stores",
         element: <NavigateWithOrg to="workflows/secret-stores" replace />,
+      },
+      {
+        path: "generators",
+        element: <NavigateWithOrg to="workflows/generators" replace />,
       },
     ],
   },

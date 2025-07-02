@@ -7,7 +7,7 @@
  * Also, the validation rules are a bit messy and could be improved.
  */
 
-import type { UISchemaField, KubernetesResourceType, KubernetesManifest, OneOfApiOption, AnyOfApiOption } from './EsiSchemaForm.interfaces';
+import type { UISchemaField, KubernetesResourceType, KubernetesManifest, OneOfApiOption, AnyOfApiOption, SelectFieldOptions } from './EsiSchemaForm.interfaces';
 
 
 // Constants & Configuration
@@ -39,6 +39,11 @@ const KUBERNETES_RESOURCE_CONFIG: Record<KubernetesResourceType, {
     apiVersion: 'external-secrets.io/v1',
     kind: 'PushSecret',
     displayName: 'Push Secret',
+  },
+  generators: {
+    apiVersion: 'generators.external-secrets.io/v1alpha1',
+    kind: 'Generator',
+    displayName: 'Generator',
   },
   workflow: {
     apiVersion: 'eso.external-secrets.io/v1alpha1',
@@ -140,7 +145,13 @@ export const OptionUtils = {
   },
 };
 
-
+/**
+ * Helper function to normalize options to string values for validation.
+ * Handles both simple string arrays and rich SelectOption objects.
+ */
+function getOptionValues(options: SelectFieldOptions): string[] {
+  return options.map(opt => typeof opt === "string" ? opt : opt.value);
+}
 
 /**
  * Creates validation rules for a field based on its schema definition.
@@ -236,8 +247,11 @@ export function createFieldValidation(field: UISchemaField) {
           if (field.required && (!value || value === '')) {
             return `${field.label || field.id} is required`;
           }
-          if (value && !field.options!.includes(value)) {
-            return `Invalid option for ${field.label || field.id}`;
+          if (value && field.options) {
+            const validValues = getOptionValues(field.options);
+            if (!validValues.includes(value)) {
+              return `Invalid option for ${field.label || field.id}`;
+            }
           }
           return true;
         };
@@ -300,7 +314,8 @@ export function createFieldValidation(field: UISchemaField) {
 
           // Validate that all values are from the allowed options (only for static options, not API options)
           if (!isApiOption && field.options && field.options.length > 0) {
-            const invalidOptions = normalizedValue.filter(v => !field.options!.includes(v));
+            const validValues = getOptionValues(field.options);
+            const invalidOptions = normalizedValue.filter(v => !validValues.includes(v));
             if (invalidOptions.length > 0) {
               return `Invalid options: ${invalidOptions.join(', ')}`;
             }

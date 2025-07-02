@@ -22,7 +22,7 @@ export function PageWorkflowTemplates() {
           variant="secondary"
           onClick={handleRefresh}
         >
-          <LucideRefreshCw className="mr-1 h-4 w-4" />
+          <LucideRefreshCw />
           Refresh Data
         </Button>
       </LayoutPortalTopbarActions>
