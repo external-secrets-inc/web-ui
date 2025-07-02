@@ -1,24 +1,22 @@
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import YAML from "yaml";
-import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { FieldYaml } from "@/components/ui/fields/FieldYaml";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { YamlFormWrapper } from "@/components/workflows/YamlFormWrapper";
 import useCreateWorkflowTemplate from "@/services/workflows/mutations/useCreateWorkflowTemplate";
+import { useState } from "react";
 import { toast } from "sonner";
-import { Link, useNavigate } from "react-router-dom";
-import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
-import { Loader } from "@/components/ui/Loader";
-import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
-import { parse } from "yaml";
+import YAML, { parse } from "yaml";
+import WorkflowJobsGraph from "./WorkflowJobsGraph";
 import {
   WorkflowData,
   WorkflowJob,
   WorkflowStep,
 } from "./Workflows.interfaces";
-import WorkflowJobsGraph from "./WorkflowJobsGraph";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"; // Adjust if your path differs
 
 // Defaults to simplify mock status
 const DEFAULT_PHASE = "Succeeded";
@@ -87,42 +85,7 @@ export function convertYamlToWorkflowData(yamlString: string): WorkflowData {
 }
 
 /**
- * Validates WorkflowTemplate-specific business logic.
- * @param yamlContent - The YAML string to validate.
- * @param parsedYaml - The parsed YAML object.
- * @returns Error message or null if valid.
- */
-const validateWorkflowTemplateManifest = (
-  yamlContent: string,
-  parsedYaml?: unknown
-): string | null => {
-  if (!yamlContent || !parsedYaml) {
-    return null;
-  }
-
-  const manifest = parsedYaml as Record<string, unknown>;
-
-  if (manifest.kind !== "WorkflowTemplate") {
-    return `Invalid resource kind: Expected "WorkflowTemplate", got "${
-      manifest.kind || "unknown"
-    }".`;
-  }
-
-  const metadata = manifest.metadata as Record<string, unknown> | undefined;
-  if (!metadata?.name) {
-    return "Manifest is missing required field: metadata.name";
-  }
-
-  return null;
-};
-
-interface WorkflowTemplateFormData {
-  yamlContent: string;
-}
-
-/**
- * Generates a default YAML template for a WorkflowTemplate.
- * @returns A string containing the YAML template.
+ * Generates a default YAML template for a WorkflowTemplate
  */
 function createDefaultYamlTemplate(): string {
   const sampleManifest = {
@@ -171,74 +134,14 @@ return { message: "Template processed successfully" };`,
 }
 
 export function WorkflowTemplateCreateWithYaml() {
-  const navigate = useNavigate();
   const [workflowTemplate, setWorkflowTemplate] = useState<WorkflowData | null>(
     null
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const mutation = useCreateWorkflowTemplate();
 
-  const form = useForm<WorkflowTemplateFormData>({
-    defaultValues: {
-      yamlContent: "",
-    },
-    mode: "onSubmit",
-  });
-
-  const { mutate: createWorkflowTemplate, isPending } =
-    useCreateWorkflowTemplate();
-
-  useEffect(() => {
-    if (!form.getValues("yamlContent")) {
-      const initialTemplate = createDefaultYamlTemplate();
-      form.setValue("yamlContent", initialTemplate);
-    }
-  }, [form]);
-
-  const onSubmit = (data: WorkflowTemplateFormData) => {
-    createWorkflowTemplate(
-      { manifest: data.yamlContent },
-      {
-        onSuccess: () => {
-          toast.success("Workflow Template created successfully");
-          navigate("..");
-        },
-        onError: (error: unknown) => {
-          let message =
-            "An unknown error occurred while creating the workflow template.";
-
-          if (
-            typeof error === "object" &&
-            error !== null &&
-            "response" in error
-          ) {
-            const response = (
-              error as { response?: { data?: Record<string, unknown> } }
-            ).response;
-            const errorData = response?.data;
-            if (errorData) {
-              // Use the normalized error structure from AxiosInterceptor
-              const errorsObject = errorData.errors as { body?: string };
-              message =
-                errorsObject?.body || // Consistent normalized format across all backends
-                (errorData.error as string) ||
-                (errorData.message as string) ||
-                message;
-            }
-          } else if (error instanceof Error) {
-            message = error.message;
-          }
-
-          form.setError("yamlContent", {
-            type: "server",
-            message,
-          });
-        },
-      }
-    );
-  };
-
-  const handleRenderGraph = () => {
-    const workflow = convertYamlToWorkflowData(form.getValues("yamlContent"));
+  const handleRenderGraph = (yamlContent: string) => {
+    const workflow = convertYamlToWorkflowData(yamlContent);
     if (workflow && workflow.jobs && Object.keys(workflow.jobs).length > 0) {
       setWorkflowTemplate(workflow);
     } else {
@@ -247,77 +150,50 @@ export function WorkflowTemplateCreateWithYaml() {
       return;
     }
     setIsDialogOpen(true);
-  }
+  };
+
+  const renderGraphButton = (
+    <Button
+      type="button"
+      size="sm"
+      variant="outline"
+      onClick={() => {
+        // We need to access the form data from the wrapper
+        // For now, we'll pass the current yamlContent from the form
+        const form = document.getElementById(
+          "workflow-template-form"
+        ) as HTMLFormElement;
+        const textarea = form?.querySelector(
+          'textarea[name="yamlContent"]'
+        ) as HTMLTextAreaElement;
+        if (textarea) {
+          handleRenderGraph(textarea.value);
+        }
+      }}
+    >
+      Render Graph
+    </Button>
+  );
 
   return (
     <>
-      <LayoutPortalTopbarActions>
-        <Separator orientation="vertical" className="h-4" />
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            disabled={isPending}
-            asChild
-          >
-            <Link to="..">Cancel</Link>
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() => handleRenderGraph()}
-          >
-            Render Graph
-          </Button>
-          <Button
-            type="submit"
-            size="sm"
-            disabled={isPending}
-            onClick={form.handleSubmit(onSubmit)}
-            className="grid place-items-center"
-          >
-            {isPending && <Loader className="[grid-area:1/1]" />}
-            <span className={cn(isPending && "invisible", "[grid-area:1/1]")}>
-              Create Workflow Template
-            </span>
-          </Button>
-        </div>
-      </LayoutPortalTopbarActions>
-
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FieldYaml
-            name="yamlContent"
-            label="Workflow Template Manifest (YAML)"
-            description="Write your Workflow Template configuration directly in YAML format. Perfect for power users who want full control, or when importing existing templates. Alternatively, you may use the Form Builder for a guided experience."
-            placeholder="Enter YAML manifest"
-            className="min-h-[400px]"
-            descriptionInline
-            required
-            rules={{
-              validate: (value: string) => {
-                if (!value) return true;
-
-                try {
-                  const parsedYaml = YAML.parse(value);
-                  return validateWorkflowTemplateManifest(value, parsedYaml);
-                } catch {
-                  // YAML parsing errors are handled by FieldYaml itself
-                  return true;
-                }
-              },
-            }}
-          />
-        </form>
-      </Form>
+      <YamlFormWrapper
+        resourceType="workflowtemplate"
+        createDefaultTemplate={createDefaultYamlTemplate}
+        mutation={mutation}
+        formLabel="Workflow Template Manifest (YAML)"
+        formDescription="Write your Workflow Template configuration directly in YAML format. Perfect for power users who want full control, or when importing existing templates. Alternatively, you may use the Form Builder for a guided experience."
+        submitButtonText="Create Workflow Template"
+        formId="workflow-template-form"
+        additionalActions={renderGraphButton}
+      />
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="w-[max(50%,640px)] max-w-[calc(100%-theme(spacing.12))] max-h-[calc(100%-theme(spacing.12))] overflow-auto grid-rows-[auto_minmax(100px,1fr)_auto] grid-cols-[minmax(100%,1fr)]">
           <DialogHeader>
             <DialogTitle>Workflow Graph</DialogTitle>
             <DialogDescription>
-              This graph visualizes the jobs and steps defined in your Workflow Template.
+              This graph visualizes the jobs and steps defined in your Workflow
+              Template.
             </DialogDescription>
           </DialogHeader>
           {workflowTemplate && (
