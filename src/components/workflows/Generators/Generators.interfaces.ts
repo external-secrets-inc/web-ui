@@ -17,11 +17,6 @@ export interface DeleteGeneratorPayload {
   name: string;
 }
 
-export interface GeneratorTypeOption {
-  value: string;
-  label: string;
-}
-
 export interface GeneratorType {
   name: string;
   description: string;

@@ -9,7 +9,6 @@ import {
 import { FieldSelect } from "@/components/ui/fields/FieldSelect";
 import useCreateGenerator from "@/services/workflows/mutations/useCreateGenerator";
 import useGetUISchema from "@/services/esi-schemas/queries/useGetUISchema";
-import useGetGeneratorTypes from "@/services/workflows/queries/useGetGeneratorTypes";
 import { Link, useNavigate } from "react-router-dom";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
 import { Loader } from "@/components/ui/Loader";
@@ -26,8 +25,13 @@ export function GeneratorCreateWithEsiSchemaForm() {
     },
   });
 
-  const { data: generatorTypes, isLoading: isLoadingTypes, error: typesError } = useGetGeneratorTypes();
+  // Get generator types selection schema
+  const { data: generatorTypesSchema, isLoading: isLoadingTypes, error: typesError } = useGetUISchema("generators");
 
+  // Extract options from the generator types schema
+  const generatorTypeOptions = generatorTypesSchema?.fields?.find(field => field.id === "generatorType")?.options || [];
+
+  // Get specific generator schema when a type is selected
   const resourcePath = selectedGeneratorType ? `generators/${selectedGeneratorType}` : "";
   const { data: schema, isLoading: isLoadingSchema, error: schemaError } = useGetUISchema(resourcePath, {
     enabled: !!selectedGeneratorType,
@@ -111,7 +115,7 @@ export function GeneratorCreateWithEsiSchemaForm() {
             label="Generator Type"
             description="Choose the type of generator you want to create. This will determine the available configuration options."
             required
-            options={generatorTypes || []}
+            options={generatorTypeOptions}
             placeholder="Select a generator type..."
             onValueChange={handleGeneratorTypeChange}
             descriptionInline

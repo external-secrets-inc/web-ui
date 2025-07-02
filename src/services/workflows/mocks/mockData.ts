@@ -946,9 +946,32 @@ export const GENERATOR_UI_SCHEMAS: Record<string, UISchema> = {
 };
 
 /**
+ * UI Schema for generator types selection
+ * This is used when fetching the schema for "generators" resource type
+ * It provides a select field with all available generator types
+ */
+export const GENERATOR_TYPES_UI_SCHEMA: UISchema = {
+  fields: [
+    {
+      id: "generatorType",
+      label: "Generator Type",
+      type: "select",
+      required: true,
+      description: "Choose the type of generator you want to create. This will determine the available configuration options.",
+      options: GENERATOR_TYPES.map(type => type.toLowerCase())
+    }
+  ]
+};
+
+/**
  * Gets a UI schema for a specific generator type
  */
 export const getMockGeneratorUISchema = (generatorType: string): UISchema => {
+  // Special case: if requesting "generators" (without specific type), return the type selector
+  if (generatorType === "generators") {
+    return GENERATOR_TYPES_UI_SCHEMA;
+  }
+
   const schema = GENERATOR_UI_SCHEMAS[generatorType.toLowerCase()];
 
   if (schema) {
