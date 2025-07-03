@@ -164,6 +164,7 @@ export function GeneratorDataTable() {
         initialSort={{ id: "name", desc: false }}
         isLoading={isLoadingGenerators}
         getRowId={(row) => `${row.kind}/${row.namespace}/${row.name}`}
+        meta={generatorTableMeta}
       >
         <div className="flex justify-end gap-4 items-center">
           <DataSearch />
@@ -175,7 +176,7 @@ export function GeneratorDataTable() {
             Add Generator
           </Button>
         </div>
-        <DataTable meta={generatorTableMeta} />
+        <DataTable />
       </DataProvider>
     </div>
   );

@@ -111,7 +111,7 @@ const Trimmer = React.forwardRef<HTMLSpanElement, TrimmerProps>(({
       >
         {children}
       </Component>
-    ), [Component, children, classes, disableTooltip, lineClamp, props, ref])
+    ), [Component, children, classes, disableTooltip, lineClamp, props, ref, style])
 
     // When explicitly set to 0 (no truncation), return original children to avoid unnecessary DOM nodes
     if (lineClamp === 0 && !asChild) {

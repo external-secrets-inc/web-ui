@@ -157,8 +157,9 @@ export default function AuditDestinationDataTable() {
         columns={columns}
         initialSort={{ id: 'name', desc: false }}
         isLoading={isLoadingDestinations}
+        meta={destinationTableMeta}
       >
-        <DataTable meta={destinationTableMeta} />
+        <DataTable />
       </DataProvider>
     </div>
   );

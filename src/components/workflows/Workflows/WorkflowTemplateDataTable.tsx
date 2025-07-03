@@ -168,6 +168,7 @@ export function WorkflowTemplateDataTable() {
         initialSort={{ id: "name", desc: false }}
         isLoading={isLoadingWorkflowTemplates}
         getRowId={(row) => `${row.namespace}/${row.name}`}
+        meta={workflowTemplateTableMeta}
       >
         <div className="flex justify-end gap-4 items-center">
           <DataSearch />
@@ -180,16 +181,14 @@ export function WorkflowTemplateDataTable() {
           </Button>
         </div>
         <DataTable
-          meta={workflowTemplateTableMeta}
-          onRowClick={(row) =>
+          onRowClick={(row) => {
+            const typedRow = row as WorkflowTemplateTableData;
             navigate(
               getOrgLink(
-                `/workflows/templates/${
-                  (row as WorkflowTemplateTableData).namespace
-                }/${(row as WorkflowTemplateTableData).name}`
+                `/workflows/templates/${typedRow.namespace}/${typedRow.name}`
               )
-            )
-          }
+            );
+          }}
         />
       </DataProvider>
     </div>

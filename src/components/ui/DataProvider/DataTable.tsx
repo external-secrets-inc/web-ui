@@ -2,10 +2,10 @@ import {
   type ForwardedRef,
   type RefObject,
   forwardRef,
-  useEffect,
   useRef,
 } from "react";
 import { flexRender } from "@tanstack/react-table";
+import { type RowData } from "@tanstack/react-table";
 import {
   LucideArrowDown,
   LucideArrowUp,
@@ -35,31 +35,23 @@ import { useVirtualization } from "./useVirtualization";
  * - Support for both table-level and window-level scrolling
  */
 export const DataTable = forwardRef(
-  <TData extends object, TMeta extends object>(
+  <TData extends RowData>(
     {
       className,
       onRowClick,
       rowsAppend,
-      meta,
       style,
       virtualizationMode = "off",
       virtualizationContainer = "table",
       rowHeight = 40,
       virtualizerOptions,
-    }: DataTableProps<TData, TMeta>,
+    }: DataTableProps<TData>,
     ref: ForwardedRef<HTMLDivElement>
   ) => {
     const { table, isLoading, emptyMessage } = useData<TData>();
     const internalScrollElementRef = useRef<HTMLDivElement>(null);
     const scrollElementRef = (ref ||
       internalScrollElementRef) as RefObject<HTMLDivElement>;
-
-    useEffect(() => {
-      table.setOptions((prev) => ({
-        ...prev,
-        meta: { ...(prev.meta ?? {}), ...(meta ?? {}) },
-      }));
-    }, [meta, table]);
 
     const rows = table.getRowModel().rows;
     const columns = table.getAllColumns();
