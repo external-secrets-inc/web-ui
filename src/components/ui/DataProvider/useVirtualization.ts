@@ -104,6 +104,7 @@ export function useVirtualization<TData extends RowData>({
     overscan: overscan ?? DEFAULT_OVERSCAN,
     enabled: isVirtualEnabled && isWindowContainer,
     scrollMargin: scrollElementRef.current?.offsetTop ?? 0,
+    // TODO[cfviotti]: if we start using more one-off options, check if there is a workaround to avoid the type issues and spread the restVirtualizerOptions fixed for the window virtualizer
     // Skip the rest options from restVirtualizerOptions that might cause type issues
   });
 
