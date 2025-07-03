@@ -1,4 +1,3 @@
-
 import { useCallback } from 'react';
 import { DataGrid, DataTable } from "@/components/ui/DataProvider";
 import FeatureItemCard from "@/components/FeatureCollection/FeatureItemCard";
@@ -10,9 +9,6 @@ import { cn } from "@/lib/utils"
 type FeatureCollectionViewProps = {
   view: "grid" | "table";
   colSpan?: number;
-  featureTableMeta?: {
-    renderRowActions?: (row: TransformedFeatureData) => React.ReactNode;
-  };
   featureType: string;
   featureDescription: string;
   manifestData: string;
@@ -24,7 +20,6 @@ type FeatureCollectionViewProps = {
 function FeatureCollectionView({
   view,
   colSpan,
-  featureTableMeta,
   featureType,
   featureDescription,
   manifestData,
@@ -48,22 +43,28 @@ function FeatureCollectionView({
     });
   }, [openFeatureItemDialog, featureType, featureDescription, manifestData, applyCommand]);
 
+  // Safely cast unknown to TransformedFeatureData since we know the context data is TransformedFeatureData
+  const renderGridItem = useCallback((item: unknown) => {
+    const featureItem = item as TransformedFeatureData;
+    return (
+      <FeatureItemCard
+        key={featureItem.id}
+        featureID={featureItem.id}
+        featureName={featureItem.name}
+        featureStatus={featureItem.status}
+        featureType={featureType}
+        featureDescription={featureDescription}
+        manifest={manifestData}
+        applyCommand={applyCommand}
+        onDeleteFeature={onDeleteFeature}
+      />
+    );
+  }, [featureType, featureDescription, manifestData, applyCommand, onDeleteFeature]);
+
   return view === "grid" ? (
     <DataGrid
       className={cn(className)}
-      renderItem={(item: TransformedFeatureData) => (
-        <FeatureItemCard
-          key={item.id}
-          featureID={item.id}
-          featureName={item.name}
-          featureStatus={item.status}
-          featureType={featureType}
-          featureDescription={featureDescription}
-          manifest={manifestData}
-          applyCommand={applyCommand}
-          onDeleteFeature={onDeleteFeature}
-        />
-      )}
+      renderItem={renderGridItem}
     >
       <FeatureNewItem
         featureType={featureType}
@@ -74,8 +75,7 @@ function FeatureCollectionView({
   ) : (
     <DataTable
       className={cn(className)}
-      onRowClick={handleRowClick}
-      meta={featureTableMeta}
+      onRowClick={(row) => handleRowClick(row as TransformedFeatureData)}
       rowsAppend={
         <FeatureNewItem
           colSpan={colSpan}

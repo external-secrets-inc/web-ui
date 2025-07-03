@@ -3,6 +3,8 @@ export { PageAuditInsights } from "./PageAuditInsights";
 export { PageAuditDestinations } from "./PageAuditDestinations";
 export { PageAuditPolicies } from "./PageAuditPolicies";
 export { PageAuditProviders } from "./PageAuditProviders";
+export { PageGenerators } from "./PageGenerators";
+export { PageGeneratorsCreate } from "./PageGeneratorsCreate";
 export { PageReloaders } from "./PageReloaders";
 export { PageSecretStores } from "./PageSecretStores";
 export { PageSecretStoresCreate } from "./PageSecretStoresCreate";

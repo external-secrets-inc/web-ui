@@ -400,8 +400,9 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, isLoadingDestinations,
                         emptyMessage="No triggers configured"
                         initialSort={{ id: 'destinationIdentifiers', desc: false }}
                         getRowId={(_, index) => String(index)} // TODO[cfviotti]: Triggers should probably have an id from the API
+                        meta={policyTriggerTableMeta}
                       >
-                        <DataTable meta={policyTriggerTableMeta} />
+                        <DataTable />
                       </DataProvider>
                     </FormItem>
                   )}

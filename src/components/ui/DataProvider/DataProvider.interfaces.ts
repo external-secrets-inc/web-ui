@@ -1,4 +1,4 @@
-import { type ColumnDef, type SortingState, type TableOptions, type Table as ReactTableType, type ColumnSizingState } from "@tanstack/react-table";
+import { type ColumnDef, type SortingState, type TableOptions, type Table as ReactTableType, type ColumnSizingState, type RowData } from "@tanstack/react-table";
 import * as React from "react";
 import { type VirtualizerOptions } from "@tanstack/react-virtual";
 
@@ -27,8 +27,9 @@ export type SortConfig = { id: string; desc: boolean };
 
 /**
  * Internal table state representation.
+ * Generic type allows React Table to maintain type safety.
  */
-export type TableState<TData> = {
+export type TableState<TData extends RowData> = {
   data: TData[];
   columns: ColumnDef<TData, unknown>[];
   sorting: SortingState;
@@ -49,9 +50,9 @@ export type TableActions = {
 
 /**
  * Configuration options for the DataProvider hook and component, excluding children.
- * @template TData - Type of data items being displayed
+ * Generic type is inferred from the data and columns props.
  */
-export type ProviderConfig<TData extends object> = {
+export type ProviderConfig<TData extends RowData> = {
   /**
    * Array of data items to display
    * @see {@link https://tanstack.com/table/v8/docs/api/core/table#data Data API}
@@ -87,6 +88,12 @@ export type ProviderConfig<TData extends object> = {
    */
   getRowId?: TableOptions<TData>['getRowId'];
   /**
+   * Metadata object passed down to cell/header renderers.
+   * Commonly used for row actions, shared functions, or contextual data that cells need access to.
+   * @see {@link https://tanstack.com/table/v8/docs/api/core/table#meta Table Meta API}
+   */
+  meta?: unknown;
+  /**
    * Additional options passed directly to the underlying TanStack Table instance.
    * @see {@link https://tanstack.com/table/v8/docs/api/core/table#options Table Options API}
    */
@@ -103,13 +110,15 @@ export type ProviderConfig<TData extends object> = {
     | 'onGlobalFilterChange'
     | 'onColumnSizingChange'
     | 'columnResizeMode'
+    | 'meta'
   >;
-} & ({ getRowId: TableOptions<TData>['getRowId'] } | { data: Array<TData & WithId> });
+};
 
 /**
  * Props for the DataProvider component, including children.
+ * Generic type is inferred from the config props.
  */
-export type DataProviderProps<TData extends object> = ProviderConfig<TData> & {
+export type DataProviderProps<TData extends RowData> = ProviderConfig<TData> & {
   /**
    * Children to render inside the DataProvider. Usually a `DataTable` or `DataGrid` component,
    * but can be anything your heart desires. That's the beauty of `tanstack-table` headless nature.
@@ -119,16 +128,18 @@ export type DataProviderProps<TData extends object> = ProviderConfig<TData> & {
 
 /**
  * Combined type for all values provided by the DataProvider context.
+ * Generic type maintains type safety throughout the component tree.
  */
-export type ProviderContextValue<TData extends object> = TableState<TData> &
+export type ProviderContextValue<TData extends RowData> = TableState<TData> &
   TableActions & {
     table: ReactTableType<TData>;
   };
 
 /**
  * Props for the DataGrid component.
+ * Generic type is inferred from the context.
  */
-export interface DataGridProps<TData extends object = object> {
+export interface DataGridProps<TData extends RowData> {
   /** Function to render each individual item in the grid */
   renderItem: (item: TData) => React.ReactNode;
   /** Optional content that will render before the grid items */
@@ -139,8 +150,9 @@ export interface DataGridProps<TData extends object = object> {
 
 /**
  * Props for the DataTable component.
+ * Generic type is inferred from the context.
  */
-export interface DataTableProps<TData extends object, TMeta extends object> {
+export interface DataTableProps<TData extends RowData> {
   /** Optional class name for the Table root element */
   className?: string;
   /** Optional style for the Table root element */
@@ -149,8 +161,6 @@ export interface DataTableProps<TData extends object, TMeta extends object> {
   onRowClick?: (rowData: TData) => void;
   /** Custom elements to append after the data rows (not virtualized) */
   rowsAppend?: React.ReactNode;
-  /** Metadata object passed down to cell/header renderers */
-  meta?: TMeta;
   /**
    * Determines the row height strategy for virtualization.
    * - 'off': Disables virtualization.

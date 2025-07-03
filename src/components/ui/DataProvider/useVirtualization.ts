@@ -4,7 +4,7 @@ import {
   useVirtualizer,
   useWindowVirtualizer,
 } from "@tanstack/react-virtual";
-import type { Row } from "@tanstack/react-table";
+import type { Row, RowData } from "@tanstack/react-table";
 import type { DataTableProps } from "./DataProvider.interfaces"; // Use existing interface for props subset
 
 const DEFAULT_ROW_HEIGHT = 40;
@@ -30,8 +30,8 @@ function useMemoizedVirtualizerRef<T>(virtualizer: T): React.MutableRefObject<T>
 
 // Define the props needed specifically for the virtualization hook
 // We extract only the relevant props from DataTableProps
-type UseVirtualizationProps<TData extends object> = Pick<
-  DataTableProps<TData, object>, // Using object for TMeta as it's not relevant here
+type UseVirtualizationProps<TData extends RowData> = Pick<
+  DataTableProps<TData>,
   'virtualizationMode' | 'virtualizationContainer' | 'rowHeight' | 'virtualizerOptions'
 > & {
   rows: Row<TData>[];
@@ -50,7 +50,7 @@ type UseVirtualizationProps<TData extends object> = Pick<
  * @param props - Configuration options for virtualization.
  * @returns An object containing virtualization state and utilities needed by the DataTable.
  */
-export function useVirtualization<TData extends object>({
+export function useVirtualization<TData extends RowData>({
   virtualizationMode = 'off',
   virtualizationContainer = 'table',
   rowHeight = DEFAULT_ROW_HEIGHT,
@@ -104,9 +104,8 @@ export function useVirtualization<TData extends object>({
     overscan: overscan ?? DEFAULT_OVERSCAN,
     enabled: isVirtualEnabled && isWindowContainer,
     scrollMargin: scrollElementRef.current?.offsetTop ?? 0,
-    // Cast remaining options to 'any' to bypass strict type checking
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ...(restVirtualizerOptions as any), // TODO: [cfviotti] Figure out how to avoid `any`
+    // TODO[cfviotti]: if we start using more one-off options, check if there is a workaround to avoid the type issues and spread the restVirtualizerOptions fixed for the window virtualizer
+    // Skip the rest options from restVirtualizerOptions that might cause type issues
   });
 
   const rowVirtualizer = isWindowContainer ? windowVirtualizer : elementVirtualizer;
@@ -145,8 +144,9 @@ export function useVirtualization<TData extends object>({
 
   if (isVirtualEnabled && virtualItems.length > 0) {
     const totalSize = virtualizerRef.current.getTotalSize();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const scrollMargin = (virtualizerRef.current.options as any).scrollMargin ?? 0;
+    const scrollMargin = typeof virtualizerRef.current.options.scrollMargin === 'number'
+      ? virtualizerRef.current.options.scrollMargin
+      : 0;
 
     // Calculate padding using the extracted helper function
     const calculatedPadding = calculateVirtualPadding(virtualItems, totalSize, scrollMargin);

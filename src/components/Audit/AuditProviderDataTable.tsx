@@ -207,7 +207,10 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
 
   return (
     <div className="flex flex-col gap-4">
-      <Dialog open={isAddProviderDialogOpen} onOpenChange={handleAddProviderDialogOpenChange}>
+      <Dialog
+        open={isAddProviderDialogOpen}
+        onOpenChange={handleAddProviderDialogOpenChange}
+      >
         <DialogTrigger asChild>
           <Button className="self-end" variant="outline">
             <LucidePlus />
@@ -219,22 +222,23 @@ function AuditProviderDataTable({ tenantID, listenerID }: { tenantID: string, li
           providerForm={providerForm}
           open={isAddProviderDialogOpen}
           onSubmit={handleSubmit}
-          onCancel={() => { handleAddProviderDialogOpenChange(false) }}
+          onCancel={() => {
+            handleAddProviderDialogOpenChange(false);
+          }}
         />
       </Dialog>
       <DataProvider
         data={providers}
         columns={columns}
-        initialSort={{ id: 'name', desc: false }}
+        initialSort={{ id: "name", desc: false }}
         isLoading={isLoadingProviders}
-        getRowId={row => row.providerID}
-        >
-        <DataTable
-          meta={providerTableMeta}
-          />
+        getRowId={(row) => row.providerID}
+        meta={providerTableMeta}
+      >
+        <DataTable />
       </DataProvider>
     </div>
-  )
+  );
 }
 
 export default AuditProviderDataTable

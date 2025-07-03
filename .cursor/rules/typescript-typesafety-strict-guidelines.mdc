@@ -297,10 +297,17 @@ alwaysApply: false
     </principle>
 
     <principle name="minimize_assertions">
-      <summary>Minimize Type Assertions (`as` and `!`) </summary>
+      <summary>Use Type Assertions (`as` and `!`) Judiciously</summary>
       <details>
       - Type assertions (`value as Type`) tell the compiler "trust me, I know the type", bypassing static analysis. Overuse can hide errors and MUST be minimized.
       - Type assertions SHOULD only be used when you have more information than the compiler and other methods (like type guards or more precise upstream typing) are not feasible.
+      - **Legitimate Use Cases**: Type assertions are NOT inherently bad practice and are sometimes essential tools that SHOULD be used when:
+          - The compiler cannot infer the correct type through control flow analysis (e.g., in switch statements with discriminated unions)
+          - Working with APIs where you know the returned type is more specific than what TypeScript can infer
+          - Interacting with DOM elements when you know their specific type
+          - Implementing type narrowing in scenarios where type predicates are impractical
+          - Working with third-party libraries that have incomplete or imprecise type definitions
+      - **Prefer Type Guards**: Whenever possible, prefer using runtime type guards with conditional checks before using assertions, as this provides both compile-time and runtime safety.
       - The non-null assertion operator (`value!`) asserts that a value is not `null` or `undefined`. It SHOULD be used sparingly and only when you are absolutely certain the value cannot be nullish at that point. Prefer explicit null checks or optional chaining (`?.`).
       </details>
       <bad_example title="Risky use of non-null assertions">
@@ -322,6 +329,25 @@ alwaysApply: false
         let safeUserNameLength = 0;
         if (user && user.name) {
             safeUserNameLength = user.name.length;
+        }
+        ```
+      </good_example>
+      <good_example title="Legitimate use of type assertion with discriminated union">
+        ```typescript
+        import * as TS from "typescript";
+
+        const visitNode = (node: TS.Node) => {
+            switch (node.kind) {
+                case TS.SyntaxKind.NumericLiteral: {
+                    // Type assertion is appropriate here - we know more than the compiler
+                    // The kind property guarantees this is a NumericLiteral
+                    const text = (node as TS.NumericLiteral).text;
+                    break;
+                }
+                default: {
+                    node.forEachChild(visitNode);
+                }
+            }
         }
         ```
       </good_example>

@@ -1,13 +1,13 @@
-import { UseQueryOptions, useQuery } from "@tanstack/react-query";
+import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
-import type { UISchema } from "@/components/EsiSchemaForm/EsiSchemaForm.interfaces";
+import { UISchema } from "@/components/EsiSchemaForm/EsiSchemaForm.interfaces";
 
-const getUISchema = async (resourceType: string, signal: AbortSignal): Promise<UISchema> => {
+const getUISchema = async (resourceType: string, signal?: AbortSignal): Promise<UISchema> => {
   const headers = await getAuthHeaders();
-const response = await axiosInstance.get(`/api/v1/ui-schemas/${resourceType}`, {
+  const response = await axiosInstance.get(`/api/v1/ui-schemas/${resourceType}`, {
     headers,
     signal,
     backend: 'ESO_SERVER'

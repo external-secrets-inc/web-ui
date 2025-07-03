@@ -1,5 +1,5 @@
 import * as React from "react";
-import { type Row } from "@tanstack/react-table";
+import { type RowData } from "@tanstack/react-table";
 import { cn } from "@/lib/utils";
 import { useData } from "./DataProviderContext";
 import { type DataGridProps } from "./DataProvider.interfaces";
@@ -10,7 +10,7 @@ import { type DataGridProps } from "./DataProvider.interfaces";
  * Ideal for displaying card-like elements or other non-tabular data representations.
  */
 export const DataGrid = React.forwardRef(
-  <TData extends object>(
+  <TData extends RowData>(
     { renderItem, children, className, ...props }: DataGridProps<TData>,
     ref: React.ForwardedRef<HTMLDivElement>
   ) => {
@@ -26,7 +26,7 @@ export const DataGrid = React.forwardRef(
         {...props}
       >
         {children}
-        {table.getRowModel().rows.map((row: Row<TData>) => renderItem(row.original))}
+        {table.getRowModel().rows.map((row) => renderItem(row.original))}
       </div>
     );
   }
