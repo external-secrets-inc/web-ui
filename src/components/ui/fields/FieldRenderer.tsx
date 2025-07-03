@@ -73,8 +73,13 @@ export function FieldRenderer({ field }: FieldRendererProps) {
     }
 
     case "checkbox":
+      // For checkbox fields, we still pass the rules to FieldBoolean
+      // The component will handle boolean validation correctly while preserving custom rules
       return (
-        <FieldBoolean {...baseProps} defaultValue={field.default as boolean} />
+        <FieldBoolean
+          {...baseProps}
+          defaultValue={field.default as boolean}
+        />
       );
 
     case "key-value":
