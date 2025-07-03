@@ -310,6 +310,7 @@ export function WorkflowRunTemplateDataTable() {
         isLoading={isLoadingWorkflowRunTemplates}
         getRowId={(row) => `${row.namespace}/${row.name}`}
         emptyMessage={"No Run Template available"}
+        meta={workflowRunTemplateTableMeta}
       >
         <div className="flex items-center justify-between">
           <div>
@@ -332,7 +333,7 @@ export function WorkflowRunTemplateDataTable() {
             </Button>
           </div>
         </div>
-        <DataTable meta={workflowRunTemplateTableMeta} />
+        <DataTable />
       </DataProvider>
     </div>
   );

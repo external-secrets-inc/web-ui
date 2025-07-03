@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { DataProvider } from '../DataProviderContext';
 import { DataGrid } from '../DataGrid';
 import type { DataGridProps } from '../DataProvider.interfaces';
-import React from 'react';
 import {
   type User,
   type CommonStoryProps,
@@ -27,7 +26,9 @@ const DataGridWithProvider = (
     >
       <DataGrid
         {...dataGridProps}
-        renderItem={dataGridProps.renderItem as (item: object) => React.ReactNode}
+        renderItem={(item: unknown) => {
+          return dataGridProps.renderItem(item as User);
+        }}
       />
     </DataProvider>
   );

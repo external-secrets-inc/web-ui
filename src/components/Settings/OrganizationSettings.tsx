@@ -403,22 +403,26 @@ const OrganizationSettings: React.FC = () => {
 
   const subsections = [
     {
-      title: 'Tenant Information',
+      title: "Tenant Information",
       content: (
         <>
-          <div className='space-y-2'>
+          <div className="space-y-2">
             <FormLabel>Tenant ID</FormLabel>
-            {accountDataError ? <p className="text-sm text-muted-foreground">---</p> : (
-              accountData
-                ? <p className="text-sm text-muted-foreground">{accountData?.tenant_id}</p>
-                : <Skeleton className='h-5 w-[stretch] max-w-48' />
+            {accountDataError ? (
+              <p className="text-sm text-muted-foreground">---</p>
+            ) : accountData ? (
+              <p className="text-sm text-muted-foreground">
+                {accountData?.tenant_id}
+              </p>
+            ) : (
+              <Skeleton className="h-5 w-[stretch] max-w-48" />
             )}
           </div>
         </>
       ),
     },
     {
-      title: 'Contact Information',
+      title: "Contact Information",
       content: (
         <>
           <FormField
@@ -428,11 +432,7 @@ const OrganizationSettings: React.FC = () => {
               <FormItem>
                 <FormLabel>Contact Name</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="John Doe"
-                    autoFocus
-                    {...field}
-                  />
+                  <Input placeholder="John Doe" autoFocus {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -445,10 +445,7 @@ const OrganizationSettings: React.FC = () => {
               <FormItem>
                 <FormLabel>Contact Email</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="you@company.com"
-                    {...field}
-                  />
+                  <Input placeholder="you@company.com" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -461,10 +458,7 @@ const OrganizationSettings: React.FC = () => {
               <FormItem>
                 <FormLabel>Contact Phone</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="+1 123-456-7890"
-                    {...field}
-                  />
+                  <Input placeholder="+1 123-456-7890" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -474,25 +468,24 @@ const OrganizationSettings: React.FC = () => {
       ),
     },
     {
-      title: 'User Management',
+      title: "User Management",
       content: (
         <>
           <DataProvider
             data={users}
             columns={usersManagementColumns}
-            initialSort={{ id: 'name', desc: false }}
+            initialSort={{ id: "name", desc: false }}
             isLoading={isLoadingUsers}
+            meta={usersManagementTableMeta}
           >
-            <DataTable
-              meta={usersManagementTableMeta}
-            />
+            <DataTable />
           </DataProvider>
-          <Dialog open={isAddUserDialogOpen} onOpenChange={handleAddUserDialogOpenChange}>
+          <Dialog
+            open={isAddUserDialogOpen}
+            onOpenChange={handleAddUserDialogOpenChange}
+          >
             <DialogTrigger asChild>
-              <Button
-                className="self-end"
-                variant="outline"
-              >
+              <Button className="self-end" variant="outline">
                 <LucidePlus />
                 Add User
               </Button>
@@ -501,22 +494,24 @@ const OrganizationSettings: React.FC = () => {
               selectedUserId={selectedUserId || ""}
               userForm={userForm}
               onSubmit={handleAddUserSubmit}
-              onCancel={() => { handleAddUserDialogOpenChange(false) }}
+              onCancel={() => {
+                handleAddUserDialogOpenChange(false);
+              }}
             />
           </Dialog>
         </>
       ),
     },
     {
-      title: 'Organization Data',
+      title: "Organization Data",
       content: (
         <>
-          <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <AlertDialog
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+          >
             <AlertDialogTrigger asChild>
-              <Button
-                className="self-end"
-                variant="destructive"
-              >
+              <Button className="self-end" variant="destructive">
                 Delete Organization
               </Button>
             </AlertDialogTrigger>
@@ -524,12 +519,22 @@ const OrganizationSettings: React.FC = () => {
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete Organization</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Deleting this Organization will permanently remove all data associated with it in our database. This action is final and cannot be undone.
-                  <strong className='block mt-2'>To confirm you must type your Organization URL: <span className='text-foreground'>{accountData?.tenant_name}</span></strong>
+                  Deleting this Organization will permanently remove all data
+                  associated with it in our database. This action is final and
+                  cannot be undone.
+                  <strong className="block mt-2">
+                    To confirm you must type your Organization URL:{" "}
+                    <span className="text-foreground">
+                      {accountData?.tenant_name}
+                    </span>
+                  </strong>
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <Form {...deleteForm}>
-                <form onSubmit={deleteForm.handleSubmit(handleDeleteAccount)} className="grid gap-4">
+                <form
+                  onSubmit={deleteForm.handleSubmit(handleDeleteAccount)}
+                  className="grid gap-4"
+                >
                   <FormField
                     control={deleteForm.control}
                     name="tenant_name"
@@ -538,7 +543,9 @@ const OrganizationSettings: React.FC = () => {
 
                       return (
                         <FormItem>
-                          <FormLabel>Enter your Organization URL to confirm</FormLabel>
+                          <FormLabel>
+                            Enter your Organization URL to confirm
+                          </FormLabel>
                           <FormControl>
                             <Input
                               ref={inputRef}
@@ -554,13 +561,8 @@ const OrganizationSettings: React.FC = () => {
                     }}
                   />
                   <AlertDialogFooter>
-                    <AlertDialogCancel>
-                      Cancel
-                    </AlertDialogCancel>
-                    <Button
-                      type="submit"
-                      variant="destructive"
-                    >
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <Button type="submit" variant="destructive">
                       Delete Organization
                     </Button>
                   </AlertDialogFooter>

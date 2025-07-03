@@ -174,6 +174,7 @@ export function SecretStoreDataTable() {
         initialSort={{ id: "name", desc: false }}
         isLoading={isLoadingSecretStores}
         getRowId={(row) => `${row.namespace}/${row.name}`}
+        meta={secretStoreTableMeta}
       >
         <div className="flex justify-end gap-4 items-center">
           <DataSearch />
@@ -185,7 +186,7 @@ export function SecretStoreDataTable() {
             Add Secret Store
           </Button>
         </div>
-        <DataTable meta={secretStoreTableMeta} />
+        <DataTable />
       </DataProvider>
     </div>
   );

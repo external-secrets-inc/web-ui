@@ -5,7 +5,6 @@ import type { DataTableProps } from '../DataProvider.interfaces';
 import { Button } from '../../button';
 import { LucideEdit, LucideMoreVertical, LucideTrash2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../dropdown-menu';
-import React from 'react';
 import {
   type User,
   type CommonStoryProps,
@@ -20,33 +19,43 @@ import { TableRow } from '@/components/ui/table';
  * Props combining Storybook needs with DataTable and DataProvider requirements.
  * Handles type adaptation for both the onRowClick handler and meta object.
  */
-type DataTableStoryProps = Omit<DataTableProps<User, object>, 'onRowClick'> &
-  { onRowClick?: (rowData: object) => void } &
+type DataTableStoryProps = Omit<DataTableProps<User>, 'onRowClick'> &
+  { onRowClick?: (rowData: User) => void } &
   CommonStoryProps<User> &
   { meta?: object };
 
 /**
- * Story wrapper that combines DataProvider and DataTable components.
- * Handles proper typing of row click actions and meta object passing.
+ * DataTable component wrapper for Storybook that includes DataProvider
  */
 const DataTableWithProvider = (
-  { data, columns, initialSort, getRowId, onRowClick, meta, ...dataTableProps }: DataTableStoryProps
+  {
+    data,
+    columns,
+    initialSort,
+    getRowId,
+    meta,
+    onRowClick,
+    ...dataTableProps
+  }: DataTableStoryProps
 ) => {
-  const handleRowClick = React.useCallback((rowData: User) => {
-      if (onRowClick) {
-          onRowClick(rowData);
-      }
-  }, [onRowClick]);
+  const handleRowClick = (rowData: User) => {
+    onRowClick?.(rowData);
+  };
 
   return (
-    <DataProvider<User>
+    <DataProvider
       data={data}
       columns={columns}
       initialSort={initialSort}
       getRowId={getRowId}
-      tableOptions={{ meta }}
+      meta={meta}
     >
-      <DataTable {...dataTableProps} onRowClick={handleRowClick as (rowData: object) => void} />
+      <DataTable
+        {...dataTableProps}
+        onRowClick={(rowData: unknown) => {
+          handleRowClick(rowData as User);
+        }}
+      />
     </DataProvider>
   );
 };
@@ -80,7 +89,7 @@ export const RowClick: Story = {
     name: "Feature: Row Click",
     args: {
       ...baseStoryArgs,
-      onRowClick: (row: object) => { alert(`Clicked on ${JSON.stringify(row)}`); },
+      onRowClick: (row: User) => { alert(`Clicked on ${JSON.stringify(row)}`); },
     },
 };
 

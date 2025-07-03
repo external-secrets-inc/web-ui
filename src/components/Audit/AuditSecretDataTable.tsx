@@ -319,9 +319,9 @@ export const AuditSecretDataTable = ({ listenerID }: AuditSecretTableProps) => {
         <DataTable
           virtualizationMode="static"
           virtualizationContainer="#layout-root-scroll-area>[data-radix-scroll-area-viewport]"
-          onRowClick={(row) =>
-            setSelectedSecretId((row as AuditSecretTableData).id)
-          }
+          onRowClick={(row) => {
+            setSelectedSecretId((row as AuditSecretTableData).id);
+          }}
           className="min-w-max [--virtual-container-header-offset:calc(var(--layout-topbar-height)+theme(spacing.3))]" // Sticky table header below the layout topbar with a mt-3 gap
         />
       </DataProvider>

@@ -360,7 +360,10 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
   return (
     <>
       <div className="flex flex-col gap-4">
-        <Dialog open={isAddPolicyDialogOpen} onOpenChange={handleAddPolicyDialogOpenChange}>
+        <Dialog
+          open={isAddPolicyDialogOpen}
+          onOpenChange={handleAddPolicyDialogOpenChange}
+        >
           <DialogTrigger asChild>
             <Button className="self-end" variant="outline">
               <LucidePlus />
@@ -373,7 +376,9 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
             isLoadingDestinations={isLoadingDestinations}
             destinationsMap={destinationsMap}
             onSubmit={handleSubmit}
-            onCancel={() => { handleAddPolicyDialogOpenChange(false) }}
+            onCancel={() => {
+              handleAddPolicyDialogOpenChange(false);
+            }}
           />
         </Dialog>
 
@@ -381,12 +386,11 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
           getRowId={(row) => row.policyID}
           data={policies}
           columns={columns}
-          initialSort={{ id: 'name', desc: false }}
+          initialSort={{ id: "name", desc: false }}
           isLoading={isLoadingPolicies}
+          meta={policyTableMeta}
         >
-          <DataTable
-            meta={policyTableMeta}
-          />
+          <DataTable />
         </DataProvider>
       </div>
 
@@ -403,5 +407,5 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
         />
       </Dialog>
     </>
-  )
+  );
 }

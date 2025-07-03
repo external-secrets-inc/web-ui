@@ -66,7 +66,7 @@ function FeatureCollection({
   })), [data]);
 
   const featureTableMeta: FeatureTableMeta = {
-    renderRowActions: (row) => (
+    renderRowActions: (row: TransformedFeatureData) => (
       <FeatureCollectionTableActions
         featureID={row.id}
         featureName={row.name}
@@ -77,7 +77,7 @@ function FeatureCollection({
         applyCommand={applyCommand}
         onDeleteFeature={onDeleteFeature}
       />
-    )//
+    )
   };
 
   return (
@@ -91,6 +91,7 @@ function FeatureCollection({
         data={transformedFeatureData}
         columns={columns}
         initialSort={{ id: 'index', desc: true }}
+        meta={featureTableMeta}
       >
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-x-4 gap-y-2 flex-wrap">
@@ -123,7 +124,6 @@ function FeatureCollection({
             applyCommand={applyCommand}
             onDeleteFeature={onDeleteFeature}
             performCreate={performCreate}
-            featureTableMeta={featureTableMeta}
           />
         </div>
       </DataProvider>
