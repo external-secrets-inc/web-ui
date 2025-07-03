@@ -4,17 +4,8 @@ import axiosInstance from "@/services/axiosConfig";
 import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
 import { CreateGeneratorPayload } from "@/components/workflows/Generators/Generators.interfaces";
-import { createMockResponse } from "../mocks/mockData.utils";
-import { MOCK_ENABLED } from "../mocks/mockData.constants";
 
 const createGenerator = async (payload: CreateGeneratorPayload): Promise<void> => {
-  // TODO[cfviotti]: Remove this once the API is available
-  if (MOCK_ENABLED) {
-    await createMockResponse(undefined, 1200, false);
-    console.log("Mock: Created generator with manifest:", payload.manifest);
-    return;
-  }
-
   const headers = await getAuthHeaders();
   await axiosInstance.post('/api/v1/generators', payload, {
     headers,

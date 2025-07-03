@@ -1,10 +1,7 @@
-import { Status } from "../Common.interfaces";
-
 export interface GeneratorTableData {
   name: string;
   namespace: string;
   kind: string;
-  status?: Status;
 }
 
 export interface CreateGeneratorPayload {

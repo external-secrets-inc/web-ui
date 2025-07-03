@@ -23,7 +23,7 @@ import {
 import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction";
 import { useNavigate } from "react-router-dom";
 import useOrgLink from "@/hooks/useOrgLink";
-import { Badge, BadgeProps } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 
 interface GeneratorTableMeta {
   renderRowActions?: (row: GeneratorTableData) => React.ReactNode;
@@ -45,34 +45,7 @@ export function GeneratorDataTable() {
         }),
         columnHelper.accessor("kind", {
           header: "Type",
-          cell: (info) => (
-            <Badge variant="secondary">{info.getValue()}</Badge>
-          ),
-        }),
-        columnHelper.accessor("status", {
-          header: "Status",
-          cell: (info) => {
-            const statusData = info.row.original.status;
-            if (!statusData) {
-              return <Badge variant="secondary">Unknown</Badge>;
-            }
-
-            const { status, reason } = statusData;
-            let variantClass: BadgeProps["variant"] = "default";
-            let displayText = "Not Informed";
-
-            if (status === "Pending") {
-              variantClass = "warning";
-              displayText = "Pending";
-            } else if (status === "True") {
-              variantClass = "success";
-              displayText = reason || "Ready";
-            } else if (status === "False") {
-              variantClass = "destructive";
-              displayText = reason || "Error";
-            }
-            return <Badge variant={variantClass}>{displayText}</Badge>;
-          },
+          cell: (info) => <Badge variant="secondary">{info.getValue()}</Badge>,
         }),
         columnHelper.display({
           id: "actions",
