@@ -38,10 +38,6 @@ export function WorkflowTemplateDataTable() {
           header: "Name",
           cell: (info) => <strong>{info.getValue()}</strong>,
         }),
-        columnHelper.accessor("namespace", {
-          header: "Namespace",
-          cell: (info) => info.getValue(),
-        }),
         columnHelper.display({
           id: "actions",
           cell: (props) => (

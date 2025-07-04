@@ -172,7 +172,7 @@ const router = createBrowserRouter([
                 element: <Outlet/>,
                 handle: {
                   breadcrumb: (match: UIMatch) => ({
-                    label: `${match.params.templateNamespace}/${match.params.templateName}`,
+                    label: `${match.params.templateName}`,
                     path: match.pathname,
                     navigatable: true,
                   }),
@@ -197,7 +197,7 @@ const router = createBrowserRouter([
                     element: <PageWorkflowRunDetails />,
                     handle: {
                       breadcrumb: (match: UIMatch) => ({
-                        label: `${match.params.workflowRunNamespace}/${match.params.workflowRunName}`,
+                        label: `${match.params.workflowRunName}`,
                         navigatable: false,
                       }),
                     },
