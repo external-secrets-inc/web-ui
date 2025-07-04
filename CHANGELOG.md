@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.17.0](https://github.com/external-secrets-inc/web-ui/compare/v0.16.0...v0.17.0) (2025-07-04)
+
+
+### Features
+
+* workflow generators screens ([#403](https://github.com/external-secrets-inc/web-ui/issues/403)) ([35e9106](https://github.com/external-secrets-inc/web-ui/commit/35e9106174689c2d703fce15769f8ab48230cb65))
+
+
+### Bug Fixes
+
+* :bug: boolean fields being badly validated and send actual boolean values ([3ab56f4](https://github.com/external-secrets-inc/web-ui/commit/3ab56f45a3cbcae341b4f76d2022c929795a5586))
+* add workflow graph to workflow template create page ([#399](https://github.com/external-secrets-inc/web-ui/issues/399)) ([0410cb2](https://github.com/external-secrets-inc/web-ui/commit/0410cb26b4bc39c0c371a63609820138453c8ad2))
+* ensure proper validation of boolean fields and return actual boolean values ([#411](https://github.com/external-secrets-inc/web-ui/issues/411)) ([3ab56f4](https://github.com/external-secrets-inc/web-ui/commit/3ab56f45a3cbcae341b4f76d2022c929795a5586))
+
 ## [0.16.0](https://github.com/external-secrets-inc/web-ui/compare/v0.15.0...v0.16.0) (2025-07-01)
 
 
