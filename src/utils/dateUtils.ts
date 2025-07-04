@@ -63,3 +63,13 @@ export const formatDate = (
   const formattedDate = format(zonedDate, formatString);
   return formattedDate;
 };
+
+export const formatDuration = (nanos: number): string => {
+  if (nanos >= 1e9) {
+    const seconds = (nanos / 1e9).toFixed(3); // show 3 decimal places
+    return `${seconds} s`;
+  } else {
+    const milliseconds = (nanos / 1e6).toFixed(3);
+    return `${milliseconds} ms`;
+  }
+}

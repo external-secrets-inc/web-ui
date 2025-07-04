@@ -34,7 +34,7 @@ import {
 import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import useOrgLink from "@/hooks/useOrgLink";
-import { formatDate } from "@/utils/dateUtils";
+import { formatDate, formatDuration } from "@/utils/dateUtils";
 import useCreateWorkflowRunFromRunTemplate from "@/services/workflows/mutations/useCreateWorkflowRunFromRunTemplate";
 import useGetWorkflowRunTemplatesByTemplate from "@/services/workflows/queries/useGetWorkflowRunTemplatesByTemplate";
 import {
@@ -151,8 +151,9 @@ export function WorkflowRunTemplateDataTable() {
                               index == runs.length - 1
                                 ? "opacity-100"
                                 : "opacity-60",
-                              runs.length != 1 && index == runs.length - 1
-                                && "ml-1"
+                              runs.length != 1 &&
+                                index == runs.length - 1 &&
+                                "ml-1"
                             )}
                             variant={variant}
                           >
@@ -175,6 +176,11 @@ export function WorkflowRunTemplateDataTable() {
                           ? formatDate(run.completionTime, {
                               format: "full",
                             })
+                          : "N/A"}
+                        <br />
+                        Execution:{" "}
+                        {run.executionTimeNanos && run.executionTimeNanos > 0
+                          ? formatDuration(run.executionTimeNanos)
                           : "N/A"}
                       </TooltipContent>
                     </Tooltip>

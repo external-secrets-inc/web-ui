@@ -3,7 +3,7 @@ import {
   WorkflowJob,
   WorkflowStep,
 } from "./Workflows.interfaces";
-import { formatDate } from "@/utils/dateUtils";
+import { formatDate, formatDuration } from "@/utils/dateUtils";
 import {
   Accordion,
   AccordionContent,
@@ -75,6 +75,13 @@ const StepDetails: React.FC<{ name: string; step: WorkflowStep }> = ({
             ? formatDate(step.completionTime, { format: "full" })
             : "No data available"}
         </div>
+        <div>
+            Execution:{" "}
+            {step.executionTimeNanos &&
+            step.executionTimeNanos > 0
+              ? formatDuration(step.executionTimeNanos)
+              : "No data available"}
+          </div>
       </div>
 
       {showOutputs && hasOutputs && (
@@ -119,6 +126,13 @@ const JobAccordionItem: React.FC<{ name: string; job: WorkflowJob }> = ({
             Completion Time:{" "}
             {job.completionTime
               ? formatDate(job.completionTime, { format: "full" })
+              : "No data available"}
+          </div>
+          <div>
+            Execution:{" "}
+            {job.executionTimeNanos &&
+            job.executionTimeNanos > 0
+              ? formatDuration(job.executionTimeNanos)
               : "No data available"}
           </div>
         </div>
