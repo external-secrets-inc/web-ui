@@ -167,6 +167,12 @@ export function createFieldValidation(field: UISchemaField) {
 
   // Type-specific validations
   switch (field.type) {
+    case 'checkbox': {
+      // Checkbox validation is handled directly in the FieldBoolean component
+      // to properly handle the edge case where React Hook Form treats false as "empty"
+      // for required validation
+      break;
+    }
     case 'text':
     case 'textarea': {
       if (field.minLength !== undefined) {
@@ -471,8 +477,11 @@ function cleanEmptyValues(
     return hasValidProperties ? cleaned : undefined;
   }
 
-  // For primitive values (string, number, boolean), return as-is unless they're empty strings
-  if (typeof obj === 'string' && obj.trim() === '') {
+  // For primitive values, handle each type appropriately
+  if (typeof obj === 'boolean') {
+    // Always preserve boolean values (both true and false) as they represent meaningful states
+    return obj;
+  } else if (typeof obj === 'string' && obj.trim() === '') {
     // If allowEmpty is true for this string field, preserve empty strings
     if (currentField?.allowEmpty) {
       return obj;
