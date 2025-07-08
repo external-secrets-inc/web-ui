@@ -118,7 +118,6 @@ export function WorkflowRunDetails() {
       return {
         name: "unknown-workflow",
         namespace: "default",
-        status: { status: "Unkown", reason: "Workflow not found" },
         manifest: "",
         phase: "Pending",
         startTime: "",

@@ -39,10 +39,6 @@ export function SecretStoreDataTable() {
           header: "Name",
           cell: (info) => <strong>{info.getValue()}</strong>,
         }),
-        columnHelper.accessor("namespace", {
-          header: "Namespace",
-          cell: (info) => info.getValue(),
-        }),
         columnHelper.accessor("capabilities", {
           header: "Available as",
           cell: (info) => {
@@ -180,7 +176,9 @@ export function SecretStoreDataTable() {
           <DataSearch />
           <Button
             variant="outline"
-            onClick={() => navigate(getOrgLink("/workflows/secret-stores/create"))}
+            onClick={() =>
+              navigate(getOrgLink("/workflows/secret-stores/create"))
+            }
           >
             <LucidePlus />
             Add Secret Store

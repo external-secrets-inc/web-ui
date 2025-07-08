@@ -1,10 +1,18 @@
-import { LayoutPage } from "@/components/layout";
+import { LayoutPage, LayoutPortalHeaderActions } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 import { LucideRefreshCw } from "lucide-react";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
 import { useParams } from "react-router-dom";
-import { WorkflowTemplateDetails } from "@/components/workflows/Workflows";
+import {
+  WorkflowTemplateData,
+  WorkflowTemplateDetails,
+} from "@/components/workflows/Workflows";
+import { useEffect, useMemo } from "react";
+import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
+import useGetWorkflowTemplate from "@/services/workflows/queries/useGetWorkflowTemplate";
+import YAML from "yaml";
+import { Loader } from "@/components/ui/Loader";
 
 export function PageWorkflowTemplateDetails() {
   const queryClient = useQueryClient();
@@ -28,18 +36,75 @@ export function PageWorkflowTemplateDetails() {
     });
   };
 
+  handleRefresh();
+
+  const {
+    data: workflowTemplateData,
+    isLoading: isLoadingWorkflowTemplate,
+    error: workflowTemplateError,
+  } = useGetWorkflowTemplate(
+    { namespace: templateNamespace ?? "", name: templateName ?? "" },
+    {
+      staleTime: 30000,
+      enabled: !!templateNamespace && !!templateName,
+    }
+  );
+
+  useEffect(() => {
+    if (workflowTemplateError) {
+      handleDefaultApiHttpError(
+        workflowTemplateError,
+        `Error while fetching workflow run data`
+      );
+    }
+  }, [workflowTemplateError]);
+
+  const workflowTemplate = useMemo(() => {
+    if (!workflowTemplateData)
+      return {
+        name: templateName ?? "",
+        namespace: templateNamespace ?? "",
+        status: { status: "Unknown", reason: "No data" },
+        manifest: "",
+        parameters: [],
+      } as WorkflowTemplateData;
+
+    return workflowTemplateData;
+  }, [workflowTemplateData, templateName, templateNamespace]);
+
+  const { yamlString, specName, specVersion } = useMemo(() => {
+    try {
+      const parsed = JSON.parse(workflowTemplate.manifest || "{}");
+      const yamlStr = YAML.stringify({ spec: parsed.spec || {} });
+      return {
+        yamlString: yamlStr,
+        specName: parsed?.spec?.name ?? "Unknown name",
+        specVersion: parsed?.spec?.version ?? "Unknown version",
+      };
+    } catch (error) {
+      console.error("Failed to parse manifest", error);
+      return {
+        yamlString: "Invalid manifest format.",
+        specName: "N/A",
+        specVersion: "N/A",
+      };
+    }
+  }, [workflowTemplate]);
+
   return (
-    <LayoutPage
-      title={`${templateName}`}
-      description={`Namespace: ${templateNamespace}`}
-    >
+    <LayoutPage title={`${templateName}`} description={specName}>
       <LayoutPortalTopbarActions>
         <Button variant="secondary" onClick={handleRefresh}>
           <LucideRefreshCw />
           Refresh Data
         </Button>
       </LayoutPortalTopbarActions>
-      <WorkflowTemplateDetails />
+      <LayoutPortalHeaderActions>
+        <div>
+          <span className="font-medium">Version: {specVersion}</span>
+        </div>
+      </LayoutPortalHeaderActions>
+      {isLoadingWorkflowTemplate ? <Loader /> : <WorkflowTemplateDetails workflowTemplate={workflowTemplate} yamlString={yamlString}/>}
     </LayoutPage>
   );
 }
