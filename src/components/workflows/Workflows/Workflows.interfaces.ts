@@ -1,16 +1,12 @@
-import { Status } from "../Common.interfaces";
-
 // Workflow Templates
 export interface WorkflowTemplateTableData {
   name: string;
   namespace: string;
-  status: Status;
 }
 
 export interface WorkflowTemplateData {
   name: string;
   namespace: string;
-  status: Status;
   manifest: string;
   parameters: WorkflowTemplateParameter[];
 }
@@ -40,17 +36,14 @@ export interface DeleteWorkflowTemplatePayload {
 // Workflows
 export interface WorkflowTableData {
   name: string;
-  namespace: string;
-  status: Status;
   phase: string;
-  startTime: string;
-  completionTime: string;
+  startTime?: string;
+  completionTime?: string;
 }
 
 export interface WorkflowData {
   name: string;
   namespace: string;
-  status: Status;
   manifest: string;
   phase: string;
   jobs: Record<string, WorkflowJob>;
@@ -90,7 +83,6 @@ export interface GetWorkflowPayload {
 export interface WorkflowRunTemplateTableData {
   name: string;
   namespace: string;
-  status: Status;
   runPolicy: string;
   lastRuns: WorkflowRunData[];
 }

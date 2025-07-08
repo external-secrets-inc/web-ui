@@ -85,10 +85,6 @@ export function WorkflowRunTemplateDataTable() {
           header: "Name",
           cell: (info) => <strong>{info.getValue()}</strong>,
         }),
-        columnHelper.accessor("namespace", {
-          header: "Namespace",
-          cell: (info) => info.getValue(),
-        }),
         columnHelper.accessor("runPolicy", {
           header: "Run Policy",
           cell: (info) =>

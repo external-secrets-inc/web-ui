@@ -1,5 +1,5 @@
 import YAML from "yaml";
-import { YamlFormWrapper } from "@/components/workflows";
+import { createYamlValidationRules, YamlFormWrapper } from "@/components/workflows";
 import useCreateGenerator from "@/services/workflows/mutations/useCreateGenerator";
 
 /**
@@ -15,14 +15,31 @@ function createDefaultYamlTemplate(): string {
     },
     spec: {
       length: 32,
-      digits: true,
-      symbols: true,
+      digits: 8,
+      symbols: 8,
       symbolCharacters: "!@#$%^&*()_+-=[]{}|;:,.<>?",
       noUpper: false,
       allowRepeat: false,
     },
   };
   return YAML.stringify(sampleManifest);
+}
+
+export function customValidationForGeneratorManifest(
+  parsedYaml?: unknown
+): string | null {
+  if (!parsedYaml) {
+    return null;
+  }
+
+  const manifest = parsedYaml as Record<string, unknown>;
+
+  const metadata = manifest.metadata as Record<string, unknown> | undefined;
+  if (!metadata?.name) {
+    return "Manifest is missing required field: metadata.name";
+  }
+
+  return null;
 }
 
 export function GeneratorCreateWithYaml() {
@@ -37,6 +54,7 @@ export function GeneratorCreateWithYaml() {
       formDescription="Define your generator using YAML. This should be a valid Kubernetes generator manifest."
       submitButtonText="Create Generator"
       formId="generator-yaml-form"
+      validationRules={createYamlValidationRules("generators", customValidationForGeneratorManifest)}
     />
   );
 }

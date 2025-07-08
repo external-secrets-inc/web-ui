@@ -39,10 +39,6 @@ export function GeneratorDataTable() {
           header: "Name",
           cell: (info) => <strong>{info.getValue()}</strong>,
         }),
-        columnHelper.accessor("namespace", {
-          header: "Namespace",
-          cell: (info) => info.getValue(),
-        }),
         columnHelper.accessor("kind", {
           header: "Type",
           cell: (info) => <Badge variant="secondary">{info.getValue()}</Badge>,

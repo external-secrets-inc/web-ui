@@ -75,7 +75,6 @@ export function convertYamlToWorkflowData(yamlString: string): WorkflowData {
   const workflowData: WorkflowData = {
     name,
     namespace,
-    status: { status: DEFAULT_PHASE, reason: "" },
     manifest: yamlString,
     phase: DEFAULT_PHASE,
     jobs,
