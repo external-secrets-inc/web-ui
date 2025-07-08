@@ -49,6 +49,7 @@ export interface WorkflowData {
   jobs: Record<string, WorkflowJob>;
   startTime?: string;
   completionTime?: string;
+  executionTimeNanos?: number;
   createdFromTemplate?: boolean;
   templateRef?: TemplateRef;
   workflowRunRef?: WorkflowRunRef;
@@ -59,6 +60,7 @@ export interface WorkflowJob {
   phase: string;
   startTime?: Date;
   completionTime?: Date;
+  executionTimeNanos?: number;
   type: string;
   steps: Record<string, WorkflowStep>;
   dependsOn: string[];
@@ -69,6 +71,7 @@ export interface WorkflowStep {
   phase: string;
   startTime?: Date;
   completionTime?: Date;
+  executionTimeNanos?: number;
   outputs: Record<string, unknown>;
 }
 
@@ -107,6 +110,7 @@ export interface WorkflowRunData {
   phase: string;
   startTime?: string;
   completionTime?: string;
+  executionTimeNanos?: number;
   workflowRef?: WorkflowRef;
 }
 

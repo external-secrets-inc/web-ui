@@ -3,7 +3,7 @@ import {
   WorkflowJob,
   WorkflowStep,
 } from "./Workflows.interfaces";
-import { formatDate } from "@/utils/dateUtils";
+import { formatDate, formatDuration } from "@/utils/dateUtils";
 import {
   Accordion,
   AccordionContent,
@@ -64,17 +64,24 @@ const StepDetails: React.FC<{ name: string; step: WorkflowStep }> = ({
 
       <div className="text-xs text-muted-foreground mt-1 space-y-1">
         <div>
-          Start:{" "}
+          Started at{" "}
           {step.startTime
             ? formatDate(step.startTime, { format: "full" })
             : "No data available"}
         </div>
         <div>
-          Completion:{" "}
+          Completed at{" "}
           {step.completionTime
             ? formatDate(step.completionTime, { format: "full" })
             : "No data available"}
         </div>
+        <div>
+            Executed in{" "}
+            {step.executionTimeNanos &&
+            step.executionTimeNanos > 0
+              ? formatDuration(step.executionTimeNanos)
+              : "No data available"}
+          </div>
       </div>
 
       {showOutputs && hasOutputs && (
@@ -110,15 +117,22 @@ const JobAccordionItem: React.FC<{ name: string; job: WorkflowJob }> = ({
       <AccordionContent>
         <div className="text-sm mb-3 grid grid-cols-2 gap-2">
           <div>
-            Start Time:{" "}
+            Started at{" "}
             {job.startTime
               ? formatDate(job.startTime, { format: "full" })
               : "No data available"}
           </div>
           <div>
-            Completion Time:{" "}
+            Completed at:{" "}
             {job.completionTime
               ? formatDate(job.completionTime, { format: "full" })
+              : "No data available"}
+          </div>
+          <div>
+            Executed in{" "}
+            {job.executionTimeNanos &&
+            job.executionTimeNanos > 0
+              ? formatDuration(job.executionTimeNanos)
               : "No data available"}
           </div>
         </div>

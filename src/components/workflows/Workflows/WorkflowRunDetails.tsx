@@ -13,7 +13,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { LayoutPortalHeaderActions } from "@/components/layout";
 import WorkflowJobsGraph from "./WorkflowJobsGraph";
 import useGetWorkflow from "@/services/workflows/queries/useGetWorkflow";
-import { formatDate } from "@/utils/dateUtils";
+import { formatDate, formatDuration } from "@/utils/dateUtils";
 
 type BadgeVariant =
   | "default"
@@ -192,7 +192,7 @@ export function WorkflowRunDetails() {
                   </span>
                 </div>
                 <div className="pl-4">
-                  <span className="font-medium">Start Time:</span>
+                  <span className="font-medium">Started at{" "}</span>
                   <span className="ml-2 font-medium">
                     {workflow.startTime
                       ? formatDate(workflow.startTime, { format: "full" })
@@ -200,10 +200,19 @@ export function WorkflowRunDetails() {
                   </span>
                 </div>
                 <div className="pl-4">
-                  <span className="font-medium">Completion Time:</span>
+                  <span className="font-medium">Completed at{" "}</span>
                   <span className="ml-2 font-medium">
                     {workflow.completionTime
                       ? formatDate(workflow.completionTime, { format: "full" })
+                      : "No data available"}
+                  </span>
+                </div>
+                <div className="pl-4">
+                  <span className="font-medium">Executed in{" "}</span>
+                  <span className="ml-2 font-medium">
+                    {workflow.executionTimeNanos &&
+                    workflow.executionTimeNanos > 0
+                      ? formatDuration(workflow.executionTimeNanos)
                       : "No data available"}
                   </span>
                 </div>
