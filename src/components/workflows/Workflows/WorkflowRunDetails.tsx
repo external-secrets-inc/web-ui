@@ -53,7 +53,6 @@ export function WorkflowRunDetails() {
   } = useGetWorkflowRun(
     { namespace: workflowRunNamespace ?? "", name: workflowRunName ?? "" },
     {
-      staleTime: 30000,
       enabled: !!workflowRunNamespace && !!workflowRunName,
     }
   );
@@ -99,7 +98,6 @@ export function WorkflowRunDetails() {
   } = useGetWorkflow(
     { namespace: workflowNamespace, name: workflowName },
     {
-      staleTime: 30000,
       enabled: !!workflowNamespace && !!workflowName,
     }
   );

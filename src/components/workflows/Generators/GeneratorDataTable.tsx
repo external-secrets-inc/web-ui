@@ -94,9 +94,7 @@ export function GeneratorDataTable() {
     isError: isErrorGenerators,
     isRefetchError: isRefetchErrorGenerators,
     error: generatorsError,
-  } = useGetGenerators({
-    staleTime: 30000,
-  });
+  } = useGetGenerators();
 
   const generators = useMemo(() => {
     return generatorsData || [];
