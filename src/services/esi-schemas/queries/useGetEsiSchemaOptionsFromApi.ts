@@ -56,7 +56,6 @@ const useGetEsiSchemaOptionsFromApi = (
       // The `enabled` option prevents this from running if href is undefined.
       return getEsiSchemaOptionsFromApi(href!, signal);
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
     // Pass through all other options, including 'enabled'
     ...options,
   });

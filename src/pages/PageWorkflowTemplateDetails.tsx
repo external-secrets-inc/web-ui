@@ -45,7 +45,6 @@ export function PageWorkflowTemplateDetails() {
   } = useGetWorkflowTemplate(
     { namespace: templateNamespace ?? "", name: templateName ?? "" },
     {
-      staleTime: 30000,
       enabled: !!templateNamespace && !!templateName,
     }
   );

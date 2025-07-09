@@ -131,9 +131,7 @@ export function SecretStoreDataTable() {
     isError: isErrorSecretStores,
     isRefetchError: isRefetchErrorSecretStores,
     error: secretStoresError,
-  } = useGetSecretStores({
-    staleTime: 30000,
-  });
+  } = useGetSecretStores();
 
   const secretStores = useMemo(() => {
     return secretStoresData || [];

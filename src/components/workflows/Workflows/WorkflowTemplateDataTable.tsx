@@ -124,9 +124,7 @@ export function WorkflowTemplateDataTable() {
     isError: isErrorWorkflowTemplates,
     isRefetchError: isRefetchErrorWorkflowTemplates,
     error: workflowTemplatesError,
-  } = useGetWorkflowTemplates({
-    staleTime: 30000,
-  });
+  } = useGetWorkflowTemplates();
 
   const workflowTemplates = useMemo(() => {
     if (!workflowTemplatesData) return [];

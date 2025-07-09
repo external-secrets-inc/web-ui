@@ -270,7 +270,6 @@ export function WorkflowRunTemplateDataTable() {
       templateName: templateName ?? "",
     },
     {
-      staleTime: 30000,
       enabled: !!templateNamespace && !!templateName,
     }
   );
