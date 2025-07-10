@@ -23,6 +23,8 @@ import {
   PageAuditDestinations,
   PageAuditPolicies,
   PageAuditProviders,
+  PageFindings,
+  PageFindingDetails,
   PageGenerators,
   PageGeneratorsCreate,
   PageReloaders,
@@ -236,6 +238,34 @@ const router = createBrowserRouter([
         ],
       },
       {
+        path: "findings",
+        element: <Outlet />,
+        handle: {
+          breadcrumb: (match: UIMatch) => ({
+            label: "Secrets Findings",
+            path: match.pathname,
+            navigatable: true,
+          }),
+        },
+        children: [
+          {
+            index: true,
+            element: <PageFindings />,
+          },
+          {
+            path: ":findingNamespace/:findingName",
+            element: <PageFindingDetails />,
+            handle: {
+              breadcrumb: (match: UIMatch) => ({
+                label: `Duplicated Secret: ${match.params.findingName}`,
+                path: match.pathname,
+                navigatable: true,
+              }),
+            },
+          },
+        ],
+      },
+      {
         path: "reloaders",
         element: <PageReloaders />,
         handle: {
@@ -339,6 +369,10 @@ const router = createBrowserRouter([
       {
         path: "generators",
         element: <NavigateWithOrg to="workflows/generators" replace />,
+      },
+      {
+        path: "findings",
+        element: <NavigateWithOrg to="/findings" replace />,
       },
     ],
   },

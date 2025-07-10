@@ -17,8 +17,9 @@ export function useLayoutPageHeaderPortalTarget() {
 
 type LayoutPageWidth = "full-width" | "regular" | "compact" | "dense";
 
-interface LayoutPageProps extends React.HTMLAttributes<HTMLDivElement> {
-  title?: string;
+interface LayoutPageProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
+  title?: React.ReactNode;
   description?: React.ReactNode;
   children: React.ReactNode;
   width?: LayoutPageWidth;
