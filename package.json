@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "type-check": "tsc --noEmit",
     "build": "tsc -b && vite build",
     "build:ts-off": "vite build",
     "clean": "vite clean",

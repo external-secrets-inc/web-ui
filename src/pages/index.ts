@@ -1,8 +1,10 @@
 export { PageAgents } from "./PageAgents";
-export { PageAuditInsights } from "./PageAuditInsights";
 export { PageAuditDestinations } from "./PageAuditDestinations";
+export { PageAuditInsights } from "./PageAuditInsights";
 export { PageAuditPolicies } from "./PageAuditPolicies";
 export { PageAuditProviders } from "./PageAuditProviders";
+export { PageFindingDetails } from "./PageFindingDetails";
+export { PageFindings } from "./PageFindings";
 export { PageGenerators } from "./PageGenerators";
 export { PageGeneratorsCreate } from "./PageGeneratorsCreate";
 export { PageReloaders } from "./PageReloaders";
@@ -10,7 +12,8 @@ export { PageSecretStores } from "./PageSecretStores";
 export { PageSecretStoresCreate } from "./PageSecretStoresCreate";
 export { PageSettings } from "./PageSettings";
 export { PageWorkflowRunDetails } from "./PageWorkflowRunDetails";
-export { PageWorkflowTemplatesCreate } from "./PageWorkflowTemplatesCreate";
+export { PageWorkflowRunTemplatesCreate } from "./PageWorkflowRunTemplatesCreate";
 export { PageWorkflowTemplateDetails } from "./PageWorkflowTemplateDetails";
 export { PageWorkflowTemplates } from "./PageWorkflowTemplates";
-export { PageWorkflowRunTemplatesCreate } from "./PageWorkflowRunTemplatesCreate";
+export { PageWorkflowTemplatesCreate } from "./PageWorkflowTemplatesCreate";
+

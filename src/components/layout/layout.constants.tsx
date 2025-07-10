@@ -7,6 +7,7 @@ import {
   LucideFolderKey,
   LucideLocateFixed,
   LucideRotateCcwKey,
+  LucideSearch,
   LucideSettings,
   LucideShieldCheck,
 } from "lucide-react";
@@ -51,6 +52,11 @@ export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
       label: "Workflow Templates",
       url: "/workflows/templates",
       icon: LucideBookKey,
+    },
+    {
+      label: "Findings",
+      url: "/findings",
+      icon: LucideSearch,
     },
     {
       label: "Agents",
