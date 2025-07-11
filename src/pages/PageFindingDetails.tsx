@@ -33,7 +33,7 @@ export function PageFindingDetails() {
 
   const handleAutomate =({namespace, name} : {namespace: string, name: string}) => {
     const params = new URLSearchParams({
-      finding: findingNamespace+"."+findingName
+      finding: findingName?? ""
     });
 
     navigate(
