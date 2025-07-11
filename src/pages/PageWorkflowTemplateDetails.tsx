@@ -14,6 +14,22 @@ import useGetWorkflowTemplate from "@/services/workflows/queries/useGetWorkflowT
 import YAML from "yaml";
 import { Loader } from "@/components/ui/Loader";
 
+// TODO[iurisevero]: Define Workflow manifest type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function parseManifest(manifest?: string): any {
+  const raw = manifest || '{}';
+  try {
+    return JSON.parse(raw);
+  } catch {
+    try {
+      return YAML.parse(raw);
+    } catch (e) {
+      console.error('Failed to parse manifest as JSON or YAML:', e);
+      return {};
+    }
+  }
+}
+
 export function PageWorkflowTemplateDetails() {
   const queryClient = useQueryClient();
   const { templateNamespace, templateName } = useParams();
@@ -73,7 +89,7 @@ export function PageWorkflowTemplateDetails() {
 
   const { yamlString, specName, specVersion } = useMemo(() => {
     try {
-      const parsed = JSON.parse(workflowTemplate.manifest || "{}");
+      const parsed = parseManifest(workflowTemplate.manifest || "{}");
       const yamlStr = YAML.stringify({ spec: parsed.spec || {} });
       return {
         yamlString: yamlStr,

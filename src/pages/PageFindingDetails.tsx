@@ -1,16 +1,19 @@
 import { LayoutPage } from "@/components/layout";
 import { FindingDetails } from "@/components/workflows/Findings";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import useGetFinding from "@/services/findings/queries/useGetFinding";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
 import { Loader } from "@/components/ui/Loader";
-import { Button } from "@/components/ui/button";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import useOrgLink from "@/hooks/useOrgLink";
 
 export function PageFindingDetails() {
   const { findingNamespace, findingName } = useParams();
+  const navigate = useNavigate();
+  const getOrgLink = useOrgLink();
 
   const {
     data: finding,
@@ -28,8 +31,16 @@ export function PageFindingDetails() {
     }
   }
 
-  const handleAutomate = () => {
-    // TODO[cfviotti]: AUTOMATE THIS SHIT 🤖💩
+  const handleAutomate =({namespace, name} : {namespace: string, name: string}) => {
+    const params = new URLSearchParams({
+      finding: findingNamespace+"."+findingName
+    });
+
+    navigate(
+      getOrgLink(
+        `/workflows/templates/${namespace}/${name}/create?${params.toString()}`
+      )
+    );
   };
 
   const title = isLoading ? (
@@ -60,7 +71,36 @@ export function PageFindingDetails() {
       ) : (
         <>
           <LayoutPortalTopbarActions>
-            <Button onClick={handleAutomate}>Automate Rotation</Button>
+            <Select
+
+              value="Automate Rotation"
+              onValueChange={(value) => {
+                  const candidade = value.split("__SEPARATOR__", 2)
+                  if(candidade.length != 2) {
+                    return
+                  }
+
+                  return handleAutomate({namespace: candidade[0], name: candidade[1]})
+                }
+              }
+            >
+              <SelectTrigger className="w-48 max-w-full bg-primary text-primary-foreground shadow hover:bg-primary/90">
+                <SelectValue>
+                  <span>Automate Rotation</span>
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent align="end">
+                {finding.workflowTemplateCandidates.map((candidate) => {
+                    const namespace_name = candidate.namespace + "__SEPARATOR__" + candidate.name
+                    return (
+                      <SelectItem key={namespace_name} value={namespace_name}>
+                        {candidate.name}
+                      </SelectItem>
+                    )
+                  }
+                )}
+              </SelectContent>
+            </Select>
           </LayoutPortalTopbarActions>
           <FindingDetails finding={finding} />
         </>

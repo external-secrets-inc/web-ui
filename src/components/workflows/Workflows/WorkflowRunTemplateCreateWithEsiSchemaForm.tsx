@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { EsiSchemaForm, type KubernetesManifest } from "@/components/EsiSchemaForm";
 import useCreateWorkflowRunTemplate from "@/services/workflows/mutations/useCreateWorkflowRunTemplate";
 import useGetUISchema from "@/services/esi-schemas/queries/useGetUISchema";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
 import { Loader } from "@/components/ui/Loader";
@@ -17,7 +17,14 @@ export function WorkflowRunTemplateCreateWithEsiSchemaForm() {
     templateName: string;
   }>();
 
-  const resourcePath = `workflowruntemplates/${templateNamespace}/${templateName}`;
+  const [searchParams] = useSearchParams();
+  const finding = searchParams.get("finding")
+
+  let resourcePath = `workflowruntemplates/${templateNamespace}/${templateName}`;
+  if(finding) {
+    resourcePath += `?finding=${finding}`
+  }
+
   const { data: schema, isLoading, error } = useGetUISchema(resourcePath);
   const { mutateAsync: createWorkflowRunTemplate, isPending } = useCreateWorkflowRunTemplate();
 
