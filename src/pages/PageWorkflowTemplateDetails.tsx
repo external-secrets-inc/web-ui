@@ -89,7 +89,7 @@ export function PageWorkflowTemplateDetails() {
 
   const { yamlString, specName, specVersion } = useMemo(() => {
     try {
-      const parsed = parseManifest(workflowTemplate.manifest || "{}");
+      const parsed = parseManifest(workflowTemplate.manifest);
       const yamlStr = YAML.stringify({ spec: parsed.spec || {} });
       return {
         yamlString: yamlStr,
