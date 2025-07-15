@@ -685,6 +685,34 @@ export function interpolateValueRefString(template: string, data: Record<string,
 }
 
 /**
+ * Recursively processes a valueRef object and interpolates string values with data.
+ * @param valueRef The valueRef object or string to process.
+ * @param data The data object containing values for interpolation.
+ * @returns The processed value with interpolated strings.
+ */
+function processValueRef(
+  valueRef: unknown,
+  data: Record<string, unknown>
+): unknown {
+  if (typeof valueRef === 'string') {
+    return interpolateValueRefString(valueRef, data);
+  }
+
+  if (typeof valueRef === 'object' && valueRef !== null) {
+    const result: Record<string, unknown> = {};
+
+    for (const key in valueRef) {
+      const value = (valueRef as Record<string, unknown>)[key];
+      result[key] = processValueRef(value, data);
+    }
+
+    return result;
+  }
+
+  return valueRef;
+}
+
+/**
  * Processes API responses to generate select options.
  * @param apiOptions The API option configurations from the schema.
  * @param responses The array of responses from the API calls.
@@ -732,10 +760,10 @@ export function processApiResponses(
         let value: string | Record<string, unknown>;
 
         if (typeof apiOption.valueRef === 'object') {
-          value = {};
-          for (const key in apiOption.valueRef) {
-            value[key] = interpolateValueRefString(apiOption.valueRef[key], item);
-          }
+          const processedValue = processValueRef(apiOption.valueRef, item);
+          value = typeof processedValue === 'string' || typeof processedValue === 'object'
+            ? processedValue as string | Record<string, unknown>
+            : item;
         } else if (typeof apiOption.valueRef === 'string') {
           value = String(item[apiOption.valueRef]);
         } else {
