@@ -7,8 +7,16 @@ import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
 import { Loader } from "@/components/ui/Loader";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import useOrgLink from "@/hooks/useOrgLink";
+
+const CANDIDATE_SEPARATOR = "__SEPARATOR__";
 
 export function PageFindingDetails() {
   const { findingNamespace, findingName } = useParams();
@@ -31,9 +39,15 @@ export function PageFindingDetails() {
     }
   }
 
-  const handleAutomate =({namespace, name} : {namespace: string, name: string}) => {
+  const handleAutomate = ({
+    namespace,
+    name,
+  }: {
+    namespace: string;
+    name: string;
+  }) => {
     const params = new URLSearchParams({
-      finding: findingName?? ""
+      finding: findingName ?? "",
     });
 
     navigate(
@@ -51,7 +65,8 @@ export function PageFindingDetails() {
     "Not Found"
   ) : (
     <>
-      Duplicated Secret: <span className="text-muted-foreground">{finding.name}</span>
+      Duplicated Secret:{" "}
+      <span className="text-muted-foreground">{finding.name}</span>
     </>
   );
 
@@ -72,17 +87,21 @@ export function PageFindingDetails() {
         <>
           <LayoutPortalTopbarActions>
             <Select
-
               value="Automate Rotation"
               onValueChange={(value) => {
-                  const candidade = value.split("__SEPARATOR__", 2)
-                  if(candidade.length != 2) {
-                    return
-                  }
-
-                  return handleAutomate({namespace: candidade[0], name: candidade[1]})
+                const workflowTemplateCandidate = value.split(
+                  CANDIDATE_SEPARATOR,
+                  2
+                );
+                if (workflowTemplateCandidate.length != 2) {
+                  return;
                 }
-              }
+
+                return handleAutomate({
+                  namespace: workflowTemplateCandidate[0],
+                  name: workflowTemplateCandidate[1],
+                });
+              }}
             >
               <SelectTrigger className="w-48 max-w-full bg-primary text-primary-foreground shadow hover:bg-primary/90">
                 <SelectValue>
@@ -91,14 +110,14 @@ export function PageFindingDetails() {
               </SelectTrigger>
               <SelectContent align="end">
                 {finding.workflowTemplateCandidates.map((candidate) => {
-                    const namespace_name = candidate.namespace + "__SEPARATOR__" + candidate.name
-                    return (
-                      <SelectItem key={namespace_name} value={namespace_name}>
-                        {candidate.name}
-                      </SelectItem>
-                    )
-                  }
-                )}
+                  const namespace_name =
+                    candidate.namespace + CANDIDATE_SEPARATOR + candidate.name;
+                  return (
+                    <SelectItem key={namespace_name} value={namespace_name}>
+                      {candidate.name}
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </LayoutPortalTopbarActions>
