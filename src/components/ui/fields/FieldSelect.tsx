@@ -18,13 +18,30 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Loader } from "@/components/ui/Loader";
-import useGetEsiSchemaOptionsFromApi from "@/services/esi-schemas/queries/useGetEsiSchemaOptionsFromApi";
 import { useMemo, useState } from "react";
+import type {
+  UISchemaField,
+  SelectOption,
+  SelectFieldOptions,
+} from "@/components/EsiSchemaForm/EsiSchemaForm.interfaces";
+import { useGetEsiSchemaOptions } from "@/services/esi-schemas/queries/useGetEsiSchemaOptions";
 
-export interface SelectOption {
-  value: string;
-  label: string;
-}
+/**
+ * Prefix used to serialize complex object values into strings for UI components.
+ *
+ * HTML select/option elements and most UI libraries only accept string values.
+ * When we need to store complex objects (like valueRef objects with nested properties),
+ * we serialize them to JSON strings with this prefix to distinguish them from
+ * regular string values.
+ *
+ * Example:
+ * - Regular string value: "simple-text"
+ * - Object value: "__object_value__{\"apiVersion\":\"v1\",\"kind\":\"SecretStore\"}"
+ *
+ * @see handleValueChange - Deserializes prefixed values back to objects
+ * @see stringifiedValue - Serializes current value for UI display
+ */
+const VALUE_PREFIX = "__object_value__";
 
 export interface FieldSelectProps {
   name: string;
@@ -32,7 +49,7 @@ export interface FieldSelectProps {
   description?: string;
   required?: boolean;
   rules?: Record<string, unknown>;
-  options?: string[] | SelectOption[];
+  options?: SelectFieldOptions;
   placeholder?: string;
   defaultValue?: string;
   allowClear?: boolean;
@@ -40,22 +57,10 @@ export interface FieldSelectProps {
   error?: string | null;
   emptyMessage?: string;
   customContent?: React.ReactNode;
-  onValueChange?: (value: string) => void;
+  onValueChange?: (value: string | Record<string, unknown>) => void;
   descriptionInline?: boolean;
   disabled?: boolean;
-  /**
-   * TODO[cfviotti]: These components should not really care if they have
-   * static or async options. This should be something dealt with better at
-   * a top level instead.
-   *
-   * API configuration for fetching options.
-   * When provided, options will be fetched from the API instead of using the static `options` prop.
-   * The API call is triggered lazily when the user opens the select.
-   */
-  apiOptions?: {
-    href: string;
-    labelRef: string;
-  };
+  field: UISchemaField;
 }
 
 export function FieldSelect({
@@ -75,9 +80,9 @@ export function FieldSelect({
   onValueChange,
   descriptionInline,
   disabled,
-  apiOptions,
+  field,
 }: FieldSelectProps) {
-  const { field } = useController({
+  const { field: controllerField } = useController({
     name,
     rules,
     defaultValue: defaultValue ?? "",
@@ -86,36 +91,18 @@ export function FieldSelect({
   const [isOpen, setIsOpen] = useState(false);
 
   const {
-    data: apiData,
+    options: apiOptions,
     isLoading: apiLoading,
     error: apiError,
-  } = useGetEsiSchemaOptionsFromApi(apiOptions?.href, {
-    enabled: !!apiOptions?.href && isOpen,
+  } = useGetEsiSchemaOptions(field, {
+    enabled: isOpen,
   });
 
   const normalizedOptions: SelectOption[] = useMemo(() => {
-    if (apiOptions && apiData) {
-      return apiData
-        .map((item: Record<string, unknown>) => {
-          const labelValue = item[apiOptions.labelRef];
-          const value =
-            typeof labelValue === "string" ? labelValue : String(labelValue);
+    const allOptions = apiOptions.length > 0 ? apiOptions : options;
 
-          if (!value || value.trim() === "") {
-            // Radix Select doesn't support empty values, so we need to filter them out.
-            return null;
-          }
-
-          return {
-            value,
-            label: value,
-          };
-        })
-        .filter((option): option is SelectOption => option !== null);
-    }
-
-    return Array.isArray(options)
-      ? options
+    return Array.isArray(allOptions)
+      ? allOptions
           .map((option) => {
             if (typeof option === "string") {
               return { value: option, label: option };
@@ -127,23 +114,51 @@ export function FieldSelect({
               option &&
               option.value !== null &&
               option.value !== undefined &&
-              typeof option.value === "string" &&
-              option.value.trim() !== ""
+              (typeof option.value === "string"
+                ? option.value.trim() !== ""
+                : true)
           )
       : [];
-  }, [options, apiOptions, apiData]);
+  }, [options, apiOptions]);
 
   const handleClear = () => {
-    field.onChange("");
+    controllerField.onChange("");
     onValueChange?.("");
   };
 
+  /**
+   * Handles value changes from the Select component.
+   *
+   * Since UI components only work with string values, complex objects are serialized
+   * with the VALUE_PREFIX. This function deserializes them back to their original form.
+   *
+   * @param value - The string value from the Select component
+   * @example
+   * // Regular string value
+   * handleValueChange("simple-text") // → "simple-text"
+   *
+   * // Serialized object value
+   * handleValueChange("__object_value__{\"apiVersion\":\"v1\"}") // → {apiVersion: "v1"}
+   */
   const handleValueChange = (value: string) => {
-    field.onChange(value);
-    onValueChange?.(value);
+    let finalValue: string | Record<string, unknown> = value;
+    if (value.startsWith(VALUE_PREFIX)) {
+      try {
+        finalValue = JSON.parse(value.substring(VALUE_PREFIX.length));
+      } catch {
+        // ignore if parsing fails, should not happen
+      }
+    }
+    controllerField.onChange(finalValue);
+    onValueChange?.(finalValue);
   };
 
-  const showClearButton = allowClear && field.value && field.value !== "";
+  const showClearButton =
+    allowClear &&
+    controllerField.value &&
+    (typeof controllerField.value === "string"
+      ? controllerField.value !== ""
+      : true);
 
   const isLoading = loading || apiLoading;
   const combinedError =
@@ -178,12 +193,36 @@ export function FieldSelect({
       );
     }
 
-    return normalizedOptions.map((option) => (
-      <SelectItem key={option.value} value={option.value}>
-        {option.label}
-      </SelectItem>
-    ));
+    return normalizedOptions.map((option) => {
+      /**
+       * Serialize option values for UI compatibility.
+       *
+       * String values are used as-is, while object values are serialized
+       * with the VALUE_PREFIX to distinguish them from regular strings.
+       */
+      const value =
+        typeof option.value === "string"
+          ? option.value
+          : `${VALUE_PREFIX}${JSON.stringify(option.value)}`;
+
+      return (
+        <SelectItem key={value} value={value}>
+          {option.label}
+        </SelectItem>
+      );
+    });
   };
+
+  /**
+   * Serialize the current field value for UI display.
+   *
+   * The Select component expects a string value, so we serialize complex objects
+   * with the VALUE_PREFIX to maintain the object structure while being UI-compatible.
+   */
+  const stringifiedValue =
+    typeof controllerField.value === "string"
+      ? controllerField.value
+      : `${VALUE_PREFIX}${JSON.stringify(controllerField.value)}`;
 
   return (
     <FieldBase
@@ -201,8 +240,8 @@ export function FieldSelect({
         />
         <div className="relative">
           <Select
-            name={field.name}
-            value={field.value || ""}
+            name={controllerField.name}
+            value={stringifiedValue || ""}
             onValueChange={handleValueChange}
             onOpenChange={(open) => {
               if (open && !isOpen) {
@@ -214,7 +253,7 @@ export function FieldSelect({
             <FormControl>
               <SelectTrigger
                 className={cn(showClearButton && "[&>svg]:opacity-0")}
-                ref={field.ref}
+                ref={controllerField.ref}
               >
                 <SelectValue placeholder={placeholder} />
               </SelectTrigger>

@@ -7,7 +7,15 @@
  * Also, the validation rules are a bit messy and could be improved.
  */
 
-import type { UISchemaField, KubernetesResourceType, KubernetesManifest, OneOfApiOption, AnyOfApiOption, SelectFieldOptions } from './EsiSchemaForm.interfaces';
+import type {
+  UISchemaField,
+  KubernetesResourceType,
+  KubernetesManifest,
+  OneOfApiOption,
+  AnyOfApiOption,
+  SelectFieldOptions,
+  SelectOption,
+} from './EsiSchemaForm.interfaces';
 
 
 // Constants & Configuration
@@ -122,26 +130,26 @@ export const OptionUtils = {
    * Extracts API option configuration from a field's oneOf array.
    * Returns the first API option found, or null if none exist.
    */
-  getOneOfApiOption(field: UISchemaField): OneOfApiOption | null {
+  getOneOfApiOptions(field: UISchemaField): OneOfApiOption[] {
     if (!field.oneOf || !Array.isArray(field.oneOf) || field.oneOf.length === 0) {
-      return null;
+      return [];
     }
 
     const apiOptions = field.oneOf.filter(this.isApiOption);
-    return apiOptions.length > 0 ? apiOptions[0] as OneOfApiOption : null;
+    return apiOptions.length > 0 ? (apiOptions as OneOfApiOption[]) : [];
   },
 
   /**
    * Extracts API option configuration from a field's anyOf array.
    * Returns the first API option found, or null if none exist.
    */
-  getAnyOfApiOption(field: UISchemaField): AnyOfApiOption | null {
+  getAnyOfApiOptions(field: UISchemaField): AnyOfApiOption[] {
     if (!field.anyOf || !Array.isArray(field.anyOf) || field.anyOf.length === 0) {
-      return null;
+      return [];
     }
 
     const apiOptions = field.anyOf.filter(this.isApiOption);
-    return apiOptions.length > 0 ? apiOptions[0] as AnyOfApiOption : null;
+    return apiOptions.length > 0 ? (apiOptions as AnyOfApiOption[]) : [];
   },
 };
 
@@ -150,7 +158,9 @@ export const OptionUtils = {
  * Handles both simple string arrays and rich SelectOption objects.
  */
 function getOptionValues(options: SelectFieldOptions): string[] {
-  return options.map(opt => typeof opt === "string" ? opt : opt.value);
+  return options
+    .map(opt => (typeof opt === 'string' ? opt : opt.value))
+    .filter((v): v is string => typeof v === 'string');
 }
 
 /**
@@ -306,7 +316,7 @@ export function createFieldValidation(field: UISchemaField) {
       if (field.required) {
         rules.validate = (value: string[] | string) => {
           // Check if this field uses API options
-          const isApiOption = OptionUtils.getAnyOfApiOption(field) !== null;
+          const isApiOption = OptionUtils.getAnyOfApiOptions(field).length > 0;
 
           // Handle both array (static options) and comma-separated string (API options) formats
           // TODO[cfviotti]: In the future, API options for anyOf should store proper arrays instead of comma-separated strings
@@ -648,6 +658,97 @@ export function isFieldVisible(
   }
   const { field, equals } = visibleWhen;
   return formValues[field] === equals;
+}
+
+/**
+ * Interpolates a string with values from a data object.
+ * Replaces placeholders like `${key}` with the corresponding value from the object.
+ * @param template The string template to interpolate.
+ * @param data The object containing values for interpolation.
+ * @returns The interpolated string.
+ *
+ * TODO[cfviotti]: Future enhancements to consider:
+ * - Nested property access: ${user.profile.name}, ${items[0].name}
+ * - Default values: ${name|default}, ${name|"fallback value"}
+ * - Basic transformations: ${name|upper}, ${name|lower}, ${name|trim}
+ * - Conditional logic: ${name ? name : 'Unknown'}
+ * - Escaping support: \${literal} for literal ${} text
+ * - Input sanitization: prevent XSS, HTML escaping
+ * - Better error handling: strict vs lenient modes, validation
+ * - Debugging support: highlight missing properties, detailed logging
+ */
+export function interpolateValueRefString(template: string, data: Record<string, unknown>): string {
+  return template.replace(/\$\{([a-zA-Z0-9_-]+)\}/g, (_, key: string): string => {
+    const value = data[key];
+    return value !== undefined ? String(value) : '';
+  });
+}
+
+/**
+ * Processes API responses to generate select options.
+ * @param apiOptions The API option configurations from the schema.
+ * @param responses The array of responses from the API calls.
+ * @returns An array of SelectOption objects.
+ */
+export function processApiResponses(
+  apiOptions: (OneOfApiOption | AnyOfApiOption)[],
+  responses: { data?: unknown }[]
+): SelectOption[] {
+  const selectOptions: SelectOption[] = [];
+
+  responses.forEach((response, index) => {
+    const apiOption = apiOptions[index];
+
+    const responseData = response?.data;
+    let data: Record<string, unknown>[] | undefined;
+
+    // Type guard to ensure we're working with an object
+    if (typeof responseData !== 'object' || responseData === null) {
+      // If the response is not an object (e.g., HTML error page), skip it.
+      return;
+    }
+
+    if (Array.isArray(responseData)) {
+      data = responseData as Record<string, unknown>[];
+    } else if (
+      'items' in responseData &&
+      Array.isArray((responseData as { items?: unknown[] }).items)
+    ) {
+      data = (responseData as { items: Record<string, unknown>[] }).items;
+    } else {
+      // Handle responses with nested data under specific keys (e.g., "generators", "secretstores")
+      const responseObj = responseData as Record<string, unknown>;
+      for (const key in responseObj) {
+        if (Array.isArray(responseObj[key])) {
+          data = responseObj[key] as Record<string, unknown>[];
+          break;
+        }
+      }
+    }
+
+    if (data) {
+      data.forEach((item: Record<string, unknown>) => {
+        const label = String(item[apiOption.labelRef]);
+        let value: string | Record<string, unknown>;
+
+        if (typeof apiOption.valueRef === 'object') {
+          value = {};
+          for (const key in apiOption.valueRef) {
+            value[key] = interpolateValueRefString(apiOption.valueRef[key], item);
+          }
+        } else if (typeof apiOption.valueRef === 'string') {
+          value = String(item[apiOption.valueRef]);
+        } else {
+          // Default behavior if valueRef is not provided, returns the whole object
+          value = item;
+        }
+
+        selectOptions.push({ label, value });
+      });
+    }
+  });
+
+  return selectOptions;
 }
 
 

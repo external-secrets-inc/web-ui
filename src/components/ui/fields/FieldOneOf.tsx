@@ -1,12 +1,13 @@
 import type {
   UISchemaField,
   OneOfStaticOption,
+  SelectOption,
 } from "@/components/EsiSchemaForm/EsiSchemaForm.interfaces";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { FieldRenderer } from "./FieldRenderer";
-import { FieldSelect, SelectOption } from "./FieldSelect";
+import { FieldSelect } from "./FieldSelect";
 
 export interface FieldOneOfProps {
   name: string;
@@ -106,8 +107,9 @@ export function FieldOneOf({
     }
   }, [selectedFieldId, name, oneOfFields, setValue, getPropertyName]);
 
-  const handleSelectionChange = useCallback((value: string) => {
-    if (!value || typeof value !== "string") {
+  const handleSelectionChange = useCallback((value: string | Record<string, unknown>) => {
+    const stringValue = typeof value === 'string' ? value : '';
+    if (!stringValue) {
       if (selectedField && selectedField.id) {
         const propertyName = getPropertyName(selectedField.id);
         if (propertyName) {
@@ -119,7 +121,7 @@ export function FieldOneOf({
       setSelectedFieldId("");
       return;
     }
-    setSelectedFieldId(value);
+    setSelectedFieldId(stringValue);
   }, [selectedField, getPropertyName, setValue, name]);
 
   const selectionFieldName = `${name}.__ui_state`;
@@ -166,6 +168,7 @@ export function FieldOneOf({
         descriptionInline={descriptionInline}
         rules={rules}
         disabled={disabled}
+        field={field}
       />
 
       {selectedField && selectedField.id && (

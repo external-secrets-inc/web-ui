@@ -48,24 +48,28 @@ export function FieldRenderer({ field }: FieldRendererProps) {
       );
 
     case "select": {
-      const apiOption = OptionUtils.getOneOfApiOption(field);
-      if (apiOption) {
+      const apiOptions = OptionUtils.getOneOfApiOptions(field);
+      // if oneOf has href, it's a dynamic select handled by FieldSelect
+      if (apiOptions.length > 0) {
         return (
           <FieldSelect
             {...baseProps}
+            field={field}
             defaultValue={field.default as string}
-            apiOptions={apiOption}
           />
         );
       }
 
+      // if oneOf has no href, it's for sub-schema selection handled by FieldOneOf
       if (field.oneOf && field.oneOf.length > 0) {
         return <FieldOneOf {...baseProps} field={field} />;
       }
 
+      // Otherwise, it's a standard select with static options
       return (
         <FieldSelect
           {...baseProps}
+          field={field}
           options={field.options ?? []}
           defaultValue={field.default as string}
         />
@@ -132,23 +136,10 @@ export function FieldRenderer({ field }: FieldRendererProps) {
       return <FieldSecretSelect {...baseProps} />;
 
     case "multi-select": {
-      const apiOption = OptionUtils.getAnyOfApiOption(field);
-      if (apiOption) {
-        return (
-          <FieldMultiSelect
-            {...baseProps}
-            apiOptions={apiOption}
-            defaultValue={field.default as string[]}
-          />
-        );
-      }
-
       return (
         <FieldMultiSelect
           {...baseProps}
-          options={(field.options ?? []).map((opt) =>
-            typeof opt === "string" ? { label: opt, value: opt } : opt
-          )}
+          field={field}
           defaultValue={field.default as string[]}
         />
       );

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import YAML from "yaml";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopba
 import { Loader } from "@/components/ui/Loader";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
+import type { UISchemaField } from "@/components/EsiSchemaForm/EsiSchemaForm.interfaces";
 
 export function GeneratorCreateWithEsiSchemaForm() {
   const navigate = useNavigate();
@@ -50,10 +51,29 @@ export function GeneratorCreateWithEsiSchemaForm() {
     navigate("..");
   };
 
-  const handleGeneratorTypeChange = (value: string) => {
-    setSelectedGeneratorType(value);
-    form.setValue("generatorType", value);
+  const handleGeneratorTypeChange = (value: string | Record<string, unknown>) => {
+    const stringValue = typeof value === 'string' ? value : '';
+    setSelectedGeneratorType(stringValue);
+    form.setValue("generatorType", stringValue);
   };
+
+  /**
+   * Mock UISchemaField for the generator type selection.
+   *
+   * This component uses a hybrid approach: a standalone FieldSelect for generator
+   * type selection, followed by a full EsiSchemaForm for the specific generator
+   * configuration. The mock field enables the FieldSelect to use the same
+   * interface and logic as schema-driven fields while remaining independent.
+   *
+   * @see FieldSelect - Requires a field prop of type UISchemaField
+   * @see EsiSchemaForm - Used for the actual generator configuration after type selection
+   */
+  const mockField: UISchemaField = useMemo(() => ({
+    id: "generatorType",
+    label: "Generator Type",
+    type: "select",
+    required: true,
+  }), []);
 
   if (isLoadingTypes) {
     return (
@@ -111,6 +131,7 @@ export function GeneratorCreateWithEsiSchemaForm() {
       <div className="space-y-6">
         <FormProvider {...form}>
           <FieldSelect
+            field={mockField}
             name="generatorType"
             label="Generator Type"
             description="Choose the type of generator you want to create. This will determine the available configuration options."
