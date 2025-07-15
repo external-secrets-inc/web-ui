@@ -7,7 +7,15 @@
  * Also, the validation rules are a bit messy and could be improved.
  */
 
-import type { UISchemaField, KubernetesResourceType, KubernetesManifest, OneOfApiOption, AnyOfApiOption, SelectFieldOptions } from './EsiSchemaForm.interfaces';
+import type {
+  UISchemaField,
+  KubernetesResourceType,
+  KubernetesManifest,
+  OneOfApiOption,
+  AnyOfApiOption,
+  SelectFieldOptions,
+  SelectOption,
+} from './EsiSchemaForm.interfaces';
 
 
 // Constants & Configuration
@@ -122,26 +130,26 @@ export const OptionUtils = {
    * Extracts API option configuration from a field's oneOf array.
    * Returns the first API option found, or null if none exist.
    */
-  getOneOfApiOption(field: UISchemaField): OneOfApiOption | null {
+  getOneOfApiOptions(field: UISchemaField): OneOfApiOption[] {
     if (!field.oneOf || !Array.isArray(field.oneOf) || field.oneOf.length === 0) {
-      return null;
+      return [];
     }
 
     const apiOptions = field.oneOf.filter(this.isApiOption);
-    return apiOptions.length > 0 ? apiOptions[0] as OneOfApiOption : null;
+    return apiOptions.length > 0 ? (apiOptions as OneOfApiOption[]) : [];
   },
 
   /**
    * Extracts API option configuration from a field's anyOf array.
    * Returns the first API option found, or null if none exist.
    */
-  getAnyOfApiOption(field: UISchemaField): AnyOfApiOption | null {
+  getAnyOfApiOptions(field: UISchemaField): AnyOfApiOption[] {
     if (!field.anyOf || !Array.isArray(field.anyOf) || field.anyOf.length === 0) {
-      return null;
+      return [];
     }
 
     const apiOptions = field.anyOf.filter(this.isApiOption);
-    return apiOptions.length > 0 ? apiOptions[0] as AnyOfApiOption : null;
+    return apiOptions.length > 0 ? (apiOptions as AnyOfApiOption[]) : [];
   },
 };
 
@@ -150,7 +158,9 @@ export const OptionUtils = {
  * Handles both simple string arrays and rich SelectOption objects.
  */
 function getOptionValues(options: SelectFieldOptions): string[] {
-  return options.map(opt => typeof opt === "string" ? opt : opt.value);
+  return options
+    .map(opt => (typeof opt === 'string' ? opt : opt.value))
+    .filter((v): v is string => typeof v === 'string');
 }
 
 /**
@@ -306,7 +316,7 @@ export function createFieldValidation(field: UISchemaField) {
       if (field.required) {
         rules.validate = (value: string[] | string) => {
           // Check if this field uses API options
-          const isApiOption = OptionUtils.getAnyOfApiOption(field) !== null;
+          const isApiOption = OptionUtils.getAnyOfApiOptions(field).length > 0;
 
           // Handle both array (static options) and comma-separated string (API options) formats
           // TODO[cfviotti]: In the future, API options for anyOf should store proper arrays instead of comma-separated strings
@@ -533,6 +543,22 @@ export function transformData(
       }, {} as Record<string, string>);
     }
 
+    // TODO[cfviotti]: This is a hack to handle oneOf and anyOf fields with API options (href) that contain valueRef objects (value selection, not schema selection). WE REALLY GOTTA OVERHAUL THE SELECT/MULTI-SELECT SCHEMA GENERATION FOR SOMETHING MORE ROBUST TO AVOID THIS FUCKING MANY EDGE CASES!!
+    // Flatten nested structures from API options with valueRef
+    if (fieldSchema.fields && value && typeof value === 'object' && !Array.isArray(value)) {
+      const objValue = value as Record<string, unknown>;
+
+      // Check if any nested field has API options with valueRef
+      for (const key in objValue) {
+        const nestedField = fieldSchema.fields.find(f => f.id === key || f.id.endsWith(`.${key}`));
+        const hasValueRef = nestedField?.oneOf?.some(o => 'href' in o && 'valueRef' in o) ||
+          nestedField?.anyOf?.some(o => 'href' in o && 'valueRef' in o);
+        if (hasValueRef) {
+          return objValue[key]; // Extract value directly
+        }
+      }
+    }
+
     // Recursively transform any object, regardless of schema type (for robustness)
     if (value && typeof value === 'object' && !Array.isArray(value)) {
       const result: Record<string, unknown> = {};
@@ -648,6 +674,147 @@ export function isFieldVisible(
   }
   const { field, equals } = visibleWhen;
   return formValues[field] === equals;
+}
+
+/**
+ * Safely accesses nested properties in an object using dot notation.
+ * @param obj The object to access properties from.
+ * @param path The dot-separated path to the property (e.g., "user.profile.name").
+ * @returns The value at the path, or undefined if the path doesn't exist.
+ *
+ * @example
+ * const data = {
+ *   name: "fake2",
+ *   remoteRef: { key: "/baz/bing", property: "" }
+ * };
+ * getNestedValue(data, "remoteRef.key") // Returns "/baz/bing"
+ * getNestedValue(data, "remoteRef.property") // Returns ""
+ * getNestedValue(data, "name") // Returns "fake2"
+ */
+function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
+  return path.split('.').reduce((current, key) => {
+    return current && typeof current === 'object' ? (current as Record<string, unknown>)[key] : undefined;
+  }, obj as unknown);
+}
+
+/**
+ * Interpolates a string with values from a data object.
+ * Replaces placeholders like `${key}` or `${user.profile.name}` with the corresponding value from the object.
+ * Supports dot notation for nested property access.
+ * @param template The string template to interpolate.
+ * @param data The object containing values for interpolation.
+ * @returns The interpolated string.
+ *
+ * TODO[cfviotti]: Future enhancements to consider:
+ * - Array access: ${items[0].name}
+ * - Default values: ${name|default}, ${name|"fallback value"}
+ * - Basic transformations: ${name|upper}, ${name|lower}, ${name|trim}
+ * - Conditional logic: ${name ? name : 'Unknown'}
+ * - Escaping support: \${literal} for literal ${} text
+ * - Input sanitization: prevent XSS, HTML escaping
+ * - Better error handling: strict vs lenient modes, validation
+ * - Debugging support: highlight missing properties, detailed logging
+ */
+export function interpolateValueRefString(template: string, data: Record<string, unknown>): string {
+  return template.replace(/\$\{([a-zA-Z0-9_.-]+)\}/g, (_, path: string): string => {
+    const value = getNestedValue(data, path);
+    return value !== undefined ? String(value) : '';
+  });
+}
+
+/**
+ * Recursively processes a valueRef object and interpolates string values with data.
+ * @param valueRef The valueRef object or string to process.
+ * @param data The data object containing values for interpolation.
+ * @returns The processed value with interpolated strings.
+ */
+function processValueRef(
+  valueRef: unknown,
+  data: Record<string, unknown>
+): unknown {
+  if (typeof valueRef === 'string') {
+    return interpolateValueRefString(valueRef, data);
+  }
+
+  if (typeof valueRef === 'object' && valueRef !== null) {
+    const result: Record<string, unknown> = {};
+
+    for (const key in valueRef) {
+      const value = (valueRef as Record<string, unknown>)[key];
+      result[key] = processValueRef(value, data);
+    }
+
+    return result;
+  }
+
+  return valueRef;
+}
+
+/**
+ * Processes API responses to generate select options.
+ * @param apiOptions The API option configurations from the schema.
+ * @param responses The array of responses from the API calls.
+ * @returns An array of SelectOption objects.
+ */
+export function processApiResponses(
+  apiOptions: (OneOfApiOption | AnyOfApiOption)[],
+  responses: { data?: unknown }[]
+): SelectOption[] {
+  const selectOptions: SelectOption[] = [];
+
+  responses.forEach((response, index) => {
+    const apiOption = apiOptions[index];
+
+    const responseData = response?.data;
+    let data: Record<string, unknown>[] | undefined;
+
+    // Type guard to ensure we're working with an object
+    if (typeof responseData !== 'object' || responseData === null) {
+      // If the response is not an object (e.g., HTML error page), skip it.
+      return;
+    }
+
+    if (Array.isArray(responseData)) {
+      data = responseData as Record<string, unknown>[];
+    } else if (
+      'items' in responseData &&
+      Array.isArray((responseData as { items?: unknown[] }).items)
+    ) {
+      data = (responseData as { items: Record<string, unknown>[] }).items;
+    } else {
+      // Handle responses with nested data under specific keys (e.g., "generators", "secretstores")
+      const responseObj = responseData as Record<string, unknown>;
+      for (const key in responseObj) {
+        if (Array.isArray(responseObj[key])) {
+          data = responseObj[key] as Record<string, unknown>[];
+          break;
+        }
+      }
+    }
+
+    if (data) {
+      data.forEach((item: Record<string, unknown>) => {
+        const label = String(item[apiOption.labelRef]);
+        let value: string | Record<string, unknown>;
+
+        if (typeof apiOption.valueRef === 'object') {
+          const processedValue = processValueRef(apiOption.valueRef, item);
+          value = typeof processedValue === 'string' || typeof processedValue === 'object'
+            ? processedValue as string | Record<string, unknown>
+            : item;
+        } else if (typeof apiOption.valueRef === 'string') {
+          value = String(item[apiOption.valueRef]);
+        } else {
+          // Default behavior if valueRef is not provided, returns the whole object
+          value = item;
+        }
+
+        selectOptions.push({ label, value });
+      });
+    }
+  });
+
+  return selectOptions;
 }
 
 

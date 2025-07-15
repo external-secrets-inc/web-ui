@@ -9,7 +9,7 @@ export type SimpleSelectOptions = string[];
  * Used when the internal value differs from what users should see.
  */
 export interface SelectOption {
-  value: string;
+  value: string | Record<string, unknown>;
   label: string;
 }
 
@@ -86,6 +86,9 @@ export interface OneOfStaticOption {
 export interface OneOfApiOption {
   href: string;
   labelRef: string;
+  valueRef?:
+  | string
+  | { [key: string]: string };
 }
 
 /**
@@ -115,6 +118,9 @@ export interface AnyOfStaticOption {
 export interface AnyOfApiOption {
   href: string;
   labelRef: string;
+  valueRef?:
+  | string
+  | { [key: string]: string };
 }
 
 export interface UISchemaGroup {

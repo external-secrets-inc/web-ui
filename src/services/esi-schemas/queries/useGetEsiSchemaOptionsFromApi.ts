@@ -1,64 +1,44 @@
-import { UseQueryOptions, useQuery } from "@tanstack/react-query";
-import { getAuthHeaders } from "@/services/auth/authHelpers";
-import axiosInstance from "@/services/axiosConfig";
-import { ApiHttpError } from "@/types";
-import { AxiosError } from "axios";
+import { useQuery } from '@tanstack/react-query';
+import { OptionUtils, processApiResponses } from '@/components/EsiSchemaForm/EsiSchemaForm.utils';
+import type { UISchemaField, SelectOption, OneOfApiOption, AnyOfApiOption } from '@/components/EsiSchemaForm/EsiSchemaForm.interfaces';
+import { getAuthHeaders } from '@/services/auth/authHelpers';
+import axiosInstance from '@/services/axiosConfig';
 
-/**
- * Fetches options from an API endpoint for oneOf fields with href configuration.
- *
- * @param href - The API endpoint URL to fetch options from
- * @param signal - AbortSignal for request cancellation
- * @returns Promise resolving to an array of option objects
- */
-const getEsiSchemaOptionsFromApi = async (
-  href: string,
-  signal: AbortSignal
-): Promise<Record<string, unknown>[]> => {
+async function getEsiSchemaOptionsFromApi(apiOptions: (OneOfApiOption | AnyOfApiOption)[]) {
   const headers = await getAuthHeaders();
-  const response = await axiosInstance.get(href, {
+  const requests = apiOptions.map(option => axiosInstance.get(option.href, {
     headers,
-    signal,
-    backend: "ESO_SERVER",
+    backend: 'ESO_SERVER',
+  }));
+  const responses = await Promise.all(requests);
+  return responses;
+}
+
+export function useGetEsiSchemaOptionsFromApi(
+  field: UISchemaField,
+  { enabled: isEnabled = true } = {}
+) {
+  const apiOptions =
+    // one-off (select)
+    field.type === 'one-of' || field.type === 'select'
+      ? OptionUtils.getOneOfApiOptions(field)
+      // any-of (multi-select)
+      : OptionUtils.getAnyOfApiOptions(field);
+
+  const queryKey = ['getEsiSchemaOptionsFromApi', ...apiOptions.map(o => o.href)];
+
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: queryKey,
+    queryFn: () => getEsiSchemaOptionsFromApi(apiOptions),
+    enabled: apiOptions.length > 0 && isEnabled,
   });
 
-  let data = response.data;
+  const options: SelectOption[] = data ? processApiResponses(apiOptions, data) : [];
 
-  // Handle wrapped responses
-  if (data && typeof data === "object" && !Array.isArray(data)) {
-    const keys = Object.keys(data);
-    if (keys.length === 1 && Array.isArray(data[keys[0]])) {
-      data = data[keys[0]];
-    }
-  }
-
-  if (!Array.isArray(data)) {
-    throw new Error(
-      "API response must be an array or an object containing a single array property for schema options"
-    );
-  }
-
-  return data;
-};
-
-
-const useGetEsiSchemaOptionsFromApi = (
-  href: string | undefined,
-  // Correctly typed to allow 'enabled' and other useQuery options
-  options?: Omit<
-    UseQueryOptions<Record<string, unknown>[], AxiosError<ApiHttpError>>,
-    "queryKey" | "queryFn"
-  >
-) => {
-  return useQuery({
-    queryKey: ["esi-schemas", "useGetEsiSchemaOptionsFromApi", href],
-    queryFn: ({ signal }) => {
-      // The `enabled` option prevents this from running if href is undefined.
-      return getEsiSchemaOptionsFromApi(href!, signal);
-    },
-    // Pass through all other options, including 'enabled'
-    ...options,
-  });
-};
-
-export default useGetEsiSchemaOptionsFromApi;
+  return {
+    options,
+    isLoading,
+    isError,
+    error,
+  };
+}

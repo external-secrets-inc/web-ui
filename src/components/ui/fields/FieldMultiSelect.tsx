@@ -1,14 +1,30 @@
 import { FieldBase } from "./FieldBase";
 import { MultiSelect } from "@/components/ui/MultiSelect";
 import { useController } from "react-hook-form";
-import useGetEsiSchemaOptionsFromApi from "@/services/esi-schemas/queries/useGetEsiSchemaOptionsFromApi";
-import type { AnyOfApiOption } from "@/components/EsiSchemaForm/EsiSchemaForm.interfaces";
 import { useMemo, useState } from "react";
+import type {
+  UISchemaField,
+  SelectOption,
+  SelectFieldOptions,
+} from "@/components/EsiSchemaForm/EsiSchemaForm.interfaces";
+import { useGetEsiSchemaOptionsFromApi } from "@/services/esi-schemas/queries/useGetEsiSchemaOptionsFromApi";
 
-export interface MultiSelectOption {
-  value: string;
-  label: string;
-}
+/**
+ * Prefix used to serialize complex object values into strings for UI components.
+ *
+ * HTML select/option elements and most UI libraries only accept string values.
+ * When we need to store complex objects (like valueRef objects with nested properties),
+ * we serialize them to JSON strings with this prefix to distinguish them from
+ * regular string values.
+ *
+ * Example:
+ * - Regular string value: "simple-text"
+ * - Object value: "__object_value__{\"apiVersion\":\"v1\",\"kind\":\"SecretStore\"}"
+ *
+ * @see handleValueChange - Deserializes prefixed values back to objects
+ * @see currentValues - Serializes current values for UI display
+ */
+const VALUE_PREFIX = "__object_value__";
 
 export interface FieldMultiSelectProps {
   name: string;
@@ -16,20 +32,13 @@ export interface FieldMultiSelectProps {
   description?: string;
   required?: boolean;
   rules?: Record<string, unknown>;
-  options?: MultiSelectOption[];
+  options?: SelectFieldOptions;
   placeholder?: string;
-  defaultValue?: string[];
-  onValueChange?: (value: string[]) => void;
+  defaultValue?: (string | Record<string, unknown>)[];
+  onValueChange?: (value: (string | Record<string, unknown>)[]) => void;
   descriptionInline?: boolean;
   disabled?: boolean;
-  // TODO: Add loading, error, emptyMessage props when MultiSelect component supports them
-
-  /**
-   * API configuration for fetching options.
-   * When provided, options will be fetched from the API instead of using the static `options` prop.
-   * The API call is triggered lazily when the user interacts with the component.
-   */
-  apiOptions?: AnyOfApiOption;
+  field: UISchemaField;
 }
 
 export function FieldMultiSelect({
@@ -44,9 +53,9 @@ export function FieldMultiSelect({
   onValueChange,
   descriptionInline,
   disabled,
-  apiOptions,
+  field,
 }: FieldMultiSelectProps) {
-  const { field } = useController({
+  const { field: controllerField } = useController({
     name,
     rules,
     defaultValue: defaultValue ?? [],
@@ -54,33 +63,17 @@ export function FieldMultiSelect({
 
   const [isOpen, setIsOpen] = useState(false);
 
-  const { data: apiData, isLoading: apiLoading } =
-    useGetEsiSchemaOptionsFromApi(apiOptions?.href, {
-      enabled: !!apiOptions?.href && isOpen,
-    });
+  const {
+    options: apiOptions,
+    isLoading: apiLoading,
+  } = useGetEsiSchemaOptionsFromApi(field, {
+    enabled: isOpen,
+  });
 
-  const normalizedOptions: MultiSelectOption[] = useMemo(() => {
-    if (apiOptions && apiData) {
-      return apiData
-        .map((item: Record<string, unknown>) => {
-          const labelValue = item[apiOptions.labelRef];
-          const value =
-            typeof labelValue === "string" ? labelValue : String(labelValue);
-
-          if (!value || value.trim() === "") {
-            return null;
-          }
-
-          return {
-            value,
-            label: value,
-          };
-        })
-        .filter((option): option is MultiSelectOption => option !== null);
-    }
-
-    return Array.isArray(options)
-      ? options
+  const normalizedOptions: SelectOption[] = useMemo(() => {
+    const allOptions = apiOptions.length > 0 ? apiOptions : options;
+    return Array.isArray(allOptions)
+      ? allOptions
           .map((option) => {
             if (typeof option === "string") {
               return { value: option, label: option };
@@ -92,30 +85,55 @@ export function FieldMultiSelect({
               option &&
               option.value !== null &&
               option.value !== undefined &&
-              typeof option.value === "string" &&
-              option.value.trim() !== ""
+              (typeof option.value === "string"
+                ? option.value.trim() !== ""
+                : true)
           )
       : [];
-  }, [options, apiOptions, apiData]);
+  }, [options, apiOptions]);
 
-  // Handle value transformation - convert between array and comma-separated string
+  /**
+   * Handles value changes from the MultiSelect component.
+   *
+   * Since UI components only work with string values, complex objects are serialized
+   * with the VALUE_PREFIX. This function deserializes them back to their original form.
+   *
+   * @param selectedValues - Array of string values from the MultiSelect component
+   * @example
+   * // Regular string values
+   * handleValueChange(["text1", "text2"]) // → ["text1", "text2"]
+   *
+   * // Mixed string and serialized object values
+   * handleValueChange(["text1", "__object_value__{\"apiVersion\":\"v1\"}"])
+   * // → ["text1", {apiVersion: "v1"}]
+   */
   const handleValueChange = (selectedValues: string[]) => {
-    // For anyOf API options, store as comma-separated string for submission
-    if (apiOptions) {
-      field.onChange(selectedValues.join(","));
-    } else {
-      // For regular options, keep as array
-      field.onChange(selectedValues);
-    }
-    onValueChange?.(selectedValues);
+    const finalValues = selectedValues.map((value) => {
+      if (value.startsWith(VALUE_PREFIX)) {
+        try {
+          return JSON.parse(value.substring(VALUE_PREFIX.length));
+        } catch {
+          return value; // Should not happen
+        }
+      }
+      return value;
+    });
+    controllerField.onChange(finalValues);
+    onValueChange?.(finalValues);
   };
 
-  // Convert stored value back to array for the MultiSelect component
-  const currentValue = apiOptions
-    ? typeof field.value === "string"
-      ? field.value.split(",").filter(Boolean)
-      : []
-    : field.value || [];
+  /**
+   * Serialize the current field values for UI display.
+   *
+   * The MultiSelect component expects string values, so we serialize complex objects
+   * with the VALUE_PREFIX to maintain the object structure while being UI-compatible.
+   */
+  const currentValues = (controllerField.value as (string | Record<string, unknown>)[]).map((v) => {
+    if (typeof v === "string") {
+      return v;
+    }
+    return `${VALUE_PREFIX}${JSON.stringify(v)}`;
+  });
 
   return (
     <FieldBase
@@ -128,16 +146,28 @@ export function FieldMultiSelect({
       descriptionInline={descriptionInline}
     >
       <MultiSelect
-        options={normalizedOptions}
+        options={normalizedOptions.map((option) => ({
+          ...option,
+          /**
+           * Serialize option values for UI compatibility.
+           *
+           * String values are used as-is, while object values are serialized
+           * with the VALUE_PREFIX to distinguish them from regular strings.
+           */
+          value:
+            typeof option.value === "string"
+              ? option.value
+              : `${VALUE_PREFIX}${JSON.stringify(option.value)}`,
+        }))}
         onValueChange={handleValueChange}
-        defaultValue={currentValue}
-        placeholder={apiLoading ? "Loading options..." : placeholder} // TODO[cfviotti]: Use proper inner loading state inside multiselect open content when available
+        defaultValue={currentValues}
+        placeholder={apiLoading ? "Loading options..." : placeholder}
         onOpenChange={(open) => {
           if (open && !isOpen) {
             setIsOpen(true);
           }
         }}
-        open={apiLoading ? false : undefined} // TODO: Remove this defer once MultiSelect supports proper loading states - it's REALLY BAD waiting for select to open
+        open={apiLoading ? false : undefined}
         disabled={disabled}
       />
     </FieldBase>
