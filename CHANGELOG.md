@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.19.0](https://github.com/external-secrets-inc/web-ui/compare/v0.18.0...v0.19.0) (2025-07-15)
+
+
+### Features
+
+* add query parameter to workflow template creation when redirected from findings ([#422](https://github.com/external-secrets-inc/web-ui/issues/422)) ([49e5144](https://github.com/external-secrets-inc/web-ui/commit/49e5144b74c15301c08c438f125c783176a72aba))
+
 ## [0.18.0](https://github.com/external-secrets-inc/web-ui/compare/v0.17.0...v0.18.0) (2025-07-10)
 
 
