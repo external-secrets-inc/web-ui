@@ -661,14 +661,36 @@ export function isFieldVisible(
 }
 
 /**
+ * Safely accesses nested properties in an object using dot notation.
+ * @param obj The object to access properties from.
+ * @param path The dot-separated path to the property (e.g., "user.profile.name").
+ * @returns The value at the path, or undefined if the path doesn't exist.
+ *
+ * @example
+ * const data = {
+ *   name: "fake2",
+ *   remoteRef: { key: "/baz/bing", property: "" }
+ * };
+ * getNestedValue(data, "remoteRef.key") // Returns "/baz/bing"
+ * getNestedValue(data, "remoteRef.property") // Returns ""
+ * getNestedValue(data, "name") // Returns "fake2"
+ */
+function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
+  return path.split('.').reduce((current, key) => {
+    return current && typeof current === 'object' ? (current as Record<string, unknown>)[key] : undefined;
+  }, obj as unknown);
+}
+
+/**
  * Interpolates a string with values from a data object.
- * Replaces placeholders like `${key}` with the corresponding value from the object.
+ * Replaces placeholders like `${key}` or `${user.profile.name}` with the corresponding value from the object.
+ * Supports dot notation for nested property access.
  * @param template The string template to interpolate.
  * @param data The object containing values for interpolation.
  * @returns The interpolated string.
  *
  * TODO[cfviotti]: Future enhancements to consider:
- * - Nested property access: ${user.profile.name}, ${items[0].name}
+ * - Array access: ${items[0].name}
  * - Default values: ${name|default}, ${name|"fallback value"}
  * - Basic transformations: ${name|upper}, ${name|lower}, ${name|trim}
  * - Conditional logic: ${name ? name : 'Unknown'}
@@ -678,8 +700,8 @@ export function isFieldVisible(
  * - Debugging support: highlight missing properties, detailed logging
  */
 export function interpolateValueRefString(template: string, data: Record<string, unknown>): string {
-  return template.replace(/\$\{([a-zA-Z0-9_-]+)\}/g, (_, key: string): string => {
-    const value = data[key];
+  return template.replace(/\$\{([a-zA-Z0-9_.-]+)\}/g, (_, path: string): string => {
+    const value = getNestedValue(data, path);
     return value !== undefined ? String(value) : '';
   });
 }
