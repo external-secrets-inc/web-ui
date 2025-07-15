@@ -24,7 +24,7 @@ import type {
   SelectOption,
   SelectFieldOptions,
 } from "@/components/EsiSchemaForm/EsiSchemaForm.interfaces";
-import { useGetEsiSchemaOptions } from "@/services/esi-schemas/queries/useGetEsiSchemaOptions";
+import { useGetEsiSchemaOptionsFromApi } from "@/services/esi-schemas/queries/useGetEsiSchemaOptionsFromApi";
 
 /**
  * Prefix used to serialize complex object values into strings for UI components.
@@ -94,7 +94,7 @@ export function FieldSelect({
     options: apiOptions,
     isLoading: apiLoading,
     error: apiError,
-  } = useGetEsiSchemaOptions(field, {
+  } = useGetEsiSchemaOptionsFromApi(field, {
     enabled: isOpen,
   });
 
