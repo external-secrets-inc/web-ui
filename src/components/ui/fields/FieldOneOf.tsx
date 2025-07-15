@@ -175,7 +175,7 @@ export function FieldOneOf({
             field={{
               ...selectedField,
               id: `${name}.${getPropertyName(selectedField.id)}`,
-              readOnly: disabled || selectedField.readOnly,
+              readOnly: selectedField.readOnly,
             }}
           />
         </div>
