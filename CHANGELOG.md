@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.18.0](https://github.com/external-secrets-inc/web-ui/compare/v0.17.0...v0.18.0) (2025-07-10)
+
+
+### Features
+
+* :sparkles: add support for eso findings ([45b15da](https://github.com/external-secrets-inc/web-ui/commit/45b15da1436229fd0f7fc67a9f10235ed12066fe))
+* add support for eso findings ([#421](https://github.com/external-secrets-inc/web-ui/issues/421)) ([45b15da](https://github.com/external-secrets-inc/web-ui/commit/45b15da1436229fd0f7fc67a9f10235ed12066fe))
+
+
+### Bug Fixes
+
+* remove namespace from workflow screens; fix generators validation for yamls ([d7bd0f8](https://github.com/external-secrets-inc/web-ui/commit/d7bd0f82914a7f2c6e0bf4d9f3b9217c6944fa22))
+* remove namespaces ([#413](https://github.com/external-secrets-inc/web-ui/issues/413)) ([d7bd0f8](https://github.com/external-secrets-inc/web-ui/commit/d7bd0f82914a7f2c6e0bf4d9f3b9217c6944fa22))
+* support runtime for workflow run and workflow ([#412](https://github.com/external-secrets-inc/web-ui/issues/412)) ([3dcc653](https://github.com/external-secrets-inc/web-ui/commit/3dcc653cb2a40b3ba62eba7b08d5e706abb51022))
+
 ## [0.17.0](https://github.com/external-secrets-inc/web-ui/compare/v0.16.0...v0.17.0) (2025-07-04)
 
 
