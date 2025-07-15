@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.20.0](https://github.com/external-secrets-inc/web-ui/compare/v0.19.1...v0.20.0) (2025-07-15)
+
+
+### Features
+
+* enhance EsiSchemaForm with valueRef support for complex object values ([#426](https://github.com/external-secrets-inc/web-ui/issues/426)) ([49b1505](https://github.com/external-secrets-inc/web-ui/commit/49b1505d0853ac6f26aefd25e47dc9817b95a50e))
+
 ## [0.19.1](https://github.com/external-secrets-inc/web-ui/compare/v0.19.0...v0.19.1) (2025-07-15)
 
 
