@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.19.1](https://github.com/external-secrets-inc/web-ui/compare/v0.19.0...v0.19.1) (2025-07-15)
+
+
+### Bug Fixes
+
+* oneof subselect inheriting read only ([#424](https://github.com/external-secrets-inc/web-ui/issues/424)) ([7c9ceb3](https://github.com/external-secrets-inc/web-ui/commit/7c9ceb3e4a02e7b24f13d09d2ff0d7c549a41aeb))
+
 ## [0.19.0](https://github.com/external-secrets-inc/web-ui/compare/v0.18.0...v0.19.0) (2025-07-15)
 
 
