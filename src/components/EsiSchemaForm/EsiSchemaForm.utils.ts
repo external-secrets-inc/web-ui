@@ -545,7 +545,7 @@ export function transformData(
 
     // TODO[cfviotti]: This is a hack to handle oneOf and anyOf fields with API options (href) that contain valueRef objects (value selection, not schema selection). WE REALLY GOTTA OVERHAUL THE SELECT/MULTI-SELECT SCHEMA GENERATION FOR SOMETHING MORE ROBUST TO AVOID THIS FUCKING MANY EDGE CASES!!
     // Flatten nested structures from API options with valueRef
-    if (fieldSchema.fields && value && typeof value === 'object' && !Array.isArray(value)) {
+    if (fieldSchema.fields && fieldSchema.oneOf && value && typeof value === 'object' && !Array.isArray(value)) {
       const objValue = value as Record<string, unknown>;
 
       // Check if any nested field has API options with valueRef
