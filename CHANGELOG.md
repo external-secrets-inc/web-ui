@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.21.0](https://github.com/external-secrets-inc/web-ui/compare/v0.20.0...v0.21.0) (2025-07-16)
+
+
+### Features
+
+* :sparkles: enhance EsiSchemaForm to support skipNesting option and refactor internal field resolution ([c3d4884](https://github.com/external-secrets-inc/web-ui/commit/c3d4884354bce4be36be38d3882d9abb534ae843))
+* enhance EsiSchemaForm to support skipNesting option and refactor internal field resolution ([#432](https://github.com/external-secrets-inc/web-ui/issues/432)) ([c3d4884](https://github.com/external-secrets-inc/web-ui/commit/c3d4884354bce4be36be38d3882d9abb534ae843))
+
+
+### Bug Fixes
+
+* add one more check to flatten nested structure hack ([#430](https://github.com/external-secrets-inc/web-ui/issues/430)) ([77f4c3f](https://github.com/external-secrets-inc/web-ui/commit/77f4c3f6756c739b0c9c5cb7c10a5cf8df986623))
+
 ## [0.20.0](https://github.com/external-secrets-inc/web-ui/compare/v0.19.1...v0.20.0) (2025-07-15)
 
 
