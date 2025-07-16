@@ -76,6 +76,7 @@ export type OneOfOption = OneOfStaticOption | OneOfApiOption;
  */
 export interface OneOfStaticOption {
   id: string;
+  skipNesting?: boolean;
 }
 
 /**

@@ -124,14 +124,34 @@ export function FieldOneOf({
     setSelectedFieldId(stringValue);
   }, [selectedField, getPropertyName, setValue, name]);
 
-  const selectionFieldName = `${name}.__ui_state`;
+  const uiSelectionFieldName = `${name}.__ui_state`;
 
   // Initialize UI state field with selected field ID
   useEffect(() => {
     if (selectedFieldId) {
-      setValue(selectionFieldName, selectedFieldId, { shouldValidate: false });
+      setValue(uiSelectionFieldName, selectedFieldId, { shouldValidate: false });
     }
-  }, [selectedFieldId, selectionFieldName, setValue]);
+  }, [selectedFieldId, uiSelectionFieldName, setValue]);
+
+    const resolveFieldName = useCallback((selectedFieldId: string, baseFieldName: string): string => {
+    // Check if the selected option has skipNesting: true
+    const selectedOption = field.oneOf?.find(option =>
+      typeof option === 'object' && 'id' in option && option.id === selectedFieldId
+    );
+
+    const shouldSkipNesting = selectedOption &&
+      'skipNesting' in selectedOption &&
+      selectedOption.skipNesting === true;
+
+    // If skipNesting is true, add __skip_nesting to make it get filtered out
+    // and the value will be promoted up one level during transformation
+    if (shouldSkipNesting) {
+      return `${name}.__skip_nesting`;
+    }
+
+    // Otherwise, use the nested pattern
+    return baseFieldName;
+  }, [field.oneOf, name]);
 
   const validOneOfFields = useMemo(() => {
     return oneOfFields.filter((f) => f && f.id && f.label);
@@ -156,7 +176,7 @@ export function FieldOneOf({
   return (
     <div className="space-y-6">
       <FieldSelect
-        name={selectionFieldName}
+        name={uiSelectionFieldName}
         label={label}
         description={description}
         required={required}
@@ -177,7 +197,7 @@ export function FieldOneOf({
             key={selectedField.id}
             field={{
               ...selectedField,
-              id: `${name}.${getPropertyName(selectedField.id)}`,
+              id: resolveFieldName(selectedField.id, `${name}.${getPropertyName(selectedField.id)}`),
               readOnly: selectedField.readOnly,
             }}
           />

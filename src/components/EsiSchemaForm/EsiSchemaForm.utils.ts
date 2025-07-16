@@ -412,13 +412,44 @@ export function createSchemaResolver() {
  * Recursively removes all UI state fields from a data structure.
  * This ensures no internal UI state leaks into the final manifest.
  */
-function removeUIStateFields(obj: unknown): unknown {
+/**
+ * Resolves internal form fields by applying specific processing rules.
+ *
+ * This function handles two types of internal fields:
+ * 1. `__ui_state` fields: Completely removed from the final data (used for UI state management)
+ * 2. `__skip_nesting` fields: Removed but their values are promoted up one level in the object structure
+ *
+ * This enables post-processing transformation of form data to produce clean, flattened
+ * manifest structures without unwanted nested keys.
+ *
+ *
+ * @example
+ * // Input with UI state and skip nesting fields
+ * {
+ *   sourceLocation: {
+ *     "__ui_state": "baz-bing",
+ *     "__skip_nesting": {
+ *       apiVersion: "externalsecrets.io/v1",
+ *       kind: "SecretStore"
+ *     }
+ *   }
+ * }
+ *
+ * // Output after processing
+ * {
+ *   sourceLocation: {
+ *     apiVersion: "externalsecrets.io/v1",
+ *     kind: "SecretStore"
+ *   }
+ * }
+ */
+function resolveInternalFields(obj: unknown): unknown {
   if (obj === null || obj === undefined || typeof obj !== 'object') {
     return obj;
   }
 
   if (Array.isArray(obj)) {
-    return obj.map(item => removeUIStateFields(item));
+    return obj.map(item => resolveInternalFields(item));
   }
 
   const result: Record<string, unknown> = {};
@@ -426,11 +457,16 @@ function removeUIStateFields(obj: unknown): unknown {
 
   for (const key in objValue) {
     if (Object.prototype.hasOwnProperty.call(objValue, key)) {
-      // Skip any UI state fields at any level
       if (key.includes('__ui_state')) {
+        // Regular UI state fields - skip them completely
         continue;
       }
-      result[key] = removeUIStateFields(objValue[key]);
+
+      // Special handling for skip nesting fields - promote the value up one level
+      if (key.includes('__skip_nesting')) {
+        return resolveInternalFields(objValue[key]);
+      }
+      result[key] = resolveInternalFields(objValue[key]);
     }
   }
 
@@ -514,8 +550,8 @@ export function transformData(
     return {};
   }
 
-  // Remove all UI state fields first - this handles all __ui_state filtering in one place
-  const cleanData = removeUIStateFields(data) as Record<string, unknown>;
+  // Resolve all internal fields first - this handles all __ui_state and __skip_nesting processing in one place
+  const cleanData = resolveInternalFields(data) as Record<string, unknown>;
 
   // If no schema provided, return cleaned data as-is (no allowEmpty support)
   if (!schema || !Array.isArray(schema)) {
@@ -541,22 +577,6 @@ export function transformData(
         }
         return acc;
       }, {} as Record<string, string>);
-    }
-
-    // TODO[cfviotti]: This is a hack to handle oneOf and anyOf fields with API options (href) that contain valueRef objects (value selection, not schema selection). WE REALLY GOTTA OVERHAUL THE SELECT/MULTI-SELECT SCHEMA GENERATION FOR SOMETHING MORE ROBUST TO AVOID THIS FUCKING MANY EDGE CASES!!
-    // Flatten nested structures from API options with valueRef
-    if (fieldSchema.fields && fieldSchema.oneOf && value && typeof value === 'object' && !Array.isArray(value)) {
-      const objValue = value as Record<string, unknown>;
-
-      // Check if any nested field has API options with valueRef
-      for (const key in objValue) {
-        const nestedField = fieldSchema.fields.find(f => f.id === key || f.id.endsWith(`.${key}`));
-        const hasValueRef = nestedField?.oneOf?.some(o => 'href' in o && 'valueRef' in o) ||
-          nestedField?.anyOf?.some(o => 'href' in o && 'valueRef' in o);
-        if (hasValueRef) {
-          return objValue[key]; // Extract value directly
-        }
-      }
     }
 
     // Recursively transform any object, regardless of schema type (for robustness)
