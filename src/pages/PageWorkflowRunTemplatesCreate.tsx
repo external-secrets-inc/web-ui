@@ -10,7 +10,7 @@ export function PageWorkflowRunTemplatesCreate() {
         <>
             Create a new Run Template to associate with the{" "}
             <b>
-              {useParams().templateNamespace}/{useParams().templateName}
+              {useParams().templateName}
             </b>{" "}
             Template
         </>

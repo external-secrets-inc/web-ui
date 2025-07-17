@@ -112,6 +112,10 @@ export interface WorkflowRunData {
   completionTime?: string;
   executionTimeNanos?: number;
   workflowRef?: WorkflowRef;
+  status?: {
+    status: string;
+    reason?: string;
+  };
 }
 
 export interface TemplateRef {

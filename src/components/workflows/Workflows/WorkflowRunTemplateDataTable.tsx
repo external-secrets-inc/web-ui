@@ -1,14 +1,4 @@
-import { useCallback, useMemo } from "react";
-import { Badge } from "@/components/ui/badge";
-import {
-  LucideCircleAlert,
-  LucideCircleCheck,
-  LucideClock,
-  LucideMoreVertical,
-  LucidePlay,
-  LucidePlus,
-  LucideTrash2,
-} from "lucide-react";
+import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction";
 import { Button } from "@/components/ui/button";
 import {
   DataProvider,
@@ -16,43 +6,107 @@ import {
   DataTable,
   defineColumns,
 } from "@/components/ui/DataProvider";
-import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
-import {
-  WorkflowRunData,
-  WorkflowRunTemplateTableData,
-} from "./Workflows.interfaces";
-import { AxiosError } from "axios";
-import { ApiHttpError } from "@/types";
-import { toast } from "sonner";
-import useDeleteWorkflowRunTemplate from "@/services/workflows/mutations/useDeleteWorkflowRunTemplate";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction";
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import useOrgLink from "@/hooks/useOrgLink";
-import { formatDate, formatDuration } from "@/utils/dateUtils";
+import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import useCreateWorkflowRunFromRunTemplate from "@/services/workflows/mutations/useCreateWorkflowRunFromRunTemplate";
+import useDeleteWorkflowRunTemplate from "@/services/workflows/mutations/useDeleteWorkflowRunTemplate";
 import useGetWorkflowRunTemplatesByTemplate from "@/services/workflows/queries/useGetWorkflowRunTemplatesByTemplate";
+import { ApiHttpError } from "@/types";
+import { AxiosError } from "axios";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
+  LucideMoreVertical,
+  LucidePlay,
+  LucidePlus,
+  LucideTrash2,
+} from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
+import { WorkflowRunStatusBadge } from "./WorkflowRunStatusBadge";
+import type {
+  WorkflowRunData,
+  WorkflowRunTemplateTableData,
+} from "./Workflows.interfaces";
 
 interface WorkflowRunTemplateTableMeta {
   renderRowActions?: (row: WorkflowRunTemplateTableData) => React.ReactNode;
 }
 
+const FAST_POLLING_INTERVAL_MS = 100;
+const SLOW_POLLING_INTERVAL_MS = 2000;
+const FAST_POLLING_TIME_WINDOW_MS = 5000;
+const VISIBLE_RUNS_COUNT = 5;
+
+const FINAL_WORKFLOW_STATUSES = ["Succeeded", "Failed"] as const;
+type FinalWorkflowStatus = (typeof FINAL_WORKFLOW_STATUSES)[number];
+
+function isWorkflowRunActive(run: WorkflowRunData): boolean {
+  return !FINAL_WORKFLOW_STATUSES.includes(run.phase as FinalWorkflowStatus);
+}
+
+function getRecentWorkflowRuns(runs: WorkflowRunData[]): WorkflowRunData[] {
+  return runs.slice(-VISIBLE_RUNS_COUNT);
+}
+
+function hasActiveWorkflowRuns(templates: WorkflowRunTemplateTableData[]) {
+  return templates.some((template) =>
+    getRecentWorkflowRuns(template.lastRuns).some(isWorkflowRunActive)
+  );
+}
+
+function shouldStartPolling(
+  templates: WorkflowRunTemplateTableData[] | undefined,
+  pollingStartTime: number | null
+) {
+  return templates && hasActiveWorkflowRuns(templates) && !pollingStartTime;
+}
+
+function shouldStopPolling(
+  templates: WorkflowRunTemplateTableData[] | undefined
+) {
+  return !templates || !hasActiveWorkflowRuns(templates);
+}
+
+function getPollingInterval(elapsedTimeMs: number): number {
+  return elapsedTimeMs < FAST_POLLING_TIME_WINDOW_MS
+    ? FAST_POLLING_INTERVAL_MS
+    : SLOW_POLLING_INTERVAL_MS;
+}
+
+function createWorkflowRunName(templateName: string): string {
+  return `${templateName}-ui-triggered`;
+}
+
+function getWorkflowRunTooltipId(run: WorkflowRunData): string {
+  return `${run.namespace}/${run.name}`;
+}
+function computePollingInterval(
+  templates: WorkflowRunTemplateTableData[] | undefined,
+  pollingStartTime: number | null,
+  setPollingStartTime: (time: number) => void
+) {
+  if (!pollingStartTime || shouldStopPolling(templates))
+    return false;
+
+  if (shouldStartPolling(templates, pollingStartTime)) {
+    setPollingStartTime(Date.now());
+  }
+
+  const elapsedTimeMs = Date.now() - pollingStartTime;
+  return getPollingInterval(elapsedTimeMs);
+}
+
 export function WorkflowRunTemplateDataTable() {
   const navigate = useNavigate();
-  const location = useLocation();
   const getOrgLink = useOrgLink();
   const { templateNamespace, templateName } = useParams();
+  const [pollingStartTime, setPollingStartTime] = useState<number | null>(null);
 
   const { mutate: createWorkflowRunFromRunTemplate } =
     useCreateWorkflowRunFromRunTemplate({
@@ -64,18 +118,46 @@ export function WorkflowRunTemplateDataTable() {
       onSuccess: () => {
         workflowRunTemplatesRefetch();
         toast.success("Workflow Run created successfully");
+        setPollingStartTime(Date.now());
       },
     });
 
-  const performCreateWorkflowRunFromRunTemplate = useCallback(
+  const startWorkflowRun = useCallback(
     (namespace: string, name: string) => {
       createWorkflowRunFromRunTemplate({
         runTemplateNamespace: namespace,
         runTemplateName: name,
-        runName: name + "-ui-triggered",
+        runName: createWorkflowRunName(name),
       });
     },
     [createWorkflowRunFromRunTemplate]
+  );
+
+  const renderWorkflowRunStatusBadges = useCallback(
+    (runs: WorkflowRunData[]) => {
+      if (!runs || runs.length === 0) {
+        return <span className="text-muted-foreground">No runs</span>;
+      }
+
+      const recentRuns = getRecentWorkflowRuns(runs);
+
+      return (
+        <div className="flex flex-wrap gap-1 items-center animate-in fade-in-0 duration-300 delay-200 fill-mode-both">
+          {recentRuns.map(
+            (run: WorkflowRunData, index: number, array: WorkflowRunData[]) => (
+              <WorkflowRunStatusBadge
+                key={getWorkflowRunTooltipId(run)}
+                run={run}
+                templateNamespace={templateNamespace}
+                templateName={templateName}
+                isLastRun={index === array.length - 1}
+              />
+            )
+          )}
+        </div>
+      );
+    },
+    [templateNamespace, templateName]
   );
 
   const columns = useMemo(
@@ -88,7 +170,7 @@ export function WorkflowRunTemplateDataTable() {
         columnHelper.accessor("runPolicy", {
           header: "Run Policy",
           cell: (info) =>
-            info.getValue() == "" ? (
+            info.getValue() === "" ? (
               <span className="text-muted-foreground">No policy</span>
             ) : (
               info.getValue()
@@ -96,95 +178,7 @@ export function WorkflowRunTemplateDataTable() {
         }),
         columnHelper.accessor("lastRuns", {
           header: "Last Runs",
-          cell: (info) => {
-            const runs: WorkflowRunData[] = info.getValue();
-
-            if (!runs || runs.length === 0) {
-              return <span className="text-muted-foreground">No runs</span>;
-            }
-
-            return (
-              <div className="flex flex-wrap gap-1 items-center">
-                {runs.slice(-5).map((run, index) => {
-                  let variant:
-                    | "warning"
-                    | "success"
-                    | "destructive"
-                    | "secondary";
-                  let icon;
-
-                  switch (run.phase) {
-                    case "Pending":
-                      variant = "secondary";
-                      icon = <LucideClock />;
-                      break;
-                    case "Succeeded":
-                      variant = "success";
-                      icon = <LucideCircleCheck />;
-                      break;
-                    default:
-                      variant = "destructive";
-                      icon = <LucideCircleAlert />;
-                      break;
-                  }
-
-                  return (
-                    <Tooltip key={`${run.namespace}/${run.name}`}>
-                      <TooltipTrigger>
-                        <Link
-                          to={{
-                            pathname: getOrgLink(
-                              `/workflows/templates/${templateNamespace}/${templateName}/runs/${run.namespace}/${run.name}`
-                            ),
-                            search: location.search,
-                          }}
-                          key={`${run.namespace}/${run.name}`}
-                          className="inline-block"
-                        >
-                          <Badge
-                            className={cn(
-                              "py-1",
-                              index == runs.length - 1
-                                ? "opacity-100"
-                                : "opacity-60",
-                              runs.length != 1 &&
-                                index == runs.length - 1 &&
-                                "ml-1"
-                            )}
-                            variant={variant}
-                          >
-                            {icon}
-                          </Badge>
-                        </Link>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        Name: {run.name}
-                        <br />
-                        Phase: {run.phase}
-                        <br />
-                        Start:{" "}
-                        {run.startTime
-                          ? formatDate(run.startTime, { format: "full" })
-                          : "N/A"}
-                        <br />
-                        End:{" "}
-                        {run.completionTime
-                          ? formatDate(run.completionTime, {
-                              format: "full",
-                            })
-                          : "N/A"}
-                        <br />
-                        Execution:{" "}
-                        {run.executionTimeNanos && run.executionTimeNanos > 0
-                          ? formatDuration(run.executionTimeNanos)
-                          : "N/A"}
-                      </TooltipContent>
-                    </Tooltip>
-                  );
-                })}
-              </div>
-            );
-          },
+          cell: (info) => renderWorkflowRunStatusBadges(info.getValue()),
         }),
         columnHelper.display({
           id: "actions",
@@ -194,7 +188,7 @@ export function WorkflowRunTemplateDataTable() {
                 size="sm"
                 variant="secondary"
                 onClick={() =>
-                  performCreateWorkflowRunFromRunTemplate(
+                  startWorkflowRun(
                     props.row.original.namespace,
                     props.row.original.name
                   )
@@ -212,13 +206,7 @@ export function WorkflowRunTemplateDataTable() {
           ),
         }),
       ]),
-    [
-      getOrgLink,
-      performCreateWorkflowRunFromRunTemplate,
-      location,
-      templateNamespace,
-      templateName,
-    ]
+    [startWorkflowRun, renderWorkflowRunStatusBadges]
   );
 
   const workflowRunTemplateTableMeta: WorkflowRunTemplateTableMeta = {
@@ -243,7 +231,7 @@ export function WorkflowRunTemplateDataTable() {
               featureID={`${row.namespace}/${row.name}`}
               featureName={row.name}
               onDelete={() => {
-                performDelete(row.namespace, row.name);
+                deleteWorkflowRunTemplate(row.namespace, row.name);
               }}
             >
               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -271,6 +259,12 @@ export function WorkflowRunTemplateDataTable() {
     },
     {
       enabled: !!templateNamespace && !!templateName,
+      refetchInterval: (query) =>
+        computePollingInterval(
+          query.state.data,
+          pollingStartTime,
+          setPollingStartTime
+        ),
     }
   );
 
@@ -279,21 +273,25 @@ export function WorkflowRunTemplateDataTable() {
     return workflowRunTemplatesData;
   }, [workflowRunTemplatesData]);
 
-  const { mutate: deleteWorkflowRunTemplate } = useDeleteWorkflowRunTemplate({
-    onError: (error: AxiosError<ApiHttpError>) =>
-      handleDefaultApiHttpError(
-        error,
-        "Error while trying to delete Run Template"
-      ),
-    onSuccess: () => {
-      workflowRunTemplatesRefetch();
-      toast.success("Run Template deleted successfully");
-    },
-  });
+  const { mutate: deleteWorkflowRunTemplateMutation } =
+    useDeleteWorkflowRunTemplate({
+      onError: (error: AxiosError<ApiHttpError>) =>
+        handleDefaultApiHttpError(
+          error,
+          "Error while trying to delete Run Template"
+        ),
+      onSuccess: () => {
+        workflowRunTemplatesRefetch();
+        toast.success("Run Template deleted successfully");
+      },
+    });
 
-  const performDelete = (namespace: string, name: string) => {
-    deleteWorkflowRunTemplate({ namespace, name });
-  };
+  const deleteWorkflowRunTemplate = useCallback(
+    (namespace: string, name: string) => {
+      deleteWorkflowRunTemplateMutation({ namespace, name });
+    },
+    [deleteWorkflowRunTemplateMutation]
+  );
 
   if (isErrorWorkflowRunTemplates || isRefetchErrorWorkflowRunTemplates) {
     handleDefaultApiHttpError(
@@ -315,7 +313,7 @@ export function WorkflowRunTemplateDataTable() {
       >
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="font-bold w-auto">Run Templates associated</h2>
+            <h2 className="font-bold w-auto">Associated Run Templates</h2>
           </div>
           <div className="flex justify-end gap-4">
             <DataSearch />

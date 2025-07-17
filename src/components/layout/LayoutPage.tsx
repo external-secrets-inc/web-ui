@@ -1,11 +1,15 @@
+import { useLayoutBreadcrumbs } from "@/components/layout";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { ArrowLeft } from "lucide-react";
 import React, {
-  useState,
   createContext,
   useContext,
-  useRef,
   useEffect,
+  useRef,
+  useState,
 } from "react";
-import { cn } from "@/lib/utils";
+import { Link } from "react-router-dom";
 
 const LayoutPageHeaderPortalTargetContext =
   createContext<HTMLDivElement | null>(null);
@@ -55,6 +59,8 @@ export function LayoutPage({
     setPortalHeaderActionsTargetElement,
   ] = useState<HTMLDivElement | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const breadcrumbSegments = useLayoutBreadcrumbs();
+  const showBackButton = breadcrumbSegments.length > 1;
 
   useEffect(() => {
     if (portalHeaderActionsTargetRef.current) {
@@ -68,11 +74,30 @@ export function LayoutPage({
       value={portalHeaderActionsTargetElement}
     >
       <div
-        className={cn(getContainerClasses(width), "flex flex-col pt-[--layout-padding] pb-16", className)}
+        className={cn(
+          getContainerClasses(width),
+          "flex flex-col pt-[--layout-padding] pb-16",
+          className
+        )}
         {...props}
       >
         <header className="mb-6" data-layout-contain-on-x-scroll>
           <div className="flex items-center gap-2 flex-wrap-reverse mb-1">
+            {showBackButton && (
+              <Button
+                asChild
+                variant="ghost"
+                size="icon"
+                className="-ml-2 -mt-1 -mb-1.5 -mr-0.5 size-8"
+              >
+                <Link
+                  to=".."
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <ArrowLeft className="size-5" />
+                </Link>
+              </Button>
+            )}
             {title && <h1 className="text-2xl font-semibold">{title}</h1>}
             <div
               ref={portalHeaderActionsTargetRef}

@@ -3,7 +3,7 @@ import { format, toZonedTime } from 'date-fns-tz';
 /**
  * Formatting options for the date utility.
  */
-type FormatOptions = 'isoUTC' | 'isoDateOnlyUTC' | 'full' | 'timeOnly' | 'americanDate' | 'readableDate' | 'shortDate';
+type FormatOptions = 'isoUTC' | 'isoDateOnlyUTC' | 'full' | 'timeOnly' | 'americanDate' | 'readableDate' | 'shortDate' | 'readableDateNoTime';
 type TimeZoneOptions = string;
 
 /**
@@ -46,6 +46,9 @@ export const formatDate = (
     case 'readableDate':
       formatString = 'MMM dd, yyyy, hh:mm a'; // Example: Dec 28, 2024, 02:09 AM
       break;
+    case 'readableDateNoTime':
+      formatString = 'MMM dd, yyyy'; // Example: Dec 28, 2024
+      break;
     case 'shortDate':
       formatString = 'MMM dd'; // Example: Dec 28
       break;
@@ -67,9 +70,9 @@ export const formatDate = (
 export const formatDuration = (nanos: number): string => {
   if (nanos >= 1e9) {
     const seconds = (nanos / 1e9).toFixed(3); // show 3 decimal places
-    return `${seconds} s`;
+    return `${seconds}s`;
   } else {
     const milliseconds = (nanos / 1e6).toFixed(3);
-    return `${milliseconds} ms`;
+    return `${milliseconds}ms`;
   }
 }
