@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.22.0](https://github.com/external-secrets-inc/web-ui/compare/v0.21.0...v0.22.0) (2025-07-17)
+
+
+### Features
+
+* improve WorkflowRunTemplate status UX and add back button to pages based on breadcrumb size ([#433](https://github.com/external-secrets-inc/web-ui/issues/433)) ([39a0186](https://github.com/external-secrets-inc/web-ui/commit/39a0186f1a01c0cc479693c393b5e022ecd6573e))
+
 ## [0.21.0](https://github.com/external-secrets-inc/web-ui/compare/v0.20.0...v0.21.0) (2025-07-16)
 
 
