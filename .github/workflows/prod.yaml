@@ -65,6 +65,8 @@ jobs:
             --cache-to=type=registry,ref=${{ vars.INTERNAL_REGISTRY}}/$NAME-cache:latest,mode=max \
             --tag ${{ vars.INTERNAL_REGISTRY }}/$NAME:${{ env.TAG_NAME }} \
             --tag ${{ vars.INTERNAL_REGISTRY}}/$NAME:latest \
+            --tag ${{ vars.PUBLIC_REGISTRY }}/$NAME:${{ env.TAG_NAME }} \
+            --tag ${{ vars.PUBLIC_REGISTRY}}/$NAME:latest \
             --build-arg TENANT_MANAGER_URL=${{ env.TENANT_MANAGER_URL}} \
             --build-arg WEB_UI_URL=${{ env.WEB_UI_URL}} \
             --build-arg WEBSITE_URL=${{ env.WEBSITE_URL}} \
