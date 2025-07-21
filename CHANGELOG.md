@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.22.1](https://github.com/external-secrets-inc/web-ui/compare/v0.22.0...v0.22.1) (2025-07-21)
+
+
+### Bug Fixes
+
+* minor fixes ([#444](https://github.com/external-secrets-inc/web-ui/issues/444)) ([c781e1f](https://github.com/external-secrets-inc/web-ui/commit/c781e1f344777d416a53e09eb73bc7aea6cc3d6c))
+* use static file replace for assets ([#442](https://github.com/external-secrets-inc/web-ui/issues/442)) ([02e0e81](https://github.com/external-secrets-inc/web-ui/commit/02e0e81e79477f19d4b86213a7dd57057de0a7c8))
+
 ## [0.22.0](https://github.com/external-secrets-inc/web-ui/compare/v0.21.0...v0.22.0) (2025-07-17)
 
 
