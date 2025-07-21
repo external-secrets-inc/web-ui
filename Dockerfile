@@ -32,6 +32,9 @@ RUN apk add --no-cache \
 # Copy static files
 COPY --from=builder /web-ui/dist /usr/share/web-ui/html
 
+# Give haproxy user ownership of the static files to allow modification at startup
+RUN chown -R haproxy:haproxy /usr/share/web-ui/html
+
 # Create required directories and set permissions
 RUN mkdir -p /run/nginx && \
     mkdir -p /var/lib/nginx/tmp && \

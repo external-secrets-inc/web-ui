@@ -6,7 +6,7 @@
 set -e
 
 # Check that all required environment variables are set
-REQUIRED_VARS="TENANT_MANAGER_URL WEB_UI_URL DOCS_URL WEBSITE_URL AUDIT_BACKEND_URL ESO_SERVER_URL"
+REQUIRED_VARS="TENANT_MANAGER_URL WEB_UI_URL WEBSITE_URL AUDIT_BACKEND_URL ESO_SERVER_URL"
 
 for VAR_NAME in $REQUIRED_VARS; do
   # Use eval to get the value of the variable whose name is stored in VAR_NAME
