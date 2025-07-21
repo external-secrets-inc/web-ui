@@ -2,22 +2,15 @@
 FROM node:22.8.0 as builder
 WORKDIR /web-ui
 
-# Define build arguments for environment variables
-ARG TENANT_MANAGER_URL
-ARG WEB_UI_URL
-ARG DOCS_URL
-ARG MOCK_AUDIT_ENABLED
-ARG AUDIT_BACKEND_URL
-ARG ESO_SERVER_URL
 
-# Set environment variables during the build process
-ENV VITE_API_DOMAIN=$TENANT_MANAGER_URL
-ENV VITE_APP_DOMAIN=$WEB_UI_URL
-ENV VITE_DOCS_DOMAIN=$DOCS_URL
-ENV VITE_WEBSITE_DOMAIN=$WEBSITE_URL
-ENV VITE_MOCK_AUDIT_ROUTE=$MOCK_AUDIT_ENABLED
-ENV VITE_AUDIT_POC_DOMAIN=$AUDIT_BACKEND_URL
-ENV VITE_ESO_SERVER_DOMAIN=$ESO_SERVER_URL
+# Set environment variables to placeholders for the build process
+ENV VITE_API_DOMAIN=__TENANT_MANAGER_URL__
+ENV VITE_APP_DOMAIN=__WEB_UI_URL__
+ENV VITE_DOCS_DOMAIN=__DOCS_URL__
+ENV VITE_WEBSITE_DOMAIN=__WEBSITE_URL__
+ENV VITE_MOCK_AUDIT_ROUTE=__MOCK_AUDIT_ENABLED__
+ENV VITE_AUDIT_POC_DOMAIN=__AUDIT_BACKEND_URL__
+ENV VITE_ESO_SERVER_DOMAIN=__ESO_SERVER_URL__
 
 COPY . .
 RUN npm install && npm run build:ts-off
@@ -52,11 +45,18 @@ COPY nginx.conf /etc/nginx/nginx.conf
 
 #COPY mime.types /etc/nginx/mime.types
 
+# Copy the entrypoint script and make it executable
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 # Switch back to haproxy user
 USER haproxy
 
 # Expose port 8080
 EXPOSE 8080
 
-# Start Nginx and HAProxy
-CMD ["sh", "-c", "cat /etc/nginx/mime.types && nginx && haproxy -f /usr/local/etc/haproxy/haproxy.cfg"]
+# Set the entrypoint to our script
+ENTRYPOINT ["/entrypoint.sh"]
+
+# Start Nginx and HAProxy via the entrypoint
+CMD ["sh", "-c", "nginx && haproxy -f /usr/local/etc/haproxy/haproxy.cfg"]
