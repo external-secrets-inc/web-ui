@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.22.2](https://github.com/external-secrets-inc/web-ui/compare/v0.22.1...v0.22.2) (2025-07-23)
+
+
+### Bug Fixes
+
+* support global config on web-ui ([#445](https://github.com/external-secrets-inc/web-ui/issues/445)) ([45ba892](https://github.com/external-secrets-inc/web-ui/commit/45ba89291a6d37caeb5a95913b342ce7645491e5))
+
 ## [0.22.1](https://github.com/external-secrets-inc/web-ui/compare/v0.22.0...v0.22.1) (2025-07-21)
 
 
