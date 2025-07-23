@@ -1,3 +1,19 @@
+global:
+  ingress:
+    enabled: false
+  certificate:
+    enabled: false
+    secretName: "ingress-tls"
+    issuer:
+      create: false
+      kind: "ClusterIssuer"
+      name: "selfsigned"
+      namespace: ""
+  domains:
+    webUi: ""
+    tenantManager: ""
+    auditBackend: ""
+    esoServer: ""
 replicaCount: 2
 environment: "dev"
 image:

@@ -47,9 +47,34 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: '{{ .Values.image.repository }}:{{ .Values.image.tag | default "latest" }}'
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- with .Values.extraEnv }}
           env:
-            {{- toYaml . | nindent 12 }}
+          {{- if .Values.global.ingress.enabled }}
+          {{- if .Values.global.certificate.enabled }}
+          - name: TENANT_MANAGER_URL
+            value: "https://{{ .Values.global.domains.tenantManager }}"
+          - name: AUDIT_BACKEND_URL
+            value: "https://{{ .Values.global.domains.auditBackend }}"
+          - name: ESO_SERVER_URL
+            value: "https://{{ .Values.global.domains.esoServer }}"
+          - name: WEBSITE_URL
+            value: "https://{{ .Values.global.domains.webUi }}"
+          - name: WEB_UI_URL
+            value: "https://{{ .Values.global.domains.webUi }}"
+          {{- else }}
+          - name: TENANT_MANAGER_URL
+            value: "http://{{ .Values.global.domains.tenantManager }}"
+          - name: AUDIT_BACKEND_URL
+            value: "http://{{ .Values.global.domains.auditBackend }}"
+          - name: ESO_SERVER_URL
+            value: "http://{{ .Values.global.domains.esoServer }}"
+          - name: WEBSITE_URL
+            value: "http://{{ .Values.global.domains.webUi }}"
+          - name: WEB_UI_URL
+            value: "http://{{ .Values.global.domains.webUi }}"
+          {{- end }}
+          {{- end }}
+          {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 10 }}
           {{- end }}
           {{- if .Values.extraArgs }}
           args:
