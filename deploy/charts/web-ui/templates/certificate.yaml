@@ -1,4 +1,22 @@
-{{- if .Values.certificate.enabled -}}
+{{- if and .Values.global.certificate.enabled  (not .Values.certificate.enabled) -}}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "web-ui.fullname" . }}
+  namespace: {{ template "web-ui.namespace" . }}
+spec:
+  secretName: {{ .Values.global.certificate.secretName }}
+  issuerRef:
+    kind: {{ .Values.global.certificate.issuer.kind }}
+    name: {{ .Values.global.certificate.issuer.name }}
+    {{- if .Values.global.certificate.issuer.namespace }}
+    namespace: {{ .Values.global.certificate.issuer.namespace }}
+    {{- end }}
+  dnsNames:
+  - {{ .Values.global.domains.webUi | quote }}
+{{- end }}
+---
+{{- if and (not .Values.global.certificate.enabled) .Values.certificate.enabled -}}
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -9,7 +27,9 @@ spec:
   issuerRef:
     kind: {{ .Values.certificate.issuer.kind }}
     name: {{ .Values.certificate.issuer.name }}
+    {{- if .Values.certificate.issuer.namespace }}
     namespace: {{ .Values.certificate.issuer.namespace }}
+    {{- end }}
   dnsNames:
 {{- range .Values.certificate.hosts }}
   - {{ . | quote }}
