@@ -37,7 +37,7 @@ spec:
     - host: {{ .Values.global.domains.webUi | quote }}
       http:
         paths:
-          - path: /*
+          - path: /
             {{- if (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}
             pathType: ImplementationSpecific
             {{- end }}
