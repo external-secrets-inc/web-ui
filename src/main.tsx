@@ -31,6 +31,8 @@ import {
   PageSettings,
   PageSecretStores,
   PageSecretStoresCreate,
+  PageTargets,
+  PageTargetsCreate,
   PageWorkflowTemplates,
   PageWorkflowTemplatesCreate,
   PageWorkflowTemplateDetails,
@@ -229,6 +231,33 @@ const router = createBrowserRouter([
                 handle: {
                   breadcrumb: () => ({
                     label: "New Generator",
+                    navigatable: false,
+                  }),
+                },
+              },
+            ],
+          },
+          {
+            path: "targets",
+            element: <Outlet />,
+            handle: {
+              breadcrumb: (match: UIMatch) => ({
+                label: "Workflow Targets",
+                path: match.pathname,
+                navigatable: true,
+              }),
+            },
+            children: [
+              {
+                index: true,
+                element: <PageTargets />,
+              },
+              {
+                path: "create",
+                element: <PageTargetsCreate />,
+                handle: {
+                  breadcrumb: () => ({
+                    label: "New Target",
                     navigatable: false,
                   }),
                 },

@@ -8,6 +8,8 @@ export { PageFindings } from "./PageFindings";
 export { PageGenerators } from "./PageGenerators";
 export { PageGeneratorsCreate } from "./PageGeneratorsCreate";
 export { PageReloaders } from "./PageReloaders";
+export { PageTargets } from "./PageTargets";
+export { PageTargetsCreate } from "./PageTargetsCreate";
 export { PageSecretStores } from "./PageSecretStores";
 export { PageSecretStoresCreate } from "./PageSecretStoresCreate";
 export { PageSettings } from "./PageSettings";
