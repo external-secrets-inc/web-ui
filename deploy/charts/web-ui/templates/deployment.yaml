@@ -51,26 +51,26 @@ spec:
           {{- if .Values.global.ingress.enabled }}
           {{- if .Values.global.certificate.enabled }}
           - name: TENANT_MANAGER_URL
-            value: "https://{{ .Values.global.domains.tenantManager }}"
+            value: "https://{{ .Values.global.domains.tenantManager }}:{{ .Values.global.ingressSecurePort }}"
           - name: AUDIT_BACKEND_URL
-            value: "https://{{ .Values.global.domains.auditBackend }}"
+            value: "https://{{ .Values.global.domains.auditBackend }}:{{ .Values.global.ingressSecurePort }}"
           - name: ESO_SERVER_URL
-            value: "https://{{ .Values.global.domains.esoServer }}"
+            value: "https://{{ .Values.global.domains.esoServer }}:{{ .Values.global.ingressSecurePort }}"
           - name: WEBSITE_URL
-            value: "https://{{ .Values.global.domains.webUi }}"
+            value: "https://{{ .Values.global.domains.webUi }}:{{ .Values.global.ingressSecurePort }}"
           - name: WEB_UI_URL
-            value: "https://{{ .Values.global.domains.webUi }}"
+            value: "https://{{ .Values.global.domains.webUi }}:{{ .Values.global.ingressSecurePort }}"
           {{- else }}
           - name: TENANT_MANAGER_URL
-            value: "http://{{ .Values.global.domains.tenantManager }}"
+            value: "http://{{ .Values.global.domains.tenantManager }}:{{ .Values.global.ingressPort }}"
           - name: AUDIT_BACKEND_URL
-            value: "http://{{ .Values.global.domains.auditBackend }}"
+            value: "http://{{ .Values.global.domains.auditBackend }}:{{ .Values.global.ingressPort }}"
           - name: ESO_SERVER_URL
-            value: "http://{{ .Values.global.domains.esoServer }}"
+            value: "http://{{ .Values.global.domains.esoServer }}:{{ .Values.global.ingressPort }}"
           - name: WEBSITE_URL
-            value: "http://{{ .Values.global.domains.webUi }}"
+            value: "http://{{ .Values.global.domains.webUi }}:{{ .Values.global.ingressPort }}"
           - name: WEB_UI_URL
-            value: "http://{{ .Values.global.domains.webUi }}"
+            value: "http://{{ .Values.global.domains.webUi }}:{{ .Values.global.ingressPort }}"
           {{- end }}
           {{- end }}
           {{- with .Values.extraEnv }}
