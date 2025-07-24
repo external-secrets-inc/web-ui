@@ -15,6 +15,7 @@ OK      = echo ${TIME} ${GREEN}[ OK ]${CNone}
 FAIL    = (echo ${TIME} ${RED}[FAIL]${CNone} && false)
 ARTIFACT_REG:=us-central1-docker.pkg.dev
 CHARTS_REPO := oci://$(ARTIFACT_REG)/external-secrets-inc-registry/internal/charts
+PUBLIC_CHARTS_REPO := oci://$(ARTIFACT_REG)/external-secrets-inc-registry/public/charts
 
 help:
 	@echo -e "${GREEN}Usage:${Cnone}"
@@ -46,3 +47,4 @@ helm.login:
 helm.push: helm.login ## Push helm chart to the repository
 	@helm package deploy/charts/web-ui
 	helm push *.tgz $(CHARTS_REPO)
+	helm push *.tgz $(PUBLIC_CHARTS_REPO)
