@@ -691,14 +691,20 @@ export function assembleManifest(
  * @returns True if the field should be visible, false otherwise.
  */
 export function isFieldVisible(
-  visibleWhen: { field: string; equals: unknown } | undefined,
+  visibleWhen: { field: string; equal: unknown }[] | undefined,
   formValues: Record<string, unknown>
 ): boolean {
-  if (!visibleWhen) {
+  if (!visibleWhen || visibleWhen.length === 0) {
     return true;
   }
-  const { field, equals } = visibleWhen;
-  return formValues[field] === equals;
+
+  const isVisible = visibleWhen.some(condition => {
+    const { field, equal } = condition;
+    const value = getNestedValue(formValues, field);
+    return value === equal;
+  })
+
+  return isVisible
 }
 
 /**

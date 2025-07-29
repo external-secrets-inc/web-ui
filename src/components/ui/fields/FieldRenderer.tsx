@@ -18,9 +18,10 @@ import { OptionUtils } from "@/components/EsiSchemaForm/EsiSchemaForm.utils";
 
 export interface FieldRendererProps {
   field: UISchemaField;
+  formValues: Record<string, unknown>
 }
 
-export function FieldRenderer({ field }: FieldRendererProps) {
+export function FieldRenderer({ field, formValues }: FieldRendererProps) {
   const baseProps = {
     name: field.id,
     label: field.label,
@@ -62,7 +63,7 @@ export function FieldRenderer({ field }: FieldRendererProps) {
 
       // if oneOf has no href, it's for sub-schema selection handled by FieldOneOf
       if (field.oneOf && field.oneOf.length > 0) {
-        return <FieldOneOf {...baseProps} field={field} />;
+        return <FieldOneOf {...baseProps} field={field} formValues={formValues} />;
       }
 
       // Otherwise, it's a standard select with static options
@@ -110,17 +111,19 @@ export function FieldRenderer({ field }: FieldRendererProps) {
           {...baseProps}
           field={field}
           defaultValue={field.default as unknown[]}
+          formValues={formValues}
         />
       );
 
     case "object":
       // Handle oneOf constraint for object fields TODO[cfviotti]: This is supposedly for legacy schemas. It will always be for `select` fields now instead.
       if (field.oneOf && field.oneOf.length > 0) {
-        return <FieldOneOf {...baseProps} field={field} />;
+        return <FieldOneOf {...baseProps} field={field} formValues={formValues} />;
       }
       return (
         <FieldObject
           {...baseProps}
+          formValues={formValues}
           field={field}
           defaultValue={field.default as Record<string, unknown>}
         />
@@ -130,7 +133,7 @@ export function FieldRenderer({ field }: FieldRendererProps) {
       return <FieldJson {...baseProps} defaultValue={field.default} />;
 
     case "one-of":
-      return <FieldOneOf {...baseProps} field={field} />;
+      return <FieldOneOf {...baseProps} field={field} formValues={formValues} />;
 
     case "secret-selector":
       return <FieldSecretSelect {...baseProps} />;
