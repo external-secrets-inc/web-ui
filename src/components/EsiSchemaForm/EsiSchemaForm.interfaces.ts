@@ -162,6 +162,7 @@ export type KubernetesResourceType =
   | 'externalsecret'
   | 'pushsecret'
   | 'generators'
+  | 'targets'
   | 'workflow'
   | 'workflowtemplate'
   | 'workflowrun'

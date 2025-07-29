@@ -53,6 +53,11 @@ const KUBERNETES_RESOURCE_CONFIG: Record<KubernetesResourceType, {
     kind: 'Generator',
     displayName: 'Generator',
   },
+  targets: {
+    apiVersion: 'target.external-secrets.io/v1alpha1',
+    kind: 'Target',
+    displayName: 'Target',
+  },
   workflow: {
     apiVersion: 'eso.external-secrets.io/v1alpha1',
     kind: 'Workflow',

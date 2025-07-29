@@ -49,6 +49,11 @@ export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
       icon: LucideAtom,
     },
     {
+      label: "Workflow Targets",
+      url: "/workflows/targets",
+      icon: LucideBookKey,
+    },
+    {
       label: "Workflow Templates",
       url: "/workflows/templates",
       icon: LucideBookKey,
