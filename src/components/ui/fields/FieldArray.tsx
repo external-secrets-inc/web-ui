@@ -11,6 +11,7 @@ import { useFieldArray, useFormContext } from "react-hook-form";
 import { FieldBase } from "./FieldBase";
 import { FieldHeader } from "./FieldHeader";
 import { FieldRenderer } from "./FieldRenderer";
+import { isFieldVisible } from "@/components/EsiSchemaForm";
 
 export interface FieldArrayProps {
   name: string;
@@ -22,6 +23,7 @@ export interface FieldArrayProps {
   defaultValue?: unknown[];
   descriptionInline?: boolean;
   disabled?: boolean;
+  formValues: Record<string, unknown>;
 }
 
 export function FieldArray({
@@ -34,6 +36,7 @@ export function FieldArray({
   defaultValue,
   descriptionInline,
   disabled,
+  formValues,
 }: FieldArrayProps) {
   const { control, getValues, formState } = useFormContext();
   const { fields, append, remove } = useFieldArray({
@@ -97,7 +100,8 @@ export function FieldArray({
                   >
                     <div className="space-y-2">
                       <div className="flex-grow space-y-6">
-                        {itemSchema.fields?.map((subField) => {
+                        {itemSchema.fields?.filter((subField) => isFieldVisible(subField.visibleWhen, formValues))
+                        .map((subField) => {
                           const subFieldId = subField.id.replace(
                             `${itemSchema.id}.`,
                             ""
@@ -111,6 +115,7 @@ export function FieldArray({
                                 id: fieldId,
                                 readOnly: disabled || subField.readOnly,
                               }}
+                              formValues={formValues}
                             />
                           );
                         })}
@@ -149,6 +154,7 @@ export function FieldArray({
                       label: `#${index + 1}`,
                       readOnly: disabled || itemSchema?.readOnly,
                     }}
+                    formValues={formValues}
                   />
                   <Tooltip>
                     <TooltipTrigger asChild>

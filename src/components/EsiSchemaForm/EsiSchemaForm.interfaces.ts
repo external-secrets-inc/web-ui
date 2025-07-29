@@ -46,10 +46,7 @@ export interface UISchemaField {
   items?: UISchemaField;
   oneOf?: OneOfOption[];
   anyOf?: AnyOfOption[];
-  visibleWhen?: {
-    field: string;
-    equals: unknown;
-  };
+  visibleWhen?: UISchemaVisibleWhen[];
   minProperties?: number;
   maxProperties?: number;
   minimum?: number;
@@ -59,6 +56,11 @@ export interface UISchemaField {
   pattern?: string;
   allowEmpty?: boolean;
   readOnly?: boolean;
+}
+
+export interface UISchemaVisibleWhen {
+  field: string;
+  equal: unknown;
 }
 
 /**
@@ -128,10 +130,7 @@ export interface UISchemaGroup {
   id: string;
   label: string;
   fields: string[];
-  visibleWhen?: {
-    field: string;
-    equals: unknown;
-  };
+  visibleWhen?: UISchemaVisibleWhen[];
 }
 
 export interface UISchema {

@@ -163,7 +163,7 @@ export function EsiSchemaForm({
           {schema.fields
             .filter((field) => isFieldVisible(field.visibleWhen, formValues))
             .map((field) => (
-              <FieldRenderer key={field.id} field={field} />
+              <FieldRenderer key={field.id} field={field} formValues={formValues}/>
             ))}
         </div>
 
