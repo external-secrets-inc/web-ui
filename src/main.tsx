@@ -37,7 +37,9 @@ import {
   PageWorkflowTemplatesCreate,
   PageWorkflowTemplateDetails,
   PageWorkflowRunTemplatesCreate,
-  PageWorkflowRunDetails
+  PageWorkflowRunDetails,
+  PageSecrets,
+  PageSecretsCreate
 } from "@/pages";
 import authStore from "@/services/auth/authStore";
 import RequireAuth from "@auth-kit/react-router/RequireAuth";
@@ -117,7 +119,34 @@ const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <NavigateWithOrg to="workflows/secret-stores" replace />,
+            element: <NavigateWithOrg to="workflows/secrets" replace />,
+          },
+          {
+            path: "secrets",
+            element: <Outlet />,
+            handle: {
+              breadcrumb: (match: UIMatch) => ({
+                label: "Workflow Secrets",
+                path: match.pathname,
+                navigatable: true,
+              }),
+            },
+            children: [
+              {
+                index: true,
+                element: <PageSecrets />,
+              },
+              {
+                path: "create",
+                element: <PageSecretsCreate />,
+                handle: {
+                  breadcrumb: () => ({
+                    label: "New Secret",
+                    navigatable: false,
+                  }),
+                },
+              },
+            ],
           },
           {
             path: "secret-stores",

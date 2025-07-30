@@ -87,6 +87,15 @@ export function FieldRenderer({ field, formValues }: FieldRendererProps) {
         />
       );
 
+    case "key-password":
+      return (
+        <FieldKeyValue
+          {...baseProps}
+          defaultValue={field.default as Array<{ key: string; value: string }>}
+          password={true}
+        />
+      );
+
     case "key-value":
       return (
         <FieldKeyValue
