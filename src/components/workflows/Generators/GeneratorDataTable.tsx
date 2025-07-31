@@ -143,7 +143,16 @@ export function GeneratorDataTable() {
             Add Generator
           </Button>
         </div>
-        <DataTable />
+        <DataTable
+          onRowClick={(row) => {
+            const typedRow = row as GeneratorTableData;
+            navigate(
+              getOrgLink(
+                `/workflows/generators/${typedRow.kind}/${typedRow.namespace}/${typedRow.name}`
+              )
+            );
+          }}
+        />
       </DataProvider>
     </div>
   );

@@ -37,7 +37,8 @@ import {
   PageWorkflowTemplatesCreate,
   PageWorkflowTemplateDetails,
   PageWorkflowRunTemplatesCreate,
-  PageWorkflowRunDetails
+  PageWorkflowRunDetails,
+  PageGeneratorDetails
 } from "@/pages";
 import authStore from "@/services/auth/authStore";
 import RequireAuth from "@auth-kit/react-router/RequireAuth";
@@ -232,6 +233,17 @@ const router = createBrowserRouter([
                   breadcrumb: () => ({
                     label: "New Generator",
                     navigatable: false,
+                  }),
+                },
+              },
+              {
+                path: ":generatorKind/:generatorNamespace/:generatorName",
+                element: <PageGeneratorDetails/>,
+                handle: {
+                  breadcrumb: (match: UIMatch) => ({
+                    label: `${match.params.generatorName}`,
+                    path: match.pathname,
+                    navigatable: true,
                   }),
                 },
               },
