@@ -96,7 +96,7 @@ export function FieldKeyValue({
                       required
                       rules={{ required: "Value is required" }}
                       placeholder="Enter value"
-                      autoComplete="false"
+                      autoComplete="off"
                       disabled={disabled}
                     />
                   ) : (
