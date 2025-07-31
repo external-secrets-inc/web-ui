@@ -105,7 +105,7 @@ export interface WorkflowRunData {
   name: string;
   namespace: string;
   templateRef: TemplateRef;
-  parameters: Record<string, string>;
+  parameters: Record<string, unknown>;
   variables: Record<string, string>;
   phase: string;
   startTime?: string;
