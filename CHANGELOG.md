@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.23.2](https://github.com/external-secrets-inc/web-ui/compare/v0.23.1...v0.23.2) (2025-08-01)
+
+
+### Bug Fixes
+
+* create token before trigger ([397e40e](https://github.com/external-secrets-inc/web-ui/commit/397e40ea2065e6a09830e2645e7000d407509486))
+
 ## [0.23.1](https://github.com/external-secrets-inc/web-ui/compare/v0.23.0...v0.23.1) (2025-08-01)
 
 
