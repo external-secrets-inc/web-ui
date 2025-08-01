@@ -78,3 +78,16 @@ jobs:
       - name: Push chart
         run: |
           make helm.push
+      - name: Get Chart Version
+        id: get-chart-version
+        run: |
+          version=$(helm show chart deploy/charts/web-ui | yq e '.version' -)
+          echo "chart_version=$version" >> $GITHUB_OUTPUT
+      # Trigger workflow in esi-bundle
+      - name: Trigger workflow in esi-bundle
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          repository: external-secrets-inc/esi-bundle
+          event-type: update-chart-dependency
+          client-payload: '{"new_version": "${{ steps.get-chart-version.outputs.chart_version }}", "chart_name": "web-ui"}'
+          token: ${{ steps.app-token.outputs.token }}
