@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.23.1](https://github.com/external-secrets-inc/web-ui/compare/v0.23.0...v0.23.1) (2025-08-01)
+
+
+### Bug Fixes
+
+* trigger auto bump on helm builds ([#464](https://github.com/external-secrets-inc/web-ui/issues/464)) ([e4c9338](https://github.com/external-secrets-inc/web-ui/commit/e4c9338558938f9671c7f13d685b241bdaea9905))
+
 ## [0.23.0](https://github.com/external-secrets-inc/web-ui/compare/v0.22.2...v0.23.0) (2025-08-01)
 
 
