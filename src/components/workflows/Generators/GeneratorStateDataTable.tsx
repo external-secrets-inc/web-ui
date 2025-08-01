@@ -95,8 +95,8 @@ export function GeneratorStateDataTable() {
               }}
             >
               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                <LucideTrash2 className="mr-2" />
-                Force Delete
+                <LucideTrash2 className="text-destructive mr-2" />
+                <span className="text-destructive">Force Delete</span>
               </DropdownMenuItem>
             </FeatureItemDeleteAction>
           </DropdownMenuContent>

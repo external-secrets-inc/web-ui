@@ -23,7 +23,7 @@ export function GeneratorDetails({
         <Accordion className="mb-4" type="single" collapsible>
           <AccordionItem value="details" className="space-y-4 text-sm">
             <AccordionTrigger className="font-bold text-base">
-              Details
+              Output
             </AccordionTrigger>
             <AccordionContent>
               {generator.status.output && Object.entries(generator.status.output).length > 0 ? (

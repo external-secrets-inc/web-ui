@@ -1,4 +1,4 @@
-import { LayoutPage, LayoutPortalHeaderActions } from "@/components/layout";
+import { LayoutPage } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 import { LucideRefreshCw } from "lucide-react";
@@ -106,11 +106,6 @@ export function PageGeneratorDetails() {
           Refresh Data
         </Button>
       </LayoutPortalTopbarActions>
-      <LayoutPortalHeaderActions>
-        <div>
-          <span className="font-medium">Kind: {generator.kind}</span>
-        </div>
-      </LayoutPortalHeaderActions>
       {isLoadingGenerator ? <Loader /> : <GeneratorDetails generator={generator} yamlString={yamlString}/>}
     </LayoutPage>
   );

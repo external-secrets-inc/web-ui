@@ -18,7 +18,7 @@ const getGeneratorStatesByResource = async (
       backend: 'ESO_SERVER'
     }
   );
-  return response.data.generators;
+  return response.data.generatorstates;
 };
 
 const useGetGeneratorStatesByResource = (
