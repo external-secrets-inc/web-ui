@@ -225,7 +225,7 @@ export function FieldSelect({
     }
 
     return groupNames.map((groupName) => (
-      <SelectGroup key={groupName}>
+      <SelectGroup key={groupName} className="[&:not(:first-child)]:mt-3">
         <SelectLabel>{groupName}</SelectLabel>
         {groupedOptions[groupName].map(renderOptionItem)}
       </SelectGroup>
