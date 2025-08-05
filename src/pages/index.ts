@@ -12,10 +12,11 @@ export { PageTargets } from "./PageTargets";
 export { PageTargetsCreate } from "./PageTargetsCreate";
 export { PageSecretStores } from "./PageSecretStores";
 export { PageSecretStoresCreate } from "./PageSecretStoresCreate";
+export { PageServiceAccounts } from "./PageServiceAccounts";
+export { PageServiceAccountsCreate } from "./PageServiceAccountsCreate";
 export { PageSettings } from "./PageSettings";
 export { PageWorkflowRunDetails } from "./PageWorkflowRunDetails";
 export { PageWorkflowRunTemplatesCreate } from "./PageWorkflowRunTemplatesCreate";
 export { PageWorkflowTemplateDetails } from "./PageWorkflowTemplateDetails";
 export { PageWorkflowTemplates } from "./PageWorkflowTemplates";
 export { PageWorkflowTemplatesCreate } from "./PageWorkflowTemplatesCreate";
-

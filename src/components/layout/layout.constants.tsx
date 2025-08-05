@@ -10,6 +10,7 @@ import {
   LucideSearch,
   LucideSettings,
   LucideShieldCheck,
+  LucideUserCog,
 } from "lucide-react";
 import { DOCS_DOMAIN } from "@/constants";
 import { AppSidebarNavigationConfig } from "@/components/layout";
@@ -37,6 +38,11 @@ export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
       label: "Destinations",
       url: "/audit/destinations",
       icon: LucideLocateFixed,
+    },
+    {
+      label: "Workflow Service Accounts",
+      url: "/workflows/service-accounts",
+      icon: LucideUserCog,
     },
     {
       label: "Workflow Secret Stores",

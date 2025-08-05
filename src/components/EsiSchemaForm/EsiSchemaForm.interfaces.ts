@@ -156,6 +156,7 @@ export type UISchemaFieldType =
   | 'datetime';
 
 export type KubernetesResourceType =
+  | 'serviceaccount'
   | 'secretstore'
   | 'clustersecretstore'
   | 'externalsecret'
