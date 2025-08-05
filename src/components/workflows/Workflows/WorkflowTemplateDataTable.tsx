@@ -38,6 +38,15 @@ export function WorkflowTemplateDataTable() {
           header: "Name",
           cell: (info) => <strong>{info.getValue()}</strong>,
         }),
+        columnHelper.accessor("description", {
+          header: "Description",
+          cell: (info) => info.getValue(),
+          minSize: 450
+        }),
+        columnHelper.accessor("workflowRunTemplatesAmount", {
+          header: "WorkflowRunTemplates Amount",
+          cell: (info) => <p className="text-center">{info.getValue()}</p>,
+        }),
         columnHelper.display({
           id: "actions",
           cell: (props) => (
