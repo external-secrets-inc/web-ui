@@ -38,14 +38,6 @@ export function ServiceAccountDataTable() {
           header: "Name",
           cell: (info) => <strong>{info.getValue()}</strong>,
         }),
-        columnHelper.accessor("content", {
-          header: "Content",
-          cell: (info) => {
-            const content = info.getValue() as Record<string, string>;
-            const keys = Object.keys(content);
-            return keys.join(", ");
-          },
-        }),
         columnHelper.display({
           id: "actions",
           cell: (props) => (
@@ -60,7 +52,7 @@ export function ServiceAccountDataTable() {
     []
   );
 
-  const secretTableMeta: ServiceAccountTableMeta = {
+  const serviceAccountTableMeta: ServiceAccountTableMeta = {
     renderRowActions: (row) => (
       <div className="flex items-center">
         <DropdownMenu>
@@ -91,26 +83,26 @@ export function ServiceAccountDataTable() {
   };
 
   const {
-    data: secretsData,
-    refetch: secretsRefetch,
+    data: serviceAccountsData,
+    refetch: serviceAccountsRefetch,
     isLoading: isLoadingServiceAccounts,
     isError: isErrorServiceAccounts,
     isRefetchError: isRefetchErrorServiceAccounts,
-    error: secretsError,
+    error: serviceAccountsError,
   } = useGetServiceAccounts();
 
-  const secrets = useMemo(() => {
-    return secretsData || [];
-  }, [secretsData]);
+  const serviceAccounts = useMemo(() => {
+    return serviceAccountsData || [];
+  }, [serviceAccountsData]);
 
   const { mutate: deleteServiceAccount } = useDeleteServiceAccount({
     onError: (error: AxiosError<ApiHttpError>) =>
       handleDefaultApiHttpError(
         error,
-        "Error while trying to delete ServiceAccount"
+        "Error while trying to delete Service Account"
       ),
     onSuccess: () => {
-      secretsRefetch();
+      serviceAccountsRefetch();
       toast.success("ServiceAccount deleted successfully");
     },
   });
@@ -121,7 +113,7 @@ export function ServiceAccountDataTable() {
 
   if (isErrorServiceAccounts || isRefetchErrorServiceAccounts) {
     handleDefaultApiHttpError(
-      secretsError,
+      serviceAccountsError,
       "Error while fetching ServiceAccounts data"
     );
   }
@@ -129,19 +121,19 @@ export function ServiceAccountDataTable() {
   return (
     <div className="flex flex-col gap-4">
       <DataProvider
-        data={secrets}
+        data={serviceAccounts}
         columns={columns}
         initialSort={{ id: "name", desc: false }}
         isLoading={isLoadingServiceAccounts}
         getRowId={(row) => `${row.namespace}/${row.name}`}
-        meta={secretTableMeta}
+        meta={serviceAccountTableMeta}
       >
         <div className="flex justify-end gap-4 items-center">
           <DataSearch />
           <Button
             variant="outline"
             onClick={() =>
-              navigate(getOrgLink("/workflows/secrets/create"))
+              navigate(getOrgLink("/workflows/service-accounts/create"))
             }
           >
             <LucidePlus />

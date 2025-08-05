@@ -1,7 +1,6 @@
 export interface ServiceAccountTableData {
   name: string;
   namespace: string;
-  content: Record<string, string>;
 }
 
 export interface CreateServiceAccountPayload {

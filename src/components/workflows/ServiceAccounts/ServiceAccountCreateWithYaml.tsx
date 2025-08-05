@@ -7,14 +7,11 @@ import YAML from "yaml";
  */
 function createDefaultYamlTemplate(): string {
   const sampleManifest = {
-    apiVersion: "external-secrets.io/v1",
+    apiVersion: "v1",
     kind: "ServiceAccount",
     metadata: {
       name: "",
       namespace: "default",
-    },
-    data: {
-      key: "value",
     },
   };
   return YAML.stringify(sampleManifest);
@@ -28,10 +25,10 @@ export function ServiceAccountCreateWithYaml() {
       resourceType="serviceaccount"
       createDefaultTemplate={createDefaultYamlTemplate}
       mutation={mutation}
-      formLabel="ServiceAccount Manifest (YAML)"
+      formLabel="Service Account Manifest (YAML)"
       formDescription="Write your ServiceAccount configuration directly in YAML format. Perfect for power users who want full control, or when importing existing secrets. Alternatively, you may use the Form Builder for a guided experience."
-      submitButtonText="Create ServiceAccount"
-      formId="secret-form"
+      submitButtonText="Create Service Account"
+      formId="serviceaccount-form"
     />
   );
 }

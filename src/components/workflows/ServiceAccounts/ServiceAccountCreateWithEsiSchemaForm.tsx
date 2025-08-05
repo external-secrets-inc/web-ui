@@ -13,10 +13,10 @@ import { Separator } from "@/components/ui/separator";
 export function ServiceAccountCreateWithEsiSchemaForm() {
   const navigate = useNavigate();
 
-  const { data: schema, isLoading, error } = useGetUISchema("secret");
+  const { data: schema, isLoading, error } = useGetUISchema("serviceaccount");
   const { mutateAsync: createServiceAccount, isPending } = useCreateServiceAccount();
 
-  const formId = "secret-form";
+  const formId = "serviceaccount-form";
 
   const handleSubmit = async (manifest: KubernetesManifest) => {
     const yamlContent = YAML.stringify(manifest);
