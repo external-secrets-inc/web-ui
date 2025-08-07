@@ -31,14 +31,20 @@ const phaseToColor: Record<string, BadgeVariant> = {
   Unknown: "destructive",
 };
 
-function isPrimitive(value: unknown): boolean {
-  return value === null
-    || ['string', 'number', 'boolean'].includes(typeof value)
-    || (Array.isArray(value) && value.length === 0)
-    || (typeof value === 'object' && Object.keys(value).length === 0);
+function isSimpleValue(value: unknown): boolean {
+  return (
+    value === null ||
+    ["string", "number", "boolean"].includes(typeof value) ||
+    (Array.isArray(value) && value.length === 0) ||
+    (typeof value === "object" && Object.keys(value).length === 0)
+  );
 }
 
-function renderValue(value: unknown, renderInline = false, isInsideArray = false): React.ReactNode {
+function renderValue(
+  value: unknown,
+  renderInline = false,
+  isInsideArray = false
+): React.ReactNode {
   if (Array.isArray(value)) {
     if (value.length === 0) {
       return <span className="text-muted-foreground">Empty array</span>;
@@ -64,7 +70,7 @@ function renderValue(value: unknown, renderInline = false, isInsideArray = false
     return (
       <div className={isInsideArray ? "" : "pl-4"}>
         {Object.entries(value).map(([k, v]) => (
-          <div key={k} className={isPrimitive(v)? "flex" : ""}>
+          <div key={k} className={isSimpleValue(v) ? "flex" : ""}>
             <div className="font-medium">{k}:</div>
             <div className="ml-2">{renderValue(v, true, false)}</div>
           </div>
@@ -239,7 +245,7 @@ export function WorkflowRunDetails() {
                   </span>
                 </div>
                 <div className="pl-4">
-                  <span className="font-medium">Started at{" "}</span>
+                  <span className="font-medium">Started at </span>
                   <span className="ml-2 font-medium">
                     {workflow.startTime
                       ? formatDate(workflow.startTime, { format: "full" })
@@ -247,7 +253,7 @@ export function WorkflowRunDetails() {
                   </span>
                 </div>
                 <div className="pl-4">
-                  <span className="font-medium">Completed at{" "}</span>
+                  <span className="font-medium">Completed at </span>
                   <span className="ml-2 font-medium">
                     {workflow.completionTime
                       ? formatDate(workflow.completionTime, { format: "full" })
@@ -255,7 +261,7 @@ export function WorkflowRunDetails() {
                   </span>
                 </div>
                 <div className="pl-4">
-                  <span className="font-medium">Executed in{" "}</span>
+                  <span className="font-medium">Executed in </span>
                   <span className="ml-2 font-medium">
                     {workflow.executionTimeNanos &&
                     workflow.executionTimeNanos > 0
@@ -272,11 +278,13 @@ export function WorkflowRunDetails() {
                   {Object.entries(workflowRun.parameters).length > 0 ? (
                     Object.entries(workflowRun.parameters).map(
                       ([key, value]) => {
-                        const primitive = isPrimitive(value);
+                        const primitive = isSimpleValue(value);
                         return primitive ? (
                           <div key={key} className="flex">
                             <div className="font-medium">{key}:</div>
-                            <div className="ml-2">{renderValue(value, true)}</div>
+                            <div className="ml-2">
+                              {renderValue(value, true)}
+                            </div>
                           </div>
                         ) : (
                           <div key={key}>
