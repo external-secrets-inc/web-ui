@@ -17,14 +17,14 @@ import { Loader } from "@/components/ui/Loader";
 // TODO[iurisevero]: Define generator manifest type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseManifest(manifest?: string): any {
-  const raw = manifest || '{}';
+  const raw = manifest || "{}";
   try {
     return JSON.parse(raw);
   } catch {
     try {
       return YAML.parse(raw);
     } catch (e) {
-      console.error('Failed to parse manifest as JSON or YAML:', e);
+      console.error("Failed to parse manifest as JSON or YAML:", e);
       return {};
     }
   }
@@ -52,14 +52,16 @@ export function PageGeneratorDetails() {
     });
   };
 
-  handleRefresh();
-
   const {
     data: generatorData,
     isLoading: isLoadingGenerator,
     error: generatorError,
   } = useGetGenerator(
-    { kind: generatorKind ?? "", namespace: generatorNamespace ?? "", name: generatorName ?? "" },
+    {
+      kind: generatorKind ?? "",
+      namespace: generatorNamespace ?? "",
+      name: generatorName ?? "",
+    },
     {
       enabled: !!generatorKind && !!generatorNamespace && !!generatorName,
     }
@@ -69,7 +71,7 @@ export function PageGeneratorDetails() {
     if (generatorError) {
       handleDefaultApiHttpError(
         generatorError,
-        `Error while fetching workflow run data`
+        `Error while fetching generator data`
       );
     }
   }, [generatorError]);
@@ -81,7 +83,7 @@ export function PageGeneratorDetails() {
         namespace: generatorNamespace ?? "",
         kind: "",
         manifest: "",
-        status: { output: {}},
+        status: { output: {} },
       } as GeneratorData;
 
     return generatorData;
@@ -99,14 +101,21 @@ export function PageGeneratorDetails() {
   }, [generator]);
 
   return (
-    <LayoutPage title={`${generatorName}`} description={"Kind: " + generator.kind}>
+    <LayoutPage
+      title={`${generatorName}`}
+      description={"Kind: " + generator.kind}
+    >
       <LayoutPortalTopbarActions>
         <Button variant="secondary" onClick={handleRefresh}>
           <LucideRefreshCw />
           Refresh Data
         </Button>
       </LayoutPortalTopbarActions>
-      {isLoadingGenerator ? <Loader /> : <GeneratorDetails generator={generator} yamlString={yamlString}/>}
+      {isLoadingGenerator ? (
+        <Loader />
+      ) : (
+        <GeneratorDetails generator={generator} yamlString={yamlString} />
+      )}
     </LayoutPage>
   );
 }

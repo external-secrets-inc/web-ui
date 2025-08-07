@@ -112,7 +112,10 @@ export function GeneratorStateDataTable() {
     isError: isErrorGeneratorStates,
     isRefetchError: isRefetchErrorGeneratorStates,
     error: generatorsError,
-  } = useGetGeneratorStatesByResource({ resourceNamespace: generatorNamespace?? "", resourceName: generatorName?? ""});
+  } = useGetGeneratorStatesByResource({
+    resourceNamespace: generatorNamespace ?? "",
+    resourceName: generatorName ?? "",
+  });
 
   const generators = useMemo(() => {
     return generatorsData || [];
