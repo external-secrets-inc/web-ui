@@ -89,7 +89,7 @@ export function FieldKeyValue({
                   />
                 </div>
                 <div className="flex-1">
-                  { password ? (
+                  {password ? (
                     <FieldPassword
                       name={`${name}.${index}.value`}
                       label="Value"
@@ -101,12 +101,12 @@ export function FieldKeyValue({
                     />
                   ) : (
                     <FieldText
-                    name={`${name}.${index}.value`}
-                    label="Value"
-                    required
-                    rules={{ required: "Value is required" }}
-                    placeholder="Enter value"
-                    disabled={disabled}
+                      name={`${name}.${index}.value`}
+                      label="Value"
+                      required
+                      rules={{ required: "Value is required" }}
+                      placeholder="Enter value"
+                      disabled={disabled}
                     />
                   )}
                 </div>
