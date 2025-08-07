@@ -31,6 +31,7 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Trimmer } from "@/components/ui/Trimmer";
+import { useMemo } from "react";
 
 /**
  * Global resize observer for all MultiSelect instances.
@@ -109,6 +110,8 @@ interface Option {
   value: string;
   /** Optional icon component to display alongside the option. */
   icon?: React.ComponentType<{ className?: string }>;
+  /** Optional group this option belongs to. Used for grouping options visually. */
+  group?: string;
 }
 
 type CommandItemRef = {
@@ -384,9 +387,7 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
                 */}
               <div className="grid grid-cols-1">
                 <ScrollArea className="max-h-[calc(theme(spacing.52)+theme(spacing.1))] pb-1" type="always">
-                  <CommandGroup className="p-0">
-                    <MultiSelectListOptions />
-                  </CommandGroup>
+                  <MultiSelectListOptions />
                 </ScrollArea>
                 <CommandGroup forceMount className="border-t order-last" >
                   <MultiSelectFooterOptions />
@@ -644,32 +645,81 @@ MultiSelectPopoverTrigger.displayName = "MultiSelectPopoverTrigger";
 const MultiSelectListOptions: React.FC<{ className?: string }> = ({ className }) => {
   const { options, selectedValues, toggleOption, itemRefs } = useMultiSelect();
 
+  // Group options by the `group` field
+  const groupedOptions = useMemo(() => {
+    const groups: Record<string, typeof options> = {};
+    for (const option of options) {
+      const groupName = option.group || "Other"; // default group name
+      if (!groups[groupName]) {
+        groups[groupName] = [];
+      }
+      groups[groupName].push(option);
+    }
+    return groups;
+  }, [options]);
+
+  const groupNames = Object.keys(groupedOptions);
+  const shouldShowGroups = !(groupNames.length === 1 && groupNames[0] === "Other");
+
   return (
     <div className={cn(className)}>
-      {options.map((option) => {
-        const isSelected = selectedValues.includes(option.value);
-        return (
-          <CommandItem
-            key={option.value}
-            onSelect={() => toggleOption(option.value)}
-            className="cursor-pointer mx-1 has-[[data-state=checked]]:bg-accent/50 border border-transparent has-[[data-state=checked]]:border-background transition-all"
-            value={option.value}
-            ref={(element) => {
-              if (element) {
-                itemRefs.current.set(option.value, { id: element.id, value: option.value, element });
-              } else {
-                itemRefs.current.delete(option.value);
-              }
-            }}
-          >
-            <Checkbox checked={isSelected} />
-            {option.icon && (
-              <option.icon className="mr-2 text-muted-foreground" />
-            )}
-            <Trimmer>{option.label}</Trimmer>
-          </CommandItem>
-        );
-      })}
+      {shouldShowGroups ? (
+        groupNames.map((groupName) => (
+          <CommandGroup key={groupName} heading={groupName}>
+            {groupedOptions[groupName].map((option) => {
+              const isSelected = selectedValues.includes(option.value);
+              return (
+                <CommandItem
+                  key={option.value}
+                  onSelect={() => toggleOption(option.value)}
+                  className="cursor-pointer mx-1 has-[[data-state=checked]]:bg-accent/50 border border-transparent has-[[data-state=checked]]:border-background transition-all"
+                  value={option.value}
+                  ref={(element) => {
+                    if (element) {
+                      itemRefs.current.set(option.value, { id: element.id, value: option.value, element });
+                    } else {
+                      itemRefs.current.delete(option.value);
+                    }
+                  }}
+                >
+                  <Checkbox checked={isSelected} />
+                  {option.icon && (
+                    <option.icon className="mr-2 text-muted-foreground" />
+                  )}
+                  <Trimmer>{option.label}</Trimmer>
+                </CommandItem>
+              );
+            })}
+          </CommandGroup>
+        ))
+      ) : (
+        <CommandGroup className="p-0">
+        {groupedOptions["Other"].map((option) => {
+          const isSelected = selectedValues.includes(option.value);
+          return (
+            <CommandItem
+              key={option.value}
+              onSelect={() => toggleOption(option.value)}
+              className="cursor-pointer mx-1 has-[[data-state=checked]]:bg-accent/50 border border-transparent has-[[data-state=checked]]:border-background transition-all"
+              value={option.value}
+              ref={(element) => {
+                if (element) {
+                  itemRefs.current.set(option.value, { id: element.id, value: option.value, element });
+                } else {
+                  itemRefs.current.delete(option.value);
+                }
+              }}
+            >
+              <Checkbox checked={isSelected} />
+              {option.icon && (
+                <option.icon className="mr-2 text-muted-foreground" />
+              )}
+              <Trimmer>{option.label}</Trimmer>
+            </CommandItem>
+          );
+        })}
+        </CommandGroup>
+      )}
     </div>
   );
 };

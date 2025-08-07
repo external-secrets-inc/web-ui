@@ -39,6 +39,10 @@ export function SecretStoreDataTable() {
           header: "Name",
           cell: (info) => <strong>{info.getValue()}</strong>,
         }),
+        columnHelper.accessor("provider", {
+          header: "Provider",
+          cell: (info) => info.getValue(),
+        }),
         columnHelper.accessor("capabilities", {
           header: "Available as",
           cell: (info) => {

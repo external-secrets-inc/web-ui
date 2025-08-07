@@ -11,6 +11,7 @@ export type SimpleSelectOptions = string[];
 export interface SelectOption {
   value: string | Record<string, unknown>;
   label: string;
+  group?: string; // Optional grouping for better organization
 }
 
 /**
@@ -79,6 +80,7 @@ export type OneOfOption = OneOfStaticOption | OneOfApiOption;
 export interface OneOfStaticOption {
   id: string;
   skipNesting?: boolean;
+  group?: string;
 }
 
 /**
@@ -92,6 +94,7 @@ export interface OneOfApiOption {
   valueRef?:
   | string
   | { [key: string]: string };
+  groupBy?: string;
 }
 
 /**
@@ -111,6 +114,7 @@ export type AnyOfOption = AnyOfStaticOption | AnyOfApiOption;
 export interface AnyOfStaticOption {
   label: string;
   value: string;
+  group?: string;
 }
 
 /**
@@ -124,6 +128,7 @@ export interface AnyOfApiOption {
   valueRef?:
   | string
   | { [key: string]: string };
+  groupBy?: string;
 }
 
 export interface UISchemaGroup {

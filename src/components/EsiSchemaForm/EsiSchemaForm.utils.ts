@@ -843,7 +843,9 @@ export function processApiResponses(
           value = item;
         }
 
-        selectOptions.push({ label, value });
+        const group = apiOption.groupBy ? String(item[apiOption.groupBy]) : undefined;
+
+        selectOptions.push({ label, value, group });
       });
     }
   });

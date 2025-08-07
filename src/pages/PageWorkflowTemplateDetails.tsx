@@ -82,32 +82,32 @@ export function PageWorkflowTemplateDetails() {
         status: { status: "Unknown", reason: "No data" },
         manifest: "",
         parameters: [],
+        description: "",
+        workflowRunTemplatesAmount: 0,
       } as WorkflowTemplateData;
 
     return workflowTemplateData;
   }, [workflowTemplateData, templateName, templateNamespace]);
 
-  const { yamlString, specName, specVersion } = useMemo(() => {
+  const { yamlString, specVersion } = useMemo(() => {
     try {
       const parsed = parseManifest(workflowTemplate.manifest);
       const yamlStr = YAML.stringify({ spec: parsed.spec || {} });
       return {
         yamlString: yamlStr,
-        specName: parsed?.spec?.name ?? "Unknown name",
         specVersion: parsed?.spec?.version ?? "Unknown version",
       };
     } catch (error) {
       console.error("Failed to parse manifest", error);
       return {
         yamlString: "Invalid manifest format.",
-        specName: "N/A",
         specVersion: "N/A",
       };
     }
   }, [workflowTemplate]);
 
   return (
-    <LayoutPage title={`${templateName}`} description={specName}>
+    <LayoutPage title={`${templateName}`} description={workflowTemplate.description}>
       <LayoutPortalTopbarActions>
         <Button variant="secondary" onClick={handleRefresh}>
           <LucideRefreshCw />

@@ -3,7 +3,8 @@ import { Status } from "../Common.interfaces";
 export interface SecretStoreTableData {
   name: string;
   namespace: string;
-  capabilities: string;
+  provider: string;
+  capabilities?: string;
   status?: Status;
 }
 
