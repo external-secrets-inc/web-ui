@@ -12,6 +12,7 @@ const getSecretStores = async (signal: AbortSignal): Promise<SecretStoreTableDat
     signal,
     backend: 'ESO_SERVER'
   });
+  console.log(response.data.secretstores)
   return response.data.secretstores;
 };
 

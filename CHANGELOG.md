@@ -1,5 +1,39 @@
 # Changelog
 
+## [0.23.2](https://github.com/external-secrets-inc/web-ui/compare/v0.23.1...v0.23.2) (2025-08-01)
+
+
+### Bug Fixes
+
+* create token before trigger ([397e40e](https://github.com/external-secrets-inc/web-ui/commit/397e40ea2065e6a09830e2645e7000d407509486))
+
+## [0.23.1](https://github.com/external-secrets-inc/web-ui/compare/v0.23.0...v0.23.1) (2025-08-01)
+
+
+### Bug Fixes
+
+* trigger auto bump on helm builds ([#464](https://github.com/external-secrets-inc/web-ui/issues/464)) ([e4c9338](https://github.com/external-secrets-inc/web-ui/commit/e4c9338558938f9671c7f13d685b241bdaea9905))
+
+## [0.23.0](https://github.com/external-secrets-inc/web-ui/compare/v0.22.2...v0.23.0) (2025-08-01)
+
+
+### Features
+
+* add Workflow Targets management functionality ([54cf8c3](https://github.com/external-secrets-inc/web-ui/commit/54cf8c39032a152d2a1e2bb9a65a0ad3aecd12e6))
+* add workflow targets management interface ([#455](https://github.com/external-secrets-inc/web-ui/issues/455)) ([54cf8c3](https://github.com/external-secrets-inc/web-ui/commit/54cf8c39032a152d2a1e2bb9a65a0ad3aecd12e6))
+* helm bumps on release please ([#463](https://github.com/external-secrets-inc/web-ui/issues/463)) ([ac70754](https://github.com/external-secrets-inc/web-ui/commit/ac70754a3e078dc94cc0e9c69a81011e0e87cda4))
+* push charts to public registry ([#449](https://github.com/external-secrets-inc/web-ui/issues/449)) ([795be48](https://github.com/external-secrets-inc/web-ui/commit/795be483a45bd13aabe10bdd1cf47a3636a25a34))
+* push Docker images to public registry ([#439](https://github.com/external-secrets-inc/web-ui/issues/439)) ([4a7543d](https://github.com/external-secrets-inc/web-ui/commit/4a7543d40b0b436394c81e7f3763871c07b15f7f))
+* push Helm charts to both internal and public registries ([795be48](https://github.com/external-secrets-inc/web-ui/commit/795be483a45bd13aabe10bdd1cf47a3636a25a34))
+
+
+### Bug Fixes
+
+* reference on gha ([2b701c0](https://github.com/external-secrets-inc/web-ui/commit/2b701c07d0423a3dc797067237bdc916eead2d56))
+* support custom ports ([#450](https://github.com/external-secrets-inc/web-ui/issues/450)) ([4f6ae16](https://github.com/external-secrets-inc/web-ui/commit/4f6ae16853d2c65f75db065c4999f56b332185a9))
+* update visible when logic ([#457](https://github.com/external-secrets-inc/web-ui/issues/457)) ([79d1a23](https://github.com/external-secrets-inc/web-ui/commit/79d1a237402283f97dc1043000306644930bb0dc))
+* wildcard ([#447](https://github.com/external-secrets-inc/web-ui/issues/447)) ([34d7463](https://github.com/external-secrets-inc/web-ui/commit/34d7463a32311f1b249245a537666108ba2e71f1))
+
 ## [0.22.2](https://github.com/external-secrets-inc/web-ui/compare/v0.22.1...v0.22.2) (2025-07-23)
 
 

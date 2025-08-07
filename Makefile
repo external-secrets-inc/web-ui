@@ -48,3 +48,11 @@ helm.push: helm.login ## Push helm chart to the repository
 	@helm package deploy/charts/web-ui
 	helm push *.tgz $(CHARTS_REPO)
 	helm push *.tgz $(PUBLIC_CHARTS_REPO)
+
+.PHONY: helm.test
+helm.test: ## Run helm tests
+	@helm unittest --file tests/*.yaml --file 'tests/**/*.yaml' deploy/charts/web-ui
+
+.PHONY: helm.test.update
+helm.test.update: ## Run helm tests
+	@helm unittest -u --file tests/*.yaml --file 'tests/**/*.yaml' deploy/charts/web-ui

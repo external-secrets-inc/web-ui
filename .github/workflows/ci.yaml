@@ -76,12 +76,6 @@ jobs:
       env:
         GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
 
-    - uses: azure/setup-helm@v4.2.0
-      with:
-        version: 'latest'
-
-    - name: Build and push helm chart
-      run: make helm.push
     - name: login to github app
       uses: actions/create-github-app-token@v1
       id: app-token

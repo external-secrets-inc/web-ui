@@ -2,6 +2,8 @@
 export interface WorkflowTemplateTableData {
   name: string;
   namespace: string;
+  description: string;
+  workflowRunTemplatesAmount: number;
 }
 
 export interface WorkflowTemplateData {
@@ -9,6 +11,8 @@ export interface WorkflowTemplateData {
   namespace: string;
   manifest: string;
   parameters: WorkflowTemplateParameter[];
+  description: string;
+  workflowRunTemplatesAmount: number;
 }
 
 export interface WorkflowTemplateParameter {
