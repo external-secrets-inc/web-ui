@@ -7,13 +7,13 @@ import YAML from "yaml";
  */
 function createDefaultYamlTemplate(): string {
   const sampleManifest = {
-    apiVersion: "external-secrets.io/v1",
+    apiVersion: "v1",
     kind: "Secret",
     metadata: {
       name: "",
       namespace: "default",
     },
-    data: {
+    stringData: {
       key: "value",
     },
   };
