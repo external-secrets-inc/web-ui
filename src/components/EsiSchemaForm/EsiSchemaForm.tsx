@@ -77,7 +77,7 @@ export function EsiSchemaForm({
   }, [errorState]);
 
   // Field components handle their own defaults when they mount, so we use empty form defaults
-  const defaultValues = initialValues?? {};
+  const defaultValues = initialValues ?? {};
 
   const methods = useForm({
     defaultValues,
@@ -165,7 +165,11 @@ export function EsiSchemaForm({
           {schema.fields
             .filter((field) => isFieldVisible(field.visibleWhen, formValues))
             .map((field) => (
-              <FieldRenderer key={field.id} field={field} formValues={formValues}/>
+              <FieldRenderer
+                key={field.id}
+                field={field}
+                formValues={formValues}
+              />
             ))}
         </div>
 

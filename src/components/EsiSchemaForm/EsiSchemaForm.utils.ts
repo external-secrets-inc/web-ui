@@ -608,25 +608,7 @@ export function transformData(
 
   // Create a flat map of field paths to schemas for easy lookup
   const schemaMap = new Map<string, UISchemaField>();
-
-  function buildSchemaMap(fields: UISchemaField[], prefix = '') {
-    for (const field of fields) {
-      if (!field?.id) continue;
-
-      const fieldPath = prefix ? `${prefix}.${field.id.split('.').pop()}` : field.id;
-      schemaMap.set(fieldPath, field);
-      schemaMap.set(field.id, field);
-
-      if (field.fields) {
-        buildSchemaMap(field.fields, fieldPath);
-      }
-      if (field.items?.fields) {
-        buildSchemaMap(field.items.fields, fieldPath);
-      }
-    }
-  }
-
-  buildSchemaMap(schema);
+  buildSchemaMap(schema, schemaMap);
 
   // Transform the root data
   const result: Record<string, unknown> = {};

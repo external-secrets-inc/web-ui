@@ -21,7 +21,7 @@ const useUpdateSecretStore = (
   return useMutation({
     mutationFn: updateSecretStore,
     onSuccess: (data, variables, context) => {
-      queryClient.invalidateQueries({ queryKey: ["workflows", "useUpdateSecretStore"] });
+      queryClient.invalidateQueries({ queryKey: ["workflows", "useGetSecretStores"] });
       options?.onSuccess?.(data, variables, context);
     },
     ...options,

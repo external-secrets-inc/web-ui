@@ -36,7 +36,7 @@ export function SecretStoreEdit() {
     if (secretStoreError) {
       handleDefaultApiHttpError(
         secretStoreError,
-        `Error while fetching workflow run data`
+        `Error while fetching secret store data`
       );
     }
   }, [secretStoreError]);
