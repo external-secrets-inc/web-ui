@@ -21,6 +21,7 @@ import {
 export interface EsiSchemaFormProps {
   schema?: UISchema;
   resourceType: KubernetesResourceType;
+  initialValues?: Record<string, unknown>;
   onSubmit: (manifest: KubernetesManifest) => Promise<void>;
   submitButtonText?: string;
   formId?: string;
@@ -50,6 +51,7 @@ export interface EsiSchemaFormProps {
 export function EsiSchemaForm({
   schema,
   resourceType,
+  initialValues,
   onSubmit,
   submitButtonText = "Create",
   formId = "esi-schema-form",
@@ -75,7 +77,7 @@ export function EsiSchemaForm({
   }, [errorState]);
 
   // Field components handle their own defaults when they mount, so we use empty form defaults
-  const defaultValues = {};
+  const defaultValues = initialValues?? {};
 
   const methods = useForm({
     defaultValues,
