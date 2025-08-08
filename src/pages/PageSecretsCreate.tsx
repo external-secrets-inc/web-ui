@@ -5,7 +5,7 @@ export function PageSecretsCreate() {
   return (
     <LayoutPage
       title="New Secret"
-      description="Create a new Workflow Secret."
+      description="Create a new External Secret."
       width="compact"
     >
       <SecretCreate />

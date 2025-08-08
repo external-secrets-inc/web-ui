@@ -7,14 +7,13 @@ import {
   LucideBookOpen,
   LucideBot,
   LucideFolderKey,
-  LucideKey,
   LucideLocateFixed,
-  LucideNewspaper,
   LucideRotateCcwKey,
   LucideSearch,
   LucideSettings,
   LucideShieldCheck,
   LucideUserCog,
+  LucideWorkflow,
 } from "lucide-react";
 import { DOCS_DOMAIN } from "@/constants";
 import { AppSidebarNavigationConfig } from "@/components/layout";
@@ -24,49 +23,46 @@ export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
   navMain: [
     {
       label: "Resources",
-      icon: LucideKey,
       items: [
         {
           label: "External Secrets",
-          url: "/workflows/secrets",
+          url: "/resources/external-secrets",
           icon: LucideAsteriskSquare,
         },
         {
           label: "Service Accounts",
-          url: "/workflows/service-accounts",
+          url: "/resources/service-accounts",
           icon: LucideUserCog,
         },
         {
           label: "Secret Stores",
-          url: "/workflows/secret-stores",
+          url: "/resources/secret-stores",
           icon: LucideBookKey,
         },
         {
           label: "Generators",
-          url: "/workflows/generators",
+          url: "/resources/generators",
           icon: LucideAtom,
         },
         {
           label: "Targets",
-          url: "/workflows/targets",
+          url: "/resources/targets",
           icon: LucideLocateFixed,
         },
       ],
     },
     {
-      label: "Workflows",
-      icon: LucideNewspaper,
+      label: "Automation",
       items: [
         {
-          label: "Runbooks",
-          url: "/workflows/templates",
-          icon: LucideNewspaper,
+          label: "Workflows",
+          url: "/automation/workflows",
+          icon: LucideWorkflow,
         },
       ],
     },
     {
       label: "Findings",
-      icon: LucideSearch,
       items: [
         {
           label: "Reused Secrets",
@@ -77,7 +73,6 @@ export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
     },
     {
       label: "Audit",
-      icon: LucideBarChart3,
       items: [
         {
           label: "Insights",
@@ -104,16 +99,15 @@ export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
     },
     {
       label: "Operations",
-      icon: LucideBot,
       items: [
         {
           label: "Agents",
-          url: "/agents",
+          url: "/operations/agents",
           icon: LucideBot,
         },
         {
           label: "Reloaders",
-          url: "/reloaders",
+          url: "/operations/reloaders",
           icon: LucideRotateCcwKey,
         },
       ],

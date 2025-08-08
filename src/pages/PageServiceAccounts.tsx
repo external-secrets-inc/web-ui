@@ -14,14 +14,11 @@ export function PageServiceAccounts() {
 
   return (
     <LayoutPage
-      title="Workflow Service Accounts"
-      description="Manage your External Secrets Operator Service Accounts. These accounts define the identity and permissions used by External Secrets to authenticate and retrieve secrets from external providers."
+      title="Service Accounts"
+      description="Manage Service Accounts that define identity and permissions for External Secrets to fetch secrets from external providers."
     >
       <LayoutPortalTopbarActions>
-        <Button
-          variant="secondary"
-          onClick={handleRefresh}
-        >
+        <Button variant="secondary" onClick={handleRefresh}>
           <LucideRefreshCw />
           Refresh Data
         </Button>

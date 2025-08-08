@@ -84,7 +84,7 @@ export function convertYamlToWorkflowData(yamlString: string): WorkflowData {
 }
 
 /**
- * Generates a default YAML template for a WorkflowTemplate
+  * Generates a default YAML template for a Workflow (WorkflowTemplate)
  */
 function createDefaultYamlTemplate(): string {
   const sampleManifest = {
@@ -145,7 +145,7 @@ export function WorkflowTemplateCreateWithYaml() {
       setWorkflowTemplate(workflow);
     } else {
       setWorkflowTemplate(null);
-      toast.error("No valid workflow template to render.");
+      toast.error("No valid Workflow to render.");
       return;
     }
     setIsDialogOpen(true);
@@ -180,9 +180,9 @@ export function WorkflowTemplateCreateWithYaml() {
         resourceType="workflowtemplate"
         createDefaultTemplate={createDefaultYamlTemplate}
         mutation={mutation}
-        formLabel="Workflow Template Manifest (YAML)"
-        formDescription="Write your Workflow Template configuration directly in YAML format. Perfect for power users who want full control, or when importing existing templates. Alternatively, you may use the Form Builder for a guided experience."
-        submitButtonText="Create Workflow Template"
+        formLabel="Workflow Manifest (YAML)"
+        formDescription="Write your Workflow configuration directly in YAML format. Perfect for power users who want full control, or when importing existing Workflows. Alternatively, you may use the Form Builder for a guided experience."
+        submitButtonText="Create Workflow"
         formId="workflow-template-form"
         additionalActions={renderGraphButton}
       />

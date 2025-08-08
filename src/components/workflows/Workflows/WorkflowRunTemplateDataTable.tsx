@@ -227,7 +227,7 @@ export function WorkflowRunTemplateDataTable() {
             onCloseAutoFocus={(event) => event.preventDefault()}
           >
             <FeatureItemDeleteAction
-              featureType={"Workflow Template"}
+              featureType={"Run Template"}
               featureID={`${row.namespace}/${row.name}`}
               featureName={row.name}
               onDelete={() => {
@@ -296,7 +296,7 @@ export function WorkflowRunTemplateDataTable() {
   if (isErrorWorkflowRunTemplates || isRefetchErrorWorkflowRunTemplates) {
     handleDefaultApiHttpError(
       workflowRunTemplatesError,
-      "Error while fetching Workflow Templates data"
+      "Error while fetching Run Templates data"
     );
   }
 
@@ -322,7 +322,7 @@ export function WorkflowRunTemplateDataTable() {
               onClick={() =>
                 navigate(
                   getOrgLink(
-                    `/workflows/templates/${templateNamespace}/${templateName}/create`
+                    `/automation/workflows/${templateNamespace}/${templateName}/create`
                   )
                 )
               }

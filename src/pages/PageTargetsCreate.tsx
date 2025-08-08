@@ -5,7 +5,7 @@ export function PageTargetsCreate() {
   return (
     <LayoutPage
       title="New Target"
-      description="Create a new Workflow Target."
+      description="Create a new Target."
       width="compact"
     >
       <TargetCreate />

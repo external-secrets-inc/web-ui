@@ -5,7 +5,7 @@ export function PageGeneratorsCreate() {
   return (
     <LayoutPage
       title="New Generator"
-      description="Create a new Workflow Generator."
+      description="Create a new Generator."
       width="compact"
     >
       <GeneratorCreate />

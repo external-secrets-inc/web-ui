@@ -270,7 +270,7 @@ export function WorkflowRunStatusBadge({
         <Link
           to={{
             pathname: getOrgLink(
-              `/workflows/templates/${templateNamespace}/${templateName}/runs/${run.namespace}/${run.name}`
+              `/automation/workflows/${templateNamespace}/${templateName}/runs/${run.namespace}/${run.name}`
             ),
           }}
           className="group block"

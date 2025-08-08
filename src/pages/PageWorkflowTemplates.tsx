@@ -14,14 +14,11 @@ export function PageWorkflowTemplates() {
 
   return (
     <LayoutPage
-      title="Workflow Templates"
-      description="Manage your External Secrets Operator Workflow Templates."
+      title="Workflows"
+      description="Standardize automated procedures for triggering secret generation, rotation, and distribution."
     >
       <LayoutPortalTopbarActions>
-        <Button
-          variant="secondary"
-          onClick={handleRefresh}
-        >
+        <Button variant="secondary" onClick={handleRefresh}>
           <LucideRefreshCw />
           Refresh Data
         </Button>

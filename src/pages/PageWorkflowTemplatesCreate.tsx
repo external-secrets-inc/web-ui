@@ -4,8 +4,8 @@ import { WorkflowTemplateCreate } from "@/components/workflows/Workflows/Workflo
 export function PageWorkflowTemplatesCreate() {
   return (
     <LayoutPage
-      title="New Workflow Template"
-      description="Create a new Workflow Template."
+      title="New Workflow"
+      description="Create a new Workflow."
       width="compact"
     >
       <WorkflowTemplateCreate />
