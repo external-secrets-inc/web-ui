@@ -62,12 +62,20 @@ export function GeneratorDataTable() {
       <div className="flex items-center">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+            <Button
+              variant="ghost"
+              className="h-8 w-8 p-0"
+              onClick={(event) => event.stopPropagation()}
+            >
               <span className="sr-only">Open menu</span>
               <LucideMoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent
+            align="end"
+            onClick={(event) => event.stopPropagation()}
+            onCloseAutoFocus={(event) => event.preventDefault()}
+          >
             <FeatureItemDeleteAction
               featureType={"Generator"}
               featureID={`${row.kind}/${row.namespace}/${row.name}`}
