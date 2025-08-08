@@ -55,6 +55,7 @@ import {
 import { load, page } from "./analytics";
 import { App } from "./App";
 import "./index.css";
+import { PageSecretStoresEdit } from "./pages/PageSecretStoresEdit";
 
 const queryClient = new QueryClient();
 
@@ -141,6 +142,17 @@ const router = createBrowserRouter([
                   breadcrumb: () => ({
                     label: "New Secret Store",
                     navigatable: false,
+                  }),
+                },
+              },
+              {
+                path: "edit/:secretstoreNamespace/:secretstoreName",
+                element: <PageSecretStoresEdit />,
+                handle: {
+                  breadcrumb: (match: UIMatch) => ({
+                    label: `${match.params.secretstoreName}`,
+                    path: match.pathname,
+                    navigatable: true,
                   }),
                 },
               },

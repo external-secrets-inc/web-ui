@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { LucideMoreVertical, LucidePlus, LucideTrash2 } from "lucide-react";
+import { LucideMoreVertical, LucidePencil, LucidePlus, LucideTrash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DataProvider,
@@ -23,7 +23,7 @@ import {
 import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction";
 import { useNavigate } from "react-router-dom";
 import useOrgLink from "@/hooks/useOrgLink";
-import { Badge, BadgeProps } from "@/components/ui/badge";
+import { SecretStoreStatusBadge } from "./SecretStoreStatusBadge";
 
 interface SecretStoreTableMeta {
   renderRowActions?: (row: SecretStoreTableData) => React.ReactNode;
@@ -63,25 +63,7 @@ export function SecretStoreDataTable() {
           header: "Status",
           cell: (info) => {
             const statusData = info.row.original.status;
-            if (!statusData) {
-              return <Badge variant="secondary">Unknown</Badge>;
-            }
-
-            const { status, reason } = statusData;
-            let variantClass: BadgeProps["variant"] = "default";
-            let displayText = "Not Informed";
-
-            if (status === "Pending") {
-              variantClass = "warning";
-              displayText = "Pending";
-            } else if (status === "True") {
-              variantClass = "success";
-              displayText = reason || "Ready";
-            } else if (status === "False") {
-              variantClass = "destructive";
-              displayText = reason || "Error";
-            }
-            return <Badge variant={variantClass}>{displayText}</Badge>;
+            return <SecretStoreStatusBadge statusData={statusData} />
           },
         }),
         columnHelper.display({
@@ -109,6 +91,17 @@ export function SecretStoreDataTable() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem onSelect={(e) => {
+              e.preventDefault()
+              navigate(
+              getOrgLink(
+                `/workflows/secret-stores/edit/${row.namespace}/${row.name}`
+              )
+            );
+            }}>
+              <LucidePencil className="mr-2" />
+              Edit
+            </DropdownMenuItem>
             <FeatureItemDeleteAction
               featureType={"Secret Store"}
               featureID={`${row.namespace}/${row.name}`}
