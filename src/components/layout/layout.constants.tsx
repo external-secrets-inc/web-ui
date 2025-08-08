@@ -1,10 +1,11 @@
 import {
+  LucideArrowDownToDot,
+  LucideAsteriskSquare,
   LucideAtom,
   LucideBarChart3,
   LucideBookKey,
   LucideBookOpen,
   LucideBot,
-  LucideComputer,
   LucideFolderKey,
   LucideKey,
   LucideLocateFixed,
@@ -22,70 +23,100 @@ import { AuditListenerStatusBadge } from "@/components/Audit/AuditListenerStatus
 export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
   navMain: [
     {
-      label: "Audit Insights",
-      url: "/audit/insights",
-      renderAppendContent: <AuditListenerStatusBadge compact />,
-      icon: LucideBarChart3,
-    },
-    {
-      label: "Providers",
-      url: "/audit/providers",
-      icon: LucideFolderKey,
-    },
-    {
-      label: "Policies",
-      url: "/audit/policies",
-      icon: LucideShieldCheck,
-    },
-    {
-      label: "Destinations",
-      url: "/audit/destinations",
-      icon: LucideLocateFixed,
-    },
-    {
-      label: "Workflow Secrets",
-      url: "/workflows/secrets",
+      label: "Resources",
       icon: LucideKey,
+      items: [
+        {
+          label: "External Secrets",
+          url: "/workflows/secrets",
+          icon: LucideAsteriskSquare,
+        },
+        {
+          label: "Service Accounts",
+          url: "/workflows/service-accounts",
+          icon: LucideUserCog,
+        },
+        {
+          label: "Secret Stores",
+          url: "/workflows/secret-stores",
+          icon: LucideBookKey,
+        },
+        {
+          label: "Generators",
+          url: "/workflows/generators",
+          icon: LucideAtom,
+        },
+        {
+          label: "Targets",
+          url: "/workflows/targets",
+          icon: LucideLocateFixed,
+        },
+      ],
     },
     {
-      label: "Workflow Service Accounts",
-      url: "/workflows/service-accounts",
-      icon: LucideUserCog,
-    },
-    {
-      label: "Workflow Secret Stores",
-      url: "/workflows/secret-stores",
-      icon: LucideBookKey,
-    },
-    {
-      label: "Workflow Generators",
-      url: "/workflows/generators",
-      icon: LucideAtom,
-    },
-    {
-      label: "Workflow Targets",
-      url: "/workflows/targets",
-      icon: LucideComputer,
-    },
-    {
-      label: "Workflow Templates",
-      url: "/workflows/templates",
+      label: "Workflows",
       icon: LucideNewspaper,
+      items: [
+        {
+          label: "Runbooks",
+          url: "/workflows/templates",
+          icon: LucideNewspaper,
+        },
+      ],
     },
     {
       label: "Findings",
-      url: "/findings",
       icon: LucideSearch,
+      items: [
+        {
+          label: "Reused Secrets",
+          url: "/findings",
+          icon: LucideSearch,
+        },
+      ],
     },
     {
-      label: "Agents",
-      url: "/agents",
+      label: "Audit",
+      icon: LucideBarChart3,
+      items: [
+        {
+          label: "Insights",
+          url: "/audit/insights",
+          renderAppendContent: <AuditListenerStatusBadge compact />,
+          icon: LucideBarChart3,
+        },
+        {
+          label: "Providers",
+          url: "/audit/providers",
+          icon: LucideFolderKey,
+        },
+        {
+          label: "Policies",
+          url: "/audit/policies",
+          icon: LucideShieldCheck,
+        },
+        {
+          label: "Destinations",
+          url: "/audit/destinations",
+          icon: LucideArrowDownToDot,
+        },
+      ],
+    },
+    {
+      label: "Operations",
       icon: LucideBot,
-    },
-    {
-      label: "Reloaders",
-      url: "/reloaders",
-      icon: LucideRotateCcwKey,
+      items: [
+        {
+          label: "Agents",
+          url: "/agents",
+          icon: LucideBot,
+        },
+        {
+          label: "Reloaders",
+          url: "/reloaders",
+          icon: LucideRotateCcwKey,
+        },
+      ],
     },
   ],
   navFooter: [
