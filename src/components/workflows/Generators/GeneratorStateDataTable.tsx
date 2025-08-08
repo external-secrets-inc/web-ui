@@ -80,12 +80,20 @@ export function GeneratorStateDataTable() {
       <div className="flex items-center">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+            <Button
+              variant="ghost"
+              className="h-8 w-8 p-0"
+              onClick={(event) => event.stopPropagation()}
+            >
               <span className="sr-only">Open menu</span>
               <LucideMoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent
+            align="end"
+            onClick={(event) => event.stopPropagation()}
+            onCloseAutoFocus={(event) => event.preventDefault()}
+          >
             <FeatureItemDeleteAction
               featureType={"GeneratorState"}
               featureID={`${row.namespace}/${row.name}`}
@@ -154,6 +162,9 @@ export function GeneratorStateDataTable() {
         getRowId={(row) => `${row.namespace}/${row.name}`}
         meta={generatorTableMeta}
       >
+        <div>
+          <h2 className="font-bold w-auto">Associated Generator States</h2>
+        </div>
         <DataTable />
       </DataProvider>
     </div>
