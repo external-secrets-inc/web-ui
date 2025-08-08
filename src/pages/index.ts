@@ -10,6 +10,8 @@ export { PageGeneratorsCreate } from "./PageGeneratorsCreate";
 export { PageReloaders } from "./PageReloaders";
 export { PageTargets } from "./PageTargets";
 export { PageTargetsCreate } from "./PageTargetsCreate";
+export { PageSecrets } from "./PageSecrets";
+export { PageSecretsCreate } from "./PageSecretsCreate";
 export { PageSecretStores } from "./PageSecretStores";
 export { PageSecretStoresCreate } from "./PageSecretStoresCreate";
 export { PageSettings } from "./PageSettings";
@@ -18,4 +20,3 @@ export { PageWorkflowRunTemplatesCreate } from "./PageWorkflowRunTemplatesCreate
 export { PageWorkflowTemplateDetails } from "./PageWorkflowTemplateDetails";
 export { PageWorkflowTemplates } from "./PageWorkflowTemplates";
 export { PageWorkflowTemplatesCreate } from "./PageWorkflowTemplatesCreate";
-

@@ -16,7 +16,6 @@ export interface FieldObjectProps {
   rules?: Record<string, unknown>;
   descriptionInline?: boolean;
   disabled?: boolean;
-  formValues: Record<string, unknown>
 }
 
 export function FieldObject({
@@ -29,7 +28,6 @@ export function FieldObject({
   rules,
   descriptionInline = true,
   disabled,
-  formValues,
 }: FieldObjectProps) {
   const { setValue, getValues, formState } = useFormContext();
   const error = !!formState.errors[name];
@@ -67,7 +65,7 @@ export function FieldObject({
         <div className="pl-3 pt-4 border-l border-border space-y-6" data-nested-group>
           {field.fields && field.fields.length > 0 ? (
             field.fields
-            .filter((subField) => isFieldVisible(subField.visibleWhen, formValues))
+            .filter((subField) => isFieldVisible(subField.visibleWhen, getValues()))
             .map((subField) => {
               const propertyName = subField.id.split('.').pop() || subField.id;
               const dynamicId = `${name}.${propertyName}`;
@@ -76,7 +74,6 @@ export function FieldObject({
                 <FieldRenderer
                   key={dynamicId}
                   field={{ ...subField, id: dynamicId, readOnly: disabled || subField.readOnly }}
-                  formValues={formValues}
                 />
               );
             })

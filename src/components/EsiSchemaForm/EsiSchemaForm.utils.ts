@@ -28,6 +28,11 @@ const KUBERNETES_RESOURCE_CONFIG: Record<KubernetesResourceType, {
   kind: string;
   displayName: string;
 }> = {
+  secret: {
+    apiVersion: 'v1',
+    kind: 'Secret',
+    displayName: 'Secret',
+  },
   secretstore: {
     apiVersion: 'external-secrets.io/v1',
     kind: 'SecretStore',
@@ -237,6 +242,7 @@ export function createFieldValidation(field: UISchemaField) {
       }
       break;
     }
+    case 'key-password':
     case 'key-value': {
       if (field.required) {
         rules.validate = (value: unknown) => {
@@ -572,7 +578,7 @@ export function transformData(
     }
 
     // Transform key-value arrays to objects
-    if (fieldSchema.type === 'key-value' && Array.isArray(value)) {
+    if ((fieldSchema.type === 'key-value' || fieldSchema.type === 'key-password') && Array.isArray(value)) {
       return value.reduce((acc, item) => {
         if (item && typeof item === 'object' && 'key' in item && 'value' in item) {
           const { key, value: val } = item as { key: string; value: string };
@@ -644,8 +650,7 @@ export function assembleManifest(
     metadata: {
       name: '',
       labels: {},
-    },
-    spec: {},
+    }
   };
 
   // Merge transformed data into the manifest
@@ -653,8 +658,6 @@ export function assembleManifest(
     if (Object.prototype.hasOwnProperty.call(transformedData, key)) {
       if (key === 'metadata' && transformedData[key] && typeof transformedData[key] === 'object') {
         Object.assign(manifest.metadata, transformedData[key]);
-      } else if (key === 'spec' && transformedData[key] && typeof transformedData[key] === 'object') {
-        Object.assign(manifest.spec, transformedData[key]);
       } else {
         (manifest as unknown as Record<string, unknown>)[key] = transformedData[key];
       }

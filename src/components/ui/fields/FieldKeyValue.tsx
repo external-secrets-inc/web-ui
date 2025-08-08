@@ -11,6 +11,7 @@ import { useFieldArray, useFormContext } from "react-hook-form";
 import { FieldBase } from "./FieldBase";
 import { FieldHeader } from "./FieldHeader";
 import { FieldText } from "./FieldText";
+import { FieldPassword } from "./FieldPassword";
 
 export interface FieldKeyValueProps {
   name: string;
@@ -21,6 +22,7 @@ export interface FieldKeyValueProps {
   defaultValue?: Array<{ key: string; value: string }>;
   descriptionInline?: boolean;
   disabled?: boolean;
+  password?: boolean;
 }
 
 export function FieldKeyValue({
@@ -32,6 +34,7 @@ export function FieldKeyValue({
   defaultValue,
   descriptionInline,
   disabled,
+  password,
 }: FieldKeyValueProps) {
   const { control, formState } = useFormContext();
   const { fields, append, remove } = useFieldArray({
@@ -86,14 +89,26 @@ export function FieldKeyValue({
                   />
                 </div>
                 <div className="flex-1">
-                  <FieldText
-                    name={`${name}.${index}.value`}
-                    label="Value"
-                    required
-                    rules={{ required: "Value is required" }}
-                    placeholder="Enter value"
-                    disabled={disabled}
-                  />
+                  {password ? (
+                    <FieldPassword
+                      name={`${name}.${index}.value`}
+                      label="Value"
+                      required
+                      rules={{ required: "Value is required" }}
+                      placeholder="Enter value"
+                      autoComplete="off"
+                      disabled={disabled}
+                    />
+                  ) : (
+                    <FieldText
+                      name={`${name}.${index}.value`}
+                      label="Value"
+                      required
+                      rules={{ required: "Value is required" }}
+                      placeholder="Enter value"
+                      disabled={disabled}
+                    />
+                  )}
                 </div>
                 <Tooltip>
                   <TooltipTrigger asChild>

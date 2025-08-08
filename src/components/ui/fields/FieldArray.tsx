@@ -23,7 +23,6 @@ export interface FieldArrayProps {
   defaultValue?: unknown[];
   descriptionInline?: boolean;
   disabled?: boolean;
-  formValues: Record<string, unknown>;
 }
 
 export function FieldArray({
@@ -36,7 +35,6 @@ export function FieldArray({
   defaultValue,
   descriptionInline,
   disabled,
-  formValues,
 }: FieldArrayProps) {
   const { control, getValues, formState } = useFormContext();
   const { fields, append, remove } = useFieldArray({
@@ -100,7 +98,7 @@ export function FieldArray({
                   >
                     <div className="space-y-2">
                       <div className="flex-grow space-y-6">
-                        {itemSchema.fields?.filter((subField) => isFieldVisible(subField.visibleWhen, formValues))
+                        {itemSchema.fields?.filter((subField) => isFieldVisible(subField.visibleWhen, getValues()))
                         .map((subField) => {
                           const subFieldId = subField.id.replace(
                             `${itemSchema.id}.`,
@@ -115,7 +113,6 @@ export function FieldArray({
                                 id: fieldId,
                                 readOnly: disabled || subField.readOnly,
                               }}
-                              formValues={formValues}
                             />
                           );
                         })}
@@ -154,7 +151,6 @@ export function FieldArray({
                       label: `#${index + 1}`,
                       readOnly: disabled || itemSchema?.readOnly,
                     }}
-                    formValues={formValues}
                   />
                   <Tooltip>
                     <TooltipTrigger asChild>

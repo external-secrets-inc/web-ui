@@ -151,6 +151,7 @@ export type UISchemaFieldType =
   | 'select'
   | 'array'
   | 'object'
+  | 'key-password'
   | 'key-value'
   | 'secret-selector'
   | 'service-account-selector'
@@ -161,6 +162,7 @@ export type UISchemaFieldType =
   | 'datetime';
 
 export type KubernetesResourceType =
+  | 'secret'
   | 'secretstore'
   | 'clustersecretstore'
   | 'externalsecret'
@@ -187,5 +189,4 @@ export interface KubernetesManifest {
     namespace?: string;
     [key: string]: unknown;
   };
-  spec: Record<string, unknown>;
 }
