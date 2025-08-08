@@ -84,6 +84,14 @@ export function EsiSchemaForm({
     mode: "onChange",
   });
 
+  // Reset form when initialValues change (for edit scenarios)
+  // This ensures we don't see old values while the form is submitting or if we try to edit a second time
+  useEffect(() => {
+    if (initialValues && !isSubmitting) {
+      methods.reset(initialValues);
+    }
+  }, [initialValues, methods, isSubmitting]);
+
   const handleSubmit = async (data: Record<string, unknown>) => {
     setIsSubmitting(true);
 
