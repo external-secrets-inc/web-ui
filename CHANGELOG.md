@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.24.0](https://github.com/external-secrets-inc/web-ui/compare/v0.23.2...v0.24.0) (2025-08-08)
+
+
+### Features
+
+* add edit screen for secretstores ([#477](https://github.com/external-secrets-inc/web-ui/issues/477)) ([934ded6](https://github.com/external-secrets-inc/web-ui/commit/934ded65cfab399f04259d975d04d711ba344e30))
+* add generator details ([#462](https://github.com/external-secrets-inc/web-ui/issues/462)) ([84dec73](https://github.com/external-secrets-inc/web-ui/commit/84dec7317a82fa9cdf702e949ef3b41a2b31326d))
+* add groups on multiselect and select components ([#469](https://github.com/external-secrets-inc/web-ui/issues/469)) ([c260faf](https://github.com/external-secrets-inc/web-ui/commit/c260faf1d3040e4ba5e50a4e5e7982601de37590))
+* add secrets pages and services ([#459](https://github.com/external-secrets-inc/web-ui/issues/459)) ([305906a](https://github.com/external-secrets-inc/web-ui/commit/305906a1233fccab2441a652ad5180b92b5d1776))
+* create service account screens and services ([#475](https://github.com/external-secrets-inc/web-ui/issues/475)) ([ce827cb](https://github.com/external-secrets-inc/web-ui/commit/ce827cb2be95231b7b36484134254e1ea662fb86))
+
+
+### Bug Fixes
+
+* add description and run templates amount to workflow template datatable ([#472](https://github.com/external-secrets-inc/web-ui/issues/472)) ([050f73f](https://github.com/external-secrets-inc/web-ui/commit/050f73fc1d1b1eb1dd0accf85696e1c492bbcdc9))
+* update findings and secretStores models ([#470](https://github.com/external-secrets-inc/web-ui/issues/470)) ([33d622e](https://github.com/external-secrets-inc/web-ui/commit/33d622e0d169c620bf32a4cdf75f97e9d56debe9))
+* workflow run parameters render ([#461](https://github.com/external-secrets-inc/web-ui/issues/461)) ([25d60d3](https://github.com/external-secrets-inc/web-ui/commit/25d60d3cb0f2dd67fd1737b02cdedf1d1be378b7))
+
 ## [0.23.2](https://github.com/external-secrets-inc/web-ui/compare/v0.23.1...v0.23.2) (2025-08-01)
 
 
