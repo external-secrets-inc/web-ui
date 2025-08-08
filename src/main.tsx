@@ -38,6 +38,8 @@ import {
   PageWorkflowTemplateDetails,
   PageWorkflowRunTemplatesCreate,
   PageWorkflowRunDetails,
+  PageSecrets,
+  PageSecretsCreate,
   PageServiceAccountsCreate,
   PageServiceAccounts
 } from "@/pages";
@@ -57,6 +59,7 @@ import {
 import { load, page } from "./analytics";
 import { App } from "./App";
 import "./index.css";
+import { PageSecretStoresEdit } from "./pages/PageSecretStoresEdit";
 
 const queryClient = new QueryClient();
 
@@ -119,7 +122,34 @@ const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <NavigateWithOrg to="workflows/secret-stores" replace />,
+            element: <NavigateWithOrg to="workflows/secrets" replace />,
+          },
+          {
+            path: "secrets",
+            element: <Outlet />,
+            handle: {
+              breadcrumb: (match: UIMatch) => ({
+                label: "Workflow Secrets",
+                path: match.pathname,
+                navigatable: true,
+              }),
+            },
+            children: [
+              {
+                index: true,
+                element: <PageSecrets />,
+              },
+              {
+                path: "create",
+                element: <PageSecretsCreate />,
+                handle: {
+                  breadcrumb: () => ({
+                    label: "New Secret",
+                    navigatable: false,
+                  }),
+                },
+              },
+            ],
           },
           {
             path: "service-accounts",
@@ -170,6 +200,17 @@ const router = createBrowserRouter([
                   breadcrumb: () => ({
                     label: "New Secret Store",
                     navigatable: false,
+                  }),
+                },
+              },
+              {
+                path: "edit/:secretstoreNamespace/:secretstoreName",
+                element: <PageSecretStoresEdit />,
+                handle: {
+                  breadcrumb: (match: UIMatch) => ({
+                    label: `${match.params.secretstoreName}`,
+                    path: match.pathname,
+                    navigatable: true,
                   }),
                 },
               },

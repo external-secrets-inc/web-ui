@@ -4,8 +4,11 @@ import {
   LucideBookKey,
   LucideBookOpen,
   LucideBot,
+  LucideComputer,
   LucideFolderKey,
+  LucideKey,
   LucideLocateFixed,
+  LucideNewspaper,
   LucideRotateCcwKey,
   LucideSearch,
   LucideSettings,
@@ -40,6 +43,11 @@ export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
       icon: LucideLocateFixed,
     },
     {
+      label: "Workflow Secrets",
+      url: "/workflows/secrets",
+      icon: LucideKey,
+    },
+    {
       label: "Workflow Service Accounts",
       url: "/workflows/service-accounts",
       icon: LucideUserCog,
@@ -57,12 +65,12 @@ export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
     {
       label: "Workflow Targets",
       url: "/workflows/targets",
-      icon: LucideBookKey,
+      icon: LucideComputer,
     },
     {
       label: "Workflow Templates",
       url: "/workflows/templates",
-      icon: LucideBookKey,
+      icon: LucideNewspaper,
     },
     {
       label: "Findings",

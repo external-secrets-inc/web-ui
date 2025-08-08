@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { LucideMoreVertical, LucidePencil, LucidePlus, LucideTrash2 } from "lucide-react";
+import { LucideMoreVertical, LucidePlus, LucideTrash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DataProvider,
@@ -8,12 +8,12 @@ import {
   defineColumns,
 } from "@/components/ui/DataProvider";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
-import { SecretStoreTableData } from "./SecretStores.interfaces";
+import { SecretTableData } from "./Secrets.interfaces";
 import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
 import { toast } from "sonner";
-import useDeleteSecretStore from "@/services/workflows/mutations/useDeleteSecretStore";
-import useGetSecretStores from "@/services/workflows/queries/useGetSecretStores";
+import useDeleteSecret from "@/services/workflows/mutations/useDeleteSecret";
+import useGetSecrets from "@/services/workflows/queries/useGetSecrets";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,47 +23,27 @@ import {
 import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction";
 import { useNavigate } from "react-router-dom";
 import useOrgLink from "@/hooks/useOrgLink";
-import { SecretStoreStatusBadge } from "./SecretStoreStatusBadge";
 
-interface SecretStoreTableMeta {
-  renderRowActions?: (row: SecretStoreTableData) => React.ReactNode;
+interface SecretTableMeta {
+  renderRowActions?: (row: SecretTableData) => React.ReactNode;
 }
 
-export function SecretStoreDataTable() {
+export function SecretDataTable() {
   const navigate = useNavigate();
   const getOrgLink = useOrgLink();
   const columns = useMemo(
     () =>
-      defineColumns<SecretStoreTableData>((columnHelper) => [
+      defineColumns<SecretTableData>((columnHelper) => [
         columnHelper.accessor("name", {
           header: "Name",
           cell: (info) => <strong>{info.getValue()}</strong>,
         }),
-        columnHelper.accessor("provider", {
-          header: "Provider",
-          cell: (info) => info.getValue(),
-        }),
-        columnHelper.accessor("capabilities", {
-          header: "Available as",
+        columnHelper.accessor("content", {
+          header: "Content",
           cell: (info) => {
-            const capabilities = info.getValue();
-            let availableAs = "";
-            if (capabilities === "ReadOnly") {
-              availableAs = "Source";
-            } else if (capabilities === "ReadWrite") {
-              availableAs = "Source / Destination";
-            } else if (capabilities === "WriteOnly") {
-              availableAs = "Destination";
-            }
-
-            return availableAs;
-          },
-        }),
-        columnHelper.accessor("status", {
-          header: "Status",
-          cell: (info) => {
-            const statusData = info.row.original.status;
-            return <SecretStoreStatusBadge statusData={statusData} />
+            const content = info.getValue() as Record<string, string>;
+            const keys = Object.keys(content);
+            return keys.join(", ");
           },
         }),
         columnHelper.display({
@@ -71,7 +51,7 @@ export function SecretStoreDataTable() {
           cell: (props) => (
             <div className="flex justify-end">
               {(
-                props.table.options.meta as SecretStoreTableMeta
+                props.table.options.meta as SecretTableMeta
               )?.renderRowActions?.(props.row.original)}
             </div>
           ),
@@ -80,7 +60,7 @@ export function SecretStoreDataTable() {
     []
   );
 
-  const secretStoreTableMeta: SecretStoreTableMeta = {
+  const secretTableMeta: SecretTableMeta = {
     renderRowActions: (row) => (
       <div className="flex items-center">
         <DropdownMenu>
@@ -91,19 +71,8 @@ export function SecretStoreDataTable() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onSelect={(e) => {
-              e.preventDefault()
-              navigate(
-              getOrgLink(
-                `/workflows/secret-stores/edit/${row.namespace}/${row.name}`
-              )
-            );
-            }}>
-              <LucidePencil className="mr-2" />
-              Edit
-            </DropdownMenuItem>
             <FeatureItemDeleteAction
-              featureType={"Secret Store"}
+              featureType={"Secret"}
               featureID={`${row.namespace}/${row.name}`}
               featureName={row.name}
               onDelete={() => {
@@ -122,61 +91,61 @@ export function SecretStoreDataTable() {
   };
 
   const {
-    data: secretStoresData,
-    refetch: secretStoresRefetch,
-    isLoading: isLoadingSecretStores,
-    isError: isErrorSecretStores,
-    isRefetchError: isRefetchErrorSecretStores,
-    error: secretStoresError,
-  } = useGetSecretStores();
+    data: secretsData,
+    refetch: secretsRefetch,
+    isLoading: isLoadingSecrets,
+    isError: isErrorSecrets,
+    isRefetchError: isRefetchErrorSecrets,
+    error: secretsError,
+  } = useGetSecrets();
 
-  const secretStores = useMemo(() => {
-    return secretStoresData || [];
-  }, [secretStoresData]);
+  const secrets = useMemo(() => {
+    return secretsData || [];
+  }, [secretsData]);
 
-  const { mutate: deleteSecretStore } = useDeleteSecretStore({
+  const { mutate: deleteSecret } = useDeleteSecret({
     onError: (error: AxiosError<ApiHttpError>) =>
       handleDefaultApiHttpError(
         error,
-        "Error while trying to delete Secret Store"
+        "Error while trying to delete Secret"
       ),
     onSuccess: () => {
-      secretStoresRefetch();
-      toast.success("Secret Store deleted successfully");
+      secretsRefetch();
+      toast.success("Secret deleted successfully");
     },
   });
 
   const performDelete = (namespace: string, name: string) => {
-    deleteSecretStore({ namespace, name });
+    deleteSecret({ namespace, name });
   };
 
-  if (isErrorSecretStores || isRefetchErrorSecretStores) {
+  if (isErrorSecrets || isRefetchErrorSecrets) {
     handleDefaultApiHttpError(
-      secretStoresError,
-      "Error while fetching Secret Stores data"
+      secretsError,
+      "Error while fetching Secrets data"
     );
   }
 
   return (
     <div className="flex flex-col gap-4">
       <DataProvider
-        data={secretStores}
+        data={secrets}
         columns={columns}
         initialSort={{ id: "name", desc: false }}
-        isLoading={isLoadingSecretStores}
+        isLoading={isLoadingSecrets}
         getRowId={(row) => `${row.namespace}/${row.name}`}
-        meta={secretStoreTableMeta}
+        meta={secretTableMeta}
       >
         <div className="flex justify-end gap-4 items-center">
           <DataSearch />
           <Button
             variant="outline"
             onClick={() =>
-              navigate(getOrgLink("/workflows/secret-stores/create"))
+              navigate(getOrgLink("/workflows/secrets/create"))
             }
           >
             <LucidePlus />
-            Add Secret Store
+            Add Secret
           </Button>
         </div>
         <DataTable />

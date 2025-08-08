@@ -3,23 +3,23 @@ import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
-import { CreateSecretStorePayload } from "@/components/workflows/SecretStores/SecretStores.interfaces";
+import { UpdateSecretStorePayload } from "@/components/workflows/SecretStores/SecretStores.interfaces";
 
-const createSecretStore = async (payload: CreateSecretStorePayload): Promise<void> => {
+const updateSecretStore = async (payload: UpdateSecretStorePayload): Promise<void> => {
   const headers = await getAuthHeaders();
-  await axiosInstance.post('/api/v1/secretstores', payload, {
+  await axiosInstance.put('/api/v1/secretstores', payload, {
     headers,
     backend: 'ESO_SERVER'
   });
 };
 
-const useCreateSecretStore = (
-  options?: Omit<UseMutationOptions<void, AxiosError<ApiHttpError>, CreateSecretStorePayload>, 'mutationFn'>
+const useUpdateSecretStore = (
+  options?: Omit<UseMutationOptions<void, AxiosError<ApiHttpError>, UpdateSecretStorePayload>, 'mutationFn'>
 ) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: createSecretStore,
+    mutationFn: updateSecretStore,
     onSuccess: (data, variables, context) => {
       queryClient.invalidateQueries({ queryKey: ["workflows", "useGetSecretStores"] });
       options?.onSuccess?.(data, variables, context);
@@ -28,4 +28,4 @@ const useCreateSecretStore = (
   });
 };
 
-export default useCreateSecretStore;
+export default useUpdateSecretStore;

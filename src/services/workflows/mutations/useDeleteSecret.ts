@@ -3,29 +3,29 @@ import { getAuthHeaders } from "@/services/auth/authHelpers";
 import axiosInstance from "@/services/axiosConfig";
 import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
-import { CreateSecretStorePayload } from "@/components/workflows/SecretStores/SecretStores.interfaces";
+import { DeleteSecretPayload } from "@/components/workflows/Secrets/Secrets.interfaces";
 
-const createSecretStore = async (payload: CreateSecretStorePayload): Promise<void> => {
+const deleteSecret = async (payload: DeleteSecretPayload): Promise<void> => {
   const headers = await getAuthHeaders();
-  await axiosInstance.post('/api/v1/secretstores', payload, {
+  await axiosInstance.delete(`/api/v1/secrets/${payload.namespace}/${payload.name}`, {
     headers,
     backend: 'ESO_SERVER'
   });
 };
 
-const useCreateSecretStore = (
-  options?: Omit<UseMutationOptions<void, AxiosError<ApiHttpError>, CreateSecretStorePayload>, 'mutationFn'>
+const useDeleteSecret = (
+  options?: Omit<UseMutationOptions<void, AxiosError<ApiHttpError>, DeleteSecretPayload>, 'mutationFn'>
 ) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: createSecretStore,
+    mutationFn: deleteSecret,
     onSuccess: (data, variables, context) => {
-      queryClient.invalidateQueries({ queryKey: ["workflows", "useGetSecretStores"] });
+      queryClient.invalidateQueries({ queryKey: ["workflows", "useGetSecrets"] });
       options?.onSuccess?.(data, variables, context);
     },
     ...options,
   });
 };
 
-export default useCreateSecretStore;
+export default useDeleteSecret;
