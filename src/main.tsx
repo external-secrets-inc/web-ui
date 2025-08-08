@@ -41,7 +41,9 @@ import {
   PageSecrets,
   PageSecretsCreate,
   PageServiceAccountsCreate,
-  PageServiceAccounts
+  PageServiceAccounts,
+  PageGeneratorDetails,
+  PageSecretStoresEdit
 } from "@/pages";
 import authStore from "@/services/auth/authStore";
 import RequireAuth from "@auth-kit/react-router/RequireAuth";
@@ -59,7 +61,6 @@ import {
 import { load, page } from "./analytics";
 import { App } from "./App";
 import "./index.css";
-import { PageSecretStoresEdit } from "./pages/PageSecretStoresEdit";
 
 const queryClient = new QueryClient();
 
@@ -302,6 +303,17 @@ const router = createBrowserRouter([
                   breadcrumb: () => ({
                     label: "New Generator",
                     navigatable: false,
+                  }),
+                },
+              },
+              {
+                path: ":generatorKind/:generatorNamespace/:generatorName",
+                element: <PageGeneratorDetails/>,
+                handle: {
+                  breadcrumb: (match: UIMatch) => ({
+                    label: `${match.params.generatorName}`,
+                    path: match.pathname,
+                    navigatable: true,
                   }),
                 },
               },
