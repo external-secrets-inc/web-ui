@@ -163,6 +163,7 @@ export type UISchemaFieldType =
 
 export type KubernetesResourceType =
   | 'secret'
+  | 'serviceaccount'
   | 'secretstore'
   | 'clustersecretstore'
   | 'externalsecret'

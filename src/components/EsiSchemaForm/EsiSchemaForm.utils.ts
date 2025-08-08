@@ -33,6 +33,11 @@ const KUBERNETES_RESOURCE_CONFIG: Record<KubernetesResourceType, {
     kind: 'Secret',
     displayName: 'Secret',
   },
+  serviceaccount: {
+    apiVersion: 'v1',
+    kind: 'ServiceAccount',
+    displayName: 'Service Account',
+  },
   secretstore: {
     apiVersion: 'external-secrets.io/v1',
     kind: 'SecretStore',
