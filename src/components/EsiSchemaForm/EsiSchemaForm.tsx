@@ -21,6 +21,7 @@ import {
 export interface EsiSchemaFormProps {
   schema?: UISchema;
   resourceType: KubernetesResourceType;
+  initialValues?: Record<string, unknown>;
   onSubmit: (manifest: KubernetesManifest) => Promise<void>;
   submitButtonText?: string;
   formId?: string;
@@ -50,6 +51,7 @@ export interface EsiSchemaFormProps {
 export function EsiSchemaForm({
   schema,
   resourceType,
+  initialValues,
   onSubmit,
   submitButtonText = "Create",
   formId = "esi-schema-form",
@@ -75,12 +77,20 @@ export function EsiSchemaForm({
   }, [errorState]);
 
   // Field components handle their own defaults when they mount, so we use empty form defaults
-  const defaultValues = {};
+  const defaultValues = initialValues ?? {};
 
   const methods = useForm({
     defaultValues,
     mode: "onChange",
   });
+
+  // Reset form when initialValues change (for edit scenarios)
+  // This ensures we don't see old values while the form is submitting or if we try to edit a second time
+  useEffect(() => {
+    if (initialValues && !isSubmitting) {
+      methods.reset(initialValues);
+    }
+  }, [initialValues, methods, isSubmitting]);
 
   const handleSubmit = async (data: Record<string, unknown>) => {
     setIsSubmitting(true);
@@ -163,7 +173,11 @@ export function EsiSchemaForm({
           {schema.fields
             .filter((field) => isFieldVisible(field.visibleWhen, formValues))
             .map((field) => (
-              <FieldRenderer key={field.id} field={field} formValues={formValues}/>
+              <FieldRenderer
+                key={field.id}
+                field={field}
+                formValues={formValues}
+              />
             ))}
         </div>
 

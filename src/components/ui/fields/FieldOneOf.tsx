@@ -19,7 +19,6 @@ export interface FieldOneOfProps {
   field: UISchemaField;
   descriptionInline?: boolean;
   disabled?: boolean;
-  formValues: Record<string, unknown>;
 }
 
 export function FieldOneOf({
@@ -31,7 +30,6 @@ export function FieldOneOf({
   field,
   descriptionInline,
   disabled,
-  formValues,
 }: FieldOneOfProps) {
   const { setValue, getValues } = useFormContext();
 
@@ -194,7 +192,7 @@ export function FieldOneOf({
         field={field}
       />
 
-      {selectedField && selectedField.id && isFieldVisible(selectedField.visibleWhen, formValues) && (
+      {selectedField && selectedField.id && isFieldVisible(selectedField.visibleWhen, getValues()) && (
         <div className="mt-4">
           <FieldRenderer
             key={selectedField.id}
@@ -203,7 +201,6 @@ export function FieldOneOf({
               id: resolveFieldName(selectedField.id, `${name}.${getPropertyName(selectedField.id)}`),
               readOnly: selectedField.readOnly,
             }}
-            formValues={formValues}
           />
         </div>
       )}

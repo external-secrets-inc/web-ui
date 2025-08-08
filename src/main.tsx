@@ -38,7 +38,12 @@ import {
   PageWorkflowTemplateDetails,
   PageWorkflowRunTemplatesCreate,
   PageWorkflowRunDetails,
-  PageGeneratorDetails
+  PageSecrets,
+  PageSecretsCreate,
+  PageServiceAccountsCreate,
+  PageServiceAccounts,
+  PageGeneratorDetails,
+  PageSecretStoresEdit
 } from "@/pages";
 import authStore from "@/services/auth/authStore";
 import RequireAuth from "@auth-kit/react-router/RequireAuth";
@@ -118,7 +123,61 @@ const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <NavigateWithOrg to="workflows/secret-stores" replace />,
+            element: <NavigateWithOrg to="workflows/secrets" replace />,
+          },
+          {
+            path: "secrets",
+            element: <Outlet />,
+            handle: {
+              breadcrumb: (match: UIMatch) => ({
+                label: "Workflow Secrets",
+                path: match.pathname,
+                navigatable: true,
+              }),
+            },
+            children: [
+              {
+                index: true,
+                element: <PageSecrets />,
+              },
+              {
+                path: "create",
+                element: <PageSecretsCreate />,
+                handle: {
+                  breadcrumb: () => ({
+                    label: "New Secret",
+                    navigatable: false,
+                  }),
+                },
+              },
+            ],
+          },
+          {
+            path: "service-accounts",
+            element: <Outlet />,
+            handle: {
+              breadcrumb: (match: UIMatch) => ({
+                label: "Workflow Service Accounts",
+                path: match.pathname,
+                navigatable: true,
+              }),
+            },
+            children: [
+              {
+                index: true,
+                element: <PageServiceAccounts />,
+              },
+              {
+                path: "create",
+                element: <PageServiceAccountsCreate />,
+                handle: {
+                  breadcrumb: () => ({
+                    label: "New Service Account",
+                    navigatable: false,
+                  }),
+                },
+              },
+            ],
           },
           {
             path: "secret-stores",
@@ -142,6 +201,17 @@ const router = createBrowserRouter([
                   breadcrumb: () => ({
                     label: "New Secret Store",
                     navigatable: false,
+                  }),
+                },
+              },
+              {
+                path: "edit/:secretstoreNamespace/:secretstoreName",
+                element: <PageSecretStoresEdit />,
+                handle: {
+                  breadcrumb: (match: UIMatch) => ({
+                    label: `${match.params.secretstoreName}`,
+                    path: match.pathname,
+                    navigatable: true,
                   }),
                 },
               },

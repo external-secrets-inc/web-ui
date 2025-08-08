@@ -28,6 +28,16 @@ const KUBERNETES_RESOURCE_CONFIG: Record<KubernetesResourceType, {
   kind: string;
   displayName: string;
 }> = {
+  secret: {
+    apiVersion: 'v1',
+    kind: 'Secret',
+    displayName: 'Secret',
+  },
+  serviceaccount: {
+    apiVersion: 'v1',
+    kind: 'ServiceAccount',
+    displayName: 'Service Account',
+  },
   secretstore: {
     apiVersion: 'external-secrets.io/v1',
     kind: 'SecretStore',
@@ -237,6 +247,7 @@ export function createFieldValidation(field: UISchemaField) {
       }
       break;
     }
+    case 'key-password':
     case 'key-value': {
       if (field.required) {
         rules.validate = (value: unknown) => {
@@ -572,7 +583,7 @@ export function transformData(
     }
 
     // Transform key-value arrays to objects
-    if (fieldSchema.type === 'key-value' && Array.isArray(value)) {
+    if ((fieldSchema.type === 'key-value' || fieldSchema.type === 'key-password') && Array.isArray(value)) {
       return value.reduce((acc, item) => {
         if (item && typeof item === 'object' && 'key' in item && 'value' in item) {
           const { key, value: val } = item as { key: string; value: string };
@@ -608,25 +619,7 @@ export function transformData(
 
   // Create a flat map of field paths to schemas for easy lookup
   const schemaMap = new Map<string, UISchemaField>();
-
-  function buildSchemaMap(fields: UISchemaField[], prefix = '') {
-    for (const field of fields) {
-      if (!field?.id) continue;
-
-      const fieldPath = prefix ? `${prefix}.${field.id.split('.').pop()}` : field.id;
-      schemaMap.set(fieldPath, field);
-      schemaMap.set(field.id, field);
-
-      if (field.fields) {
-        buildSchemaMap(field.fields, fieldPath);
-      }
-      if (field.items?.fields) {
-        buildSchemaMap(field.items.fields, fieldPath);
-      }
-    }
-  }
-
-  buildSchemaMap(schema);
+  buildSchemaMap(schema, schemaMap);
 
   // Transform the root data
   const result: Record<string, unknown> = {};
@@ -662,8 +655,7 @@ export function assembleManifest(
     metadata: {
       name: '',
       labels: {},
-    },
-    spec: {},
+    }
   };
 
   // Merge transformed data into the manifest
@@ -671,8 +663,6 @@ export function assembleManifest(
     if (Object.prototype.hasOwnProperty.call(transformedData, key)) {
       if (key === 'metadata' && transformedData[key] && typeof transformedData[key] === 'object') {
         Object.assign(manifest.metadata, transformedData[key]);
-      } else if (key === 'spec' && transformedData[key] && typeof transformedData[key] === 'object') {
-        Object.assign(manifest.spec, transformedData[key]);
       } else {
         (manifest as unknown as Record<string, unknown>)[key] = transformedData[key];
       }
@@ -840,7 +830,9 @@ export function processApiResponses(
           value = item;
         }
 
-        selectOptions.push({ label, value });
+        const group = apiOption.groupBy ? String(item[apiOption.groupBy]) : undefined;
+
+        selectOptions.push({ label, value, group });
       });
     }
   });
@@ -918,4 +910,120 @@ export function extractErrorMessage(error: unknown): string {
   }
 
   return defaultMessage;
+}
+
+
+/**
+ * Parses a Kubernetes manifest back into form values compatible with the UI schema.
+ * This reverses `transformData` so the edit form can be pre-filled.
+ */
+export function parseManifestToFormValues(
+  manifest: Record<string, unknown>,
+  schema?: UISchemaField[]
+): Record<string, unknown> {
+  if (!schema) return manifest;
+
+  for (const field of schema) {
+    if (field.id === 'metadata' && field.fields) {
+      for (const subfield of field.fields) {
+        if (subfield.id === 'metadata.name') {
+          subfield.readOnly = true;
+          break;
+        }
+      }
+      break;
+    }
+  }
+
+  const formData: Record<string, unknown> = {};
+
+  const schemaMap = new Map<string, UISchemaField>();
+  buildSchemaMap(schema, schemaMap);
+
+  for (const field of schema) {
+    const rawValue = getNestedValue(manifest, field.id);
+    const parsed = parseFieldValue(field, rawValue);
+    if (parsed !== undefined) {
+      formData[field.id] = parsed;
+    }
+  }
+
+  return formData;
+}
+
+function buildSchemaMap(
+  fields: UISchemaField[],
+  map: Map<string, UISchemaField>,
+  prefix = ""
+) {
+  for (const field of fields) {
+    const path = prefix ? `${prefix}.${field.id.split('.').pop()}` : field.id;
+    map.set(field.id, field);
+    map.set(path, field);
+
+    if (field.fields) {
+      buildSchemaMap(field.fields, map, path);
+    }
+
+    if (field.items?.fields) {
+      buildSchemaMap(field.items.fields, map, path);
+    }
+  }
+}
+
+function parseFieldValue(field: UISchemaField, value: unknown): unknown {
+  if (value === undefined || value === null) return undefined;
+
+  switch (field.type) {
+    case "key-value":
+      return Object.entries(value as Record<string, string>).map(([key, val]) => ({ key, value: val }));
+    case "object": {
+      const result: Record<string, unknown> = {};
+
+      if (field.fields && typeof value === 'object' && value !== null) {
+        for (const subfield of field.fields) {
+          const key = subfield.id.split('.').pop()!;
+          result[key] = parseFieldValue(
+            subfield,
+            (value as Record<string, unknown>)[key]
+          );
+        }
+      }
+
+      if (field.oneOf && typeof value === 'object' && value !== null) {
+        for (const option of field.oneOf) {
+          if ('id' in option) {
+            const selectedKey = option.id.split('.').pop();
+            if (selectedKey && selectedKey in value) {
+              result["__ui_state"] = selectedKey;
+              break;
+            }
+          }
+        }
+      }
+
+      return result;
+    }
+    case "array":
+      if (field.items?.type === "object" && field.items.fields) {
+        return (value as unknown[]).map((item) => {
+          const result: Record<string, unknown> = {};
+          for (const subfield of field.items!.fields!) {
+            result[subfield.id.split('.').pop()!] = parseFieldValue(
+              subfield,
+              (item as Record<string, unknown>)[subfield.id.split('.').pop()!]
+            );
+          }
+          return result;
+        });
+      }
+      return value;
+    case "select":
+    case "text":
+    case "number":
+    case "checkbox":
+      return value;
+    default:
+      return value;
+  }
 }

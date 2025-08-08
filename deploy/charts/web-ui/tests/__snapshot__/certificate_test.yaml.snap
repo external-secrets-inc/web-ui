@@ -3,14 +3,13 @@ should create a Certificate:
     apiVersion: cert-manager.io/v1
     kind: Certificate
     metadata:
-      name: RELEASE-NAME-tenant-manager
-      namespace: NAMESPACE
+      name: RELEASE-NAME-web-ui
+      namespace: web-ui
     spec:
       dnsNames:
-        - foo.example.com
-        - bar.example.com
+        - map[host:foo.example.com]
+        - map[host:bar.example.com]
       issuerRef:
         kind: ClusterIssuer
         name: example-issuer
-        namespace: null
       secretName: example-secret

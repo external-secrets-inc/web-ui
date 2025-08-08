@@ -1,7 +1,9 @@
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -193,13 +195,19 @@ export function FieldSelect({
       );
     }
 
-    return normalizedOptions.map((option) => {
-      /**
-       * Serialize option values for UI compatibility.
-       *
-       * String values are used as-is, while object values are serialized
-       * with the VALUE_PREFIX to distinguish them from regular strings.
-       */
+    const groupedOptions = normalizedOptions.reduce((acc, option) => {
+      const groupName = option.group || "Other";
+      if (!acc[groupName]) {
+        acc[groupName] = [];
+      }
+      acc[groupName].push(option);
+      return acc;
+    }, {} as Record<string, typeof normalizedOptions>);
+
+    const groupNames = Object.keys(groupedOptions);
+    const shouldShowGroups = !(groupNames.length === 1 && groupNames[0] === "Other");
+
+    const renderOptionItem = (option: (typeof normalizedOptions)[number]) => {
       const value =
         typeof option.value === "string"
           ? option.value
@@ -210,7 +218,18 @@ export function FieldSelect({
           {option.label}
         </SelectItem>
       );
-    });
+    };
+
+    if (!shouldShowGroups) {
+      return groupedOptions["Other"].map(renderOptionItem);
+    }
+
+    return groupNames.map((groupName) => (
+      <SelectGroup key={groupName} className="[&:not(:first-child)]:mt-3">
+        <SelectLabel>{groupName}</SelectLabel>
+        {groupedOptions[groupName].map(renderOptionItem)}
+      </SelectGroup>
+    ));
   };
 
   /**
