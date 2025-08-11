@@ -52,6 +52,7 @@ module.exports = {
           1000: "hsl(var(--primary-1000))",
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          muted: "hsl(var(--primary-muted))",
         },
         secondary: {
           50: "hsl(var(--secondary-50))",
