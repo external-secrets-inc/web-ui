@@ -4,6 +4,7 @@ import axiosInstance, { BACKEND_DOMAINS } from '@/services/axiosConfig';
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSignOut } from '@/hooks/useSignOut';
+import { toast } from 'sonner';
 
 interface AxiosInterceptorProps {
   children: ReactNode;
@@ -48,6 +49,14 @@ const AxiosInterceptor: React.FC<AxiosInterceptorProps> = ({ children }) => {
       (response: AxiosResponse) => response,
       (error: AxiosError) => {
         if (error?.response?.status === 401) {
+          toast('Session expired', {
+            description: 'Please sign in again to continue.',
+            duration: 30000,
+            cancel: {
+              label: 'Dismiss',
+              onClick: () => { },
+            },
+          });
           signOut({ reason: 'session_expired' });
         }
         return Promise.reject(error);
