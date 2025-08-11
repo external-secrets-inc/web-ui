@@ -425,8 +425,8 @@ const router = createBrowserRouter([
         },
         children: [
           {
-            index: true,
-            element: <PageFindings />,
+            path: "reused-secrets",
+            element: <Outlet />,
             handle: {
               breadcrumb: (match: UIMatch) => ({
                 label: "Reused Secrets",
@@ -434,17 +434,23 @@ const router = createBrowserRouter([
                 navigatable: true,
               }),
             },
-          },
-          {
-            path: ":findingNamespace/:findingName",
-            element: <PageFindingDetails />,
-            handle: {
-              breadcrumb: (match: UIMatch) => ({
-                label: `Duplicated Secret: ${match.params.findingName}`,
-                path: match.pathname,
-                navigatable: true,
-              }),
-            },
+            children: [
+              {
+                index: true,
+                element: <PageFindings />,
+              },
+              {
+                path: ":findingNamespace/:findingName",
+                element: <PageFindingDetails />,
+                handle: {
+                  breadcrumb: (match: UIMatch) => ({
+                    label: `${match.params.findingName}`,
+                    path: match.pathname,
+                    navigatable: true,
+                  }),
+                },
+              },
+            ],
           },
         ],
       },
