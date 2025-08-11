@@ -58,7 +58,7 @@ export function WorkflowTemplateCreate() {
           <Alert variant="warning" className="mb-6">
             <AlertTitle>Experimental Feature</AlertTitle>
             <AlertDescription className="font-medium">
-              Form Builder for Workflow Templates is experimental and may not
+              Form Builder for Workflows is experimental and may not
               work as expected. <br />
               Prefer to use the Raw YAML Manifest editor instead.
             </AlertDescription>

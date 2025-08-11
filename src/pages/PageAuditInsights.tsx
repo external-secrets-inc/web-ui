@@ -4,7 +4,7 @@ import { LayoutPage } from "@/components/layout";
 export function PageAuditInsights() {
   return (
     <LayoutPage
-      title="Audit Insights"
+      title="Insights"
       description={
         <>
           Gather insights about your secrets and policies based on audit logs

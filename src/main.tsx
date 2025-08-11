@@ -72,7 +72,7 @@ const router = createBrowserRouter([
         loginFallbackPath="/login"
         inactiveFallbackPath="/verify"
       >
-        <NavigateWithOrg to="/agents" replace />
+        <NavigateWithOrg to="/operations/agents" replace />
       </RequireActiveUser>
     ),
   },
@@ -104,125 +104,67 @@ const router = createBrowserRouter([
     children: [
       {
         path: "",
-        element: <NavigateWithOrg to="/agents" replace />,
+        element: <NavigateWithOrg to="/operations/agents" replace />,
       },
       {
-        path: "agents",
-        element: <PageAgents />,
+        path: "operations",
+        element: <Outlet />,
         handle: {
-          breadcrumb: (match: UIMatch) => ({
-            label: "Agents",
-            path: match.pathname,
-            navigatable: true,
+          breadcrumb: () => ({
+            label: "Operations",
+            navigatable: false,
           }),
         },
+        children: [
+          {
+            path: "agents",
+            element: <PageAgents />,
+            handle: {
+              breadcrumb: (match: UIMatch) => ({
+                label: "Agents",
+                path: match.pathname,
+                navigatable: true,
+              }),
+            },
+          },
+          {
+            path: "reloaders",
+            element: <PageReloaders />,
+            handle: {
+              breadcrumb: (match: UIMatch) => ({
+                label: "Reloaders",
+                path: match.pathname,
+                navigatable: true,
+              }),
+            },
+          },
+        ],
+      },
+      // Backwards compatibility redirects for old operations URLs
+      {
+        path: "agents",
+        element: <NavigateWithOrg to="/operations/agents" replace />,
       },
       {
-        path: "workflows",
+        path: "automation",
         element: <Outlet />,
+        handle: {
+          breadcrumb: () => ({
+            label: "Automation",
+            navigatable: false,
+          }),
+        },
         children: [
           {
             index: true,
-            element: <NavigateWithOrg to="workflows/secrets" replace />,
+            element: <NavigateWithOrg to="automation/workflows" replace />,
           },
           {
-            path: "secrets",
+            path: "workflows",
             element: <Outlet />,
             handle: {
               breadcrumb: (match: UIMatch) => ({
-                label: "Workflow Secrets",
-                path: match.pathname,
-                navigatable: true,
-              }),
-            },
-            children: [
-              {
-                index: true,
-                element: <PageSecrets />,
-              },
-              {
-                path: "create",
-                element: <PageSecretsCreate />,
-                handle: {
-                  breadcrumb: () => ({
-                    label: "New Secret",
-                    navigatable: false,
-                  }),
-                },
-              },
-            ],
-          },
-          {
-            path: "service-accounts",
-            element: <Outlet />,
-            handle: {
-              breadcrumb: (match: UIMatch) => ({
-                label: "Workflow Service Accounts",
-                path: match.pathname,
-                navigatable: true,
-              }),
-            },
-            children: [
-              {
-                index: true,
-                element: <PageServiceAccounts />,
-              },
-              {
-                path: "create",
-                element: <PageServiceAccountsCreate />,
-                handle: {
-                  breadcrumb: () => ({
-                    label: "New Service Account",
-                    navigatable: false,
-                  }),
-                },
-              },
-            ],
-          },
-          {
-            path: "secret-stores",
-            element: <Outlet />,
-            handle: {
-              breadcrumb: (match: UIMatch) => ({
-                label: "Workflow Secret Stores",
-                path: match.pathname,
-                navigatable: true,
-              }),
-            },
-            children: [
-              {
-                index: true,
-                element: <PageSecretStores />,
-              },
-              {
-                path: "create",
-                element: <PageSecretStoresCreate />,
-                handle: {
-                  breadcrumb: () => ({
-                    label: "New Secret Store",
-                    navigatable: false,
-                  }),
-                },
-              },
-              {
-                path: "edit/:secretstoreNamespace/:secretstoreName",
-                element: <PageSecretStoresEdit />,
-                handle: {
-                  breadcrumb: (match: UIMatch) => ({
-                    label: `${match.params.secretstoreName}`,
-                    path: match.pathname,
-                    navigatable: true,
-                  }),
-                },
-              },
-            ],
-          },
-          {
-            path: "templates",
-            element: <Outlet />,
-            handle: {
-              breadcrumb: (match: UIMatch) => ({
-                label: "Workflow Templates",
+                label: "Workflows",
                 path: match.pathname,
                 navigatable: true,
               }),
@@ -237,7 +179,7 @@ const router = createBrowserRouter([
                 element: <PageWorkflowTemplatesCreate />,
                 handle: {
                   breadcrumb: () => ({
-                    label: "New Workflow Template",
+                    label: "New Workflow",
                     navigatable: false,
                   }),
                 },
@@ -281,12 +223,117 @@ const router = createBrowserRouter([
               },
             ],
           },
+        ],
+      },
+      // New Resources section
+      {
+        path: "resources",
+        element: <Outlet />,
+        handle: {
+          breadcrumb: () => ({
+            label: "Resources",
+            navigatable: false,
+          }),
+        },
+        children: [
+          {
+            path: "secrets",
+            element: <Outlet />,
+            handle: {
+              breadcrumb: (match: UIMatch) => ({
+                label: "Secrets",
+                path: match.pathname,
+                navigatable: true,
+              }),
+            },
+            children: [
+              {
+                index: true,
+                element: <PageSecrets />,
+              },
+              {
+                path: "create",
+                element: <PageSecretsCreate />,
+                handle: {
+                  breadcrumb: () => ({
+                    label: "New Secret",
+                    navigatable: false,
+                  }),
+                },
+              },
+            ],
+          },
+          {
+            path: "service-accounts",
+            element: <Outlet />,
+            handle: {
+              breadcrumb: (match: UIMatch) => ({
+                label: "Service Accounts",
+                path: match.pathname,
+                navigatable: true,
+              }),
+            },
+            children: [
+              {
+                index: true,
+                element: <PageServiceAccounts />,
+              },
+              {
+                path: "create",
+                element: <PageServiceAccountsCreate />,
+                handle: {
+                  breadcrumb: () => ({
+                    label: "New Service Account",
+                    navigatable: false,
+                  }),
+                },
+              },
+            ],
+          },
+          {
+            path: "secret-stores",
+            element: <Outlet />,
+            handle: {
+              breadcrumb: (match: UIMatch) => ({
+                label: "Secret Stores",
+                path: match.pathname,
+                navigatable: true,
+              }),
+            },
+            children: [
+              {
+                index: true,
+                element: <PageSecretStores />,
+              },
+              {
+                path: "create",
+                element: <PageSecretStoresCreate />,
+                handle: {
+                  breadcrumb: () => ({
+                    label: "New Secret Store",
+                    navigatable: false,
+                  }),
+                },
+              },
+              {
+                path: "edit/:secretstoreNamespace/:secretstoreName",
+                element: <PageSecretStoresEdit />,
+                handle: {
+                  breadcrumb: (match: UIMatch) => ({
+                    label: `${match.params.secretstoreName}`,
+                    path: match.pathname,
+                    navigatable: true,
+                  }),
+                },
+              },
+            ],
+          },
           {
             path: "generators",
             element: <Outlet />,
             handle: {
               breadcrumb: (match: UIMatch) => ({
-                label: "Workflow Generators",
+                label: "Generators",
                 path: match.pathname,
                 navigatable: true,
               }),
@@ -324,7 +371,7 @@ const router = createBrowserRouter([
             element: <Outlet />,
             handle: {
               breadcrumb: (match: UIMatch) => ({
-                label: "Workflow Targets",
+                label: "Targets",
                 path: match.pathname,
                 navigatable: true,
               }),
@@ -348,20 +395,45 @@ const router = createBrowserRouter([
           },
         ],
       },
+      // Backwards compatibility redirects for old resource URLs under workflows
+      // TODO[cfviotti]: Remove these when we properly update the docs AND the direct links on the UI (we really should have a better way to avoid breaking links when such refactors are necessary)
+      { path: "workflows/secrets", element: <NavigateWithOrg to="resources/secrets" replace /> },
+      { path: "workflows/secrets/create", element: <NavigateWithOrg to="resources/secrets/create" replace /> },
+      { path: "workflows/service-accounts", element: <NavigateWithOrg to="resources/service-accounts" replace /> },
+      { path: "workflows/service-accounts/create", element: <NavigateWithOrg to="resources/service-accounts/create" replace /> },
+      { path: "workflows/secret-stores", element: <NavigateWithOrg to="resources/secret-stores" replace /> },
+      { path: "workflows/secret-stores/create", element: <NavigateWithOrg to="resources/secret-stores/create" replace /> },
+      { path: "workflows/secret-stores/edit/:secretstoreNamespace/:secretstoreName", element: <NavigateWithOrg to="resources/secret-stores/edit/:secretstoreNamespace/:secretstoreName" replace /> },
+      { path: "workflows/generators", element: <NavigateWithOrg to="resources/generators" replace /> },
+      { path: "workflows/generators/create", element: <NavigateWithOrg to="resources/generators/create" replace /> },
+      { path: "workflows/generators/:generatorKind/:generatorNamespace/:generatorName", element: <NavigateWithOrg to="resources/generators/:generatorKind/:generatorNamespace/:generatorName" replace /> },
+      // Backwards compatibility redirects for old Workflows (previously under /workflows/templates)
+      { path: "workflows", element: <NavigateWithOrg to="automation/workflows" replace /> },
+      { path: "workflows/templates", element: <NavigateWithOrg to="automation/workflows" replace /> },
+      { path: "workflows/templates/create", element: <NavigateWithOrg to="automation/workflows/create" replace /> },
+      { path: "workflows/templates/:templateNamespace/:templateName", element: <NavigateWithOrg to="automation/workflows/:templateNamespace/:templateName" replace /> },
+      { path: "workflows/templates/:templateNamespace/:templateName/create", element: <NavigateWithOrg to="automation/workflows/:templateNamespace/:templateName/create" replace /> },
+      { path: "workflows/templates/:templateNamespace/:templateName/runs/:workflowRunNamespace/:workflowRunName", element: <NavigateWithOrg to="automation/workflows/:templateNamespace/:templateName/runs/:workflowRunNamespace/:workflowRunName" replace /> },
       {
         path: "findings",
         element: <Outlet />,
         handle: {
-          breadcrumb: (match: UIMatch) => ({
-            label: "Secrets Findings",
-            path: match.pathname,
-            navigatable: true,
+          breadcrumb: () => ({
+            label: "Findings",
+            navigatable: false,
           }),
         },
         children: [
           {
             index: true,
             element: <PageFindings />,
+            handle: {
+              breadcrumb: (match: UIMatch) => ({
+                label: "Reused Secrets",
+                path: match.pathname,
+                navigatable: true,
+              }),
+            },
           },
           {
             path: ":findingNamespace/:findingName",
@@ -378,14 +450,7 @@ const router = createBrowserRouter([
       },
       {
         path: "reloaders",
-        element: <PageReloaders />,
-        handle: {
-          breadcrumb: (match: UIMatch) => ({
-            label: "Reloaders",
-            path: match.pathname,
-            navigatable: true,
-          }),
-        },
+        element: <NavigateWithOrg to="/operations/reloaders" replace />,
       },
       {
         path: "audit",
@@ -394,6 +459,12 @@ const router = createBrowserRouter([
             <AuditGuard />
           </AuditProvider>
         ),
+        handle: {
+          breadcrumb: () => ({
+            label: "Audit",
+            navigatable: false,
+          }),
+        },
         children: [
           {
             index: true,

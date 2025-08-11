@@ -14,14 +14,11 @@ export function PageSecretStores() {
 
   return (
     <LayoutPage
-      title="Workflow Secret Stores"
-      description="Manage your External Secrets Operator Secret Stores. Secret Stores define how External Secrets can fetch secrets from external systems."
+      title="Secret Stores"
+      description="Define Secret Stores (provider configs) that External Secrets reference."
     >
       <LayoutPortalTopbarActions>
-        <Button
-          variant="secondary"
-          onClick={handleRefresh}
-        >
+        <Button variant="secondary" onClick={handleRefresh}>
           <LucideRefreshCw />
           Refresh Data
         </Button>

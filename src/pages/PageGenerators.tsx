@@ -14,8 +14,8 @@ export function PageGenerators() {
 
   return (
     <LayoutPage
-      title="Workflow Generators"
-      description="Manage your External Secrets Operator Generators. Generators dynamically create credentials and secrets on demand."
+      title="Generators"
+      description="Generators dynamically create credentials and secrets on demand based on your organization's policies."
     >
       <LayoutPortalTopbarActions>
         <Button

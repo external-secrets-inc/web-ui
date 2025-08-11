@@ -1,4 +1,4 @@
-// Workflow Templates
+// Workflows (Workflow Templates)
 export interface WorkflowTemplateTableData {
   name: string;
   namespace: string;

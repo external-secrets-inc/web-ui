@@ -52,7 +52,7 @@ export function PageFindingDetails() {
 
     navigate(
       getOrgLink(
-        `/workflows/templates/${namespace}/${name}/create?${params.toString()}`
+        `/automation/workflows/${namespace}/${name}/create?${params.toString()}`
       )
     );
   };

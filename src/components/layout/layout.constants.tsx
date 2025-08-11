@@ -1,19 +1,19 @@
 import {
+  LucideArrowDownToDot,
+  LucideAsteriskSquare,
   LucideAtom,
   LucideBarChart3,
   LucideBookKey,
   LucideBookOpen,
   LucideBot,
-  LucideComputer,
   LucideFolderKey,
-  LucideKey,
   LucideLocateFixed,
-  LucideNewspaper,
   LucideRotateCcwKey,
   LucideSearch,
   LucideSettings,
   LucideShieldCheck,
   LucideUserCog,
+  LucideWorkflow,
 } from "lucide-react";
 import { DOCS_DOMAIN } from "@/constants";
 import { AppSidebarNavigationConfig } from "@/components/layout";
@@ -22,70 +22,95 @@ import { AuditListenerStatusBadge } from "@/components/Audit/AuditListenerStatus
 export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
   navMain: [
     {
-      label: "Audit Insights",
-      url: "/audit/insights",
-      renderAppendContent: <AuditListenerStatusBadge compact />,
-      icon: LucideBarChart3,
+      label: "Resources",
+      items: [
+        {
+          label: "Secrets",
+          url: "/resources/secrets",
+          icon: LucideAsteriskSquare,
+        },
+        {
+          label: "Service Accounts",
+          url: "/resources/service-accounts",
+          icon: LucideUserCog,
+        },
+        {
+          label: "Secret Stores",
+          url: "/resources/secret-stores",
+          icon: LucideBookKey,
+        },
+        {
+          label: "Generators",
+          url: "/resources/generators",
+          icon: LucideAtom,
+        },
+        {
+          label: "Targets",
+          url: "/resources/targets",
+          icon: LucideLocateFixed,
+        },
+      ],
     },
     {
-      label: "Providers",
-      url: "/audit/providers",
-      icon: LucideFolderKey,
-    },
-    {
-      label: "Policies",
-      url: "/audit/policies",
-      icon: LucideShieldCheck,
-    },
-    {
-      label: "Destinations",
-      url: "/audit/destinations",
-      icon: LucideLocateFixed,
-    },
-    {
-      label: "Workflow Secrets",
-      url: "/workflows/secrets",
-      icon: LucideKey,
-    },
-    {
-      label: "Workflow Service Accounts",
-      url: "/workflows/service-accounts",
-      icon: LucideUserCog,
-    },
-    {
-      label: "Workflow Secret Stores",
-      url: "/workflows/secret-stores",
-      icon: LucideBookKey,
-    },
-    {
-      label: "Workflow Generators",
-      url: "/workflows/generators",
-      icon: LucideAtom,
-    },
-    {
-      label: "Workflow Targets",
-      url: "/workflows/targets",
-      icon: LucideComputer,
-    },
-    {
-      label: "Workflow Templates",
-      url: "/workflows/templates",
-      icon: LucideNewspaper,
+      label: "Automation",
+      items: [
+        {
+          label: "Workflows",
+          url: "/automation/workflows",
+          icon: LucideWorkflow,
+        },
+      ],
     },
     {
       label: "Findings",
-      url: "/findings",
-      icon: LucideSearch,
+      items: [
+        {
+          label: "Reused Secrets",
+          url: "/findings",
+          icon: LucideSearch,
+        },
+      ],
     },
     {
-      label: "Agents",
-      url: "/agents",
-      icon: LucideBot,
+      label: "Audit",
+      items: [
+        {
+          label: "Insights",
+          url: "/audit/insights",
+          renderAppendContent: <AuditListenerStatusBadge compact />,
+          icon: LucideBarChart3,
+        },
+        {
+          label: "Providers",
+          url: "/audit/providers",
+          icon: LucideFolderKey,
+        },
+        {
+          label: "Policies",
+          url: "/audit/policies",
+          icon: LucideShieldCheck,
+        },
+        {
+          label: "Destinations",
+          url: "/audit/destinations",
+          icon: LucideArrowDownToDot,
+        },
+      ],
     },
     {
-      label: "Reloaders",
-      url: "/reloaders",
-      icon: LucideRotateCcwKey,
+      label: "Operations",
+      items: [
+        {
+          label: "Agents",
+          url: "/operations/agents",
+          icon: LucideBot,
+        },
+        {
+          label: "Reloaders",
+          url: "/operations/reloaders",
+          icon: LucideRotateCcwKey,
+        },
+      ],
     },
   ],
   navFooter: [

@@ -6,6 +6,7 @@ import React, {
   createContext,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -60,7 +61,19 @@ export function LayoutPage({
   ] = useState<HTMLDivElement | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const breadcrumbSegments = useLayoutBreadcrumbs();
-  const showBackButton = breadcrumbSegments.length > 1;
+  const backCrumb = useMemo(() => {
+    // Walk up the breadcrumb trail (excluding current) to find the nearest navigable ancestor
+    for (let i = breadcrumbSegments.length - 2; i >= 0; i -= 1) {
+      const segment = breadcrumbSegments[i];
+      if (segment?.navigatable && segment.path) {
+        return segment;
+      }
+    }
+    return undefined;
+  }, [breadcrumbSegments]);
+
+  const backHref = backCrumb?.path;
+  const showBackButton = Boolean(backHref);
 
   useEffect(() => {
     if (portalHeaderActionsTargetRef.current) {
@@ -90,10 +103,7 @@ export function LayoutPage({
                 size="icon"
                 className="-ml-2 -mt-1 -mb-1.5 -mr-0.5 size-8"
               >
-                <Link
-                  to=".."
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
+                <Link to={backHref!} className="text-muted-foreground hover:text-foreground transition-colors">
                   <ArrowLeft className="size-5" />
                 </Link>
               </Button>

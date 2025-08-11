@@ -76,7 +76,7 @@ const KUBERNETES_RESOURCE_CONFIG: Record<KubernetesResourceType, {
   workflowtemplate: {
     apiVersion: 'eso.external-secrets.io/v1alpha1',
     kind: 'WorkflowTemplate',
-    displayName: 'Workflow Template',
+    displayName: 'Workflow',
   },
   workflowrun: {
     apiVersion: 'eso.external-secrets.io/v1alpha1',

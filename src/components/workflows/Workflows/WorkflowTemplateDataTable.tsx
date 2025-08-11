@@ -58,7 +58,7 @@ export function WorkflowTemplateDataTable() {
                   e.stopPropagation();
                   navigate(
                     getOrgLink(
-                      `/workflows/templates/${props.row.original.namespace}/${props.row.original.name}/create`
+                      `/automation/workflows/${props.row.original.namespace}/${props.row.original.name}/create`
                     )
                   );
                 }}
@@ -96,7 +96,7 @@ export function WorkflowTemplateDataTable() {
             onCloseAutoFocus={(event) => event.preventDefault()}
           >
             <FeatureItemDeleteAction
-              featureType={"Workflow Template"}
+              featureType={"Workflow"}
               featureID={`${row.namespace}/${row.name}`}
               featureName={row.name}
               onDelete={() => {
@@ -105,14 +105,14 @@ export function WorkflowTemplateDataTable() {
             >
               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                 <LucideTrash2 className="mr-2" />
-                Delete Workflow Template
+                Delete Workflow
               </DropdownMenuItem>
             </FeatureItemDeleteAction>
             <DropdownMenuItem
               onSelect={() => {
                 navigate(
                   getOrgLink(
-                    `/workflows/templates/${row.namespace}/${row.name}/create`
+                    `/automation/workflows/${row.namespace}/${row.name}/create`
                   )
                 );
               }}
@@ -144,11 +144,11 @@ export function WorkflowTemplateDataTable() {
     onError: (error: AxiosError<ApiHttpError>) =>
       handleDefaultApiHttpError(
         error,
-        "Error while trying to delete Workflow Template"
+        "Error while trying to delete Workflow"
       ),
     onSuccess: () => {
       workflowTemplatesRefetch();
-      toast.success("Workflow Template deleted successfully");
+      toast.success("Workflow deleted successfully");
     },
   });
 
@@ -159,7 +159,7 @@ export function WorkflowTemplateDataTable() {
   if (isErrorWorkflowTemplates || isRefetchErrorWorkflowTemplates) {
     handleDefaultApiHttpError(
       workflowTemplatesError,
-      "Error while fetching Workflow Templates data"
+      "Error while fetching Workflows data"
     );
   }
 
@@ -177,10 +177,10 @@ export function WorkflowTemplateDataTable() {
           <DataSearch />
           <Button
             variant="outline"
-            onClick={() => navigate(getOrgLink("/workflows/templates/create"))}
+            onClick={() => navigate(getOrgLink("/automation/workflows/create"))}
           >
             <LucidePlus />
-            Add Workflow Template
+            Add Workflow
           </Button>
         </div>
         <DataTable
@@ -188,7 +188,7 @@ export function WorkflowTemplateDataTable() {
             const typedRow = row as WorkflowTemplateTableData;
             navigate(
               getOrgLink(
-                `/workflows/templates/${typedRow.namespace}/${typedRow.name}`
+                `/automation/workflows/${typedRow.namespace}/${typedRow.name}`
               )
             );
           }}

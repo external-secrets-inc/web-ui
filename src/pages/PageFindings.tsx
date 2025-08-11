@@ -14,7 +14,7 @@ export function PageFindings() {
 
   return (
     <LayoutPage
-      title="Secrets Findings"
+      title="Reused Secrets"
       description="Review groups of duplicate secrets found across your stores. Select a group to see details and consolidate them with a workflow."
     >
       <LayoutPortalTopbarActions>

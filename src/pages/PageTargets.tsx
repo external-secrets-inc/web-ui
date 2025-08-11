@@ -14,8 +14,8 @@ export function PageTargets() {
 
   return (
     <LayoutPage
-      title="Workflow Targets"
-      description="Manage your External Secrets Operator Targets. Targets represent Virtual Machines and other resources that can receive secrets."
+      title="Targets"
+      description="Targets represent Virtual Machines and other resources that can receive secrets."
     >
       <LayoutPortalTopbarActions>
         <Button

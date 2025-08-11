@@ -5,7 +5,7 @@ export function PageServiceAccountsCreate() {
   return (
     <LayoutPage
       title="New Service Account"
-      description="Create a new Workflow Service Account."
+      description="Create a new Service Account."
       width="compact"
     >
       <ServiceAccountCreate />
