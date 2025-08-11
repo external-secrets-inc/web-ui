@@ -25,8 +25,8 @@ export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
       label: "Resources",
       items: [
         {
-          label: "External Secrets",
-          url: "/resources/external-secrets",
+          label: "Secrets",
+          url: "/resources/secrets",
           icon: LucideAsteriskSquare,
         },
         {

@@ -157,7 +157,7 @@ const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <NavigateWithOrg to="resources/external-secrets" replace />,
+            element: <NavigateWithOrg to="automation/workflows" replace />,
           },
           {
             path: "workflows",
@@ -237,11 +237,11 @@ const router = createBrowserRouter([
         },
         children: [
           {
-            path: "external-secrets",
+            path: "secrets",
             element: <Outlet />,
             handle: {
               breadcrumb: (match: UIMatch) => ({
-                label: "External Secrets",
+                label: "Secrets",
                 path: match.pathname,
                 navigatable: true,
               }),
@@ -397,8 +397,8 @@ const router = createBrowserRouter([
       },
       // Backwards compatibility redirects for old resource URLs under workflows
       // TODO[cfviotti]: Remove these when we properly update the docs AND the direct links on the UI (we really should have a better way to avoid breaking links when such refactors are necessary)
-      { path: "workflows/secrets", element: <NavigateWithOrg to="resources/external-secrets" replace /> },
-      { path: "workflows/secrets/create", element: <NavigateWithOrg to="resources/external-secrets/create" replace /> },
+      { path: "workflows/secrets", element: <NavigateWithOrg to="resources/secrets" replace /> },
+      { path: "workflows/secrets/create", element: <NavigateWithOrg to="resources/secrets/create" replace /> },
       { path: "workflows/service-accounts", element: <NavigateWithOrg to="resources/service-accounts" replace /> },
       { path: "workflows/service-accounts/create", element: <NavigateWithOrg to="resources/service-accounts/create" replace /> },
       { path: "workflows/secret-stores", element: <NavigateWithOrg to="resources/secret-stores" replace /> },

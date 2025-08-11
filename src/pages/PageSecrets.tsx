@@ -14,8 +14,8 @@ export function PageSecrets() {
 
   return (
     <LayoutPage
-      title="External Secrets"
-      description="Configure how External Secrets Operator fetches secrets from external systems."
+      title="Secrets"
+      description="Manage secrets for your organization."
     >
       <LayoutPortalTopbarActions>
         <Button variant="secondary" onClick={handleRefresh}>
