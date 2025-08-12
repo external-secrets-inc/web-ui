@@ -44,7 +44,7 @@ export function GeneratorStateDataTable() {
               return <Badge variant="secondary">Unknown</Badge>;
             }
 
-            const { status, reason } = statusData;
+            const { status } = statusData;
             let variantClass: BadgeProps["variant"] = "default";
             let displayText = "Not Informed";
 
