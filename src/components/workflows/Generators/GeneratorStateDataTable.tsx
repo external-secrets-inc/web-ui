@@ -44,19 +44,19 @@ export function GeneratorStateDataTable() {
               return <Badge variant="secondary">Unknown</Badge>;
             }
 
-            const { status, reason } = statusData;
+            const { status } = statusData;
             let variantClass: BadgeProps["variant"] = "default";
             let displayText = "Not Informed";
 
-            if (status === "Pending") {
+            if (status === "Deletion Scheduled") {
               variantClass = "warning";
-              displayText = "Pending";
-            } else if (status === "True") {
+              displayText = "Deletion Scheduled";
+            } else if (status === "Ready") {
+              displayText = "In Use";
               variantClass = "success";
-              displayText = reason || "Ready";
-            } else if (status === "False") {
+            } else if (status === "Pending Deletion") {
+              displayText = "Pending Deletion";
               variantClass = "destructive";
-              displayText = reason || "Error";
             }
             return <Badge variant={variantClass}>{displayText}</Badge>;
           },
