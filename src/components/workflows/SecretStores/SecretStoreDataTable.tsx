@@ -95,7 +95,7 @@ export function SecretStoreDataTable() {
               e.preventDefault()
               navigate(
               getOrgLink(
-                `/workflows/secret-stores/edit/${row.namespace}/${row.name}`
+                `/resources/secret-stores/edit/${row.namespace}/${row.name}`
               )
             );
             }}>
@@ -172,7 +172,7 @@ export function SecretStoreDataTable() {
           <Button
             variant="outline"
             onClick={() =>
-              navigate(getOrgLink("/workflows/secret-stores/create"))
+              navigate(getOrgLink("/resources/secret-stores/create"))
             }
           >
             <LucidePlus />
