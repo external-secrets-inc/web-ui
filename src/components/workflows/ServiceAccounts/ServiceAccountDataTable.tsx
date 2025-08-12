@@ -133,7 +133,7 @@ export function ServiceAccountDataTable() {
           <Button
             variant="outline"
             onClick={() =>
-              navigate(getOrgLink("/workflows/service-accounts/create"))
+              navigate(getOrgLink("/resources/service-accounts/create"))
             }
           >
             <LucidePlus />

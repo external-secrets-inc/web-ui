@@ -395,25 +395,6 @@ const router = createBrowserRouter([
           },
         ],
       },
-      // Backwards compatibility redirects for old resource URLs under workflows
-      // TODO[cfviotti]: Remove these when we properly update the docs AND the direct links on the UI (we really should have a better way to avoid breaking links when such refactors are necessary)
-      { path: "workflows/secrets", element: <NavigateWithOrg to="resources/secrets" replace /> },
-      { path: "workflows/secrets/create", element: <NavigateWithOrg to="resources/secrets/create" replace /> },
-      { path: "workflows/service-accounts", element: <NavigateWithOrg to="resources/service-accounts" replace /> },
-      { path: "workflows/service-accounts/create", element: <NavigateWithOrg to="resources/service-accounts/create" replace /> },
-      { path: "workflows/secret-stores", element: <NavigateWithOrg to="resources/secret-stores" replace /> },
-      { path: "workflows/secret-stores/create", element: <NavigateWithOrg to="resources/secret-stores/create" replace /> },
-      { path: "workflows/secret-stores/edit/:secretstoreNamespace/:secretstoreName", element: <NavigateWithOrg to="resources/secret-stores/edit/:secretstoreNamespace/:secretstoreName" replace /> },
-      { path: "workflows/generators", element: <NavigateWithOrg to="resources/generators" replace /> },
-      { path: "workflows/generators/create", element: <NavigateWithOrg to="resources/generators/create" replace /> },
-      { path: "workflows/generators/:generatorKind/:generatorNamespace/:generatorName", element: <NavigateWithOrg to="resources/generators/:generatorKind/:generatorNamespace/:generatorName" replace /> },
-      // Backwards compatibility redirects for old Workflows (previously under /workflows/templates)
-      { path: "workflows", element: <NavigateWithOrg to="automation/workflows" replace /> },
-      { path: "workflows/templates", element: <NavigateWithOrg to="automation/workflows" replace /> },
-      { path: "workflows/templates/create", element: <NavigateWithOrg to="automation/workflows/create" replace /> },
-      { path: "workflows/templates/:templateNamespace/:templateName", element: <NavigateWithOrg to="automation/workflows/:templateNamespace/:templateName" replace /> },
-      { path: "workflows/templates/:templateNamespace/:templateName/create", element: <NavigateWithOrg to="automation/workflows/:templateNamespace/:templateName/create" replace /> },
-      { path: "workflows/templates/:templateNamespace/:templateName/runs/:workflowRunNamespace/:workflowRunName", element: <NavigateWithOrg to="automation/workflows/:templateNamespace/:templateName/runs/:workflowRunNamespace/:workflowRunName" replace /> },
       {
         path: "findings",
         element: <Outlet />,
@@ -546,11 +527,11 @@ const router = createBrowserRouter([
       },
       {
         path: "secret-stores",
-        element: <NavigateWithOrg to="workflows/secret-stores" replace />,
+        element: <NavigateWithOrg to="resources/secret-stores" replace />,
       },
       {
         path: "generators",
-        element: <NavigateWithOrg to="workflows/generators" replace />,
+        element: <NavigateWithOrg to="resources/generators" replace />,
       },
       {
         path: "findings",
