@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.25.1](https://github.com/external-secrets-inc/web-ui/compare/v0.25.0...v0.25.1) (2025-08-13)
+
+
+### Bug Fixes
+
+* build for arm64 ([#485](https://github.com/external-secrets-inc/web-ui/issues/485)) ([df5cbbc](https://github.com/external-secrets-inc/web-ui/commit/df5cbbc0243271150e83e8f56d205ea0e6578d65))
+
 ## [0.25.0](https://github.com/external-secrets-inc/web-ui/compare/v0.24.0...v0.25.0) (2025-08-12)
 
 
