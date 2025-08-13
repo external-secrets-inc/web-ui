@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.25.2](https://github.com/external-secrets-inc/web-ui/compare/v0.25.1...v0.25.2) (2025-08-13)
+
+
+### Bug Fixes
+
+* timeout ([c35ba10](https://github.com/external-secrets-inc/web-ui/commit/c35ba100aac7866eb46c6c15c19bf43b10a37d08))
+
 ## [0.25.1](https://github.com/external-secrets-inc/web-ui/compare/v0.25.0...v0.25.1) (2025-08-13)
 
 
