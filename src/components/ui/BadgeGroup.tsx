@@ -2,6 +2,11 @@ import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { Trimmer } from "@/components/ui/Trimmer";
 import { cn } from "@/lib/utils";
 import * as React from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 /**
  * Global resize observer for all BadgeGroup instances.
@@ -133,27 +138,35 @@ export const BadgeGroup = React.forwardRef<HTMLDivElement, BadgeGroupProps>(
       setComputedMaxCount(badges.length);
     }, [badges]);
 
-    React.useEffect(function subscribeAutoMaxCountObserver() {
-      if (!isAutoMaxCount) return;
-      if (badges.length < 1) {
-        setComputedMaxCount(badges.length);
-        return;
-      }
+    React.useEffect(
+      function subscribeAutoMaxCountObserver() {
+        if (!isAutoMaxCount) return;
+        if (badges.length < 1) {
+          setComputedMaxCount(badges.length);
+          return;
+        }
 
-      const mirrorRef = observedMirroredBadgeListRef.current;
-      if (!mirrorRef) return;
+        const mirrorRef = observedMirroredBadgeListRef.current;
+        if (!mirrorRef) return;
 
-      badgeGroupGlobalResizeObserver.observe(mirrorRef, detectFlexWrap);
-      queueMicrotask(detectFlexWrap);
+        badgeGroupGlobalResizeObserver.observe(mirrorRef, detectFlexWrap);
+        queueMicrotask(detectFlexWrap);
 
-      return function cleanupAutoMaxCountObserver() {
-        if (mirrorRef) badgeGroupGlobalResizeObserver.unobserve(mirrorRef);
-      };
-    }, [isAutoMaxCount, badges, detectFlexWrap]);
+        return function cleanupAutoMaxCountObserver() {
+          if (mirrorRef) badgeGroupGlobalResizeObserver.unobserve(mirrorRef);
+        };
+      },
+      [isAutoMaxCount, badges, detectFlexWrap]
+    );
 
-    React.useEffect(function resetComputedMaxCountOnPropChange() {
-      setComputedMaxCount(typeof maxCount === "number" ? maxCount : undefined);
-    }, [maxCount]);
+    React.useEffect(
+      function resetComputedMaxCountOnPropChange() {
+        setComputedMaxCount(
+          typeof maxCount === "number" ? maxCount : undefined
+        );
+      },
+      [maxCount]
+    );
 
     const formatExtraCount = React.useCallback(
       (count: number) => (
@@ -164,17 +177,12 @@ export const BadgeGroup = React.forwardRef<HTMLDivElement, BadgeGroupProps>(
       [visibleBadgesCount]
     );
 
-    const renderIcon = React.useCallback(
-      (icon: BadgeItem["icon"]) => {
-        if (!icon) return null;
-        return typeof icon === "function" ? (
-          React.createElement(icon, { className: "text-muted-foreground" })
-        ) : (
-          React.cloneElement(icon, { className: "text-muted-foreground" })
-        );
-      },
-      []
-    );
+    const renderIcon = React.useCallback((icon: BadgeItem["icon"]) => {
+      if (!icon) return null;
+      return typeof icon === "function"
+        ? React.createElement(icon, { className: "text-muted-foreground" })
+        : React.cloneElement(icon, { className: "text-muted-foreground" });
+    }, []);
 
     const renderBadge = React.useCallback(
       (
@@ -204,7 +212,12 @@ export const BadgeGroup = React.forwardRef<HTMLDivElement, BadgeGroupProps>(
             {...passThroughProps}
           >
             {typeof content === "function"
-              ? content({ id: itemId, variant: itemVariant, className: itemClassName, ...passThroughProps } as BadgeItem)
+              ? content({
+                  id: itemId,
+                  variant: itemVariant,
+                  className: itemClassName,
+                  ...passThroughProps,
+                } as BadgeItem)
               : badgeItem.children ?? content}
           </Badge>
         );
@@ -225,14 +238,21 @@ export const BadgeGroup = React.forwardRef<HTMLDivElement, BadgeGroupProps>(
         }
 
         return renderBadge(
-          { id: extraBadge.id, variant: extraBadge.variant, className: extraBadge.className } as BadgeItem,
+          {
+            id: extraBadge.id,
+            variant: extraBadge.variant,
+            className: extraBadge.className,
+          } as BadgeItem,
           { variant: "outline" },
-          () => extraBadge.children ? extraBadge.children(formattedCount) : (
-            <>
-              {renderIcon(extraBadge.icon)}
-              {formattedCount}
-            </>
-          )
+          () =>
+            extraBadge.children ? (
+              extraBadge.children(formattedCount)
+            ) : (
+              <>
+                {renderIcon(extraBadge.icon)}
+                {formattedCount}
+              </>
+            )
         );
       },
       [extraBadge, formatExtraCount, renderBadge, renderIcon]
@@ -241,19 +261,58 @@ export const BadgeGroup = React.forwardRef<HTMLDivElement, BadgeGroupProps>(
     const renderBadgeList = React.useCallback(
       ({ isMirrored }: { isMirrored: boolean }) => {
         const list = isMirrored ? badges : badges.slice(0, visibleBadgesCount);
+        const hiddenBadges = badges.slice(visibleBadgesCount);
         const LabelComp = (isMirrored ? "span" : Trimmer) as React.ElementType;
         const containerClasses = cn(
           "max-w-full flex min-w-0 gap-1",
-          isMirrored ? "items-end flex-wrap-reverse absolute top-0 invisible pointer-events-none [&>*]:pointer-events-none" : "items-start"
+          isMirrored
+            ? "items-end flex-wrap-reverse absolute top-0 invisible pointer-events-none [&>*]:pointer-events-none"
+            : "items-start"
         );
         const innerClasses = cn(
           "flex min-w-0 gap-1",
-          isMirrored ? "flex-wrap flex-1 min-w-12" : cn(!isAutoMaxCount && "flex-wrap", visibleBadgesCount === 0 && "hidden")
+          isMirrored
+            ? "flex-wrap flex-1 min-w-12"
+            : cn(
+                !isAutoMaxCount && "flex-wrap",
+                visibleBadgesCount === 0 && "hidden"
+              )
+        );
+
+        const renderHiddenTooltip = (child: React.ReactNode) => (
+          <Tooltip>
+            <TooltipTrigger asChild>{child}</TooltipTrigger>
+            <TooltipContent className="max-h-64 overflow-auto p-2">
+              <div className="flex flex-col gap-1">
+                {hiddenBadges.map((hidden) =>
+                  renderBadge(
+                    hidden,
+                    { variant: "secondary", className: "min-w-0" },
+                    (resolved) =>
+                      resolved.children ?? (
+                        <>
+                          {renderIcon(hidden.icon)}
+                          <span className="flex-1 min-w-0 truncate">
+                            {hidden.label}
+                          </span>
+                        </>
+                      )
+                  )
+                )}
+              </div>
+            </TooltipContent>
+          </Tooltip>
         );
 
         return (
-          <div className={containerClasses} aria-hidden={isMirrored || undefined}>
-            <div className={innerClasses} ref={isMirrored ? observedMirroredBadgeListRef : undefined}>
+          <div
+            className={containerClasses}
+            aria-hidden={isMirrored || undefined}
+          >
+            <div
+              className={innerClasses}
+              ref={isMirrored ? observedMirroredBadgeListRef : undefined}
+            >
               {list.map((badge) =>
                 renderBadge(
                   badge,
@@ -276,10 +335,18 @@ export const BadgeGroup = React.forwardRef<HTMLDivElement, BadgeGroupProps>(
                 )
               )}
               {/* Extra counter badge for non-auto mode (visible list only, inside to wrap naturally) */}
-              {!isMirrored && !isAutoMaxCount && shouldShowExtraCounterBadge && renderExtraBadge(extraBadgesCount)}
+              {!isMirrored &&
+                !isAutoMaxCount &&
+                shouldShowExtraCounterBadge &&
+                renderHiddenTooltip(renderExtraBadge(extraBadgesCount))}
             </div>
             {/* Extra counter badge for auto mode must be outside the flex container to avoid wrapping! */}
-            {(isMirrored ? showExtraBadge : isAutoMaxCount && shouldShowExtraCounterBadge) && renderExtraBadge(extraBadgesCount)}
+            {(isMirrored
+              ? showExtraBadge
+              : isAutoMaxCount && shouldShowExtraCounterBadge) &&
+              (isMirrored
+                ? renderExtraBadge(extraBadgesCount)
+                : renderHiddenTooltip(renderExtraBadge(extraBadgesCount)))}
           </div>
         );
       },
