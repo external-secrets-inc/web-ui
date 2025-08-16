@@ -1,12 +1,12 @@
 import { Badge, type BadgeProps } from "@/components/ui/badge";
-import { Trimmer } from "@/components/ui/Trimmer";
-import { cn } from "@/lib/utils";
-import * as React from "react";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Trimmer } from "@/components/ui/Trimmer";
+import { cn } from "@/lib/utils";
+import * as React from "react";
 
 /**
  * Global resize observer for all BadgeGroup instances.
@@ -76,35 +76,216 @@ export interface BadgeGroupProps {
   extraBadge?: Omit<BadgeItem, "children"> & {
     children?: (count: React.ReactNode) => React.ReactNode;
   };
-  /** Whether to show the extra counter badge. */
-  showExtraBadge?: boolean;
+}
+
+function formatExtraCountNode(count: number, showPlus: boolean) {
+  return (
+    /**
+     * The monospace font and a minimum width of 2 characters is used to ensure
+     * the badge is always a stable width when we remove the `+` sign. This is
+     * very important to avoid constantly triggering the resize observer when we
+     * wrap ALL the badges on auto max count mode when the parent dimensions are
+     * at the threshold of wrapping.
+     */
+    <span className="font-mono min-w-[2ch] text-center inline-block">
+      {showPlus ? `+${count}` : count}
+    </span>
+  );
+}
+
+/**
+ * Presentational wrapper for a single Badge item.
+ */
+function BadgeGroupItem({
+  item,
+  defaults,
+  children,
+  elementRef,
+  useTrimmer = false,
+}: {
+  item: BadgeItem;
+  defaults?: Partial<BadgeItem>;
+  children?: React.ReactNode | ((resolved: BadgeItem) => React.ReactNode);
+  elementRef?: React.Ref<HTMLDivElement>;
+  useTrimmer?: boolean;
+}) {
+  const { className, variant, id, icon, label, ...rest } = item;
+  const resolved: BadgeItem = {
+    id,
+    variant,
+    className,
+    icon,
+    label,
+    ...rest,
+  } as BadgeItem;
+
+  const defaultContent = resolved.children ?? (
+    <>
+      {icon &&
+        (typeof icon === "function"
+          ? React.createElement(icon, {
+              className: "text-muted-foreground",
+            })
+          : React.cloneElement(icon, {
+              className: "text-muted-foreground",
+            }))}
+      {useTrimmer ? (
+        <Trimmer className="flex-1 min-w-0">{resolved.label}</Trimmer>
+      ) : (
+        <span className="flex-1 min-w-0 truncate">{resolved.label}</span>
+      )}
+    </>
+  );
+
+  const content =
+    typeof children === "function"
+      ? children(resolved)
+      : children || defaultContent;
+
+  return (
+    <Badge
+      ref={elementRef}
+      id={id}
+      variant={resolved.variant ?? defaults?.variant}
+      className={cn(
+        "flex items-center gap-1.5",
+        defaults?.className,
+        className
+      )}
+      {...rest}
+    >
+      {content}
+    </Badge>
+  );
+}
+
+/**
+ * Tooltip listing hidden/wrapped badges.
+ */
+function HiddenBadgesTooltip({
+  hiddenBadges,
+  children,
+}: {
+  hiddenBadges: BadgeItem[];
+  children: React.ReactNode;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger>{children}</TooltipTrigger>
+      <TooltipContent className="max-h-64 max-w-64 overflow-y-auto p-2">
+        <div className="flex flex-col gap-1 items-start">
+          {hiddenBadges.map((hidden) => (
+            <BadgeGroupItem
+              key={hidden.id}
+              item={hidden}
+              defaults={{
+                variant: "secondary",
+                className: "min-w-0 max-w-full",
+              }}
+            />
+          ))}
+        </div>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+/**
+ * Extra badge renderer (icon + formatted count, or custom children(count)).
+ * Optionally wraps in tooltip showing hidden badges when hiddenBadges is provided.
+ */
+function ExtraBadge({
+  config,
+  countNode,
+  hiddenBadges,
+}: {
+  config?: BadgeGroupProps["extraBadge"];
+  countNode: React.ReactNode;
+  hiddenBadges?: BadgeItem[];
+}) {
+  const badgeContent = (
+    <BadgeGroupItem
+      item={
+        config
+          ? ({
+              id: config.id,
+              variant: config.variant,
+              className: config.className,
+            } as BadgeItem)
+          : ({ id: "extra" } as BadgeItem)
+      }
+      defaults={{ variant: "outline" }}
+    >
+      {config?.children ? (
+        config.children(countNode)
+      ) : (
+        <>
+          {config?.icon &&
+            (typeof config.icon === "function"
+              ? React.createElement(config.icon, {
+                  className: "text-muted-foreground",
+                })
+              : React.cloneElement(config.icon, {
+                  className: "text-muted-foreground",
+                }))}
+          {countNode}
+        </>
+      )}
+    </BadgeGroupItem>
+  );
+
+  if (hiddenBadges && hiddenBadges.length > 0) {
+    return (
+      <HiddenBadgesTooltip hiddenBadges={hiddenBadges}>
+        {badgeContent}
+      </HiddenBadgesTooltip>
+    );
+  }
+
+  return badgeContent;
+}
+
+/**
+ * Simple badge list renderer - just renders the badges without any layout logic.
+ */
+function BadgeList({
+  badges,
+  children,
+  setBadgeRef,
+  withTrimmerOnlyOnFirstItem = false,
+}: {
+  badges: BadgeItem[];
+  children?: (badge: BadgeItem, index: number) => React.ReactNode;
+  setBadgeRef?: (id: string, el: HTMLDivElement | null) => void;
+  withTrimmerOnlyOnFirstItem?: boolean;
+}) {
+  return (
+    <>
+      {badges.map((badge, index) =>
+        children ? (
+          children(badge, index)
+        ) : (
+          <BadgeGroupItem
+            key={badge.id}
+            item={badge}
+            defaults={{ variant: "secondary", className: "min-w-0" }}
+            elementRef={
+              setBadgeRef ? (el) => setBadgeRef(badge.id, el) : undefined
+            }
+            useTrimmer={withTrimmerOnlyOnFirstItem && index === 0}
+          />
+        )
+      )}
+    </>
+  );
 }
 
 /**
  * BadgeGroup component that intelligently truncates badges based on available space.
- *
- * Features:
- * - Automatic detection of how many badges fit in the container width
- * - Smart "+N more" counter when badges overflow
- * - Configurable max count (number, "auto", or undefined for no limit)
- * - Responsive to container resizing
- * - Intelligent wrapping behavior based on maxCount:
- *   - "auto": No wrapping (single row) for optimal space utilization
- *   - number/undefined: Wrapping allowed for natural flow
- *
- * The "auto" mode uses a clever mirror technique with ResizeObserver to detect
- * when badges wrap to a new line, automatically calculating the optimal count.
  */
 export const BadgeGroup = React.forwardRef<HTMLDivElement, BadgeGroupProps>(
   (
-    {
-      badges,
-      maxCount,
-      className,
-      extraBadge,
-      showExtraBadge = true,
-      ...props
-    },
+    { badges, maxCount, className, extraBadge: extraBadgeConfig, ...props },
     ref
   ) => {
     const [computedMaxCount, setComputedMaxCount] = React.useState<
@@ -120,10 +301,14 @@ export const BadgeGroup = React.forwardRef<HTMLDivElement, BadgeGroupProps>(
         ? Math.min(computedMaxCount, badges.length)
         : badges.length;
     const extraBadgesCount = badges.length - visibleBadgesCount;
-    const shouldShowExtraCounterBadge = extraBadgesCount > 0 && showExtraBadge;
 
     const detectFlexWrap = React.useCallback(() => {
-      const baselineTop = 0; // Relative to first parent with non `static` css position set
+      /**
+       * The first parent with non `static` CSS `position` natively becomes the
+       * reference for the `offsetTop` of a child element, since we do that on
+       * our markup, we can safely assume `0` as the baseline.
+       */
+      const baselineTop = 0;
 
       for (let i = 0; i < badges.length; i++) {
         const badge = badgeRefs.current.get(badges[i].id);
@@ -169,201 +354,21 @@ export const BadgeGroup = React.forwardRef<HTMLDivElement, BadgeGroupProps>(
     );
 
     const formatExtraCount = React.useCallback(
-      (count: number) => (
-        <span className="font-mono min-w-[2ch] text-center inline-block">
-          {visibleBadgesCount === 0 ? count : `+${count}`}
-        </span>
-      ),
+      (count: number) =>
+        formatExtraCountNode(count, !(visibleBadgesCount === 0)),
       [visibleBadgesCount]
     );
 
-    const renderIcon = React.useCallback((icon: BadgeItem["icon"]) => {
-      if (!icon) return null;
-      return typeof icon === "function"
-        ? React.createElement(icon, { className: "text-muted-foreground" })
-        : React.cloneElement(icon, { className: "text-muted-foreground" });
-    }, []);
-
-    const renderBadge = React.useCallback(
-      (
-        badgeItem: BadgeItem,
-        defaults?: Partial<BadgeItem>,
-        content?: React.ReactNode | ((resolved: BadgeItem) => React.ReactNode),
-        elementRef?: React.Ref<HTMLDivElement>
-      ) => {
-        const {
-          className: itemClassName,
-          variant: itemVariant,
-          id: itemId,
-          ...passThroughProps
-        } = badgeItem;
-
-        return (
-          <Badge
-            key={itemId}
-            ref={elementRef}
-            variant={itemVariant ?? defaults?.variant}
-            className={cn(
-              "flex items-center gap-1.5",
-              defaults?.className,
-              itemClassName
-            )}
-            id={itemId}
-            {...passThroughProps}
-          >
-            {typeof content === "function"
-              ? content({
-                  id: itemId,
-                  variant: itemVariant,
-                  className: itemClassName,
-                  ...passThroughProps,
-                } as BadgeItem)
-              : badgeItem.children ?? content}
-          </Badge>
-        );
+    const setBadgeRef = React.useCallback(
+      (id: string, el: HTMLDivElement | null) => {
+        if (el) badgeRefs.current.set(id, el);
+        else badgeRefs.current.delete(id);
       },
       []
     );
 
-    const renderExtraBadge = React.useCallback(
-      (count: number) => {
-        const formattedCount = formatExtraCount(count);
-
-        if (!extraBadge) {
-          return renderBadge(
-            { id: "extra" } as BadgeItem,
-            { variant: "outline" },
-            formattedCount
-          );
-        }
-
-        return renderBadge(
-          {
-            id: extraBadge.id,
-            variant: extraBadge.variant,
-            className: extraBadge.className,
-          } as BadgeItem,
-          { variant: "outline" },
-          () =>
-            extraBadge.children ? (
-              extraBadge.children(formattedCount)
-            ) : (
-              <>
-                {renderIcon(extraBadge.icon)}
-                {formattedCount}
-              </>
-            )
-        );
-      },
-      [extraBadge, formatExtraCount, renderBadge, renderIcon]
-    );
-
-    const renderBadgeList = React.useCallback(
-      ({ isMirrored }: { isMirrored: boolean }) => {
-        const list = isMirrored ? badges : badges.slice(0, visibleBadgesCount);
-        const hiddenBadges = badges.slice(visibleBadgesCount);
-        const LabelComp = (isMirrored ? "span" : Trimmer) as React.ElementType;
-        const containerClasses = cn(
-          "max-w-full flex min-w-0 gap-1",
-          isMirrored
-            ? "items-end flex-wrap-reverse absolute top-0 invisible pointer-events-none [&>*]:pointer-events-none"
-            : "items-start"
-        );
-        const innerClasses = cn(
-          "flex min-w-0 gap-1",
-          isMirrored
-            ? "flex-wrap flex-1 min-w-12"
-            : cn(
-                !isAutoMaxCount && "flex-wrap",
-                visibleBadgesCount === 0 && "hidden"
-              )
-        );
-
-        const renderHiddenTooltip = (child: React.ReactNode) => (
-          <Tooltip>
-            <TooltipTrigger asChild>{child}</TooltipTrigger>
-            <TooltipContent className="max-h-64 overflow-auto p-2">
-              <div className="flex flex-col gap-1">
-                {hiddenBadges.map((hidden) =>
-                  renderBadge(
-                    hidden,
-                    { variant: "secondary", className: "min-w-0" },
-                    (resolved) =>
-                      resolved.children ?? (
-                        <>
-                          {renderIcon(hidden.icon)}
-                          <span className="flex-1 min-w-0 truncate">
-                            {hidden.label}
-                          </span>
-                        </>
-                      )
-                  )
-                )}
-              </div>
-            </TooltipContent>
-          </Tooltip>
-        );
-
-        return (
-          <div
-            className={containerClasses}
-            aria-hidden={isMirrored || undefined}
-          >
-            <div
-              className={innerClasses}
-              ref={isMirrored ? observedMirroredBadgeListRef : undefined}
-            >
-              {list.map((badge) =>
-                renderBadge(
-                  badge,
-                  { variant: "secondary", className: "min-w-0" },
-                  (resolved) =>
-                    resolved.children ?? (
-                      <>
-                        {renderIcon(badge.icon)}
-                        <LabelComp className="flex-1 min-w-0 truncate">
-                          {badge.label}
-                        </LabelComp>
-                      </>
-                    ),
-                  isMirrored
-                    ? (el) => {
-                        if (el) badgeRefs.current.set(badge.id, el);
-                        else badgeRefs.current.delete(badge.id);
-                      }
-                    : undefined
-                )
-              )}
-              {/* Extra counter badge for non-auto mode (visible list only, inside to wrap naturally) */}
-              {!isMirrored &&
-                !isAutoMaxCount &&
-                shouldShowExtraCounterBadge &&
-                renderHiddenTooltip(renderExtraBadge(extraBadgesCount))}
-            </div>
-            {/* Extra counter badge for auto mode must be outside the flex container to avoid wrapping! */}
-            {(isMirrored
-              ? showExtraBadge
-              : isAutoMaxCount && shouldShowExtraCounterBadge) &&
-              (isMirrored
-                ? renderExtraBadge(extraBadgesCount)
-                : renderHiddenTooltip(renderExtraBadge(extraBadgesCount)))}
-          </div>
-        );
-      },
-      [
-        badges,
-        badgeRefs,
-        extraBadgesCount,
-        isAutoMaxCount,
-        showExtraBadge,
-        observedMirroredBadgeListRef,
-        renderBadge,
-        renderExtraBadge,
-        renderIcon,
-        shouldShowExtraCounterBadge,
-        visibleBadgesCount,
-      ]
-    );
+    const visibleBadges = badges.slice(0, visibleBadgesCount);
+    const hiddenBadges = badges.slice(visibleBadgesCount);
 
     return (
       <div
@@ -371,28 +376,81 @@ export const BadgeGroup = React.forwardRef<HTMLDivElement, BadgeGroupProps>(
         className={cn("w-full relative overflow-clip items-start", className)}
         {...props}
       >
-        <>
-          {renderBadgeList({ isMirrored: false })}
-          {/**
-           * Non-Interactive Badge List Mirror:
-           * -------------------------
-           * Why:
-           *   In "auto" mode for maxCount, our goal is to determine exactly how many
-           *   badges can fit in the available width. We need to detect when badges
-           *   are forced to wrap onto a new line so we can replace the overflow with
-           *   a "+N more" badge. Measuring this directly on the visible badge
-           *   list is problematic because hiding badges for layout adjustments would
-           *   break the measurement logic. This invisible mirrored list allows us to
-           *   observe the full, unhindered badge layout using a ResizeObserver,
-           *   without disturbing the user's view.
-           *
-           * Note:
-           *   Ensure that any visual changes applied to the visible badges for
-           *   "auto" mode are also reflected in this mirrored list to keep the
-           *   measurements accurate.
-           */}
-          {isAutoMaxCount && renderBadgeList({ isMirrored: true })}
-        </>
+        {/* Visible list */}
+        <div className="max-w-full flex gap-1 min-w-0 items-start">
+          <div
+            className={cn("flex gap-1 min-w-0", !isAutoMaxCount && "flex-wrap")}
+          >
+            <div
+              className={cn(
+                "flex gap-1 min-w-0",
+                !isAutoMaxCount && "contents"
+              )}
+            >
+              <BadgeList
+                badges={visibleBadges}
+                withTrimmerOnlyOnFirstItem={isAutoMaxCount}
+              />
+            </div>
+
+            {extraBadgesCount > 0 && (
+              <ExtraBadge
+                config={extraBadgeConfig}
+                countNode={formatExtraCount(extraBadgesCount)}
+                hiddenBadges={hiddenBadges}
+              />
+            )}
+          </div>
+        </div>
+
+        {/**
+         * Non-Interactive Badge List "Mirror":
+         * ---
+         * In "auto" mode for maxCount, our goal is to determine exactly how
+         * many badges can fit in the available width. We need to detect when
+         * badges are forced to wrap onto a new line so we can replace the
+         * overflow with a "+N" extra badge. Measuring this directly on the
+         * visible badge list is problematic because the very act of hiding
+         * badges would break the measurement logic! This invisible mirrored
+         * list allows us to observe the full, natural badge list flex-wrap
+         * layout using a ResizeObserver, behind the scenes.
+         *
+         * Note:
+         * The intricate markup and styles below are necessary to ensure the
+         * mirrored list ALWAYS wraps its badges, but keep the extra "+N" badge
+         * visible over their right to identically reflect the dimensions of the
+         * visible list. If curious to see it in action visually, just remove
+         * the `invisible` class below and the `overflow-clip` class above,
+         * resize the window and watch the magic happen.
+         */}
+        {isAutoMaxCount && (
+          <div
+            className="max-w-full flex min-w-0 gap-1 items-end flex-wrap-reverse absolute top-0 invisible pointer-events-none [&>*]:pointer-events-none"
+            aria-hidden
+          >
+            <div
+              className="flex gap-1 flex-1 flex-wrap min-w-12"
+              ref={observedMirroredBadgeListRef}
+            >
+              <BadgeList badges={badges} setBadgeRef={setBadgeRef} />
+            </div>
+            {(extraBadgesCount > 0 ||
+              /**
+               * We force to also show the extra badge when there's only one
+               * badge so the list has something to trigger a flex wrap and show
+               * a simple (1) count badge when there's not enough space to show
+               * the single badge properly. Treating this edge case ensures
+               * consistent behavior for any number of badges.
+               */
+              badges.length === 1) && (
+              <ExtraBadge
+                config={extraBadgeConfig}
+                countNode={formatExtraCount(extraBadgesCount)}
+                hiddenBadges={hiddenBadges}
+              />
+            )}
+          </div>
+        )}
       </div>
     );
   }
