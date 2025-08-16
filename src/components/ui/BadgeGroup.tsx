@@ -51,6 +51,13 @@ class BadgeGroupGlobalResizeObserver {
 // Single instance to be shared across all BadgeGroup components
 const badgeGroupGlobalResizeObserver = new BadgeGroupGlobalResizeObserver();
 
+/**
+ * Describes a single badge rendered by `BadgeGroup`.
+ *
+ * This contract builds on top of our base `BadgeProps`, but favors a higher-level
+ * API where content is typically provided via `label` and optional `icon`.
+ * When `children` is provided it fully overrides the composed `icon + label`.
+ */
 export interface BadgeItem extends Omit<BadgeProps, "children"> {
   /** The unique identifier for the badge. */
   id: string;
@@ -66,19 +73,59 @@ export interface BadgeItem extends Omit<BadgeProps, "children"> {
 }
 
 export interface BadgeGroupProps {
-  /** Array of badge items to display. */
+  /** Array of badge items to display, in visual order (left → right). */
   badges: BadgeItem[];
-  /** Maximum number of badges to show before truncating. */
+  /**
+   * Maximum number of badges to show before truncating.
+   * - number: clamp to the provided maximum (natural wrapping allowed).
+   * - "auto": compute the optimal visible count by measuring layout to avoid wrapping.
+   * - undefined: show all items (natural wrapping allowed).
+   */
   maxCount?: number | "auto";
   /** Custom className for the container. */
   className?: string;
-  /** Custom badge item for the extra counter. Receives the formatted count. */
+  /**
+   * Custom badge item for the trailing extra counter (e.g. "+3").
+   * You can customize `variant`, `className`, and optional `icon`.
+   *
+   * If `children` is provided, it will be invoked with a pre-formatted `count` node.
+   * That node is already wrapped with a monospace, width-stabilized span
+   * (`<span class="font-mono min-w-[2ch] text-center"/>`) and conditionally
+   * includes a leading plus sign when there are visible items.
+   * Use it directly so alignment stays consistent across counts.
+   */
   extraBadge?: Omit<BadgeItem, "children"> & {
     children?: (count: React.ReactNode) => React.ReactNode;
   };
+  /**
+   * Optional callback that is invoked whenever the layout (visible/hidden split)
+   * is recalculated. Useful for consumers that need to react to the computed
+   * visible/hidden counts, e.g., to trim data in response to user actions.
+   */
+  onLayoutUpdate?: (state: {
+    /** Subset of `badges` currently visible. */
+    visibleBadges: BadgeItem[];
+    /** Subset of `badges` currently hidden (wrapped or truncated). */
+    hiddenBadges: BadgeItem[];
+    /** Number of visible badges. */
+    visibleCount: number;
+    /** Number of hidden badges (i.e., total - visible). */
+    hiddenCount: number;
+  }) => void;
 }
 
-function formatExtraCountNode(count: number, showPlus: boolean) {
+/**
+ * Formats the numeric count for the extra badge as a width-stable node.
+ */
+function formatExtraCountNode({
+  count,
+  showPlus,
+}: {
+  /** The number of hidden items represented by the counter. */
+  count: number;
+  /** When true, prefix the count with a plus sign (e.g., "+3"). */
+  showPlus: boolean;
+}) {
   return (
     /**
      * The monospace font and a minimum width of 2 characters is used to ensure
@@ -95,6 +142,8 @@ function formatExtraCountNode(count: number, showPlus: boolean) {
 
 /**
  * Presentational wrapper for a single Badge item.
+ * Renders either the default composition (icon + label) or a custom `children` override.
+ * When `useTrimmer` is true, the label uses `Trimmer` instead of a truncated span.
  */
 function BadgeGroupItem({
   item,
@@ -103,10 +152,15 @@ function BadgeGroupItem({
   elementRef,
   useTrimmer = false,
 }: {
+  /** Badge data to render. */
   item: BadgeItem;
+  /** Default props applied when they are absent from `item`. */
   defaults?: Partial<BadgeItem>;
+  /** Optional render override. If function, receives the resolved item. */
   children?: React.ReactNode | ((resolved: BadgeItem) => React.ReactNode);
+  /** Optional ref to the underlying badge element. */
   elementRef?: React.Ref<HTMLDivElement>;
+  /** When true, the label is rendered with `Trimmer` for smart truncation. */
   useTrimmer?: boolean;
 }) {
   const { className, variant, id, icon, label, ...rest } = item;
@@ -161,18 +215,21 @@ function BadgeGroupItem({
 
 /**
  * Tooltip listing hidden/wrapped badges.
+ * Wraps a trigger (typically the extra counter badge) and shows the hidden items.
  */
 function HiddenBadgesTooltip({
   hiddenBadges,
   children,
 }: {
+  /** Hidden portion of the badge list. */
   hiddenBadges: BadgeItem[];
+  /** Trigger to open the tooltip. */
   children: React.ReactNode;
 }) {
   return (
     <Tooltip>
       <TooltipTrigger>{children}</TooltipTrigger>
-      <TooltipContent className="max-h-64 max-w-64 overflow-y-auto p-2">
+      <TooltipContent className="max-h-64 overflow-auto p-2">
         <div className="flex flex-col gap-1 items-start">
           {hiddenBadges.map((hidden) => (
             <BadgeGroupItem
@@ -192,15 +249,18 @@ function HiddenBadgesTooltip({
 
 /**
  * Extra badge renderer (icon + formatted count, or custom children(count)).
- * Optionally wraps in tooltip showing hidden badges when hiddenBadges is provided.
+ * Optionally wraps in tooltip showing hidden badges when `hiddenBadges` is provided.
  */
 function ExtraBadge({
   config,
   countNode,
   hiddenBadges,
 }: {
+  /** Visual configuration of the counter badge (variant, className, optional icon). */
   config?: BadgeGroupProps["extraBadge"];
+  /** Pre-formatted count node provided by the group (width-stable). */
   countNode: React.ReactNode;
+  /** Hidden badges that will be displayed inside the tooltip if present. */
   hiddenBadges?: BadgeItem[];
 }) {
   const badgeContent = (
@@ -246,7 +306,12 @@ function ExtraBadge({
 }
 
 /**
- * Simple badge list renderer - just renders the badges without any layout logic.
+ * Simple badge list renderer - just renders the badges without any layout
+ * logic. You may provide a render override per item via `children`. When
+ * `setBadgeRef` is supplied, each rendered item forwards its element ref keyed
+ * by id. If `withTrimmerOnlyOnFirstItem` is true, only the first item uses
+ * `Trimmer` for its label (Useful for auto max count mode where that's the only
+ * item that will actually be truncated).
  */
 function BadgeList({
   badges,
@@ -254,9 +319,13 @@ function BadgeList({
   setBadgeRef,
   withTrimmerOnlyOnFirstItem = false,
 }: {
+  /** Items to render. */
   badges: BadgeItem[];
+  /** Optional render override for each badge. */
   children?: (badge: BadgeItem, index: number) => React.ReactNode;
+  /** Collects DOM refs keyed by badge id (used for wrap detection in auto mode). */
   setBadgeRef?: (id: string, el: HTMLDivElement | null) => void;
+  /** When true, only the first item uses `Trimmer` for its label. */
   withTrimmerOnlyOnFirstItem?: boolean;
 }) {
   return (
@@ -285,7 +354,7 @@ function BadgeList({
  */
 export const BadgeGroup = React.forwardRef<HTMLDivElement, BadgeGroupProps>(
   (
-    { badges, maxCount, className, extraBadge: extraBadgeConfig, ...props },
+    { badges, maxCount, className, extraBadge: extraBadgeConfig, onLayoutUpdate, ...props },
     ref
   ) => {
     const [computedMaxCount, setComputedMaxCount] = React.useState<
@@ -355,7 +424,7 @@ export const BadgeGroup = React.forwardRef<HTMLDivElement, BadgeGroupProps>(
 
     const formatExtraCount = React.useCallback(
       (count: number) =>
-        formatExtraCountNode(count, !(visibleBadgesCount === 0)),
+        formatExtraCountNode({ count, showPlus: !(visibleBadgesCount === 0) }),
       [visibleBadgesCount]
     );
 
@@ -369,6 +438,21 @@ export const BadgeGroup = React.forwardRef<HTMLDivElement, BadgeGroupProps>(
 
     const visibleBadges = badges.slice(0, visibleBadgesCount);
     const hiddenBadges = badges.slice(visibleBadgesCount);
+
+    React.useEffect(
+      function notifyLayoutUpdate() {
+        if (!onLayoutUpdate) return;
+        const visible = badges.slice(0, visibleBadgesCount);
+        const hidden = badges.slice(visibleBadgesCount);
+        onLayoutUpdate({
+          visibleBadges: visible,
+          hiddenBadges: hidden,
+          visibleCount: visible.length,
+          hiddenCount: hidden.length,
+        });
+      },
+      [onLayoutUpdate, badges, visibleBadgesCount]
+    );
 
     return (
       <div
