@@ -68,8 +68,18 @@ export interface BadgeItem extends Omit<BadgeProps, "children"> {
     | React.ComponentType<{ className?: string }>
     | React.ReactElement
     | null;
-  /** Custom content to render inside the badge. Overrides label and icon when provided. */
-  children?: React.ReactNode;
+  /**
+   * Custom content to render inside the badge. Overrides label and icon when provided.
+   * When provided as a function, it receives the resolved item plus pre-formatted parts
+   * so callers can compose content without breaking truncation behavior.
+   */
+  children?:
+    | React.ReactNode
+    | ((ctx: {
+        resolved: BadgeItem;
+        labelNode: React.ReactNode;
+        iconNode?: React.ReactNode;
+      }) => React.ReactNode);
 }
 
 export interface BadgeGroupProps {
@@ -156,8 +166,14 @@ function BadgeGroupItem({
   item: BadgeItem;
   /** Default props applied when they are absent from `item`. */
   defaults?: Partial<BadgeItem>;
-  /** Optional render override. If function, receives the resolved item. */
-  children?: React.ReactNode | ((resolved: BadgeItem) => React.ReactNode);
+  /** Optional render override. If function, receives the resolved item and parts. */
+  children?:
+    | React.ReactNode
+    | ((ctx: {
+        resolved: BadgeItem;
+        labelNode: React.ReactNode;
+        iconNode?: React.ReactNode;
+      }) => React.ReactNode);
   /** Optional ref to the underlying badge element. */
   elementRef?: React.Ref<HTMLDivElement>;
   /** When true, the label is rendered with `Trimmer` for smart truncation. */
@@ -173,27 +189,35 @@ function BadgeGroupItem({
     ...rest,
   } as BadgeItem;
 
-  const defaultContent = resolved.children ?? (
-    <>
-      {icon &&
-        (typeof icon === "function"
-          ? React.createElement(icon, {
-              className: "text-muted-foreground",
-            })
-          : React.cloneElement(icon, {
-              className: "text-muted-foreground",
-            }))}
-      {useTrimmer ? (
-        <Trimmer className="flex-1 min-w-0">{resolved.label}</Trimmer>
-      ) : (
-        <span className="flex-1 min-w-0 truncate">{resolved.label}</span>
-      )}
-    </>
+  const labelNode = useTrimmer ? (
+    <Trimmer className="flex-1 min-w-0">{resolved.label}</Trimmer>
+  ) : (
+    <span className="flex-1 min-w-0 truncate">{resolved.label}</span>
   );
+
+  const iconNode =
+    icon &&
+    (typeof icon === "function"
+      ? React.createElement(icon, {
+          className: "text-muted-foreground",
+        })
+      : React.cloneElement(icon, {
+          className: "text-muted-foreground",
+        }));
+
+  const defaultContent =
+    typeof resolved.children === "function"
+      ? resolved.children({ resolved, labelNode, iconNode: iconNode ?? undefined })
+      : resolved.children ?? (
+          <>
+            {iconNode}
+            {labelNode}
+          </>
+        );
 
   const content =
     typeof children === "function"
-      ? children(resolved)
+      ? children({ resolved, labelNode, iconNode: iconNode ?? undefined })
       : children || defaultContent;
 
   return (
@@ -457,7 +481,10 @@ export const BadgeGroup = React.forwardRef<HTMLDivElement, BadgeGroupProps>(
     return (
       <div
         ref={ref}
-        className={cn("w-full relative overflow-clip items-start", className)}
+        className={cn(
+          "w-full min-w-0 relative overflow-clip items-start ",
+          className
+        )}
         {...props}
       >
         {/* Visible list */}
