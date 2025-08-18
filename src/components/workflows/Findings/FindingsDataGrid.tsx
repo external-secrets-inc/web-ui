@@ -18,8 +18,8 @@ import { Link } from "react-router-dom";
 import type { Finding } from "./Findings.interfaces";
 import {
   getDominantKey,
-  getStoreNames,
   getPropertyCount,
+  getStoreNames,
 } from "./Findings.utils";
 
 export function FindingsDataGrid() {
@@ -43,6 +43,7 @@ export function FindingsDataGrid() {
             to={getOrgLink(
               `/findings/reused-secrets/${finding.namespace}/${finding.name}`
             )}
+            state={{ dominantKey }}
             className="grid min-w-0"
           >
             <Card className="group flex flex-col min-w-0 relative hover:border-muted-foreground/50 hover:bg-muted/15 transition-all cursor-pointer overflow-clip">

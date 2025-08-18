@@ -1,12 +1,6 @@
 import { LayoutPage } from "@/components/layout";
-import { FindingDetails } from "@/components/workflows/Findings";
-import { useNavigate, useParams } from "react-router-dom";
-import useGetFinding from "@/services/findings/queries/useGetFinding";
-import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
-import { AxiosError } from "axios";
-import { ApiHttpError } from "@/types";
-import { Loader } from "@/components/ui/Loader";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
+import { Loader } from "@/components/ui/Loader";
 import {
   Select,
   SelectContent,
@@ -14,7 +8,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FindingDetails } from "@/components/workflows/Findings";
+import {
+  getDominantKey,
+  getStoreNames,
+} from "@/components/workflows/Findings/Findings.utils";
 import useOrgLink from "@/hooks/useOrgLink";
+import useGetFinding from "@/services/findings/queries/useGetFinding";
+import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
+import { ApiHttpError } from "@/types";
+import { AxiosError } from "axios";
+import { LucideAsteriskSquare } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
 
 const CANDIDATE_SEPARATOR = "__SEPARATOR__";
 
@@ -57,24 +62,43 @@ export function PageFindingDetails() {
     );
   };
 
-  const title = isLoading ? (
-    "Loading..."
-  ) : isError ? (
-    "Error"
-  ) : !finding ? (
-    "Not Found"
+  const dominantKey = finding
+    ? getDominantKey(finding) ?? finding.name
+    : undefined;
+
+  const title = dominantKey ? (
+    <span className="flex items-center gap-2">
+      <LucideAsteriskSquare className="size-6 text-muted-foreground" />{" "}
+      {dominantKey}
+    </span>
   ) : (
+    "Reused Secret"
+  );
+  const description = (
     <>
-      Duplicated Secret:{" "}
-      <span className="text-muted-foreground">{finding.name}</span>
+      A Secret found reused{" "}
+      <span className="font-bold text-foreground">
+        {finding?.locations.length}
+      </span>{" "}
+      <span className="font-bold">
+        {finding?.locations.length === 1 ? "time" : "times"}
+      </span>{" "}
+      across{" "}
+      <span className="font-bold text-foreground">
+        {finding?.locations ? getStoreNames(finding.locations).length : 0}
+      </span>{" "}
+      <span className="font-bold">
+        {finding?.locations && getStoreNames(finding.locations).length === 1
+          ? "location"
+          : "locations"}
+      </span>
+      . <br /> Review where it's being reused and generate automation workflows
+      to remediate it.
     </>
   );
 
   return (
-    <LayoutPage
-      title={title}
-      description="Review the details of a duplicated secret and automate their rotation with a Workflow."
-    >
+    <LayoutPage title={title} description={description}>
       {isLoading ? (
         <div className="flex justify-center items-center h-48">
           <Loader size="lg" />

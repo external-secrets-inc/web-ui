@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { BadgeGroup } from "@/components/ui/BadgeGroup";
+import { BadgeGroup, BadgeItem } from "@/components/ui/BadgeGroup";
 import {
   DataProvider,
   DataSearch,
@@ -62,7 +62,7 @@ export function FindingsList() {
 
             if (duplicateKeys.length === 0) return null;
 
-            const duplicateItems = duplicateKeys.map((key, index) => ({
+            const duplicateItems: BadgeItem[] = duplicateKeys.map((key, index) => ({
               id: `key-${index}`,
               label: key,
               icon: <LucideCopy className="text-muted-foreground" />,
