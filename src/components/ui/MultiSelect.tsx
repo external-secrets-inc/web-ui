@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import * as React from "react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -32,49 +31,9 @@ import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Trimmer } from "@/components/ui/Trimmer";
 import { useMemo } from "react";
+import { BadgeGroup, type BadgeItem, type BadgeGroupProps } from "@/components/ui/BadgeGroup";
 
-/**
- * Global resize observer for all MultiSelect instances.
- * This singleton manages subscriptions for all MultiSelect components that need
- * to observe their mirrored badge lists for wrapping detection.
- */
-class MultiSelectGlobalResizeObserver {
-  private observer: ResizeObserver | null = null;
-  private callbacks = new Map<Element, () => void>();
-
-  private ensureObserver() {
-    if (!this.observer) {
-      this.observer = new ResizeObserver((entries) => {
-        for (const entry of entries) {
-          const callback = this.callbacks.get(entry.target);
-          if (callback) callback();
-        }
-      });
-    }
-    return this.observer;
-  }
-
-  observe(element: Element, callback: () => void) {
-    this.callbacks.set(element, callback);
-    this.ensureObserver().observe(element);
-  }
-
-  unobserve(element: Element) {
-    this.callbacks.delete(element);
-    if (this.observer) {
-      this.observer.unobserve(element);
-
-      // If no more elements are being observed, disconnect the observer
-      if (this.callbacks.size === 0) {
-        this.observer.disconnect();
-        this.observer = null;
-      }
-    }
-  }
-}
-
-// Single instance to be shared across all MultiSelect components
-const multiSelectGlobalResizeObserver = new MultiSelectGlobalResizeObserver();
+// Badge rendering and overflow are handled by BadgeGroup; no local observers needed
 
 /**
  * Context for MultiSelect component
@@ -93,13 +52,7 @@ interface MultiSelectContextValue {
   setIsOpen: (openOrUpdater: boolean | ((prev: boolean) => boolean)) => void;
   updateSelection: (values: string[]) => void;
   itemRefs: React.MutableRefObject<Map<string, CommandItemRef>>;
-  visibleBadgesCount: number;
-  extraBadgesCount: number;
-  shouldShowExtraCounterBadge: boolean;
-  isAutoMaxCount: boolean;
-  computedMaxCount: number | undefined;
-  badgeRefs: React.MutableRefObject<Map<string, HTMLDivElement>>;
-  observedMirroredBadgeListRef: React.RefObject<HTMLDivElement>;
+  setAutoVisibleCount: (n: number) => void;
 }
 const MultiSelectContext = React.createContext<MultiSelectContextValue | undefined>(undefined);
 
@@ -187,9 +140,65 @@ interface MultiSelectProps extends React.ButtonHTMLAttributes<HTMLButtonElement>
    * The open state of the popover when it is initially rendered. Use when you do not need to control its open state.
    */
   defaultOpen?: boolean;
+
+  /**
+   * Customize how selected badges (shown in the trigger) are rendered.
+   * `selectedBadgeDefaults` controls base Badge props (variant, className, etc.).
+   * `renderSelectedBadge` can override inner content while keeping BadgeGroup truncation via provided nodes.
+   * `selectedExtraBadge` customizes the "+N" counter badge.
+   */
+  selectedBadgeDefaults?: Partial<BadgeItem>;
+  selectedExtraBadge?: BadgeGroupProps["extraBadge"];
+  renderSelectedBadge?: (ctx: {
+    option: Option;
+    resolved: BadgeItem;
+    labelNode: React.ReactNode;
+    iconNode?: React.ReactNode;
+    remove: () => void;
+  }) => React.ReactNode;
+
+  /**
+   * Customize how each option row renders inside the command list.
+   * Provided nodes preserve default styling while enabling custom composition.
+   */
+  renderOption?: (ctx: {
+    option: Option;
+    isSelected: boolean;
+    checkboxNode: React.ReactNode;
+    iconNode?: React.ReactNode;
+    labelNode: React.ReactNode;
+  }) => React.ReactNode;
+  /** Optional className for each option row. */
+  optionItemClassName?: string;
 }
 
 // Components
+// Lightweight contexts to pass customization to inner components
+type SelectedBadgeCustomization = {
+  selectedBadgeDefaults?: Partial<BadgeItem>;
+  selectedExtraBadge?: BadgeGroupProps["extraBadge"];
+  renderSelectedBadge?: (ctx: {
+    option: Option;
+    resolved: BadgeItem;
+    labelNode: React.ReactNode;
+    iconNode?: React.ReactNode;
+    remove: () => void;
+  }) => React.ReactNode;
+};
+const SelectedBadgeCustomizationContext = React.createContext<SelectedBadgeCustomization>({});
+
+type OptionCustomization = {
+  renderOption?: (ctx: {
+    option: Option;
+    isSelected: boolean;
+    checkboxNode: React.ReactNode;
+    iconNode?: React.ReactNode;
+    labelNode: React.ReactNode;
+  }) => React.ReactNode;
+  optionItemClassName?: string;
+};
+const OptionCustomizationContext = React.createContext<OptionCustomization>({});
+
 export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(({
   options,
   onValueChange,
@@ -201,11 +210,16 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
   open,
   onOpenChange,
   defaultOpen = false,
+  selectedBadgeDefaults,
+  selectedExtraBadge,
+  renderSelectedBadge,
+  renderOption,
+  optionItemClassName,
   ...props
 }, ref) => {
   const [selectedValues, setSelectedValues] = React.useState<string[]>(defaultValue);
   const [internalIsOpen, setInternalIsOpen] = React.useState(defaultOpen);
-  const [computedMaxCount, setComputedMaxCount] = React.useState<number | undefined>(typeof maxCount === "number" ? maxCount : undefined);
+  const [autoVisibleCount, setAutoVisibleCount] = React.useState<number | undefined>(undefined);
 
   // Use controlled open state if provided, otherwise use internal state
   const isOpen = open !== undefined ? open : internalIsOpen;
@@ -222,14 +236,9 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
     onOpenChange?.(newOpen);
   }, [onOpenChange, isOpen, open]);
 
-  const isAutoMaxCount = maxCount === "auto";
-  const visibleBadgesCount = computedMaxCount !== undefined ? Math.min(computedMaxCount, selectedValues.length) : selectedValues.length;
-  const extraBadgesCount = selectedValues.length - visibleBadgesCount;
-  const shouldShowExtraCounterBadge = extraBadgesCount > 0;
+  // using BadgeGroup for overflow logic; no local auto measurement flags needed
 
   const itemRefs = React.useRef<Map<string, CommandItemRef>>(new Map());
-  const badgeRefs = React.useRef<Map<string, HTMLDivElement>>(new Map());
-  const observedMirroredBadgeListRef = React.useRef<HTMLDivElement>(null);
 
   const updateSelection = React.useCallback((newValues: string[]) => {
     setSelectedValues(newValues);
@@ -249,11 +258,11 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
 
   const clearExtraOptions = React.useCallback(() => {
     if (maxCount === "auto") {
-      updateSelection(selectedValues.slice(0, computedMaxCount)); // In auto mode, use the computed max count from wrapping calculation
+      updateSelection(selectedValues.slice(0, autoVisibleCount ?? selectedValues.length));
     } else if (typeof maxCount === "number") {
       updateSelection(selectedValues.slice(0, maxCount)); // In numbered mode, use the maxCount prop directly
     }
-  }, [selectedValues, maxCount, computedMaxCount, updateSelection]);
+  }, [selectedValues, maxCount, autoVisibleCount, updateSelection]);
 
   const contextValue = React.useMemo(() => ({
     selectedValues,
@@ -267,13 +276,7 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
     setIsOpen: handleOpenChange,
     updateSelection,
     itemRefs,
-    visibleBadgesCount,
-    extraBadgesCount,
-    shouldShowExtraCounterBadge,
-    isAutoMaxCount,
-    computedMaxCount,
-    badgeRefs,
-    observedMirroredBadgeListRef,
+    setAutoVisibleCount,
   }), [
     selectedValues,
     options,
@@ -285,11 +288,7 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
     handleClear,
     handleOpenChange,
     updateSelection,
-    visibleBadgesCount,
-    extraBadgesCount,
-    shouldShowExtraCounterBadge,
-    isAutoMaxCount,
-    computedMaxCount
+    setAutoVisibleCount
   ]);
 
   /**
@@ -311,278 +310,114 @@ export const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>
     );
   }, [options]);
 
-  const detectFlexWrap = React.useCallback(() => {
-    const baselineTop = 0; // Relative to first `position: relative` parent
-
-    for (let i = 0; i < selectedValues.length; i++) {
-      const badge = badgeRefs.current.get(selectedValues[i]);
-      if (!badge) continue;
-
-      if (badge.offsetTop > baselineTop) {
-        setComputedMaxCount(i);
-        return;
-      }
-    }
-
-    setComputedMaxCount(selectedValues.length);
-  }, [selectedValues]);
-
-  // Effect to handle measurement and resize observer
-  React.useEffect(() => {
-    if (maxCount !== "auto") return;
-    if (selectedValues.length <= 1) {
-      setComputedMaxCount(selectedValues.length);
-      return;
-    }
-
-    const mirrorRef = observedMirroredBadgeListRef.current;
-    if (!mirrorRef) return;
-
-    multiSelectGlobalResizeObserver.observe(mirrorRef, detectFlexWrap);
-
-    // Initial measurement
-    queueMicrotask(detectFlexWrap);
-
-    return () => {
-      if (mirrorRef) multiSelectGlobalResizeObserver.unobserve(mirrorRef);
-    };
-  }, [maxCount, selectedValues, detectFlexWrap]);
-
-  // Reset computedMaxCount when maxCount prop changes
-  React.useEffect(() => {
-    setComputedMaxCount(typeof maxCount === "number" ? maxCount : undefined);
-  }, [maxCount]);
+  // No local measurement state to reset; BadgeGroup computes visibility in auto mode
 
   return (
     <MultiSelectContext.Provider value={contextValue}>
-      <Popover
-        open={isOpen}
-        onOpenChange={handleOpenChange}
-        modal={modalPopover}
-      >
-        <MultiSelectPopoverTrigger
-          ref={ref}
-          {...props}
-          className={cn(className)}
-        />
-        <PopoverContent className="min-w-[--radix-popover-trigger-width] p-0">
-          <Command filter={fuzzyFilterOptionsByLabels} loop>
-            <CommandInput placeholder="Search..."/>
-            <CommandList className="max-h-none">
-              <CommandEmpty>No results found.</CommandEmpty>
-              {/**
-                * !!The markup order here is crucial!!
-                *
-                * - The `<Command />` component focuses on the first item during filtering.
-                *   Therefore, list options must be rendered before ToggleAll, which uses
-                *   `forceMount` to always display. This ensures that the focus remains on
-                *   the list options rather than the ToggleAll if it were to be rendered first.
-                *
-                * - CSS `order` properties adjust visual positions without changing markup.
-                *
-                * - The `loop` prop on `<Command />` enables cycling through options
-                *   in the expected visual order via keyboard navigation.
-                *
-                * - ToggleAll is conditionally rendered only when filtered options exist.
-                */}
-              <div className="grid grid-cols-1">
-                <ScrollArea className="max-h-[calc(theme(spacing.52)+theme(spacing.1))] pb-1" type="always">
-                  <MultiSelectListOptions />
-                </ScrollArea>
-                <CommandGroup forceMount className="border-t order-last" >
-                  <MultiSelectFooterOptions />
-                </CommandGroup>
-                <MultiSelectToggleAllOptions className="p-1 pb-0 order-first" />
-              </div>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
+      <SelectedBadgeCustomizationContext.Provider value={{ selectedBadgeDefaults, selectedExtraBadge, renderSelectedBadge }}>
+        <OptionCustomizationContext.Provider value={{ renderOption, optionItemClassName }}>
+          <Popover
+            open={isOpen}
+            onOpenChange={handleOpenChange}
+            modal={modalPopover}
+          >
+            <MultiSelectPopoverTrigger
+              ref={ref}
+              {...props}
+              className={cn(className)}
+            />
+            <PopoverContent className="min-w-[--radix-popover-trigger-width] p-0">
+              <Command filter={fuzzyFilterOptionsByLabels} loop>
+                <CommandInput placeholder="Search..."/>
+                <CommandList className="max-h-none">
+                  <CommandEmpty>No results found.</CommandEmpty>
+                  <div className="grid grid-cols-1">
+                    <ScrollArea className="max-h-[calc(theme(spacing.52)+theme(spacing.1))] pb-1" type="always">
+                      <MultiSelectListOptions />
+                    </ScrollArea>
+                    <CommandGroup forceMount className="border-t order-last" >
+                      <MultiSelectFooterOptions />
+                    </CommandGroup>
+                    <MultiSelectToggleAllOptions className="p-1 pb-0 order-first" />
+                  </div>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+        </OptionCustomizationContext.Provider>
+      </SelectedBadgeCustomizationContext.Provider>
     </MultiSelectContext.Provider>
   );
 });
 MultiSelect.displayName = "MultiSelect";
 
-/**
- * Badge with an optional icon and a remove button representing a selected option.
- */
-const MultiSelectBadge = React.forwardRef<HTMLDivElement, {
-  label: string;
-  onRemove?: () => void;
-  className?: string;
-  icon?: React.ComponentType<{ className?: string }>;
-  interactive?: boolean;
-}>(({
-  label,
-  onRemove,
-  className,
-  icon: IconComponent,
-}, ref) => {
-  return (
-    <Badge
-      variant="secondary"
-      ref={ref}
-      className={cn(
-        "flex items-center gap-0.5 pl-2 pr-0.5",
-        className,
-      )}
-    >
-      {IconComponent && <IconComponent className="size-3"/>}
-      <Trimmer className="flex-1 min-w-0">{label}</Trimmer>
-      <Button
-        size="icon"
-        className="size-5 -my-2 -mx-0.5 hover:bg-destructive/25 focus-visible:bg-destructive/25 focus-visible:opacity-100 opacity-50 hover:opacity-100 transition-all"
-        variant="ghost"
-        onClick={onRemove ? (e) => {
-          e.stopPropagation();
-          onRemove();
-        } : undefined}>
-          <LucideX className="size-3"/>
-      </Button>
-    </Badge>
-  );
-});
-MultiSelectBadge.displayName = "MultiSelectBadge";
-
-/**
- * Extra badge that shows the count of hidden/wrapped items.
- * Uses the same base as MultiSelectBadge but with slightly different styling and behavior.
- */
-const MultiSelectExtraBadge: React.FC = () => {
-  const { clearExtraOptions, extraBadgesCount } = useMultiSelect();
-
-  return (
-    <Badge
-      variant="outline"
-      className={cn(
-        "flex items-center gap-0.5 pl-1.5 pr-0.5 font-mono"
-      )}
-    >
-      {`+${extraBadgesCount}`}
-      <Button
-      size="icon"
-      className="size-5 -my-2 -mx-0.5 hover:bg-destructive/25 opacity-50 hover:opacity-100 transition-all"
-      variant="ghost"
-      onClick={(e) => {
-        e.stopPropagation();
-        clearExtraOptions();
-      }}>
-        <LucideX className="size-3"/>
-      </Button>
-    </Badge>
-  );
-};
-MultiSelectExtraBadge.displayName = "MultiSelectExtraBadge";
+// Local badge renderers removed in favor of BadgeGroup
 
 /**
  * Renders the currently selected options as badges with a "+N more" badge if exceeding `maxCount`.
  */
 const MultiSelectCurrentBadges: React.FC = () => {
-  const {
-    selectedValues,
-    options,
-    maxCount,
-    toggleOption,
-    isAutoMaxCount,
-    shouldShowExtraCounterBadge,
-    visibleBadgesCount,
-    extraBadgesCount,
-    badgeRefs,
-    observedMirroredBadgeListRef,
-  } = useMultiSelect();
+  const { selectedValues, options, maxCount, toggleOption, clearExtraOptions, setAutoVisibleCount } = useMultiSelect();
+  const { selectedExtraBadge } = React.useContext(SelectedBadgeCustomizationContext);
+
+  const badges: BadgeItem[] = useMemo(() => {
+    return selectedValues
+      .map((value) => options.find((o) => o.value === value))
+      .filter((opt): opt is NonNullable<typeof opt> => Boolean(opt))
+      .map((opt) => ({
+        id: opt.value,
+        label: opt.label,
+        icon: opt.icon,
+        // Compose default label/icon from BadgeGroup and add a trailing X button.
+        children: ({ labelNode, iconNode }) => (
+          <>
+            {iconNode}
+            {labelNode}
+            <Button
+              size="icon"
+              className="size-5 -my-2 -ml-1.5 -mr-2 hover:bg-destructive/25 focus-visible:bg-destructive/25 focus-visible:opacity-100 opacity-50 hover:opacity-100 transition-all"
+              variant="ghost"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleOption(opt.value);
+              }}
+            >
+              <LucideX className="size-3" />
+            </Button>
+          </>
+        ),
+      }));
+  }, [selectedValues, options, toggleOption]);
 
   return (
-    <div className={cn(
-      "grid w-full [&>*]:row-start-1 [&>*]:column-start-1 relative overflow-clip items-start", // grid with cell overlaping, similar to absolute positioning but more robust
-      maxCount === "auto" && "grid-rows-[22px]" // max height same as badge height (22px) to render a single-row for the automatic extra badge numbering mode
-    )}>
-      {/* Actual interactive badges visible to the user */}
-      <div className="[grid-area:1/-1] flex gap-1 min-w-12 items-start">
-        {extraBadgesCount < selectedValues.length && (
-          <div className={cn("flex gap-1 min-w-12", !isAutoMaxCount && "flex-wrap")}>
-            {selectedValues.slice(0, visibleBadgesCount).map((value) => {
-              const option = options.find((o) => o.value === value);
-              if (!option) return null;
-              return (
-                <MultiSelectBadge
-                  key={value}
-                  label={option.label}
-                  icon={option.icon}
-                  onRemove={() => toggleOption(value)}
-                  className={cn(
-                    (!isAutoMaxCount || visibleBadgesCount === 1) && "min-w-12 flex-auto max-w-fit", // Ensure shrinking only when wrapping or when only one badge is visible in auto mode to use most of the available real estate
-                  )}
-                />
-              );
-            })}
-            {/* When not on auto mode, we just keep the extra badge at the end of the list */}
-            {!isAutoMaxCount && shouldShowExtraCounterBadge && (
-              <MultiSelectExtraBadge />
-            )}
-          </div>
-        )}
-        {/* When on auto mode, we render the extra badge outside of the list to avoid it being wrapped first */}
-        {isAutoMaxCount && shouldShowExtraCounterBadge && (
-          <div className="flex flex-1 justify-start">
-            <MultiSelectExtraBadge />
-          </div>
-        )}
-      </div>
-
-      {/*
-        Non-Interactive Badge List Mirror:
-        -------------------------
-        Why:
-          In "auto" mode for maxCount, our goal is to determine exactly how many
-          badges can fit in the available width. We need to detect when badges
-          are forced to wrap onto a new line so we can replace the overflow with
-          a "N more" badge. Measuring this directly on the interactive badge
-          list is problematic because hiding or removing badges for layout
-          adjustments would break the measurement logic (creating a circular
-          dependency where layout changes remove the very elements needed for
-          observation). This invisible mirrored list allows us to observe the
-          full, unhindered badge layout using a ResizeObserver, without disturbing
-          the user's interactive view.
-
-        Note:
-          Ensure that any visual changes applied to the interactive badges for
-          "auto" mode are also reflected in this mirrored list to keep the
-          measurements accurate.
-
-        TODO:
-        - Explore a DRYier solution with the same effect so it's easier to read.
-        - Monitor performance due to duplicate render and resize observer usage.
-      */}
-      {isAutoMaxCount && (
-        <div className="invisible [grid-area:1/-1] flex min-w-12 gap-1 [&>*]:pointer-events-none flex-wrap-reverse items-end">
-          <div
-            className="flex flex-wrap gap-1 flex-1 min-w-12 outline outline-1 -outline-offset-1"
-            ref={observedMirroredBadgeListRef}
-          >
-              {selectedValues.map((value) => {
-                const option = options.find((o) => o.value === value);
-                if (!option) return null;
-                return (
-                  <MultiSelectBadge
-                    key={value}
-                    ref={el => {
-                      if (el) badgeRefs.current.set(value, el);
-                      else badgeRefs.current.delete(value);
-                    }}
-                    label={option.label}
-                    icon={option.icon}
-                  />
-                );
-              })}
-            </div>
-            {shouldShowExtraCounterBadge && (
-            <div className="flex flex-wrap justify-start min-w-12 flex-none outline outline-1 -outline-offset-1">
-              <MultiSelectExtraBadge />
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+    <BadgeGroup
+      badges={badges}
+      maxCount={maxCount}
+      className="w-full"
+      onLayoutUpdate={({ visibleCount }) => setAutoVisibleCount(visibleCount)}
+      extraBadge={{
+        id: "extra",
+        variant: "outline",
+        className: "pl-1.5 pr-0.5 gap-0",
+        ...(selectedExtraBadge ?? {}),
+        children: (countNode) => (
+          <>
+            {selectedExtraBadge?.children ? selectedExtraBadge.children(countNode) : countNode}
+            <Button
+              size="icon"
+              className="size-5 -my-2 -mx-0.5 hover:bg-destructive/25 opacity-50 hover:opacity-100 transition-all"
+              variant="ghost"
+              onClick={(e) => {
+                e.stopPropagation();
+                clearExtraOptions();
+              }}
+            >
+              <LucideX />
+            </Button>
+          </>
+        ),
+      }}
+    />
   );
 };
 
@@ -614,7 +449,7 @@ const MultiSelectPopoverTrigger = React.forwardRef<HTMLButtonElement, React.Comp
         : <>
             <MultiSelectCurrentBadges />
             <Button
-              className="size-7 opacity-0 group-hover:opacity-50 hover:!opacity-100 hover:bg-destructive/25 focus-visible:bg-destructive/25 focus-visible:!opacity-100 group-focus-within:opacity-50 absolute right-1.5 translate-x-full group-hover:translate-x-0 group-focus-within:translate-x-0 transition-all duration-300 z-10"
+              className="size-9 opacity-0 group-hover:opacity-50 hover:!opacity-100 hover:bg-destructive/25 focus-visible:bg-destructive/25 focus-visible:!opacity-100 group-focus-within:opacity-50 absolute right-0 translate-x-full group-hover:translate-x-0 group-focus-within:translate-x-0 transition-all duration-300 z-10"
               variant="ghost"
               size="icon"
               onClick={(e) => {
@@ -622,13 +457,13 @@ const MultiSelectPopoverTrigger = React.forwardRef<HTMLButtonElement, React.Comp
                 handleClear();
               }}
             >
-              <LucideX/>
+              <LucideX />
             </Button>
           </>
         }
         <CaretSortIcon
           className={cn(
-            "opacity-50 ",
+            "opacity-50 flex-none",
             !isUnselected && "group-hover:opacity-0 group-focus-within:opacity-0 transition-opacity duration-300 group-hover:delay-0 delay-100"
           )}
         />
@@ -644,6 +479,7 @@ MultiSelectPopoverTrigger.displayName = "MultiSelectPopoverTrigger";
  */
 const MultiSelectListOptions: React.FC<{ className?: string }> = ({ className }) => {
   const { options, selectedValues, toggleOption, itemRefs } = useMultiSelect();
+  const { renderOption, optionItemClassName } = React.useContext(OptionCustomizationContext);
 
   // Group options by the `group` field
   const groupedOptions = useMemo(() => {
@@ -672,7 +508,10 @@ const MultiSelectListOptions: React.FC<{ className?: string }> = ({ className })
                 <CommandItem
                   key={option.value}
                   onSelect={() => toggleOption(option.value)}
-                  className="cursor-pointer mx-1 has-[[data-state=checked]]:bg-accent/50 border border-transparent has-[[data-state=checked]]:border-background transition-all"
+                  className={cn(
+                    "cursor-pointer mx-1 has-[[data-state=checked]]:bg-accent/50 border border-transparent has-[[data-state=checked]]:border-background transition-all",
+                    optionItemClassName
+                  )}
                   value={option.value}
                   ref={(element) => {
                     if (element) {
@@ -682,11 +521,25 @@ const MultiSelectListOptions: React.FC<{ className?: string }> = ({ className })
                     }
                   }}
                 >
-                  <Checkbox checked={isSelected} />
-                  {option.icon && (
-                    <option.icon className="mr-2 text-muted-foreground" />
-                  )}
-                  <Trimmer>{option.label}</Trimmer>
+                  {renderOption
+                    ? renderOption({
+                        option,
+                        isSelected,
+                        checkboxNode: <Checkbox checked={isSelected} />,
+                        iconNode: option.icon ? (
+                          <option.icon className="mr-2 text-muted-foreground" />
+                        ) : undefined,
+                        labelNode: <Trimmer>{option.label}</Trimmer>,
+                      })
+                    : (
+                        <>
+                          <Checkbox checked={isSelected} />
+                          {option.icon && (
+                            <option.icon className="mr-2 text-muted-foreground" />
+                          )}
+                          <Trimmer>{option.label}</Trimmer>
+                        </>
+                      )}
                 </CommandItem>
               );
             })}
