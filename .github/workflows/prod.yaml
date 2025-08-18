@@ -48,7 +48,7 @@ jobs:
         token_format: access_token
         workload_identity_provider: ${{ vars.DEV_IDENTITY_POOL }}
         service_account: ${{ vars.DEV_CI_SERVICE_ACCOUNT }}
-        access_token_lifetime: 300s
+        access_token_lifetime: 1500s
 
 
     - name: Login to Artifact Registry
@@ -61,6 +61,7 @@ jobs:
     - name: Build and push Docker image
       run: |
         docker buildx build \
+            --platform linux/amd64,linux/arm64 \
             --cache-from=type=registry,ref=${{ vars.INTERNAL_REGISTRY}}/$NAME-cache:latest \
             --cache-to=type=registry,ref=${{ vars.INTERNAL_REGISTRY}}/$NAME-cache:latest,mode=max \
             --tag ${{ vars.INTERNAL_REGISTRY }}/$NAME:${{ env.TAG_NAME }} \

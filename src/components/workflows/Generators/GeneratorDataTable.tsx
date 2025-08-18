@@ -145,7 +145,7 @@ export function GeneratorDataTable() {
           <DataSearch />
           <Button
             variant="outline"
-            onClick={() => navigate(getOrgLink("/workflows/generators/create"))}
+            onClick={() => navigate(getOrgLink("/resources/generators/create"))}
           >
             <LucidePlus />
             Add Generator
@@ -156,7 +156,7 @@ export function GeneratorDataTable() {
             const typedRow = row as GeneratorTableData;
             navigate(
               getOrgLink(
-                `/workflows/generators/${typedRow.kind}/${typedRow.namespace}/${typedRow.name}`
+                `/resources/generators/${typedRow.kind}/${typedRow.namespace}/${typedRow.name}`
               )
             );
           }}

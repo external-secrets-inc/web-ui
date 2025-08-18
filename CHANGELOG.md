@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.25.2](https://github.com/external-secrets-inc/web-ui/compare/v0.25.1...v0.25.2) (2025-08-13)
+
+
+### Bug Fixes
+
+* timeout ([c35ba10](https://github.com/external-secrets-inc/web-ui/commit/c35ba100aac7866eb46c6c15c19bf43b10a37d08))
+
+## [0.25.1](https://github.com/external-secrets-inc/web-ui/compare/v0.25.0...v0.25.1) (2025-08-13)
+
+
+### Bug Fixes
+
+* build for arm64 ([#485](https://github.com/external-secrets-inc/web-ui/issues/485)) ([df5cbbc](https://github.com/external-secrets-inc/web-ui/commit/df5cbbc0243271150e83e8f56d205ea0e6578d65))
+
+## [0.25.0](https://github.com/external-secrets-inc/web-ui/compare/v0.24.0...v0.25.0) (2025-08-12)
+
+
+### Features
+
+* restructure navigation, urls and namings for improved organization ([#481](https://github.com/external-secrets-inc/web-ui/issues/481)) ([bfaadf7](https://github.com/external-secrets-inc/web-ui/commit/bfaadf70fdb1d5af8428c96363bf6f1bead95913))
+
+
+### Bug Fixes
+
+* delete click propagation on generator table ([#479](https://github.com/external-secrets-inc/web-ui/issues/479)) ([fbd16d7](https://github.com/external-secrets-inc/web-ui/commit/fbd16d796e1906592e724b76bc1342b06a6f0ea1))
+* old paths replacement ([#484](https://github.com/external-secrets-inc/web-ui/issues/484)) ([4686957](https://github.com/external-secrets-inc/web-ui/commit/4686957ea5500a4e2d3c224e2f5e752ea443f01f))
+* update labels to match eso-server ([#483](https://github.com/external-secrets-inc/web-ui/issues/483)) ([981419d](https://github.com/external-secrets-inc/web-ui/commit/981419d3dbd6cbb5eac0a740c5dc70d642a42864))
+
 ## [0.24.0](https://github.com/external-secrets-inc/web-ui/compare/v0.23.2...v0.24.0) (2025-08-08)
 
 

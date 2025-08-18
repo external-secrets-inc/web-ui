@@ -13,18 +13,23 @@ import {
   getDominantKey,
   getStoreNames,
 } from "@/components/workflows/Findings/Findings.utils";
+import { useSetBreadcrumb } from "@/components/layout/BreadcrumbsContext";
 import useOrgLink from "@/hooks/useOrgLink";
 import useGetFinding from "@/services/findings/queries/useGetFinding";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
 import { LucideAsteriskSquare } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 const CANDIDATE_SEPARATOR = "__SEPARATOR__";
 
 export function PageFindingDetails() {
-  const { findingNamespace, findingName } = useParams();
+  const { findingNamespace = "", findingName = "" } = useParams<{
+    findingNamespace: string;
+    findingName: string;
+  }>();
+  const location = useLocation();
   const navigate = useNavigate();
   const getOrgLink = useOrgLink();
 
@@ -33,7 +38,20 @@ export function PageFindingDetails() {
     isLoading,
     isError,
     error,
-  } = useGetFinding(findingNamespace as string, findingName as string);
+  } = useGetFinding(findingNamespace, findingName);
+
+  // For instant feedback on navigation, use the state if available.
+  const immediateDominantKey = location.state?.dominantKey;
+
+  // Once data loads, calculate the definitive dominant key.
+  const loadedDominantKey = finding
+    ? getDominantKey(finding) ?? finding.name
+    : undefined;
+
+  // The dynamic breadcrumb will be updated once loadedDominantKey is available.
+  useSetBreadcrumb(location.pathname, loadedDominantKey);
+
+  const dominantKey = immediateDominantKey || loadedDominantKey;
 
   if (isError) {
     if (error instanceof AxiosError) {
@@ -62,17 +80,16 @@ export function PageFindingDetails() {
     );
   };
 
-  const dominantKey = finding
-    ? getDominantKey(finding) ?? finding.name
-    : undefined;
-
   const title = dominantKey ? (
     <span className="flex items-center gap-2">
       <LucideAsteriskSquare className="size-6 text-muted-foreground" />{" "}
       {dominantKey}
     </span>
   ) : (
-    "Reused Secret"
+    <span className="flex items-center gap-2">
+      <LucideAsteriskSquare className="size-6 text-muted-foreground" />{" "}
+      Reused Secret
+    </span>
   );
   const description = (
     <>

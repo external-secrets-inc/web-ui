@@ -57,7 +57,7 @@ import {
   Outlet,
   RouterProvider,
   UIMatch,
-  useLocation,
+  type Location,
 } from "react-router-dom";
 import { load, page } from "./analytics";
 import { App } from "./App";
@@ -521,9 +521,10 @@ const router = createBrowserRouter([
                 path: ":findingNamespace/:findingName",
                 element: <PageFindingDetails />,
                 handle: {
-                  breadcrumb: (match: UIMatch) => {
-                    const location = useLocation();
-
+                  breadcrumb: (
+                    match: UIMatch,
+                    location: Location
+                  ) => {
                     if (location.state?.dominantKey) {
                       return {
                         label: location.state.dominantKey,
@@ -532,9 +533,10 @@ const router = createBrowserRouter([
                       };
                     }
 
-                    const fallBackLabel = match.params.findingName ?? "";
+                    // Fallback to URL params if no state
+                    const findingName = match.params.findingName ?? "";
                     return {
-                      label: fallBackLabel,
+                      label: findingName,
                       path: match.pathname,
                       navigatable: true,
                     };
@@ -643,11 +645,11 @@ const router = createBrowserRouter([
       },
       {
         path: "secret-stores",
-        element: <NavigateWithOrg to="workflows/secret-stores" replace />,
+        element: <NavigateWithOrg to="resources/secret-stores" replace />,
       },
       {
         path: "generators",
-        element: <NavigateWithOrg to="workflows/generators" replace />,
+        element: <NavigateWithOrg to="resources/generators" replace />,
       },
       {
         path: "findings",
