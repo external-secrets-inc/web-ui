@@ -417,7 +417,9 @@ export const BadgeGroup = React.forwardRef<HTMLDivElement, BadgeGroupProps>(
 
       for (let i = 0; i < badges.length; i++) {
         if (i === 0) {
-          setBadgeHeight(badgeRefs.current.get(badges[i].id)?.offsetHeight ?? 0);
+          setBadgeHeight(
+            badgeRefs.current.get(badges[i].id)?.offsetHeight ?? 0
+          );
         }
         const badge = badgeRefs.current.get(badges[i].id);
         if (!badge) continue;
@@ -505,7 +507,10 @@ export const BadgeGroup = React.forwardRef<HTMLDivElement, BadgeGroupProps>(
       >
         {/* Visible list */}
         <div
-          className="flex gap-1 min-w-0 flex-wrap h-[--badge-height]"
+          className={cn(
+            "flex gap-1 min-w-0 flex-wrap",
+            isAutoMaxCount && "h-[--badge-height]"
+          )}
         >
           <div className="flex gap-1 min-w-0 flex-wrap flex-1 max-w-fit">
             <BadgeList

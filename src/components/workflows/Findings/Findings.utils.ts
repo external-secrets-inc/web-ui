@@ -1,5 +1,11 @@
 import type { Finding, FindingLocation } from "./Findings.interfaces";
 
+export interface GroupedLocation {
+  storeName: string;
+  duplicateKeys: string[];
+  properties: string[];
+}
+
 /**
  * Determines the most frequently occurring key from a finding's locations.
  * This is used to identify the "main" or "dominant" secret key.
@@ -62,4 +68,29 @@ export function getDuplicateKeys(locations: FindingLocation[], dominantKey?: str
         )
     ),
   ];
+}
+
+/**
+ * Groups locations by store name, consolidating duplicate keys and properties.
+ */
+export function groupLocationsByStore(locations: FindingLocation[]): GroupedLocation[] {
+  const storeNames = getStoreNames(locations);
+
+  return storeNames.map(storeName => {
+    const storeLocations = locations.filter(loc => loc.name === storeName);
+    const duplicateKeys = storeLocations
+      .map(loc => loc.remoteRef?.key)
+      .filter((key): key is string => key !== undefined && key !== "");
+    const properties = storeLocations
+      .map(loc => loc.remoteRef?.property)
+      .filter((property): property is string =>
+        property !== undefined && property !== "" && property !== "-"
+      );
+
+    return {
+      storeName,
+      duplicateKeys: [...new Set(duplicateKeys)],
+      properties: [...new Set(properties)],
+    };
+  });
 }

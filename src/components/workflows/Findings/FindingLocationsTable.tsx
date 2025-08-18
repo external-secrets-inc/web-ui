@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { BadgeGroup } from "@/components/ui/BadgeGroup";
 import {
   DataProvider,
   DataTable,
@@ -7,6 +8,7 @@ import {
 import { type FindingLocation } from "@/components/workflows/Findings";
 import { LucideBookKey, LucideBraces, LucideCopy } from "lucide-react";
 import { useMemo } from "react";
+import { groupLocationsByStore, type GroupedLocation } from "./Findings.utils";
 
 interface FindingLocationsTableProps {
   locations: FindingLocation[];
@@ -15,14 +17,17 @@ interface FindingLocationsTableProps {
 export function FindingLocationsTable({
   locations,
 }: FindingLocationsTableProps) {
+    // Group locations by store name using utility function
+  const groupedLocations = useMemo(() => groupLocationsByStore(locations), [locations]);
+
   const columns = useMemo(
     () =>
-      defineColumns<FindingLocation>((columnHelper) => [
-        columnHelper.accessor("name", {
+      defineColumns<GroupedLocation>((columnHelper) => [
+        columnHelper.accessor("storeName", {
           header: "Store",
           cell: (info) => (
             <Badge
-              variant="secondary"
+              variant="outline"
               className="inline-flex items-center gap-1.5 text-sm"
             >
               <LucideBookKey className="text-muted-foreground" />
@@ -30,33 +35,54 @@ export function FindingLocationsTable({
             </Badge>
           ),
         }),
-        columnHelper.accessor("remoteRef.key", {
-          header: "Duplicate Key",
-          cell: (info) => (
-            <Badge
-              variant="secondary"
-              className="inline-flex items-center gap-1.5 text-sm"
-            >
-              <LucideCopy className="text-muted-foreground" />
-              {info.getValue()}
-            </Badge>
-          ),
-        }),
-        columnHelper.accessor("remoteRef.property", {
-          header: "Property",
+        columnHelper.accessor("duplicateKeys", {
+          header: "Duplicate Keys",
           cell: (info) => {
-            const value = info.getValue();
-            if (!value || String(value).trim() === "" || value === "-") {
+            const keys = info.getValue();
+            const badges = keys.map((key: string, index: number) => ({
+              id: `key-${index}`,
+              label: key,
+              icon: <LucideCopy className="text-muted-foreground" />,
+              className: "text-sm",
+            }));
+
+            return (
+              <BadgeGroup
+                badges={badges}
+                extraBadge={{
+                  id: "extra",
+                  className: "text-sm",
+                  icon: <LucideCopy className="text-muted-foreground" />,
+                }}
+              />
+            );
+          },
+        }),
+        columnHelper.accessor("properties", {
+          header: "Properties",
+          cell: (info) => {
+            const properties = info.getValue();
+            if (properties.length === 0) {
               return <span className="text-muted-foreground">-</span>;
             }
+
+            const badges = properties.map((property: string, index: number) => ({
+              id: `property-${index}`,
+              label: property,
+              icon: <LucideBraces className="text-muted-foreground" />,
+              className: "text-sm",
+            }));
+
             return (
-              <Badge
-                variant="outline"
-                className="inline-flex items-center gap-1.5 text-sm"
-              >
-                <LucideBraces className="text-muted-foreground" />
-                {value}
-              </Badge>
+              <BadgeGroup
+                maxCount="auto"
+                badges={badges}
+                extraBadge={{
+                  id: "extra",
+                  className: "text-sm",
+                  icon: <LucideBraces className="text-muted-foreground" />,
+                }}
+              />
             );
           },
         }),
@@ -66,12 +92,10 @@ export function FindingLocationsTable({
 
   return (
     <DataProvider
-      data={locations}
+      data={groupedLocations}
       columns={columns}
-      initialSort={{ id: "name", desc: false }}
-      getRowId={(row) =>
-        `${row.name}-${row.remoteRef.key}-${row.remoteRef.property}`
-      }
+      initialSort={{ id: "storeName", desc: false }}
+      getRowId={(row) => row.storeName}
     >
       <DataTable />
     </DataProvider>
