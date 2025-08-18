@@ -1,4 +1,4 @@
-import { FindingsDataTable } from "@/components/workflows/Findings";
+import { FindingsList } from "@/components/workflows/Findings";
 import { LayoutPage } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
@@ -15,7 +15,7 @@ export function PageFindings() {
   return (
     <LayoutPage
       title="Reused Secrets"
-      description="Review groups of duplicate secrets found across your stores. Select a group to see details and consolidate them with a workflow."
+      description="Review groups of duplicate secrets found across your stores. Select a group to see details and deduplicate them with a workflow."
     >
       <LayoutPortalTopbarActions>
         <Button
@@ -26,7 +26,7 @@ export function PageFindings() {
           Refresh Data
         </Button>
       </LayoutPortalTopbarActions>
-      <FindingsDataTable />
+      <FindingsList />
     </LayoutPage>
   );
 }

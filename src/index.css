@@ -70,6 +70,7 @@
     --sidebar-ring: var(--primary-500);
 
     /* Our custom vars (not in shadcn) */
+    --primary-muted: var(--primary-600);
     --warning: 32 92% 52%;
     --warning-foreground: 0 0% 100%;
     --success: 175 80% 40%;
@@ -129,6 +130,7 @@
     --sidebar-ring: var(--primary-400);
 
     /* Our custom vars (not in shadcn) */
+    --primary-muted: var(--primary-400);
     --warning: 24.58 61% 50%;
     --warning-foreground: 0 0% 100%;
     --success: 159.89 84% 38%;
