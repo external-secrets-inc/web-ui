@@ -207,7 +207,11 @@ function BadgeGroupItem({
 
   const defaultContent =
     typeof resolved.children === "function"
-      ? resolved.children({ resolved, labelNode, iconNode: iconNode ?? undefined })
+      ? resolved.children({
+          resolved,
+          labelNode,
+          iconNode: iconNode ?? undefined,
+        })
       : resolved.children ?? (
           <>
             {iconNode}
@@ -378,12 +382,20 @@ function BadgeList({
  */
 export const BadgeGroup = React.forwardRef<HTMLDivElement, BadgeGroupProps>(
   (
-    { badges, maxCount, className, extraBadge: extraBadgeConfig, onLayoutUpdate, ...props },
+    {
+      badges,
+      maxCount,
+      className,
+      extraBadge: extraBadgeConfig,
+      onLayoutUpdate,
+      ...props
+    },
     ref
   ) => {
     const [computedMaxCount, setComputedMaxCount] = React.useState<
       number | undefined
     >(typeof maxCount === "number" ? maxCount : undefined);
+    const [badgeHeight, setBadgeHeight] = React.useState<number>(0);
 
     const badgeRefs = React.useRef<Map<string, HTMLDivElement>>(new Map());
     const observedMirroredBadgeListRef = React.useRef<HTMLDivElement>(null);
@@ -404,6 +416,9 @@ export const BadgeGroup = React.forwardRef<HTMLDivElement, BadgeGroupProps>(
       const baselineTop = 0;
 
       for (let i = 0; i < badges.length; i++) {
+        if (i === 0) {
+          setBadgeHeight(badgeRefs.current.get(badges[i].id)?.offsetHeight ?? 0);
+        }
         const badge = badgeRefs.current.get(badges[i].id);
         if (!badge) continue;
 
@@ -482,36 +497,30 @@ export const BadgeGroup = React.forwardRef<HTMLDivElement, BadgeGroupProps>(
       <div
         ref={ref}
         className={cn(
-          "w-full min-w-0 relative overflow-clip items-start ",
+          "w-full min-w-0 relative overflow-clip inline-flex",
           className
         )}
         {...props}
+        style={{ "--badge-height": `${badgeHeight}px` } as React.CSSProperties}
       >
         {/* Visible list */}
-        <div className="max-w-full flex gap-1 min-w-0 items-start">
-          <div
-            className={cn("flex gap-1 min-w-0", !isAutoMaxCount && "flex-wrap")}
-          >
-            <div
-              className={cn(
-                "flex gap-1 min-w-0",
-                !isAutoMaxCount && "contents"
-              )}
-            >
-              <BadgeList
-                badges={visibleBadges}
-                withTrimmerOnlyOnFirstItem={isAutoMaxCount}
-              />
-            </div>
-
-            {extraBadgesCount > 0 && (
-              <ExtraBadge
-                config={extraBadgeConfig}
-                countNode={formatExtraCount(extraBadgesCount)}
-                hiddenBadges={hiddenBadges}
-              />
-            )}
+        <div
+          className="flex gap-1 min-w-0 flex-wrap h-[--badge-height]"
+        >
+          <div className="flex gap-1 min-w-0 flex-wrap flex-1 max-w-fit">
+            <BadgeList
+              badges={visibleBadges}
+              withTrimmerOnlyOnFirstItem={isAutoMaxCount}
+            />
           </div>
+
+          {extraBadgesCount > 0 && (
+            <ExtraBadge
+              config={extraBadgeConfig}
+              countNode={formatExtraCount(extraBadgesCount)}
+              hiddenBadges={hiddenBadges}
+            />
+          )}
         </div>
 
         {/**
