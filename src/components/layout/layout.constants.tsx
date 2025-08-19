@@ -1,3 +1,7 @@
+import { AuditListenerStatusBadge } from "@/components/Audit/AuditListenerStatusBadge";
+import { FindingsCountBadge } from "@/components/workflows/Findings/FindingsCountBadge";
+import { AppSidebarNavigationConfig } from "@/components/layout";
+import { DOCS_DOMAIN } from "@/constants";
 import {
   LucideArrowDownToDot,
   LucideAsteriskSquare,
@@ -9,15 +13,12 @@ import {
   LucideFolderKey,
   LucideLocateFixed,
   LucideRotateCcwKey,
-  LucideSearch,
+  LucideSquareStack,
   LucideSettings,
   LucideShieldCheck,
   LucideUserCog,
   LucideWorkflow,
 } from "lucide-react";
-import { DOCS_DOMAIN } from "@/constants";
-import { AppSidebarNavigationConfig } from "@/components/layout";
-import { AuditListenerStatusBadge } from "@/components/Audit/AuditListenerStatusBadge";
 
 export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
   navMain: [
@@ -66,8 +67,9 @@ export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
       items: [
         {
           label: "Reused Secrets",
-          url: "/findings",
-          icon: LucideSearch,
+          url: "/findings/reused-secrets",
+          icon: LucideSquareStack,
+          renderAppendContent: <FindingsCountBadge />,
         },
       ],
     },

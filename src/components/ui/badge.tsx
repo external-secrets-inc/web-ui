@@ -5,20 +5,19 @@ import { cn } from "@/lib/utils"
 import { Slot } from "@radix-ui/react-slot"
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-lg border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center rounded-lg border px-2 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
   {
     variants: {
       variant: {
         default:
           "border-primary/40 bg-primary/15 text-primary-foreground shadow",
-        secondary:
-          "border-transparent bg-secondary text-secondary-foreground",
+        secondary: "border-transparent bg-secondary text-secondary-foreground",
         destructive:
-          "border-destructive/40 bg-destructive/5 dark:bg-destructive/15 text-destructive dark:text-destructive-foreground shadow",
+          "border-destructive/60 bg-background ring-2 ring-destructive/15 text-destructive dark:text-destructive-foreground bg-gradient-to-tr from-destructive/0 to-destructive/15 dark:to-destructive/35 bg-clip-padding",
         warning:
-          "border-warning/40 bg-warning/5 dark:bg-warning/15 text-warning dark:text-warning-foreground shadow",
+          "border-warning/60 bg-background ring-2 ring-warning/15 text-warning dark:text-warning-foreground bg-gradient-to-tr from-warning/0 to-warning/15 dark:to-warning/35 bg-clip-padding",
         success:
-          "border-success/40 bg-success/5 dark:bg-success/15 text-success dark:text-success-foreground shadow",
+          "border-success/60 bg-background ring-2 ring-success/15 text-success dark:text-success-foreground bg-gradient-to-tr from-success/0 to-success/15 dark:to-success/35 bg-clip-padding",
         outline: "text-foreground bg-background/50",
       },
     },
@@ -26,7 +25,7 @@ const badgeVariants = cva(
       variant: "default",
     },
   }
-)
+);
 
 export interface BadgeProps
   extends React.HTMLAttributes<HTMLDivElement>,

@@ -19,7 +19,7 @@ const Card = React.forwardRef<HTMLElement, CardProps>(({ className, asChild, onC
       className={cn(
         "rounded-xl border bg-card text-card-foreground shadow",
         className,
-        onClick && "cursor-pointer"
+        onClick && "cursor-pointer [text-align:unset]"
       )}
       onClick={onClick}
       {...props}

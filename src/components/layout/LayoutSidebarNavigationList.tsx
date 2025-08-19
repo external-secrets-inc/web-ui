@@ -17,6 +17,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import { Trimmer } from "@/components/ui/Trimmer";
 import { cn } from "@/lib/utils";
 import { LucideChevronRight, LucideExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -99,7 +100,7 @@ const LeafNavItem: React.FC<BaseNavigationItemProps> = ({
       <SidebarMenuSubButton asChild isActive={isActive}>
         <Link to={getOrgLink(item.url)}>
           {IconComponent && <IconComponent />}
-          <span className="font-medium">{item.label}</span>
+          <Trimmer>{item.label}</Trimmer>
           <AppendContent render={item.renderAppendContent} />
         </Link>
       </SidebarMenuSubButton>
@@ -236,12 +237,12 @@ const TopLevelGroupNavItem: React.FC<CollapsibleNavigationItemProps> = ({
             tooltip={item.label}
             className="[&[data-state=open]>svg]:rotate-90 [&:not(:has([data-sidebar=menu-action]:hover)):hover>svg]:opacity-100 max-md:[&[data-state=closed]>svg]:opacity-100 gap-px"
           >
-            <span>{item.label}</span>
+            <span className="text-foreground/80">{item.label}</span>
             <LucideChevronRight className="transition-all duration-200 opacity-0" />
             <AppendContent render={item.renderAppendContent} />
           </SidebarMenuButton>
         </CollapsibleTrigger>
-        <CollapsibleContent>
+        <CollapsibleContent className="overflow-clip [overflow-clip-margin:theme(spacing.1)]">
           <SidebarMenuSub
             className={cn(
               "px-0 pb-2.5 mx-0 border-0 gap-px translate-x-0 [&>li>a]:translate-x-0",
