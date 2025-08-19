@@ -16,38 +16,11 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { Finding } from "./Findings.interfaces";
-
-function getDominantKey(finding: Finding): string | undefined {
-  const counts = new Map<string, number>();
-  for (const loc of finding.locations ?? []) {
-    const k = loc?.remoteRef?.key;
-    if (!k) continue;
-    counts.set(k, (counts.get(k) ?? 0) + 1);
-  }
-  let bestKey: string | undefined;
-  let bestCount = 0;
-  counts.forEach((count, key) => {
-    if (count > bestCount) {
-      bestKey = key;
-      bestCount = count;
-    }
-  });
-  return bestKey;
-}
-
-function normalizeProperty(raw?: string): string | null {
-  if (!raw) return null;
-  const v = String(raw).trim();
-  if (v === "" || v === "-") return null;
-  return v;
-}
-
-function truncateMiddle(value: string, max = 48): string {
-  if (value.length <= max) return value;
-  const head = Math.ceil((max - 1) / 2);
-  const tail = Math.floor((max - 1) / 2);
-  return value.slice(0, head) + "…" + value.slice(-tail);
-}
+import {
+  getDominantKey,
+  getPropertyCount,
+  getStoreNames,
+} from "./Findings.utils";
 
 export function FindingsDataGrid() {
   const { table, isLoading, emptyMessage } = useData<Finding>();
@@ -60,15 +33,9 @@ export function FindingsDataGrid() {
         const locations = finding.locations ?? [];
 
         const dominantKey = getDominantKey(finding) ?? finding.name;
-        const titleDisplay = truncateMiddle(dominantKey);
 
-        const storeNames = [
-          ...new Set(locations.map((l) => l.name ?? "").filter(Boolean)),
-        ];
-        const propertyCount = locations.reduce((total, l) => {
-          const prop = normalizeProperty(l.remoteRef?.property);
-          return total + (prop ? 1 : 0);
-        }, 0);
+        const storeNames = getStoreNames(locations);
+        const propertyCount = getPropertyCount(locations);
 
         return (
           <Link
@@ -76,6 +43,7 @@ export function FindingsDataGrid() {
             to={getOrgLink(
               `/findings/reused-secrets/${finding.namespace}/${finding.name}`
             )}
+            state={{ dominantKey }}
             className="grid min-w-0"
           >
             <Card className="group flex flex-col min-w-0 relative hover:border-muted-foreground/50 hover:bg-muted/15 transition-all cursor-pointer overflow-clip">
@@ -85,7 +53,7 @@ export function FindingsDataGrid() {
                   <LucideAsteriskSquare className="size-6 text-muted-foreground" />
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="truncate mr-auto">{titleDisplay}</span>
+                      <span className="truncate mr-auto">{dominantKey}</span>
                     </TooltipTrigger>
                     <TooltipContent>
                       Main secret key: {dominantKey}
@@ -120,10 +88,6 @@ export function FindingsDataGrid() {
                     {locations.length}
                   </span>{" "}
                   duplicates found {storeNames.length === 1 ? "on" : "across"}{" "}
-                  <span className="font-bold text-foreground">
-                    {storeNames.length}
-                  </span>{" "}
-                  {storeNames.length === 1 ? "location" : "locations"}
                 </span>
                 <BadgeGroup
                   maxCount="auto"

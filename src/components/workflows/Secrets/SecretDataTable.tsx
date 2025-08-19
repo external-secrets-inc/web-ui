@@ -141,7 +141,7 @@ export function SecretDataTable() {
           <Button
             variant="outline"
             onClick={() =>
-              navigate(getOrgLink("/workflows/secrets/create"))
+              navigate(getOrgLink("/resources/secrets/create"))
             }
           >
             <LucidePlus />

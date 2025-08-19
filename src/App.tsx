@@ -5,6 +5,7 @@ import RequireActiveUser from "@/components/RequireActiveUser";
 import OrgRedirector from "@/components/OrgRedirector";
 import { SubscriptionProvider } from "@/context/SubscriptionContext";
 import { AuditMockProvider } from "@/components/Audit/AuditMockContext";
+import { BreadcrumbsProvider } from "@/components/layout/BreadcrumbsContext";
 
 export function App() {
   return (
@@ -16,9 +17,11 @@ export function App() {
         <OrgRedirector>
           <SubscriptionProvider>
             <FeatureFlagProvider>
-              <AuditMockProvider>
-                <LayoutRoot />
-              </AuditMockProvider>
+              <BreadcrumbsProvider>
+                <AuditMockProvider>
+                  <LayoutRoot />
+                </AuditMockProvider>
+              </BreadcrumbsProvider>
             </FeatureFlagProvider>
           </SubscriptionProvider>
         </OrgRedirector>

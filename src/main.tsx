@@ -19,31 +19,31 @@ import { IS_DEV, IS_PROD } from "@/constants";
 import { ThemeProvider } from "@/context/ThemeContext";
 import {
   PageAgents,
-  PageAuditInsights,
   PageAuditDestinations,
+  PageAuditInsights,
   PageAuditPolicies,
   PageAuditProviders,
-  PageFindings,
   PageFindingDetails,
+  PageFindings,
+  PageGeneratorDetails,
   PageGenerators,
   PageGeneratorsCreate,
   PageReloaders,
-  PageSettings,
-  PageSecretStores,
-  PageSecretStoresCreate,
-  PageTargets,
-  PageTargetsCreate,
-  PageWorkflowTemplates,
-  PageWorkflowTemplatesCreate,
-  PageWorkflowTemplateDetails,
-  PageWorkflowRunTemplatesCreate,
-  PageWorkflowRunDetails,
   PageSecrets,
   PageSecretsCreate,
-  PageServiceAccountsCreate,
+  PageSecretStores,
+  PageSecretStoresCreate,
+  PageSecretStoresEdit,
   PageServiceAccounts,
-  PageGeneratorDetails,
-  PageSecretStoresEdit
+  PageServiceAccountsCreate,
+  PageSettings,
+  PageTargets,
+  PageTargetsCreate,
+  PageWorkflowRunDetails,
+  PageWorkflowRunTemplatesCreate,
+  PageWorkflowTemplateDetails,
+  PageWorkflowTemplates,
+  PageWorkflowTemplatesCreate,
 } from "@/pages";
 import authStore from "@/services/auth/authStore";
 import RequireAuth from "@auth-kit/react-router/RequireAuth";
@@ -57,6 +57,7 @@ import {
   Outlet,
   RouterProvider,
   UIMatch,
+  type Location,
 } from "react-router-dom";
 import { load, page } from "./analytics";
 import { App } from "./App";
@@ -186,7 +187,7 @@ const router = createBrowserRouter([
               },
               {
                 path: ":templateNamespace/:templateName",
-                element: <Outlet/>,
+                element: <Outlet />,
                 handle: {
                   breadcrumb: (match: UIMatch) => ({
                     label: `${match.params.templateName}`,
@@ -219,7 +220,7 @@ const router = createBrowserRouter([
                       }),
                     },
                   },
-                ]
+                ],
               },
             ],
           },
@@ -355,7 +356,7 @@ const router = createBrowserRouter([
               },
               {
                 path: ":generatorKind/:generatorNamespace/:generatorName",
-                element: <PageGeneratorDetails/>,
+                element: <PageGeneratorDetails />,
                 handle: {
                   breadcrumb: (match: UIMatch) => ({
                     label: `${match.params.generatorName}`,
@@ -397,23 +398,100 @@ const router = createBrowserRouter([
       },
       // Backwards compatibility redirects for old resource URLs under workflows
       // TODO[cfviotti]: Remove these when we properly update the docs AND the direct links on the UI (we really should have a better way to avoid breaking links when such refactors are necessary)
-      { path: "workflows/secrets", element: <NavigateWithOrg to="resources/secrets" replace /> },
-      { path: "workflows/secrets/create", element: <NavigateWithOrg to="resources/secrets/create" replace /> },
-      { path: "workflows/service-accounts", element: <NavigateWithOrg to="resources/service-accounts" replace /> },
-      { path: "workflows/service-accounts/create", element: <NavigateWithOrg to="resources/service-accounts/create" replace /> },
-      { path: "workflows/secret-stores", element: <NavigateWithOrg to="resources/secret-stores" replace /> },
-      { path: "workflows/secret-stores/create", element: <NavigateWithOrg to="resources/secret-stores/create" replace /> },
-      { path: "workflows/secret-stores/edit/:secretstoreNamespace/:secretstoreName", element: <NavigateWithOrg to="resources/secret-stores/edit/:secretstoreNamespace/:secretstoreName" replace /> },
-      { path: "workflows/generators", element: <NavigateWithOrg to="resources/generators" replace /> },
-      { path: "workflows/generators/create", element: <NavigateWithOrg to="resources/generators/create" replace /> },
-      { path: "workflows/generators/:generatorKind/:generatorNamespace/:generatorName", element: <NavigateWithOrg to="resources/generators/:generatorKind/:generatorNamespace/:generatorName" replace /> },
+      {
+        path: "workflows/secrets",
+        element: <NavigateWithOrg to="resources/secrets" replace />,
+      },
+      {
+        path: "workflows/secrets/create",
+        element: <NavigateWithOrg to="resources/secrets/create" replace />,
+      },
+      {
+        path: "workflows/service-accounts",
+        element: <NavigateWithOrg to="resources/service-accounts" replace />,
+      },
+      {
+        path: "workflows/service-accounts/create",
+        element: (
+          <NavigateWithOrg to="resources/service-accounts/create" replace />
+        ),
+      },
+      {
+        path: "workflows/secret-stores",
+        element: <NavigateWithOrg to="resources/secret-stores" replace />,
+      },
+      {
+        path: "workflows/secret-stores/create",
+        element: (
+          <NavigateWithOrg to="resources/secret-stores/create" replace />
+        ),
+      },
+      {
+        path: "workflows/secret-stores/edit/:secretstoreNamespace/:secretstoreName",
+        element: (
+          <NavigateWithOrg
+            to="resources/secret-stores/edit/:secretstoreNamespace/:secretstoreName"
+            replace
+          />
+        ),
+      },
+      {
+        path: "workflows/generators",
+        element: <NavigateWithOrg to="resources/generators" replace />,
+      },
+      {
+        path: "workflows/generators/create",
+        element: <NavigateWithOrg to="resources/generators/create" replace />,
+      },
+      {
+        path: "workflows/generators/:generatorKind/:generatorNamespace/:generatorName",
+        element: (
+          <NavigateWithOrg
+            to="resources/generators/:generatorKind/:generatorNamespace/:generatorName"
+            replace
+          />
+        ),
+      },
       // Backwards compatibility redirects for old Workflows (previously under /workflows/templates)
-      { path: "workflows", element: <NavigateWithOrg to="automation/workflows" replace /> },
-      { path: "workflows/templates", element: <NavigateWithOrg to="automation/workflows" replace /> },
-      { path: "workflows/templates/create", element: <NavigateWithOrg to="automation/workflows/create" replace /> },
-      { path: "workflows/templates/:templateNamespace/:templateName", element: <NavigateWithOrg to="automation/workflows/:templateNamespace/:templateName" replace /> },
-      { path: "workflows/templates/:templateNamespace/:templateName/create", element: <NavigateWithOrg to="automation/workflows/:templateNamespace/:templateName/create" replace /> },
-      { path: "workflows/templates/:templateNamespace/:templateName/runs/:workflowRunNamespace/:workflowRunName", element: <NavigateWithOrg to="automation/workflows/:templateNamespace/:templateName/runs/:workflowRunNamespace/:workflowRunName" replace /> },
+      {
+        path: "workflows",
+        element: <NavigateWithOrg to="automation/workflows" replace />,
+      },
+      {
+        path: "workflows/templates",
+        element: <NavigateWithOrg to="automation/workflows" replace />,
+      },
+      {
+        path: "workflows/templates/create",
+        element: <NavigateWithOrg to="automation/workflows/create" replace />,
+      },
+      {
+        path: "workflows/templates/:templateNamespace/:templateName",
+        element: (
+          <NavigateWithOrg
+            to="automation/workflows/:templateNamespace/:templateName"
+            replace
+          />
+        ),
+      },
+      {
+        path: "workflows/templates/:templateNamespace/:templateName/create",
+        element: (
+          <NavigateWithOrg
+            to="automation/workflows/:templateNamespace/:templateName/create"
+            replace
+          />
+        ),
+      },
+      {
+        path: "workflows/templates/:templateNamespace/:templateName/runs/:workflowRunNamespace/:workflowRunName",
+        element: (
+          <NavigateWithOrg
+            to="automation/workflows/:templateNamespace/:templateName/runs/:workflowRunNamespace/:workflowRunName"
+            replace
+          />
+        ),
+      },
       {
         path: "findings",
         element: <Outlet />,
@@ -443,11 +521,26 @@ const router = createBrowserRouter([
                 path: ":findingNamespace/:findingName",
                 element: <PageFindingDetails />,
                 handle: {
-                  breadcrumb: (match: UIMatch) => ({
-                    label: `${match.params.findingName}`,
-                    path: match.pathname,
-                    navigatable: true,
-                  }),
+                  breadcrumb: (
+                    match: UIMatch,
+                    location: Location
+                  ) => {
+                    if (location.state?.dominantKey) {
+                      return {
+                        label: location.state.dominantKey,
+                        path: match.pathname,
+                        navigatable: true,
+                      };
+                    }
+
+                    // Fallback to URL params if no state
+                    const findingName = match.params.findingName ?? "";
+                    return {
+                      label: findingName,
+                      path: match.pathname,
+                      navigatable: true,
+                    };
+                  },
                 },
               },
             ],
@@ -552,11 +645,11 @@ const router = createBrowserRouter([
       },
       {
         path: "secret-stores",
-        element: <NavigateWithOrg to="workflows/secret-stores" replace />,
+        element: <NavigateWithOrg to="resources/secret-stores" replace />,
       },
       {
         path: "generators",
-        element: <NavigateWithOrg to="workflows/generators" replace />,
+        element: <NavigateWithOrg to="resources/generators" replace />,
       },
       {
         path: "findings",
