@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.26.0](https://github.com/external-secrets-inc/web-ui/compare/v0.25.2...v0.26.0) (2025-08-21)
+
+
+### Features
+
+* enhance findings UX with BadgeGroup integration and improved data presentation ([#493](https://github.com/external-secrets-inc/web-ui/issues/493)) ([87bce99](https://github.com/external-secrets-inc/web-ui/commit/87bce99146d2448fdd7aecdee42c81b8210bf3cd))
+
+
+### Bug Fixes
+
+* add status badge for targets ([#488](https://github.com/external-secrets-inc/web-ui/issues/488)) ([237cb57](https://github.com/external-secrets-inc/web-ui/commit/237cb57a52b74030d285d682b3a589d5c00a6802))
+
 ## [0.25.2](https://github.com/external-secrets-inc/web-ui/compare/v0.25.1...v0.25.2) (2025-08-13)
 
 
