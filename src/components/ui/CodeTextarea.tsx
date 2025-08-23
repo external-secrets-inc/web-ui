@@ -26,17 +26,19 @@ type CodeTextareaProps = Omit<TextareaCodeEditorProps, 'minHeight' | 'padding'>;
  * @see https://uiwjs.github.io/react-textarea-code-editor/
  */
 const CodeTextarea = forwardRef<HTMLTextAreaElement, CodeTextareaProps>(
-  ({ language, className, ...props }, ref) => {
+  ({ language, className, disabled, ...props }, ref) => {
     const { theme } = useTheme();
 
     return (
       <CodeEditor
         ref={ref}
         language={language}
-        data-color-mode={theme === 'system' ? undefined : theme}
+        data-color-mode={theme === "system" ? undefined : theme}
+        disabled={disabled}
         className={cn(
           // Base container styles mimicking our field styles with !important overrides for the editor inline styles
-          "!bg-muted/50 rounded-md !text-sm !border !border-input hover:!border-input-accent !transition-colors shadow-sm px-3 py-2 placeholder:text-muted-foreground focus-within:!outline-none focus-within:!ring-1 focus-within:!ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+          "!bg-background rounded-md !text-sm !border !border-input !transition-colors shadow-sm px-3 py-2 placeholder:text-muted-foreground focus-within:!outline-none focus-within:!ring-1 focus-within:!ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+          !disabled && "hover:!border-input-accent !bg-muted/50",
           // Editor layout fixes
           "[&_code]:static", // override from our own index.css
           "[&_pre]:bg-transparent", // override from our own index.css
