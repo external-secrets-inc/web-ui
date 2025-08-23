@@ -82,6 +82,18 @@ export interface BadgeItem extends Omit<BadgeProps, "children"> {
       }) => React.ReactNode);
 }
 
+function renderIconNode(icon?: BadgeItem["icon"]): React.ReactNode | undefined {
+  if (!icon) return undefined;
+  if (React.isValidElement(icon)) {
+    const el = icon as React.ReactElement<{ className?: string }>;
+    return React.cloneElement(el, {
+      className: cn("text-muted-foreground", el.props.className),
+    });
+  }
+  const IconComp = icon as React.ComponentType<{ className?: string }>;
+  return <IconComp className="text-muted-foreground" />;
+}
+
 export interface BadgeGroupProps {
   /** Array of badge items to display, in visual order (left → right). */
   badges: BadgeItem[];
@@ -195,15 +207,7 @@ function BadgeGroupItem({
     <span className="flex-1 min-w-0 truncate">{resolved.label}</span>
   );
 
-  const iconNode =
-    icon &&
-    (typeof icon === "function"
-      ? React.createElement(icon, {
-          className: "text-muted-foreground",
-        })
-      : React.cloneElement(icon, {
-          className: "text-muted-foreground",
-        }));
+  const iconNode = renderIconNode(icon);
 
   const defaultContent =
     typeof resolved.children === "function"
@@ -255,7 +259,7 @@ function HiddenBadgesTooltip({
   children: React.ReactNode;
 }) {
   return (
-    <Tooltip>
+    <Tooltip delayDuration={0}>
       <TooltipTrigger>{children}</TooltipTrigger>
       <TooltipContent className="max-h-64 overflow-auto p-2">
         <div className="flex flex-col gap-1 items-start">
@@ -308,14 +312,7 @@ function ExtraBadge({
         config.children(countNode)
       ) : (
         <>
-          {config?.icon &&
-            (typeof config.icon === "function"
-              ? React.createElement(config.icon, {
-                  className: "text-muted-foreground",
-                })
-              : React.cloneElement(config.icon, {
-                  className: "text-muted-foreground",
-                }))}
+          {renderIconNode(config?.icon)}
           {countNode}
         </>
       )}
@@ -508,11 +505,11 @@ export const BadgeGroup = React.forwardRef<HTMLDivElement, BadgeGroupProps>(
         {/* Visible list */}
         <div
           className={cn(
-            "flex gap-1 min-w-0 flex-wrap",
+            "flex gap-x-0.5 gap-y-1 min-w-0 flex-wrap",
             isAutoMaxCount && "h-[--badge-height]"
           )}
         >
-          <div className="flex gap-1 min-w-0 flex-wrap flex-1 max-w-fit">
+          <div className="flex gap-x-0.5 gap-y-1 min-w-0 flex-wrap flex-1 max-w-fit">
             <BadgeList
               badges={visibleBadges}
               withTrimmerOnlyOnFirstItem={isAutoMaxCount}
@@ -550,11 +547,11 @@ export const BadgeGroup = React.forwardRef<HTMLDivElement, BadgeGroupProps>(
          */}
         {isAutoMaxCount && (
           <div
-            className="max-w-full flex min-w-0 gap-1 items-end flex-wrap-reverse absolute top-0 invisible pointer-events-none [&>*]:pointer-events-none"
+            className="max-w-full flex min-w-0 gap-x-0.5 gap-y-1 items-end flex-wrap-reverse absolute top-0 invisible pointer-events-none [&>*]:pointer-events-none"
             aria-hidden
           >
             <div
-              className="flex gap-1 flex-1 flex-wrap min-w-12"
+              className="flex gap-x-0.5 gap-y-1 flex-1 flex-wrap min-w-12"
               ref={observedMirroredBadgeListRef}
             >
               <BadgeList badges={badges} setBadgeRef={setBadgeRef} />
