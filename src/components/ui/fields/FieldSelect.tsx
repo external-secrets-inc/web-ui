@@ -155,8 +155,8 @@ export function FieldSelect({
     onValueChange?.(finalValue);
   };
 
-  const showClearButton =
-    allowClear &&
+  const shouldShowClear =
+    allowClear && !disabled && !loading &&
     controllerField.value &&
     (typeof controllerField.value === "string"
       ? controllerField.value !== ""
@@ -271,7 +271,7 @@ export function FieldSelect({
           >
             <FormControl>
               <SelectTrigger
-                className={cn(showClearButton && "[&>svg]:opacity-0")}
+                className={cn(shouldShowClear && "[&>svg]:opacity-0")}
                 ref={controllerField.ref}
               >
                 <SelectValue placeholder={placeholder} />
@@ -280,18 +280,18 @@ export function FieldSelect({
             <SelectContent>{renderSelectContent()}</SelectContent>
           </Select>
           {allowClear && (
-            <div className="absolute right-0 top-0 overflow-clip">
+            <div className="absolute right-0 top-0 overflow-clip pointer-events-none">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    aria-hidden={!showClearButton}
-                    disabled={!showClearButton}
+                    aria-hidden={!shouldShowClear}
+                    disabled={!shouldShowClear}
                     className={cn(
-                      "transition-opacity",
-                      !showClearButton
+                      "transition-opacity pointer-events-auto",
+                      !shouldShowClear
                         ? "animate-out !slide-out-to-right fade-out-0 fill-mode-forwards"
                         : "animate-in slide-in-from-right fade-in-0"
                     )}
