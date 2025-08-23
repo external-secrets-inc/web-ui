@@ -1,0 +1,111 @@
+import { Meta, Canvas, Story, Controls, Primary, Description } from '@storybook/blocks';
+import * as MultiSelectStories from './MultiSelect.stories.tsx';
+
+<Meta of={MultiSelectStories} name="Documentation" />
+
+# MultiSelect Component
+
+<Description of={MultiSelectStories} />
+
+Searchable multi-select with grouping, tri-state group toggles that respect the current filter, and badge overflow handling via a compact "+N" counter with tooltip.
+
+## Context and Design
+
+- Search behavior: uses CMDK’s `defaultFilter` but matches against option labels only (IDs are used strictly for identity/hover stability).
+- Group toggles: each group heading renders a checkbox (checked/indeterminate/unchecked). Toggling affects only items visible under the active search.
+- Overflow badges: selected values render as badges; overflow collapses into a counter badge with a tooltip listing hidden selections. Wrap stories/apps with `<TooltipProvider/>`.
+- Customization: customize selected badges and option rows without breaking truncation.
+- Accessibility/UX: keyboard navigation via CMDK; Tooltip semantics via Radix.
+
+## Import
+
+```tsx
+import { MultiSelect } from '@/components/ui/MultiSelect';
+```
+
+The alias path is exported by a barrel file so downstream imports remain stable if we reorganize internals.
+
+## Primary
+
+<Primary />
+
+<Controls />
+
+## Examples
+
+### Default (Ungrouped)
+<Canvas of={MultiSelectStories.DefaultUngrouped} />
+Ungrouped options behave like a standard searchable multi-select. The footer exposes “Select/Deselect All” for the current filter.
+
+### Default (Grouped)
+<Canvas of={MultiSelectStories.Default} />
+Group headings include a tri-state checkbox. Checked = all visible selected; indeterminate = partial; unchecked = none.
+
+### With Icons and Groups
+<Canvas of={MultiSelectStories.WithIconsAndGroups} />
+Demonstrates optional icons per option and that labels are the sole basis for fuzzy matching.
+
+### Overflow (Auto)
+<Canvas of={MultiSelectStories.MaxCountAuto} />
+Auto mode calculates how many badges fit without wrapping and collapses the remainder into a counter badge with tooltip.
+
+### Overflow (Fixed)
+<Canvas of={MultiSelectStories.MaxCountFixed} />
+Fixed mode clamps the number of displayed badges; use when layout predictability is preferred over dynamic measurement.
+
+### Custom Badges
+<Canvas of={MultiSelectStories.CustomBadges} />
+You can configure selected badge variants and the extra counter badge. The extra badge accepts `id`, `variant`, `className`, optional `icon`, and a render function `children(countNode)` for full control.
+
+### Custom Option Rendering
+<Canvas of={MultiSelectStories.CustomOptionRenderer} />
+Use `renderOption` to compose the row. You receive `checkboxNode`, `iconNode`, `labelNode`, and `isSelected` to build rich rows while preserving styles.
+
+### Large Dataset
+<Canvas of={MultiSelectStories.LargeDataset} />
+Good for validating search behavior, group toggles under filtering, and overflow.
+
+### Form Integration
+<Canvas of={MultiSelectStories.WithForm} />
+Demonstrates integration with `react-hook-form` via project Form wrappers.
+
+## API Highlights
+
+- `options: { label: string; value: string; icon?: React.ComponentType; group?: string }[]`
+- `onValueChange(values: string[])`: controlled-selection callback
+- `defaultValue?: string[]`: initial selection
+- `maxCount?: number | 'auto'`: badge overflow behavior
+- `renderOption?(ctx)`: custom row content
+
+```ts
+type RenderOptionCtx = {
+  option: { label: string; value: string; icon?: React.ComponentType; group?: string };
+  isSelected: boolean;
+  checkboxNode: React.ReactNode;
+  iconNode?: React.ReactNode;
+  labelNode: React.ReactNode;
+}
+```
+
+- `selectedBadgeDefaults?: Partial<BadgeItem>`
+- `selectedExtraBadge?: Omit<BadgeItem,'children'> & { children?: (count: React.ReactNode) => React.ReactNode }`
+
+## Filtering Model
+
+Fuzzy matching delegates to CMDK’s `defaultFilter`, but it runs against `option.label` exclusively. Option `value` is used for identity and stable selection/hover.
+
+## Group Tri‑State Logic
+
+Group checkbox state is derived from the set of currently visible items in that group under the active search:
+
+- checked: all visible group items selected
+- indeterminate: some but not all visible group items selected
+- unchecked: none of the visible group items selected
+
+Toggling selects/deselects only those visible items.
+
+## Overflow Details
+
+In `auto` mode, a resize observer determines how many badges fit without wrapping; overflow collapses into an extra counter badge with a tooltip. Wrap with `<TooltipProvider/>`.
+
+
