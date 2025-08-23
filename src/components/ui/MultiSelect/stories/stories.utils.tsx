@@ -1,6 +1,6 @@
 import * as React from "react";
 import type { StoryFn } from "@storybook/react";
-import { MultiSelect, type Option } from "../../MultiSelect";
+import { MultiSelect, type Option } from "@/components/ui/MultiSelect";
 import { Card } from "@/components/ui/card";
 import { CodeTextarea } from "@/components/ui/CodeTextarea";
 import { Label } from "@/components/ui/label";

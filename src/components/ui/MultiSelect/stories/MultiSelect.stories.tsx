@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { MultiSelect } from "../../MultiSelect";
+import { MultiSelect } from "@/components/ui/MultiSelect";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import {
   baseOptions,
