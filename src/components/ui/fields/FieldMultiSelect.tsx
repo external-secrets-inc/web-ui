@@ -1,5 +1,5 @@
 import { FieldBase } from "./FieldBase";
-import { MultiSelect } from "@/components/ui/MultiSelect";
+import { EsiSelect } from "@/components/ui/EsiSelect";
 import { useController } from "react-hook-form";
 import { useMemo, useState } from "react";
 import type {
@@ -93,12 +93,12 @@ export function FieldMultiSelect({
   }, [options, apiOptions]);
 
   /**
-   * Handles value changes from the MultiSelect component.
+   * Handles value changes from the EsiSelect component.
    *
    * Since UI components only work with string values, complex objects are serialized
    * with the VALUE_PREFIX. This function deserializes them back to their original form.
    *
-   * @param selectedValues - Array of string values from the MultiSelect component
+   * @param selectedValues - Array of string values from the EsiSelect component
    * @example
    * // Regular string values
    * handleValueChange(["text1", "text2"]) // → ["text1", "text2"]
@@ -125,7 +125,7 @@ export function FieldMultiSelect({
   /**
    * Serialize the current field values for UI display.
    *
-   * The MultiSelect component expects string values, so we serialize complex objects
+   * The EsiSelect component expects string values, so we serialize complex objects
    * with the VALUE_PREFIX to maintain the object structure while being UI-compatible.
    */
   const currentValues = (controllerField.value as (string | Record<string, unknown>)[]).map((v) => {
@@ -145,7 +145,7 @@ export function FieldMultiSelect({
       defaultValue={defaultValue ?? []}
       descriptionInline={descriptionInline}
     >
-      <MultiSelect
+      <EsiSelect
         options={normalizedOptions.map((option) => ({
           ...option,
           /**

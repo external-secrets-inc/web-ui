@@ -7,7 +7,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "
 import { DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, Dialog, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CreatePolicyPayload, PolicyForm, PolicyTriggerConditionEnum, PolicyTriggerTableData } from '@/components/Audit/Audit.interfaces';
-import { MultiSelect } from '@/components/ui/MultiSelect';
+import { EsiSelect } from '@/components/ui/EsiSelect';
 import { CodeTextarea } from '@/components/ui/CodeTextarea';
 import useGetValidateRule from '@/services/audit/queries/useGetValidateRule';
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
@@ -290,7 +290,7 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, isLoadingDestinations,
                     <FormItem>
                       <FormLabel>Execute On</FormLabel>
                       <FormControl>
-                        <MultiSelect
+                        <EsiSelect
                           options={executeOnOptions}
                           onValueChange={field.onChange}
                           defaultValue={field.value}

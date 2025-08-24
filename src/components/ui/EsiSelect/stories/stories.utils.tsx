@@ -1,6 +1,6 @@
 import * as React from "react";
 import type { StoryFn } from "@storybook/react";
-import { MultiSelect, type Option } from "@/components/ui/MultiSelect";
+import { EsiSelect, type Option } from "@/components/ui/EsiSelect";
 import { Card } from "@/components/ui/card";
 import { CodeTextarea } from "@/components/ui/CodeTextarea";
 import { Label } from "@/components/ui/label";
@@ -75,7 +75,7 @@ export const Wrapper: React.FC<React.PropsWithChildren> = ({ children }) => (
 );
 
 export const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
-  <div className="grid gap-1">
+  <div className="grid gap-2">
     <Label>{label}</Label>
     {children}
   </div>
@@ -95,14 +95,14 @@ export const SelectedEcho: React.FC<{ values: string[] }> = ({ values }) => (
 
 export const createStoryRender = (
   fieldLabel: string,
-  additionalProps?: Partial<React.ComponentProps<typeof MultiSelect>>
-): StoryFn<React.ComponentProps<typeof MultiSelect>> => {
+  additionalProps?: Partial<React.ComponentProps<typeof EsiSelect>>
+): StoryFn<React.ComponentProps<typeof EsiSelect>> => {
   return (args) => {
     const [values, setValues] = React.useState<string[]>(args.defaultValue || []);
     return (
       <Wrapper>
         <Field label={fieldLabel}>
-          <MultiSelect {...args} {...additionalProps} onValueChange={setValues} />
+          <EsiSelect {...args} {...additionalProps} onValueChange={setValues} />
         </Field>
         <SelectedEcho values={values} />
       </Wrapper>
@@ -112,8 +112,8 @@ export const createStoryRender = (
 
 export const createFormStoryRender = (
   fieldLabel: string,
-  additionalProps?: Partial<React.ComponentProps<typeof MultiSelect>>
-): StoryFn<React.ComponentProps<typeof MultiSelect>> => {
+  additionalProps?: Partial<React.ComponentProps<typeof EsiSelect>>
+): StoryFn<React.ComponentProps<typeof EsiSelect>> => {
   return (args) => {
     const form = useForm<{ selections: string[] }>({ defaultValues: { selections: [] }, mode: "onChange" });
     const watched = form.watch("selections");
@@ -126,9 +126,9 @@ export const createFormStoryRender = (
             rules={{ validate: (val?: string[]) => (val && val.length > 0) || "Select at least one option" }}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{fieldLabel}</FormLabel>
+                <FormLabel className="flex">{fieldLabel}</FormLabel>
                 <FormControl>
-                  <MultiSelect {...args} {...additionalProps} defaultValue={field.value ?? []} onValueChange={field.onChange} />
+                  <EsiSelect {...args} {...additionalProps} defaultValue={field.value ?? []} onValueChange={field.onChange} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

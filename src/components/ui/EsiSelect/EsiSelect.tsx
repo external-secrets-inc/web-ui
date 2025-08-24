@@ -1,4 +1,4 @@
-// inspired by this repo: https://github.com/sersavan/shadcn-multi-select-component
+// inspired by this repo: https://github.com/sersavan/shadcn-EsiSelect-component
 
 import {
   Command,
@@ -35,11 +35,11 @@ import {
 // Badge rendering and overflow are handled by BadgeGroup; no local observers needed
 
 /**
- * Context for MultiSelect component
- * This context is used to share state and functions across the MultiSelect
+ * Context for EsiSelect component
+ * This context is used to share state and functions across the EsiSelect
  * inner components.
  */
-interface MultiSelectContextValue {
+interface EsiSelectContextValue {
   selectedValues: string[];
   options: Option[];
   maxCount: number | "auto" | undefined;
@@ -54,8 +54,8 @@ interface MultiSelectContextValue {
   setAutoVisibleCount: (n: number) => void;
   disabled: boolean;
 }
-const MultiSelectContext = React.createContext<
-  MultiSelectContextValue | undefined
+const EsiSelectContext = React.createContext<
+  EsiSelectContextValue | undefined
 >(undefined);
 
 export interface Option {
@@ -76,11 +76,11 @@ type CommandItemRef = {
 };
 
 /**
- * Props for MultiSelect component
+ * Props for EsiSelect component
  */
-interface MultiSelectProps extends React.HTMLAttributes<HTMLDivElement> {
+interface EsiSelectProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
-   * An array of option objects to be displayed in the multi-select component.
+   * An array of option objects to be displayed in the EsiSelect component.
    * Each option object has a label, value, and an optional icon.
    */
   options: Option[];
@@ -117,13 +117,13 @@ interface MultiSelectProps extends React.HTMLAttributes<HTMLDivElement> {
   modalPopover?: boolean;
 
   /**
-   * If true, renders the multi-select component as a child of another component.
+   * If true, renders the EsiSelect component as a child of another component.
    * Optional, defaults to false.
    */
   asChild?: boolean;
 
   /**
-   * Additional class names to apply custom styles to the multi-select component.
+   * Additional class names to apply custom styles to the EsiSelect component.
    * Optional, can be used to add custom styles.
    */
   className?: string;
@@ -205,7 +205,7 @@ type OptionCustomization = {
 };
 const OptionCustomizationContext = React.createContext<OptionCustomization>({});
 
-export const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
+export const EsiSelect = React.forwardRef<HTMLDivElement, EsiSelectProps>(
   (
     {
       options,
@@ -353,7 +353,7 @@ export const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
     const listboxId = React.useId();
 
     return (
-      <MultiSelectContext.Provider value={contextValue}>
+      <EsiSelectContext.Provider value={contextValue}>
         <SelectedBadgeCustomizationContext.Provider
           value={{
             selectedBadgeDefaults,
@@ -369,7 +369,7 @@ export const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
               onOpenChange={handleOpenChange}
               modal={modalPopover}
             >
-              <MultiSelectPopoverTrigger
+              <EsiSelectPopoverTrigger
                 ref={ref}
                 {...props}
                 disabled={disabled}
@@ -396,15 +396,15 @@ export const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
                     <CommandEmpty>No results found.</CommandEmpty>
                     <div className="flex flex-col min-h-0">
                       <ScrollArea className="max-h-96" type="always">
-                        <MultiSelectListOptions />
+                        <EsiSelectListOptions />
                       </ScrollArea>
                       <CommandGroup
                         forceMount
                         className="border-t order-last flex-none"
                       >
-                        <MultiSelectFooterOptions />
+                        <EsiSelectFooterOptions />
                       </CommandGroup>
-                      <MultiSelectToggleAllOptions className="p-0 border-b order-first flex-none" />
+                      <EsiSelectToggleAllOptions className="p-0 border-b order-first flex-none" />
                     </div>
                   </CommandList>
                 </Command>
@@ -412,18 +412,18 @@ export const MultiSelect = React.forwardRef<HTMLDivElement, MultiSelectProps>(
             </Popover>
           </OptionCustomizationContext.Provider>
         </SelectedBadgeCustomizationContext.Provider>
-      </MultiSelectContext.Provider>
+      </EsiSelectContext.Provider>
     );
   }
 );
-MultiSelect.displayName = "MultiSelect";
+EsiSelect.displayName = "EsiSelect";
 
 // Local badge renderers removed in favor of BadgeGroup
 
 /**
  * Renders the currently selected options as badges with a "+N more" badge if exceeding `maxCount`.
  */
-const MultiSelectCurrentBadges: React.FC = () => {
+const EsiSelectCurrentBadges: React.FC = () => {
   const {
     selectedValues,
     options,
@@ -432,7 +432,7 @@ const MultiSelectCurrentBadges: React.FC = () => {
     clearExtraOptions,
     setAutoVisibleCount,
     disabled,
-  } = useMultiSelect();
+  } = useEsiSelect();
   const { selectedExtraBadge } = React.useContext(
     SelectedBadgeCustomizationContext
   );
@@ -508,9 +508,9 @@ const MultiSelectCurrentBadges: React.FC = () => {
 };
 
 /**
- * Props for the MultiSelectPopoverTrigger component
+ * Props for the EsiSelectPopoverTrigger component
  */
-interface MultiSelectPopoverTriggerProps {
+interface EsiSelectPopoverTriggerProps {
   className?: string;
   onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
   onKeyDown?: (e: React.KeyboardEvent<HTMLDivElement>) => void;
@@ -524,16 +524,16 @@ interface MultiSelectPopoverTriggerProps {
 }
 
 /**
- * The trigger button for the multi-select popover.
+ * The trigger button for the EsiSelect popover.
  * Displays selected options as badges and can handle clearing all selections.
  * Uses role="combobox" on a div to avoid button nesting while maintaining accessibility.
  */
-const MultiSelectPopoverTrigger = React.forwardRef<
+const EsiSelectPopoverTrigger = React.forwardRef<
   HTMLDivElement,
-  MultiSelectPopoverTriggerProps
+  EsiSelectPopoverTriggerProps
 >(({ className, onClick, onKeyDown, onKeyUp, disabled, listboxId, ...props }, ref) => {
   const { selectedValues, placeholder, handleClear, setIsOpen, isOpen } =
-    useMultiSelect();
+    useEsiSelect();
   const isUnselected = selectedValues.length === 0;
   const isDisabled = Boolean(disabled);
 
@@ -611,7 +611,7 @@ const MultiSelectPopoverTrigger = React.forwardRef<
             </span>
           ) : (
             <>
-              <MultiSelectCurrentBadges />
+              <EsiSelectCurrentBadges />
               {!isDisabled && (
                 <Button
                   className="size-8 opacity-0 group-hover:opacity-50 hover:!opacity-100 hover:bg-destructive/25 focus-visible:bg-destructive/25 focus-visible:!opacity-100 group-focus-within:opacity-50 absolute right-px rounded-sm translate-x-full group-hover:translate-x-0 group-focus-within:translate-x-0 transition-all duration-300 z-10"
@@ -639,15 +639,15 @@ const MultiSelectPopoverTrigger = React.forwardRef<
     </PopoverTrigger>
   );
 });
-MultiSelectPopoverTrigger.displayName = "MultiSelectPopoverTrigger";
+EsiSelectPopoverTrigger.displayName = "EsiSelectPopoverTrigger";
 
 /**
  * Renders the list of all available options inside the Command menu.
  * Manages refs for CMDK's internal filtering state!
  */
-const MultiSelectListOptions: React.FC = () => {
+const EsiSelectListOptions: React.FC = () => {
   const { options, selectedValues, toggleOption, updateSelection, itemRefs } =
-    useMultiSelect();
+    useEsiSelect();
   const { renderOption, optionItemClassName } = React.useContext(
     OptionCustomizationContext
   );
@@ -814,8 +814,8 @@ const MultiSelectListOptions: React.FC = () => {
 /**
  * Footer component with Clear and Close actions.
  */
-const MultiSelectFooterOptions: React.FC = () => {
-  const { selectedValues, handleClear, setIsOpen, disabled } = useMultiSelect();
+const EsiSelectFooterOptions: React.FC = () => {
+  const { selectedValues, handleClear, setIsOpen, disabled } = useEsiSelect();
   const hasSelectedValues = selectedValues.length > 0;
 
   return (
@@ -847,14 +847,14 @@ const MultiSelectFooterOptions: React.FC = () => {
  * - When not filtering: affects all options
  * - When filtering: only affects currently filtered options
  */
-const MultiSelectToggleAllOptions: React.FC<{ className?: string }> = ({
+const EsiSelectToggleAllOptions: React.FC<{ className?: string }> = ({
   className,
 }) => {
   const { hasMatchingResults, matchingOptions, hasActiveSearch } =
     useFilteredOptions();
   const { areAllMatchingOptionsSelected, toggleAllMatchingOptions } =
     useFilteredSelection(matchingOptions);
-  const { selectedValues, options } = useMultiSelect();
+  const { selectedValues, options } = useEsiSelect();
 
   // Don't show if there are no matching results OR if there are no options at all
   if (!hasMatchingResults || options.length === 0) return null;
@@ -893,14 +893,14 @@ const MultiSelectToggleAllOptions: React.FC<{ className?: string }> = ({
 };
 
 /**
- * Hook to access the MultiSelect context.
- * @returns The MultiSelect context value
- * @throws Error if used outside of a MultiSelectProvider
+ * Hook to access the EsiSelect context.
+ * @returns The EsiSelect context value
+ * @throws Error if used outside of a EsiSelectProvider
  */
-function useMultiSelect() {
-  const context = React.useContext(MultiSelectContext);
+function useEsiSelect() {
+  const context = React.useContext(EsiSelectContext);
   if (!context) {
-    throw new Error("useMultiSelect must be used within a MultiSelectProvider");
+    throw new Error("useEsiSelect must be used within a EsiSelectProvider");
   }
   return context;
 }
@@ -936,7 +936,7 @@ function useCommandFiltering() {
  * @requires Must be used within a <Command/> component context
  */
 function useFilteredOptions() {
-  const { options, itemRefs } = useMultiSelect();
+  const { options, itemRefs } = useEsiSelect();
   const { filteredState, hasMatchingResults, hasActiveSearch } =
     useCommandFiltering();
   const matchingOptions = React.useMemo(() => {
@@ -960,7 +960,7 @@ function useFilteredOptions() {
  * @requires Must be used within a <Command/> component context (as it depends on useFilteredOptions)
  */
 function useFilteredSelection(matchingOptions: Option[]) {
-  const { selectedValues, updateSelection } = useMultiSelect();
+  const { selectedValues, updateSelection } = useEsiSelect();
   const matchingOptionValues = matchingOptions.map((opt) => opt.value);
   const selectedMatchingValues = selectedValues.filter((value) =>
     matchingOptionValues.includes(value)

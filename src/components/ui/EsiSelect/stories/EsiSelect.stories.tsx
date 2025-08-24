@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { MultiSelect } from "@/components/ui/MultiSelect";
+import { EsiSelect } from "@/components/ui/EsiSelect";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import {
   baseOptions,
@@ -16,8 +16,8 @@ import { LucideCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const meta = {
-  title: "UI/MultiSelect",
-  component: MultiSelect,
+  title: "UI/EsiSelect",
+  component: EsiSelect,
   parameters: {
     layout: "centered",
   },
@@ -28,10 +28,10 @@ const meta = {
       </TooltipProvider>
     ),
   ],
-} satisfies Meta<typeof MultiSelect>;
+} satisfies Meta<typeof EsiSelect>;
 
 export default meta;
-type Story = StoryObj<typeof MultiSelect>;
+type Story = StoryObj<typeof EsiSelect>;
 
 export const Default: Story = {
   name: "Default (Grouped)",

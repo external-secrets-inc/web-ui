@@ -1,5 +1,5 @@
 /**
- * ATTENTION: We bumped the CMDK version to 1.0.1 in order to fix filtering issues in our own MultiSelect component.
+ * ATTENTION: We bumped the CMDK version to 1.0.1 in order to fix filtering issues in our own EsiSelect component.
  * If this component suddenly show issues, we should check if the new version of CMDK is the culprit, and probably revert to 1.0.0 or wait till shadcn/ui updates it.
  * [cfviotti]
  */

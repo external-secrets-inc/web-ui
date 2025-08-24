@@ -1,13 +1,13 @@
 import { Meta, Canvas, Story, Controls, Primary, Description } from '@storybook/blocks';
-import * as MultiSelectStories from './MultiSelect.stories.tsx';
+import * as EsiSelectStories from './EsiSelect.stories.tsx';
 
-<Meta of={MultiSelectStories} name="Documentation" />
+<Meta of={EsiSelectStories} name="Documentation" />
 
-# MultiSelect Component
+# EsiSelect Component
 
-<Description of={MultiSelectStories} />
+<Description of={EsiSelectStories} />
 
-Searchable multi-select with grouping, tri-state group toggles that respect the current filter, and badge overflow handling via a compact "+N" counter with tooltip.
+Searchable Multi Select with grouping, tri-state group toggles that respect the current filter, and badge overflow handling via a compact "+N" counter with tooltip.
 
 ## Context and Design
 
@@ -20,7 +20,7 @@ Searchable multi-select with grouping, tri-state group toggles that respect the 
 ## Import
 
 ```tsx
-import { MultiSelect } from '@/components/ui/MultiSelect';
+import { EsiSelect } from '@/components/ui/EsiSelect';
 ```
 
 The alias path is exported by a barrel file so downstream imports remain stable if we reorganize internals.
@@ -34,39 +34,39 @@ The alias path is exported by a barrel file so downstream imports remain stable 
 ## Examples
 
 ### Default (Ungrouped)
-<Canvas of={MultiSelectStories.DefaultUngrouped} />
-Ungrouped options behave like a standard searchable multi-select. The footer exposes “Select/Deselect All” for the current filter.
+<Canvas of={EsiSelectStories.DefaultUngrouped} />
+Ungrouped options behave like a standard searchable Multi Select. The footer exposes “Select/Deselect All” for the current filter.
 
 ### Default (Grouped)
-<Canvas of={MultiSelectStories.Default} />
+<Canvas of={EsiSelectStories.Default} />
 Group headings include a tri-state checkbox. Checked = all visible selected; indeterminate = partial; unchecked = none.
 
 ### With Icons and Groups
-<Canvas of={MultiSelectStories.WithIconsAndGroups} />
+<Canvas of={EsiSelectStories.WithIconsAndGroups} />
 Demonstrates optional icons per option and that labels are the sole basis for fuzzy matching.
 
 ### Overflow (Auto)
-<Canvas of={MultiSelectStories.MaxCountAuto} />
+<Canvas of={EsiSelectStories.MaxCountAuto} />
 Auto mode calculates how many badges fit without wrapping and collapses the remainder into a counter badge with tooltip.
 
 ### Overflow (Fixed)
-<Canvas of={MultiSelectStories.MaxCountFixed} />
+<Canvas of={EsiSelectStories.MaxCountFixed} />
 Fixed mode clamps the number of displayed badges; use when layout predictability is preferred over dynamic measurement.
 
 ### Custom Badges
-<Canvas of={MultiSelectStories.CustomBadges} />
+<Canvas of={EsiSelectStories.CustomBadges} />
 You can configure selected badge variants and the extra counter badge. The extra badge accepts `id`, `variant`, `className`, optional `icon`, and a render function `children(countNode)` for full control.
 
 ### Custom Option Rendering
-<Canvas of={MultiSelectStories.CustomOptionRenderer} />
+<Canvas of={EsiSelectStories.CustomOptionRenderer} />
 Use `renderOption` to compose the row. You receive `checkboxNode`, `iconNode`, `labelNode`, and `isSelected` to build rich rows while preserving styles.
 
 ### Large Dataset
-<Canvas of={MultiSelectStories.LargeDataset} />
+<Canvas of={EsiSelectStories.LargeDataset} />
 Good for validating search behavior, group toggles under filtering, and overflow.
 
 ### Form Integration
-<Canvas of={MultiSelectStories.WithForm} />
+<Canvas of={EsiSelectStories.WithForm} />
 Demonstrates integration with `react-hook-form` via project Form wrappers.
 
 ## API Highlights
