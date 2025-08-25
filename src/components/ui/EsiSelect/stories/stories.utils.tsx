@@ -1,6 +1,6 @@
 import * as React from "react";
 import type { StoryFn } from "@storybook/react";
-import { EsiSelect, type Option } from "@/components/ui/EsiSelect";
+import { EsiSelect, type EsiSelectMultipleProps, type Option } from "@/components/ui/EsiSelect";
 import { Card } from "@/components/ui/card";
 import { CodeTextarea } from "@/components/ui/CodeTextarea";
 import { Label } from "@/components/ui/label";
@@ -93,16 +93,50 @@ export const SelectedEcho: React.FC<{ values: string[] }> = ({ values }) => (
   </div>
 );
 
+export const SelectedEchoSingle: React.FC<{ value: string | null }> = ({ value }) => (
+  <div className="text-xs text-muted-foreground">
+    <div className="font-medium mb-1">Value</div>
+    <CodeTextarea
+      language="json"
+      value={value ? JSON.stringify(value) : "null"}
+      disabled
+      className="p-2 dark"
+    />
+  </div>
+);
+
 export const createStoryRender = (
   fieldLabel: string,
-  additionalProps?: Partial<React.ComponentProps<typeof EsiSelect>>
+  additionalProps?: Partial<EsiSelectMultipleProps>
 ): StoryFn<React.ComponentProps<typeof EsiSelect>> => {
   return (args) => {
-    const [values, setValues] = React.useState<string[]>(args.defaultValue || []);
+    const startDefault = (args as unknown as { defaultValue?: string[] }).defaultValue ?? [];
+    const [values, setValues] = React.useState<string[]>(startDefault);
+    const passThrough = args as React.ComponentProps<typeof EsiSelect>;
+    const passAdditional = additionalProps as Partial<EsiSelectMultipleProps> | undefined;
+
+    // Cast to multiple props for badge-related properties
+    const multipleProps = passThrough as EsiSelectMultipleProps;
+
     return (
       <Wrapper>
         <Field label={fieldLabel}>
-          <EsiSelect {...args} {...additionalProps} onValueChange={setValues} />
+          <EsiSelect
+            mode="multiple"
+            options={(passAdditional?.options ?? passThrough.options) as Option[]}
+            placeholder={passAdditional?.placeholder ?? passThrough?.placeholder}
+            optionItemClassName={passAdditional?.optionItemClassName ?? passThrough?.optionItemClassName}
+            renderOption={passAdditional?.renderOption ?? passThrough?.renderOption}
+            className={passAdditional?.className ?? passThrough?.className}
+            disabled={passAdditional?.disabled ?? passThrough?.disabled}
+            maxCount={(additionalProps as Partial<{ maxCount?: number | "auto" }>)?.maxCount ?? (args as Partial<{ maxCount?: number | "auto" }>)?.maxCount}
+            selectedExtraBadge={passAdditional?.selectedExtraBadge ?? multipleProps?.selectedExtraBadge}
+            renderSelectedBadge={passAdditional?.renderSelectedBadge ?? multipleProps?.renderSelectedBadge}
+            selectedBadgeProps={passAdditional?.selectedBadgeProps ?? multipleProps?.selectedBadgeProps}
+            selectedBadgeGroupClassName={passAdditional?.selectedBadgeGroupClassName ?? multipleProps?.selectedBadgeGroupClassName}
+            defaultValue={startDefault}
+            onValueChange={setValues}
+          />
         </Field>
         <SelectedEcho values={values} />
       </Wrapper>
@@ -110,13 +144,61 @@ export const createStoryRender = (
   };
 };
 
-export const createFormStoryRender = (
+export const createSingleStoryRender = (
   fieldLabel: string,
   additionalProps?: Partial<React.ComponentProps<typeof EsiSelect>>
 ): StoryFn<React.ComponentProps<typeof EsiSelect>> => {
   return (args) => {
+    const startDefault = (args as unknown as { defaultValue?: string | null }).defaultValue ?? null;
+    const [value, setValue] = React.useState<string | null>(startDefault);
+    type SingleStoryArgs = Pick<React.ComponentProps<typeof EsiSelect>,
+      | "options"
+      | "placeholder"
+      | "optionItemClassName"
+      | "renderOption"
+      | "className"
+      | "disabled"
+      | "renderSelectedTrigger"
+      | "selectedTriggerProps"
+    >;
+    const passThrough = args as unknown as Partial<SingleStoryArgs>;
+    const passAdditional = additionalProps as Partial<SingleStoryArgs> | undefined;
+    return (
+      <Wrapper>
+        <Field label={fieldLabel}>
+          <EsiSelect
+            mode="single"
+            options={(passAdditional?.options ?? passThrough.options) as Option[]}
+            placeholder={passAdditional?.placeholder ?? passThrough?.placeholder}
+            optionItemClassName={passAdditional?.optionItemClassName ?? passThrough?.optionItemClassName}
+            renderOption={passAdditional?.renderOption ?? passThrough?.renderOption}
+            className={passAdditional?.className ?? passThrough?.className}
+            disabled={passAdditional?.disabled ?? passThrough?.disabled}
+            renderSelectedTrigger={passAdditional?.renderSelectedTrigger ?? passThrough?.renderSelectedTrigger}
+            selectedTriggerProps={passAdditional?.selectedTriggerProps ?? passThrough?.selectedTriggerProps}
+            defaultValue={startDefault}
+            onValueChange={setValue}
+          />
+        </Field>
+        <SelectedEchoSingle value={value ?? null} />
+      </Wrapper>
+    );
+  };
+};
+
+export const createFormStoryRender = (
+  fieldLabel: string,
+  additionalProps?: Partial<EsiSelectMultipleProps>
+): StoryFn<React.ComponentProps<typeof EsiSelect>> => {
+  return (args) => {
     const form = useForm<{ selections: string[] }>({ defaultValues: { selections: [] }, mode: "onChange" });
     const watched = form.watch("selections");
+    const passThrough = args as React.ComponentProps<typeof EsiSelect>;
+    const passAdditional = additionalProps as Partial<EsiSelectMultipleProps> | undefined;
+
+    // Cast to multiple props for badge-related properties
+    const multipleProps = passThrough as EsiSelectMultipleProps;
+
     return (
       <Wrapper>
         <Form {...form}>
@@ -128,14 +210,79 @@ export const createFormStoryRender = (
               <FormItem>
                 <FormLabel className="flex">{fieldLabel}</FormLabel>
                 <FormControl>
-                  <EsiSelect {...args} {...additionalProps} defaultValue={field.value ?? []} onValueChange={field.onChange} />
+                  <EsiSelect
+                    mode="multiple"
+                    options={(passAdditional?.options ?? passThrough.options) as Option[]}
+                    placeholder={passAdditional?.placeholder ?? passThrough?.placeholder}
+                    optionItemClassName={passAdditional?.optionItemClassName ?? passThrough?.optionItemClassName}
+                    renderOption={passAdditional?.renderOption ?? passThrough?.renderOption}
+                    className={passAdditional?.className ?? passThrough?.className}
+                    disabled={passAdditional?.disabled ?? passThrough?.disabled}
+                    maxCount={(additionalProps as Partial<{ maxCount?: number | "auto" }>)?.maxCount ?? (args as Partial<{ maxCount?: number | "auto" }>)?.maxCount}
+                    selectedExtraBadge={passAdditional?.selectedExtraBadge ?? multipleProps?.selectedExtraBadge}
+                    renderSelectedBadge={passAdditional?.renderSelectedBadge ?? multipleProps?.renderSelectedBadge}
+                    selectedBadgeProps={passAdditional?.selectedBadgeProps ?? multipleProps?.selectedBadgeProps}
+                    selectedBadgeGroupClassName={passAdditional?.selectedBadgeGroupClassName ?? multipleProps?.selectedBadgeGroupClassName}
+                    defaultValue={field.value ?? []}
+                    onValueChange={field.onChange}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <SelectedEcho values={watched} />
+        </Form>
+      </Wrapper>
+    );
+  };
+};
+
+export const createSingleFormStoryRender = (
+  fieldLabel: string,
+  additionalProps?: Partial<React.ComponentProps<typeof EsiSelect>>
+): StoryFn<React.ComponentProps<typeof EsiSelect>> => {
+  return (args) => {
+    const form = useForm<{ selection: string | null }>({ defaultValues: { selection: null }, mode: "onChange" });
+    const watched = form.watch("selection");
+    type SingleStoryArgs = Pick<React.ComponentProps<typeof EsiSelect>,
+      | "options"
+      | "placeholder"
+      | "optionItemClassName"
+      | "renderOption"
+      | "className"
+      | "disabled"
+    >;
+    const passThrough = args as unknown as Partial<SingleStoryArgs>;
+    const passAdditional = additionalProps as Partial<SingleStoryArgs> | undefined;
+    return (
+      <Wrapper>
+        <Form {...form}>
+          <FormField
+            control={form.control}
+            name="selection"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex">{fieldLabel}</FormLabel>
+                <FormControl>
+                  <EsiSelect
+                    mode="single"
+                    options={(passAdditional?.options ?? passThrough.options) as Option[]}
+                    placeholder={passAdditional?.placeholder ?? passThrough?.placeholder}
+                    optionItemClassName={passAdditional?.optionItemClassName ?? passThrough?.optionItemClassName}
+                    renderOption={passAdditional?.renderOption ?? passThrough?.renderOption}
+                    className={passAdditional?.className ?? passThrough?.className}
+                    disabled={passAdditional?.disabled ?? passThrough?.disabled}
+                    defaultValue={field.value ?? null}
+                    onValueChange={field.onChange}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
         </Form>
-        <SelectedEcho values={watched ?? []} />
+        <SelectedEchoSingle value={watched ?? null} />
       </Wrapper>
     );
   };
@@ -146,3 +293,7 @@ export const iconStoryArgs = { options: iconOptions, placeholder: "Search by lab
 export const baseStoryArgs = { options: baseOptions, placeholder: "Select options" };
 export const largeStoryArgs = { options: largeOptions, placeholder: "Type to filter by label" };
 export const ungroupedStoryArgs = { options: ungroupedOptions, placeholder: "Pick fruits" };
+
+export const singleBaseStoryArgs = baseStoryArgs;
+export const singleIconStoryArgs = iconStoryArgs;
+export const singleUngroupedStoryArgs = ungroupedStoryArgs;

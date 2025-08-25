@@ -4,16 +4,185 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import {
   baseOptions,
   iconOptions,
-  longLabelOptions,
   createStoryRender,
   createFormStoryRender,
   baseStoryArgs,
   iconStoryArgs,
   largeStoryArgs,
   ungroupedStoryArgs,
+  createSingleStoryRender,
+  createSingleFormStoryRender,
+  singleBaseStoryArgs,
+  singleIconStoryArgs,
+  singleUngroupedStoryArgs,
 } from "./stories.utils";
-import { LucideCheck } from "lucide-react";
+import { LucideAtom, LucideCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import React from "react";
+
+// Utility function for shared customizations to keep code DRY
+const createSharedCustomizations = () => ({
+  // Badge styling based on group
+  getBadgeProps: (option: { group?: string }) => {
+    const groupToBadgeClass: Record<string, string> = {
+      Team: "bg-blue-100 text-blue-900 dark:bg-blue-900/20 dark:text-blue-200 border-blue-600/40 dark:border-blue-900/70",
+      Infra:
+        "bg-emerald-100 text-emerald-900 dark:bg-emerald-900/20 dark:text-emerald-200 border-emerald-600/40 dark:border-emerald-900/70",
+      Security:
+        "bg-rose-100 text-rose-900 dark:bg-rose-900/20 dark:text-rose-200 border-rose-600/40 dark:border-rose-900/70",
+      Bug: "bg-amber-100 text-amber-900 dark:bg-amber-900/20 dark:text-amber-200 border-amber-600/40 dark:border-amber-900/70",
+      Atom: "bg-purple-100 text-purple-900 dark:bg-purple-900/20 dark:text-purple-200 border-purple-600/40 dark:border-purple-900/70",
+    };
+    return {
+      className: cn("border-2", groupToBadgeClass[option.group ?? ""]),
+      variant: "secondary" as const,
+    };
+  },
+
+  // Option rendering with enhanced design
+  renderEnhancedOption: ({
+    option,
+    isSelected,
+    iconNode,
+    labelNode,
+  }: {
+    option: {
+      label: string;
+      value: string;
+      icon?: React.ComponentType;
+      group?: string;
+    };
+    isSelected: boolean;
+    iconNode?: React.ReactNode;
+    labelNode: React.ReactNode;
+  }) => (
+    <div className="flex items-center gap-3 w-full group">
+      {/* Custom icon with dynamic background and animations */}
+      <div
+        className={cn(
+          "flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300 shadow-sm",
+          isSelected
+            ? "bg-gradient-to-br from-primary to-primary/80 [&_svg]:text-primary-foreground scale-110 rotate-3 shadow-lg shadow-primary/25"
+            : "bg-gradient-to-br from-muted to-muted/60 text-muted-foreground group-hover:bg-muted/80 group-hover:scale-105 group-hover:shadow-md group-hover:ring-1 group-hover:ring-primary/20"
+        )}
+      >
+        {iconNode || <LucideAtom className="w-5 h-5" />}
+      </div>
+
+      {/* Enhanced content layout with group badges */}
+      <div className="flex-1 min-w-0 space-y-1">
+        <div className="flex items-center gap-2">
+          <div
+            className={cn(
+              "font-semibold transition-all duration-200",
+              isSelected ? "text-primary" : "text-foreground"
+            )}
+          >
+            {labelNode}
+          </div>
+          {option.group && (
+            <Badge
+              variant="outline"
+              className={cn(
+                "text-[10px] px-2 py-0.5 border-dashed transition-all duration-200",
+                isSelected
+                  ? "border-primary/50 bg-primary/10 text-primary scale-110"
+                  : "border-muted-foreground/30 text-muted-foreground group-hover:border-muted-foreground/50"
+              )}
+            >
+              {option.group}
+            </Badge>
+          )}
+        </div>
+
+        {/* Secondary info with enhanced styling */}
+        <div className="flex items-center gap-2 text-xs">
+          <span
+            className={cn(
+              "font-mono transition-colors duration-200",
+              isSelected ? "text-primary/70" : "text-muted-foreground"
+            )}
+          >
+            {option.value}
+          </span>
+          <span
+            className={cn(
+              "w-1 h-1 rounded-full transition-all duration-200",
+              isSelected ? "bg-primary/50 scale-150" : "bg-muted-foreground/40"
+            )}
+          />
+          <span
+            className={cn(
+              "transition-colors duration-200",
+              isSelected ? "text-primary/60" : "text-muted-foreground/70"
+            )}
+          >
+            {isSelected ? "Selected" : "Available"}
+          </span>
+        </div>
+      </div>
+
+      {/* Custom selection indicator with enhanced animations */}
+      <div
+        className={cn(
+          "flex items-center justify-center w-7 h-7 rounded-full border-2 transition-all duration-300",
+          isSelected
+            ? "border-primary bg-primary text-primary-foreground scale-110 shadow-lg shadow-primary/25"
+            : "border-muted-foreground/20 text-transparent group-hover:border-muted-foreground/40 group-hover:scale-105"
+        )}
+      >
+        {isSelected && (
+          <LucideCheck className="w-4 h-4 animate-in zoom-in-50 duration-200" />
+        )}
+      </div>
+    </div>
+  ),
+
+  // Badge content rendering
+  renderEnhancedBadge: ({
+    option,
+    labelNode,
+    iconNode,
+    removeNode,
+  }: {
+    option: {
+      label: string;
+      value: string;
+      icon?: React.ComponentType;
+      group?: string;
+    };
+    labelNode: React.ReactNode;
+    iconNode?: React.ReactNode;
+    removeNode: React.ReactNode;
+  }) => (
+    <>
+      {option.group && (
+        <Badge
+          className="text-[10px] leading-none font-medium opacity-70 px-1.5 -ml-2 -my-0.5 flex items-center gap-1"
+          variant="outline"
+        >
+          {React.cloneElement(iconNode as React.ReactElement, {
+            className: cn(
+              "w-3 h-3",
+              option.group === "Team" && "text-blue-600",
+              option.group === "Infra" && "text-emerald-600",
+              option.group === "Security" && "text-rose-600",
+              option.group === "Bug" && "text-amber-600",
+              option.group === "Atom" && "text-purple-600"
+            ),
+          })}
+          {option.group}
+        </Badge>
+      )}
+      <span className="font-semibold leading-none text-[10px]">{labelNode}</span>
+      <span className="ml-1 text-[10px] leading-none opacity-60">
+        {option.value}
+      </span>
+      {removeNode}
+    </>
+  ),
+});
 
 const meta = {
   title: "UI/EsiSelect",
@@ -33,90 +202,294 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof EsiSelect>;
 
-export const Default: Story = {
-  name: "Default (Grouped)",
+// ============================================================================
+// MULTIPLE MODE STORIES
+// ============================================================================
+
+export const MultipleDefault: Story = {
+  name: "Multiple: Default (Grouped)",
   args: baseStoryArgs,
-  render: createStoryRender("Pick items"),
+  render: createStoryRender("Basic multiple selection"),
 };
 
-export const WithIconsAndGroups: Story = {
-  name: "With Icons and Groups",
+export const MultipleWithIconsAndGroups: Story = {
+  name: "Multiple: With Icons and Groups",
   args: iconStoryArgs,
-  render: createStoryRender("Teams and Systems"),
+  render: createStoryRender("Icons and group organization"),
 };
 
-export const MaxCountAuto: Story = {
-  name: "Overflow: Auto Badge Count",
-  args: {
-    ...iconStoryArgs,
-    defaultValue: iconOptions.slice(0, 8).map((o) => o.value),
-    maxCount: "auto" as const,
-  },
-  render: createStoryRender("Auto Overflow (responsive)"),
+export const MultipleDefaultUngrouped: Story = {
+  name: "Multiple: Default (Ungrouped)",
+  args: ungroupedStoryArgs,
+  render: createStoryRender("Ungrouped options"),
 };
 
-export const MaxCountFixed: Story = {
-  name: "Overflow: Fixed Badge Count",
+export const MultipleWithForm: Story = {
+  name: "Multiple: Form Integration (react-hook-form)",
+  args: iconStoryArgs,
+  render: createFormStoryRender("With Form integration"),
+};
+
+export const MultipleLargeDataset: Story = {
+  name: "Multiple: Large Dataset (200 items, grouped)",
+  args: { ...largeStoryArgs, maxCount: "auto" },
+  render: createStoryRender("Try searching and group toggles"),
+};
+
+export const MultipleFixedOverflow: Story = {
+  name: "Multiple: Fixed Overflow (maxCount=3)",
   args: {
-    ...baseStoryArgs,
-    defaultValue: baseOptions.slice(0, 6).map((o) => o.value),
+    options: [...baseOptions, ...iconOptions.slice(0, 4)],
+    defaultValue: baseOptions.slice(0, 2).map((o) => o.value),
     maxCount: 3,
   },
   render: createStoryRender("Fixed Overflow (maxCount=3)"),
 };
 
-export const CustomBadges: Story = {
-  name: "Custom Selected Badges",
+export const MultipleOverflowAuto: Story = {
+  name: "Multiple: Overflow (Auto Badge Count)",
   args: {
-    options: [...longLabelOptions, ...iconOptions.slice(0, 4)],
-    defaultValue: longLabelOptions.slice(0, 2).map((o) => o.value),
-    selectedBadgeDefaults: { variant: "secondary" as const },
-    selectedExtraBadge: { id: "extra", variant: "outline" as const },
+    options: [...baseOptions, ...iconOptions],
+    defaultValue: [...baseOptions.slice(0, 3), ...iconOptions.slice(0, 4)].map((o) => o.value),
+    maxCount: "auto",
   },
-  render: createStoryRender("Customized badges (+N)"),
+  render: createStoryRender("Auto overflow with dynamic badge counting"),
 };
 
-export const CustomOptionRenderer: Story = {
-  name: "Custom Option Rendering",
+// ============================================================================
+// MULTIPLE MODE - CUSTOMIZATION STORIES
+// ============================================================================
+
+export const MultipleCustomBadges: Story = {
+  name: "Multiple: Custom Badge Styling & Content",
+  args: {
+    options: iconOptions,
+    defaultValue: iconOptions.slice(0, 4).map((o) => o.value),
+    selectedBadgeProps: (option) => createSharedCustomizations().getBadgeProps(option),
+    renderSelectedBadge: ({ option, labelNode, iconNode, removeNode }) =>
+      createSharedCustomizations().renderEnhancedBadge({ option, labelNode, iconNode, removeNode }),
+    selectedBadgeGroupClassName: "[overflow-clip-margin:1px]",
+    selectedExtraBadge: { id: "extra", variant: "secondary" as const },
+  },
+  render: createStoryRender("Custom badge styling and content layout"),
+};
+
+export const MultipleCustomOptionRenderer: Story = {
+  name: "Multiple: Custom Option Rendering",
   args: {
     ...iconStoryArgs,
-    optionItemClassName: "px-2",
+    optionItemClassName: "px-3 py-2",
+    renderOption: ({ option, isSelected, iconNode, labelNode }) =>
+      createSharedCustomizations().renderEnhancedOption({ option, isSelected, iconNode, labelNode }),
+  },
+  render: createStoryRender("Enhanced option design with animations"),
+};
+
+export const MultipleCombinedCustomizations: Story = {
+  name: "Multiple: Combined Badge & Option Customizations",
+  args: {
+    ...iconStoryArgs,
+    optionItemClassName: "px-3 py-2",
+    selectedBadgeProps: (option) => createSharedCustomizations().getBadgeProps(option),
+    renderSelectedBadge: ({ option, labelNode, iconNode, removeNode }) =>
+      createSharedCustomizations().renderEnhancedBadge({ option, labelNode, iconNode, removeNode }),
+    renderOption: ({ option, isSelected, iconNode, labelNode }) =>
+      createSharedCustomizations().renderEnhancedOption({ option, isSelected, iconNode, labelNode }),
+    selectedBadgeGroupClassName: "[overflow-clip-margin:1px]",
+    selectedExtraBadge: { id: "extra", variant: "secondary" as const },
+  },
+  render: createStoryRender("Both badge and option customizations together"),
+};
+
+// ============================================================================
+// SINGLE MODE STORIES
+// ============================================================================
+
+export const SingleDefault: Story = {
+  name: "Single: Default (Grouped)",
+  args: singleBaseStoryArgs,
+  render: createSingleStoryRender("Pick one item"),
+};
+
+export const SingleWithIcons: Story = {
+  name: "Single: With Icons and Groups",
+  args: singleIconStoryArgs,
+  render: createSingleStoryRender("Pick one team/system"),
+};
+
+export const SingleUngrouped: Story = {
+  name: "Single: Default (Ungrouped)",
+  args: singleUngroupedStoryArgs,
+  render: createSingleStoryRender("Pick one fruit"),
+};
+
+export const SingleWithForm: Story = {
+  name: "Single: Form Integration",
+  args: singleIconStoryArgs,
+  render: createSingleFormStoryRender("With Form integration (single)"),
+};
+
+export const SingleLargeDataset: Story = {
+  name: "Single: Large Dataset (200 items, grouped)",
+  args: largeStoryArgs,
+  render: createSingleStoryRender("Try searching (single)"),
+};
+
+// ============================================================================
+// SINGLE MODE - CUSTOMIZATION STORIES
+// ============================================================================
+
+export const SingleCustomOptionRenderer: Story = {
+  name: "Single: Custom Option Rendering",
+  args: {
+    ...singleIconStoryArgs,
+    optionItemClassName: "px-3 py-2",
     renderOption: ({
+      option,
       isSelected,
       iconNode,
       labelNode,
     }: {
+      option: {
+        label: string;
+        value: string;
+        icon?: React.ComponentType;
+        group?: string;
+      };
       isSelected: boolean;
       checkboxNode: React.ReactNode;
       iconNode?: React.ReactNode;
       labelNode: React.ReactNode;
     }) => (
-      <div className="flex items-center gap-2 w-full">
-        <div className="ml-auto">{iconNode}</div>
-        <div className="flex items-center gap-2 min-w-0 w-full">
-          <span className="truncate mr-auto">{labelNode}</span>
-          <LucideCheck className={cn(!isSelected && "invisible")} />
+      <div className="flex items-center gap-3 w-full group">
+        {/* Custom icon with background */}
+        <div
+          className={cn(
+            "flex items-center justify-center w-8 h-8 rounded-full transition-all",
+            isSelected
+              ? "bg-primary [&_svg]:text-primary-foreground scale-110"
+              : "bg-muted text-muted-foreground group-hover:bg-muted/80"
+          )}
+        >
+          {iconNode || <LucideAtom className="w-4 h-4" />}
+        </div>
+
+        {/* Label with custom styling */}
+        <div className="flex-1 min-w-0">
+          <div
+            className={cn(
+              "font-medium transition-colors",
+              isSelected ? "text-primary" : "text-foreground"
+            )}
+          >
+            {labelNode}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            {option.group} • {option.value}
+          </div>
+        </div>
+
+        {/* Custom selection indicator */}
+        <div
+          className={cn(
+            "flex items-center justify-center w-6 h-6 rounded-full border transition-all",
+            isSelected
+              ? "border-primary bg-primary text-primary-foreground"
+              : "border-muted-foreground/30 text-transparent"
+          )}
+        >
+          {isSelected && <LucideCheck className="w-3 h-3" />}
         </div>
       </div>
     ),
   },
-  render: createStoryRender("Composed option row"),
+  render: createSingleStoryRender("Custom option design"),
 };
 
-export const LargeDataset: Story = {
-  name: "Large Dataset (200 items, grouped)",
-  args: { ...largeStoryArgs, maxCount: "auto" },
-  render: createStoryRender("Try searching and group toggles"),
+export const SingleCustomTrigger: Story = {
+  name: "Single: Custom Trigger Display",
+  args: {
+    ...singleIconStoryArgs,
+    defaultValue: "team-1",
+    renderSelectedTrigger: ({ option, iconNode }) => (
+      <div className="flex items-center gap-2 w-full">
+        {/* Custom icon with background */}
+        {iconNode && (
+          <div className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/10 text-primary">
+            {React.cloneElement(iconNode as React.ReactElement, { className: "w-3 h-3" })}
+          </div>
+        )}
+
+        {/* Label with custom styling */}
+        <span className="flex-1 text-sm font-medium text-foreground">
+          {option.label}
+        </span>
+
+        {/* Group badge */}
+        {option.group && (
+          <Badge variant="outline" className="text-xs px-1.5 py-0.5">
+            {option.group}
+          </Badge>
+        )}
+      </div>
+    ),
+    selectedTriggerProps: {
+      className: "px-2 py-1 rounded-md bg-muted/50 hover:bg-muted/70 transition-colors",
+    },
+  },
+  render: createSingleStoryRender("Custom trigger display with enhanced styling"),
 };
 
-export const WithForm: Story = {
-  name: "Form Integration (react-hook-form)",
-  args: iconStoryArgs,
-  render: createFormStoryRender("With Form integration"),
+export const SingleCombinedCustomizations: Story = {
+  name: "Single: Combined Trigger & Option Customizations",
+  args: {
+    ...singleIconStoryArgs,
+    defaultValue: "team-1",
+    optionItemClassName: "px-3 py-2",
+    renderOption: ({ option, isSelected, iconNode, labelNode }) =>
+      createSharedCustomizations().renderEnhancedOption({ option, isSelected, iconNode, labelNode }),
+    renderSelectedTrigger: ({ option, iconNode }) => (
+      <div className="flex items-center gap-2 w-full">
+        {/* Custom icon with background - matching option styling */}
+        {iconNode && (
+          <div
+            className={cn(
+              "flex items-center justify-center w-5 h-5 rounded-full transition-all",
+              "bg-primary/10 text-primary"
+            )}
+          >
+            {React.cloneElement(iconNode as React.ReactElement, { className: "w-3 h-3" })}
+          </div>
+        )}
+
+        {/* Label with custom styling */}
+        <span className="flex-1 text-sm font-medium text-foreground">
+          {option.label}
+        </span>
+
+        {/* Group badge - matching option styling */}
+        {option.group && (
+          <Badge
+            variant="outline"
+            className={cn(
+              "text-xs px-1.5 py-0.5",
+              option.group === "Team" && "border-blue-600/40 dark:border-blue-900/70 text-blue-700 dark:text-blue-300",
+              option.group === "Infra" && "border-orange-600/40 dark:border-orange-900/70 text-orange-700 dark:text-orange-300",
+              option.group === "Security" && "border-red-600/40 dark:border-red-900/70 text-red-700 dark:text-red-300",
+              option.group === "Bug" && "border-yellow-600/40 dark:border-yellow-900/70 text-yellow-700 dark:text-yellow-300",
+              option.group === "Atom" && "border-purple-600/40 dark:border-purple-900/70 text-purple-700 dark:text-purple-300"
+            )}
+          >
+            {option.group}
+          </Badge>
+        )}
+      </div>
+    ),
+    selectedTriggerProps: {
+      className: "px-2 py-1 rounded-md bg-muted/50 hover:bg-muted/70 transition-colors border border-border/50",
+    },
+  },
+  render: createSingleStoryRender("Both trigger and option customizations working together"),
 };
 
-export const DefaultUngrouped: Story = {
-  name: "Default (Ungrouped)",
-  args: ungroupedStoryArgs,
-  render: createStoryRender("Ungrouped options"),
-};
+
