@@ -598,13 +598,25 @@ const EsiSelectCurrentBadges: React.FC = () => {
                 size="icon"
                 className="size-5 -my-2 -ml-1.5 -mr-2 hover:bg-destructive/25 focus-visible:bg-destructive/25 focus-visible:opacity-100 opacity-50 hover:opacity-100 transition-all"
                 variant="ghost"
+                asChild
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleOption(opt.value);
                 }}
                 aria-label={`Remove ${opt.label}`}
               >
-                <LucideX className="size-3" />
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      toggleOption(opt.value);
+                    }
+                  }}
+                >
+                  <LucideX className="size-3" />
+                </div>
               </Button>
             ) : null;
             if (renderSelectedBadge) {
@@ -660,12 +672,24 @@ const EsiSelectCurrentBadges: React.FC = () => {
                 size="icon"
                 className="size-5 -my-2 -mx-0.5 hover:bg-destructive/25 opacity-50 hover:opacity-100 transition-all"
                 variant="ghost"
+                asChild
                 onClick={(e) => {
                   e.stopPropagation();
                   clearExtraOptions();
                 }}
               >
-                <LucideX className="size-3" />
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      clearExtraOptions();
+                    }
+                  }}
+                >
+                  <LucideX className="size-3" />
+                </div>
               </Button>
             )}
           </>
