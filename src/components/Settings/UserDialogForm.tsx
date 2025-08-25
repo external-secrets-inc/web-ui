@@ -132,6 +132,7 @@ const UserDialogForm = ({ selectedUserId, userForm, onSubmit, onCancel }: {
                   <FormLabel>Roles</FormLabel>
                   <FormControl>
                     <EsiSelect
+                      mode="multiple"
                       options={rolesOptions}
                       onValueChange={field.onChange}
                       defaultValue={field.value}

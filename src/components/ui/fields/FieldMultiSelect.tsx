@@ -146,6 +146,7 @@ export function FieldMultiSelect({
       descriptionInline={descriptionInline}
     >
       <EsiSelect
+        mode="multiple"
         options={normalizedOptions.map((option) => ({
           ...option,
           /**

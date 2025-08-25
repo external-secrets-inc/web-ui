@@ -84,6 +84,7 @@ const PolicyTriggerDialogForm = ({
                 <FormLabel>Destinations</FormLabel>
                 <FormControl>
                   <EsiSelect
+                    mode="multiple"
                     options={destinationOptions}
                     onValueChange={field.onChange}
                     value={field.value}

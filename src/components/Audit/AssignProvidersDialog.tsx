@@ -60,6 +60,7 @@ export function AssignProvidersDialog({
           </div>
         ) : (
           <EsiSelect
+            mode="multiple"
             options={providerOptions}
             placeholder="Select providers..."
             onValueChange={setSelectedProviders}

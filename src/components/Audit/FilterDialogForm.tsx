@@ -182,6 +182,7 @@ const EsiSelectFilter = ({
       <FormItem>
         <FormLabel>{label}</FormLabel>
         <EsiSelect
+          mode="multiple"
           options={options}
           onValueChange={field.onChange}
           value={field.value}

@@ -291,6 +291,7 @@ const PolicyDialogForm = ({ selectedPolicyId, policyForm, isLoadingDestinations,
                       <FormLabel>Execute On</FormLabel>
                       <FormControl>
                         <EsiSelect
+                          mode="multiple"
                           options={executeOnOptions}
                           onValueChange={field.onChange}
                           defaultValue={field.value}

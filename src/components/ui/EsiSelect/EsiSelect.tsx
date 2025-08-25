@@ -11,7 +11,12 @@ import {
 } from "@/components/ui/command";
 import { CaretSortIcon } from "@radix-ui/react-icons";
 import { defaultFilter } from "cmdk";
-import { LucideCheckCheck, LucideEraser, LucideX } from "lucide-react";
+import {
+  LucideCheck,
+  LucideCheckCheck,
+  LucideEraser,
+  LucideX,
+} from "lucide-react";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
@@ -32,8 +37,6 @@ import {
   type BadgeGroupProps,
 } from "@/components/ui/BadgeGroup";
 
-// Badge rendering and overflow are handled by BadgeGroup; no local observers needed
-
 /**
  * Context for EsiSelect component
  * This context is used to share state and functions across the EsiSelect
@@ -53,10 +56,11 @@ interface EsiSelectContextValue {
   itemRefs: React.MutableRefObject<Map<string, CommandItemRef>>;
   setAutoVisibleCount: (n: number) => void;
   disabled: boolean;
+  mode: "single" | "multiple";
 }
-const EsiSelectContext = React.createContext<
-  EsiSelectContextValue | undefined
->(undefined);
+const EsiSelectContext = React.createContext<EsiSelectContextValue | undefined>(
+  undefined
+);
 
 export interface Option {
   /** The text to display for the option. */
@@ -76,9 +80,12 @@ type CommandItemRef = {
 };
 
 /**
- * Props for EsiSelect component
+ * Shared props for EsiSelect component. Mode-specific props are defined below.
  */
-interface EsiSelectProps extends React.HTMLAttributes<HTMLDivElement> {
+export type BaseEsiSelectProps = Omit<
+  React.HTMLAttributes<HTMLDivElement>,
+  "value" | "onChange" | "defaultValue"
+> & {
   /**
    * An array of option objects to be displayed in the EsiSelect component.
    * Each option object has a label, value, and an optional icon.
@@ -86,29 +93,10 @@ interface EsiSelectProps extends React.HTMLAttributes<HTMLDivElement> {
   options: Option[];
 
   /**
-   * Callback function triggered when the selected values change.
-   * Receives an array of the new selected values.
-   */
-  onValueChange: (value: string[]) => void;
-
-  /** The default selected values when the component mounts. */
-  defaultValue?: string[];
-
-  /**
    * Placeholder text to be displayed when no values are selected.
    * Optional, defaults to "Select options".
    */
   placeholder?: string;
-
-  /**
-   * Maximum number of items to display. Extra selected items will be summarized.
-   * - undefined: show all badges with dynamic height (alternatively, use can also set to `Infinity` too)
-   * - number: hard limit of badges before showing +N more
-   * - "auto": automatically determine limit based on available width
-   * Optional, defaults to undefined.
-   */
-  maxCount?: number | "auto";
-
   /**
    * The modality of the popover. When set to true, interaction with outside elements
    * will be disabled and only popover content will be visible to screen readers.
@@ -147,22 +135,6 @@ interface EsiSelectProps extends React.HTMLAttributes<HTMLDivElement> {
   disabled?: boolean;
 
   /**
-   * Customize how selected badges (shown in the trigger) are rendered.
-   * `selectedBadgeDefaults` controls base Badge props (variant, className, etc.).
-   * `renderSelectedBadge` can override inner content while keeping BadgeGroup truncation via provided nodes.
-   * `selectedExtraBadge` customizes the "+N" counter badge.
-   */
-  selectedBadgeDefaults?: Partial<BadgeItem>;
-  selectedExtraBadge?: BadgeGroupProps["extraBadge"];
-  renderSelectedBadge?: (ctx: {
-    option: Option;
-    resolved: BadgeItem;
-    labelNode: React.ReactNode;
-    iconNode?: React.ReactNode;
-    remove: () => void;
-  }) => React.ReactNode;
-
-  /**
    * Customize how each option row renders inside the command list.
    * Provided nodes preserve default styling while enabling custom composition.
    */
@@ -175,11 +147,46 @@ interface EsiSelectProps extends React.HTMLAttributes<HTMLDivElement> {
   }) => React.ReactNode;
   /** Optional className for each option row. */
   optionItemClassName?: string;
-}
+  /**
+   * Surface props for each option row. Accepts a static value or a function of context.
+   */
+  optionItemProps?:
+    | Partial<React.ComponentProps<typeof CommandItem>>
+    | ((ctx: {
+        option: Option;
+        isSelected: boolean;
+      }) => Partial<React.ComponentProps<typeof CommandItem>>);
+  /**
+   * Customizes the selected option display in the trigger for single mode.
+   * Provides the same API surface as renderSelectedBadge for consistency.
+   */
+  renderSelectedTrigger?: (ctx: {
+    option: Option;
+    selectedValue: string;
+    labelNode: React.ReactNode;
+    iconNode?: React.ReactNode;
+  }) => React.ReactNode;
+  /**
+   * Surface props for the selected option in single mode trigger.
+   * Accepts a static value or a function of context.
+   */
+  selectedTriggerProps?:
+    | Partial<React.HTMLAttributes<HTMLSpanElement>>
+    | ((ctx: {
+        option: Option;
+        selectedValue: string;
+      }) => Partial<React.HTMLAttributes<HTMLSpanElement>>);
+};
 
-// Components
-// Lightweight contexts to pass customization to inner components
-type SelectedBadgeCustomization = {
+/**
+ * Shared customization interface for badge-related props
+ */
+interface BadgeCustomization {
+  /**
+   * Customize how selected badges (shown in the trigger) are rendered.
+   * `renderSelectedBadge` can override inner content while keeping BadgeGroup truncation via provided nodes.
+   * `selectedExtraBadge` customizes the "+N" counter badge.
+   */
   selectedBadgeDefaults?: Partial<BadgeItem>;
   selectedExtraBadge?: BadgeGroupProps["extraBadge"];
   renderSelectedBadge?: (ctx: {
@@ -188,10 +195,53 @@ type SelectedBadgeCustomization = {
     labelNode: React.ReactNode;
     iconNode?: React.ReactNode;
     remove: () => void;
+    removeNode: React.ReactNode;
   }) => React.ReactNode;
+  /**
+   * Surface props for each selected badge. Accepts a static value or a function of context.
+   */
+  selectedBadgeProps?:
+    | Partial<BadgeItem>
+    | ((option: Option) => Partial<BadgeItem>);
+}
+
+export type EsiSelectSingleProps = BaseEsiSelectProps & {
+  mode?: "single"; // default
+  value?: string | null;
+  defaultValue?: string | null;
+  onValueChange: (value: string | null) => void;
 };
-const SelectedBadgeCustomizationContext =
-  React.createContext<SelectedBadgeCustomization>({});
+
+export type EsiSelectMultipleProps = BaseEsiSelectProps &
+  BadgeCustomization & {
+    mode: "multiple";
+    value?: string[];
+    defaultValue?: string[];
+    onValueChange?: (value: string[]) => void;
+    /**
+     * Maximum number of items to display. Extra selected items will be summarized.
+     * - undefined: show all badges with dynamic height (alternatively, use can also set to `Infinity` too)
+     * - number: hard limit of badges before showing +N more
+     * - "auto": automatically determine limit based on available width
+     * Optional, defaults to undefined.
+     */
+    maxCount?: number | "auto";
+    /** ClassName applied to the BadgeGroup that renders the selected badges. */
+    selectedBadgeGroupClassName?: string;
+  };
+
+export type EsiSelectProps = EsiSelectSingleProps | EsiSelectMultipleProps;
+
+// Components
+// Lightweight contexts to pass customization to inner components
+const SelectedBadgeCustomizationContext = React.createContext<
+  BadgeCustomization & { selectedBadgeGroupClassName?: string }
+>({});
+
+const SingleTriggerCustomizationContext = React.createContext<{
+  renderSelectedTrigger?: BaseEsiSelectProps["renderSelectedTrigger"];
+  selectedTriggerProps?: BaseEsiSelectProps["selectedTriggerProps"];
+}>({});
 
 type OptionCustomization = {
   renderOption?: (ctx: {
@@ -202,38 +252,88 @@ type OptionCustomization = {
     labelNode: React.ReactNode;
   }) => React.ReactNode;
   optionItemClassName?: string;
+  /**
+   * Surface props for each option row. Accepts a static value or a function of context.
+   */
+  optionItemProps?:
+    | Partial<React.ComponentProps<typeof CommandItem>>
+    | ((ctx: {
+        option: Option;
+        isSelected: boolean;
+      }) => Partial<React.ComponentProps<typeof CommandItem>>);
 };
 const OptionCustomizationContext = React.createContext<OptionCustomization>({});
 
 export const EsiSelect = React.forwardRef<HTMLDivElement, EsiSelectProps>(
-  (
-    {
+  (props, ref) => {
+    const {
       options,
-      onValueChange,
-      defaultValue = [],
       placeholder = "Select options",
-      maxCount,
       modalPopover = true,
       className,
       open,
       onOpenChange,
       defaultOpen = false,
-      selectedBadgeDefaults,
-      selectedExtraBadge,
-      renderSelectedBadge,
       renderOption,
       optionItemClassName,
+      optionItemProps,
       disabled,
-      ...props
-    },
-    ref
-  ) => {
-    const [selectedValues, setSelectedValues] =
-      React.useState<string[]>(defaultValue);
+      // Extract only the DOM props we explicitly want to pass through
+      id,
+      style,
+    } = props;
+
+    // Only pass through explicitly allowed DOM props
+    const domProps = {
+      ...(id && { id }),
+      ...(style && { style }),
+    };
+
+    const mode: "single" | "multiple" =
+      (props as EsiSelectProps).mode ?? "single";
+    const isMultiple = mode === "multiple";
+
+    const multipleProps = isMultiple
+      ? (props as EsiSelectMultipleProps)
+      : undefined;
+    const singleProps = !isMultiple
+      ? (props as EsiSelectSingleProps)
+      : undefined;
+
+    const maxCount = multipleProps?.maxCount;
+
+    const controlledArrayValue = React.useMemo(() => {
+      if (isMultiple) return multipleProps?.value;
+      if (singleProps?.value != null && singleProps?.value !== "") {
+        return [singleProps.value as string];
+      }
+      return undefined;
+    }, [isMultiple, multipleProps?.value, singleProps?.value]);
+    const defaultArrayValue = isMultiple
+      ? multipleProps?.defaultValue ?? []
+      : singleProps?.defaultValue
+      ? [singleProps.defaultValue]
+      : [];
+
+    const [selectedValues, setSelectedValues] = React.useState<string[]>(
+      controlledArrayValue ?? defaultArrayValue
+    );
     const [internalIsOpen, setInternalIsOpen] = React.useState(defaultOpen);
     const [autoVisibleCount, setAutoVisibleCount] = React.useState<
       number | undefined
     >(undefined);
+
+    // Keep internal state in sync when value is controlled
+    React.useEffect(() => {
+      if (controlledArrayValue) {
+        setSelectedValues(controlledArrayValue);
+      } else if (
+        controlledArrayValue === null ||
+        controlledArrayValue === undefined
+      ) {
+        // do nothing; uncontrolled
+      }
+    }, [controlledArrayValue]);
 
     // Use controlled open state if provided, otherwise use internal state
     const isOpen = open !== undefined ? open : internalIsOpen;
@@ -256,26 +356,46 @@ export const EsiSelect = React.forwardRef<HTMLDivElement, EsiSelectProps>(
       [onOpenChange, isOpen, open]
     );
 
-    // using BadgeGroup for overflow logic; no local auto measurement flags needed
-
     const itemRefs = React.useRef<Map<string, CommandItemRef>>(new Map());
 
     const updateSelection = React.useCallback(
       (newValues: string[]) => {
-        setSelectedValues(newValues);
-        onValueChange(newValues);
+        if (isMultiple) {
+          const fn = (multipleProps?.onValueChange ?? (() => {})) as (
+            v: string[]
+          ) => void;
+          if (multipleProps?.value === undefined) {
+            setSelectedValues(newValues);
+          }
+          fn(newValues);
+          return;
+        }
+        const next = newValues.length > 0 ? newValues[0] : null;
+        const fn = (singleProps?.onValueChange ?? (() => {})) as (
+          v: string | null
+        ) => void;
+        if (singleProps?.value === undefined) {
+          setSelectedValues(next ? [next] : []);
+        }
+        fn(next);
       },
-      [onValueChange]
+      [isMultiple, multipleProps, singleProps]
     );
 
     const toggleOption = React.useCallback(
       (option: string) => {
-        const newValues = selectedValues.includes(option)
-          ? selectedValues.filter((value) => value !== option)
-          : [...selectedValues, option];
-        updateSelection(newValues);
+        if (isMultiple) {
+          const newValues = selectedValues.includes(option)
+            ? selectedValues.filter((value) => value !== option)
+            : [...selectedValues, option];
+          updateSelection(newValues);
+          return;
+        }
+        // single mode: selecting sets the single value; clicking same keeps it (clearing is via trigger X)
+        updateSelection([option]);
+        setInternalIsOpen(false);
       },
-      [selectedValues, updateSelection]
+      [isMultiple, selectedValues, updateSelection]
     );
 
     const handleClear = React.useCallback(() => {
@@ -307,6 +427,7 @@ export const EsiSelect = React.forwardRef<HTMLDivElement, EsiSelectProps>(
         itemRefs,
         setAutoVisibleCount,
         disabled: Boolean(disabled),
+        mode,
       }),
       [
         selectedValues,
@@ -321,6 +442,7 @@ export const EsiSelect = React.forwardRef<HTMLDivElement, EsiSelectProps>(
         updateSelection,
         setAutoVisibleCount,
         disabled,
+        mode,
       ]
     );
 
@@ -348,77 +470,89 @@ export const EsiSelect = React.forwardRef<HTMLDivElement, EsiSelectProps>(
       [options]
     );
 
-    // No local measurement state to reset; BadgeGroup computes visibility in auto mode
-
     const listboxId = React.useId();
 
     return (
       <EsiSelectContext.Provider value={contextValue}>
         <SelectedBadgeCustomizationContext.Provider
           value={{
-            selectedBadgeDefaults,
-            selectedExtraBadge,
-            renderSelectedBadge,
+            selectedExtraBadge: multipleProps?.selectedExtraBadge,
+            renderSelectedBadge: multipleProps?.renderSelectedBadge,
+            selectedBadgeProps: multipleProps?.selectedBadgeProps,
+            selectedBadgeGroupClassName:
+              multipleProps?.selectedBadgeGroupClassName,
           }}
         >
-          <OptionCustomizationContext.Provider
-            value={{ renderOption, optionItemClassName }}
+          <SingleTriggerCustomizationContext.Provider
+            value={{
+              renderSelectedTrigger: singleProps?.renderSelectedTrigger,
+              selectedTriggerProps: singleProps?.selectedTriggerProps,
+            }}
           >
-            <Popover
-              open={!disabled && isOpen}
-              onOpenChange={handleOpenChange}
-              modal={modalPopover}
+            <OptionCustomizationContext.Provider
+              value={{ renderOption, optionItemClassName, optionItemProps }}
             >
-              <EsiSelectPopoverTrigger
-                ref={ref}
-                {...props}
-                disabled={disabled}
-                listboxId={listboxId}
-                className={cn(className)}
-              />
-              <PopoverContent
-                id={listboxId}
-                sticky="always"
-                collisionPadding={8}
-                aria-hidden={disabled || undefined}
-                className={cn(
-                  "min-w-[--radix-popover-trigger-width] origin-[--radix-popover-content-transform-origin] max-h-[--radix-popover-content-available-height] flex flex-col p-0",
-                  disabled && "pointer-events-none select-none"
-                )}
+              <Popover
+                open={!disabled && isOpen}
+                onOpenChange={handleOpenChange}
+                modal={modalPopover}
               >
-                <Command
-                  className="outline-none"
-                  filter={fuzzyFilterOptionsByLabels}
-                  loop
+                <EsiSelectPopoverTrigger
+                  ref={ref}
+                  {...domProps}
+                  disabled={disabled}
+                  listboxId={listboxId}
+                  className={cn(className)}
+                />
+                <PopoverContent
+                  id={listboxId}
+                  sticky="always"
+                  collisionPadding={8}
+                  aria-hidden={disabled || undefined}
+                  className={cn(
+                    "min-w-[--radix-popover-trigger-width] origin-[--radix-popover-content-transform-origin] max-h-[--radix-popover-content-available-height] flex flex-col p-0",
+                    disabled && "pointer-events-none select-none"
+                  )}
                 >
-                  <CommandInput placeholder="Search..." />
-                  <CommandList className="max-h-[unset] overflow-clip min-h-0 [&_[cmdk-list-sizer]]:min-h-0 grid grid-cols-1 [&_[cmdk-list-sizer]]:flex [&_[cmdk-list-sizer]]:flex-col">
-                    <CommandEmpty>No results found.</CommandEmpty>
-                    <div className="flex flex-col min-h-0">
-                      <ScrollArea className="max-h-96" type="always">
-                        <EsiSelectListOptions />
-                      </ScrollArea>
-                      <CommandGroup
-                        forceMount
-                        className="border-t order-last flex-none"
-                      >
-                        <EsiSelectFooterOptions />
-                      </CommandGroup>
-                      <EsiSelectToggleAllOptions className="p-0 border-b order-first flex-none" />
-                    </div>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          </OptionCustomizationContext.Provider>
+                  <Command
+                    className="outline-none"
+                    filter={fuzzyFilterOptionsByLabels}
+                    loop
+                  >
+                    <CommandInput placeholder="Search..." />
+                    <CommandList
+                      aria-multiselectable={isMultiple}
+                      className="max-h-[unset] overflow-clip min-h-0 [&_[cmdk-list-sizer]]:min-h-0 grid grid-cols-1 [&_[cmdk-list-sizer]]:flex [&_[cmdk-list-sizer]]:flex-col"
+                    >
+                      <CommandEmpty>No results found.</CommandEmpty>
+                      <div className="flex flex-col min-h-0">
+                        <ScrollArea className="max-h-96" type="always">
+                          <EsiSelectListOptions />
+                        </ScrollArea>
+                        {isMultiple && (
+                          <CommandGroup
+                            forceMount
+                            className="border-t order-last flex-none"
+                          >
+                            <EsiSelectFooterOptions />
+                          </CommandGroup>
+                        )}
+                        {isMultiple && (
+                          <EsiSelectToggleAllOptions className="p-0 border-b order-first flex-none" />
+                        )}
+                      </div>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </OptionCustomizationContext.Provider>
+          </SingleTriggerCustomizationContext.Provider>
         </SelectedBadgeCustomizationContext.Provider>
       </EsiSelectContext.Provider>
     );
   }
 );
 EsiSelect.displayName = "EsiSelect";
-
-// Local badge renderers removed in favor of BadgeGroup
 
 /**
  * Renders the currently selected options as badges with a "+N more" badge if exceeding `maxCount`.
@@ -433,24 +567,33 @@ const EsiSelectCurrentBadges: React.FC = () => {
     setAutoVisibleCount,
     disabled,
   } = useEsiSelect();
-  const { selectedExtraBadge } = React.useContext(
-    SelectedBadgeCustomizationContext
-  );
+  const {
+    renderSelectedBadge,
+    selectedBadgeProps,
+    selectedExtraBadge,
+    selectedBadgeGroupClassName,
+  } = React.useContext(SelectedBadgeCustomizationContext);
 
   const badges: BadgeItem[] = useMemo(() => {
     return selectedValues
       .map((value) => options.find((o) => o.value === value))
       .filter((opt): opt is NonNullable<typeof opt> => Boolean(opt))
-      .map((opt) => ({
-        id: opt.value,
-        label: opt.label,
-        icon: opt.icon,
-        // Compose default label/icon from BadgeGroup and add a trailing X button.
-        children: ({ labelNode, iconNode }) => (
-          <>
-            {iconNode}
-            {labelNode}
-            {!disabled && (
+      .map((opt) => {
+        const perOption =
+          typeof selectedBadgeProps === "function"
+            ? selectedBadgeProps(opt)
+            : selectedBadgeProps ?? {};
+        const resolved: BadgeItem = {
+          id: opt.value,
+          label: opt.label,
+          icon: opt.icon,
+          ...(perOption ?? {}),
+        };
+        return {
+          ...resolved,
+          // Compose default label/icon from BadgeGroup or allow custom render
+          children: ({ labelNode, iconNode }) => {
+            const defaultRemoveNode = !disabled ? (
               <Button
                 size="icon"
                 className="size-5 -my-2 -ml-1.5 -mr-2 hover:bg-destructive/25 focus-visible:bg-destructive/25 focus-visible:opacity-100 opacity-50 hover:opacity-100 transition-all"
@@ -459,20 +602,45 @@ const EsiSelectCurrentBadges: React.FC = () => {
                   e.stopPropagation();
                   toggleOption(opt.value);
                 }}
+                aria-label={`Remove ${opt.label}`}
               >
                 <LucideX className="size-3" />
               </Button>
-            )}
-          </>
-        ),
-      }));
-  }, [selectedValues, options, toggleOption, disabled]);
+            ) : null;
+            if (renderSelectedBadge) {
+              return renderSelectedBadge({
+                option: opt,
+                resolved,
+                labelNode,
+                iconNode,
+                remove: () => toggleOption(opt.value),
+                removeNode: defaultRemoveNode,
+              });
+            }
+            return (
+              <>
+                {iconNode}
+                {labelNode}
+                {defaultRemoveNode}
+              </>
+            );
+          },
+        } as BadgeItem;
+      });
+  }, [
+    selectedValues,
+    options,
+    toggleOption,
+    disabled,
+    renderSelectedBadge,
+    selectedBadgeProps,
+  ]);
 
   return (
     <BadgeGroup
       badges={badges}
       maxCount={maxCount}
-      className="w-[stretch] -ml-1.5"
+      className={cn("w-[stretch] -ml-1.5", selectedBadgeGroupClassName)}
       onLayoutUpdate={({ visibleCount }) => setAutoVisibleCount(visibleCount)}
       extraBadge={{
         id: "extra",
@@ -518,9 +686,9 @@ interface EsiSelectPopoverTriggerProps {
   children?: React.ReactNode;
   disabled?: boolean;
   listboxId?: string;
-  [key: string]:
-    | React.HTMLAttributes<HTMLDivElement>[keyof React.HTMLAttributes<HTMLDivElement>]
-    | undefined;
+  // Only allow specific DOM props we explicitly want to pass through
+  id?: string;
+  style?: React.CSSProperties;
 }
 
 /**
@@ -531,114 +699,182 @@ interface EsiSelectPopoverTriggerProps {
 const EsiSelectPopoverTrigger = React.forwardRef<
   HTMLDivElement,
   EsiSelectPopoverTriggerProps
->(({ className, onClick, onKeyDown, onKeyUp, disabled, listboxId, ...props }, ref) => {
-  const { selectedValues, placeholder, handleClear, setIsOpen, isOpen } =
-    useEsiSelect();
-  const isUnselected = selectedValues.length === 0;
-  const isDisabled = Boolean(disabled);
+>(
+  (
+    { className, onClick, onKeyDown, onKeyUp, disabled, listboxId, ...props },
+    ref
+  ) => {
+    // Extract only the DOM props we explicitly want to pass through
+    const { id, style } = props;
 
-  /**
-   * WHY: Trigger is a div via Button(asChild) with role="combobox" to avoid
-   * nested buttons. Radix does not add button-like keyboard behavior to
-   * non-buttons, so we wire keys:
-   * - Enter/Space/ArrowDown: open list from trigger (combobox affordance)
-   * - Escape: close when focus stayed on trigger
-   *
-   * It’s easier to do this on the trigger rather than on any buttons within the
-   * content, as there may be multiple buttons inside it.
-   */
-  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (isDisabled) return;
-    setIsOpen((prev) => !prev);
-    onClick?.(e);
-  };
+    // Only pass through explicitly allowed DOM props
+    const domProps = {
+      ...(id && { id }),
+      ...(style && { style }),
+    };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (isDisabled) return;
-    // Non-button trigger needs explicit open on activation/navigation keys
-    if (e.key === "Enter" || e.key === "ArrowDown" || e.key === "ArrowUp") {
-      e.preventDefault();
-      setIsOpen(true);
-    }
-    // Space should activate on keyup to mirror native button behavior
-    if (e.key === " ") {
-      e.preventDefault();
-    }
-    // Allow closing from trigger when focus has not moved into content yet
-    if (e.key === "Escape") {
-      setIsOpen(false);
-    }
-    onKeyDown?.(e);
-  };
+    const {
+      selectedValues,
+      placeholder,
+      handleClear,
+      setIsOpen,
+      isOpen,
+      mode,
+      options,
+    } = useEsiSelect();
 
-  const handleKeyUp = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (isDisabled) return;
-    if (e.key === " ") {
-      e.preventDefault();
-      setIsOpen(true);
-    }
-    onKeyUp?.(e);
-  };
+    // Get single mode trigger customization context
+    const { renderSelectedTrigger, selectedTriggerProps } = React.useContext(SingleTriggerCustomizationContext);
 
-  return (
-    <PopoverTrigger asChild>
-      <Button
-        variant="outline"
-        className={cn(
-          "w-full min-w-24 py-1.5 px-3 min-h-9 h-auto gap-4 items-center justify-between hover:bg-inherit relative overflow-clip cursor-pointer group",
-          className
-        )}
-        disabled={isDisabled}
-        asChild
-      >
-        {/* Render a div as the trigger to avoid button-inside-button. Use combobox role on it */}
-        <div
-          ref={ref}
-          role="combobox"
-          aria-haspopup="listbox"
-          aria-expanded={isOpen}
-          aria-controls={listboxId}
-          aria-disabled={isDisabled || undefined}
-          tabIndex={isDisabled ? -1 : 0}
-          onClick={isDisabled ? undefined : handleClick}
-          onKeyDown={isDisabled ? undefined : handleKeyDown}
-          onKeyUp={isDisabled ? undefined : handleKeyUp}
-          {...props}
-        >
-          {isUnselected ? (
-            <span className="text-sm text-muted-foreground font-normal truncate">
-              {placeholder}
-            </span>
-          ) : (
-            <>
-              <EsiSelectCurrentBadges />
-              {!isDisabled && (
-                <Button
-                  className="size-8 opacity-0 group-hover:opacity-50 hover:!opacity-100 hover:bg-destructive/25 focus-visible:bg-destructive/25 focus-visible:!opacity-100 group-focus-within:opacity-50 absolute right-px rounded-sm translate-x-full group-hover:translate-x-0 group-focus-within:translate-x-0 transition-all duration-300 z-10"
-                  variant="ghost"
-                  size="icon"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleClear();
-                  }}
-                >
-                  <LucideX />
-                </Button>
-              )}
-            </>
+    const isUnselected = selectedValues.length === 0;
+    const isDisabled = Boolean(disabled);
+    const isMultiple = mode === "multiple";
+    const selectedSingle =
+      !isMultiple && selectedValues[0]
+        ? options.find((o) => o.value === selectedValues[0])
+        : undefined;
+
+    // Compute surface props for single mode trigger
+    const triggerSurfaceProps = React.useMemo(() => {
+      if (!selectedSingle || !selectedTriggerProps) return {};
+
+      if (typeof selectedTriggerProps === "function") {
+        return selectedTriggerProps({
+          option: selectedSingle,
+          selectedValue: selectedValues[0],
+        });
+      }
+
+      return selectedTriggerProps;
+    }, [selectedSingle, selectedValues, selectedTriggerProps]);
+
+    /**
+     * WHY: Trigger is a div via Button(asChild) with role="combobox" to avoid
+     * nested buttons. Radix does not add button-like keyboard behavior to
+     * non-buttons, so we wire keys:
+     * - Enter/Space/ArrowDown: open list from trigger (combobox affordance)
+     * - Escape: close when focus stayed on trigger
+     *
+     * It's easier to do this on the trigger rather than on any buttons within the
+     * content, as there may be multiple buttons inside it.
+     */
+    const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+      if (isDisabled) return;
+      setIsOpen((prev) => !prev);
+      onClick?.(e);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (isDisabled) return;
+      // Non-button trigger needs explicit open on activation/navigation keys
+      if (e.key === "Enter" || e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        setIsOpen(true);
+      }
+      // Space should activate on keyup to mirror native button behavior
+      if (e.key === " ") {
+        e.preventDefault();
+      }
+      // Allow closing from trigger when focus has not moved into content yet
+      if (e.key === "Escape") {
+        setIsOpen(false);
+      }
+      onKeyDown?.(e);
+    };
+
+    const handleKeyUp = (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (isDisabled) return;
+      if (e.key === " ") {
+        e.preventDefault();
+        setIsOpen(true);
+      }
+      onKeyUp?.(e);
+    };
+
+    return (
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className={cn(
+            "w-full min-w-24 py-1.5 px-3 min-h-9 h-auto gap-3 items-center justify-between hover:bg-inherit relative overflow-clip cursor-pointer group",
+            className
           )}
-          <CaretSortIcon
-            className={cn(
-              "text-muted-foreground opacity-50 flex-none",
-              !isUnselected &&
-                "group-hover:opacity-0 group-focus-within:opacity-0 transition-opacity duration-300 group-hover:delay-0 delay-100"
+          disabled={isDisabled}
+          asChild
+        >
+          {/* Render a div as the trigger to avoid button-inside-button. Use combobox role on it */}
+          <div
+            ref={ref}
+            role="combobox"
+            aria-haspopup="listbox"
+            aria-expanded={isOpen}
+            aria-controls={listboxId}
+            aria-disabled={isDisabled || undefined}
+            tabIndex={isDisabled ? -1 : 0}
+            onClick={isDisabled ? undefined : handleClick}
+            onKeyDown={isDisabled ? undefined : handleKeyDown}
+            onKeyUp={isDisabled ? undefined : handleKeyUp}
+            {...domProps}
+          >
+            {isUnselected ? (
+              <span className="text-sm text-muted-foreground font-normal truncate">
+                {placeholder}
+              </span>
+            ) : (
+              <>
+                {isMultiple ? (
+                  <EsiSelectCurrentBadges />
+                ) : (
+                  renderSelectedTrigger && selectedSingle ? (
+                    renderSelectedTrigger({
+                      option: selectedSingle,
+                      selectedValue: selectedValues[0],
+                      labelNode: (
+                        <span className="text-sm truncate flex-1 text-foreground">
+                          {selectedSingle.label}
+                        </span>
+                      ),
+                      iconNode: selectedSingle.icon && (
+                        <selectedSingle.icon className="w-4 h-4 text-muted-foreground" />
+                      ),
+                    })
+                  ) : (
+                    <span
+                      className={cn("text-sm truncate flex-1 text-foreground", triggerSurfaceProps.className)}
+                      {...triggerSurfaceProps}
+                    >
+                      {selectedSingle?.label ?? selectedValues[0]}
+                    </span>
+                  )
+                )}
+                {!isDisabled && (
+                  <Button
+                    className="size-8 opacity-0 group-hover:opacity-50 hover:!opacity-100 hover:bg-destructive/25 focus-visible:bg-destructive/25 focus-visible:!opacity-100 group-focus-within:opacity-50 absolute right-px rounded-sm translate-x-full group-hover:translate-x-0 group-focus-within:translate-x-0 transition-all duration-300 z-10"
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleClear();
+                    }}
+                  >
+                    <LucideX />
+                  </Button>
+                )}
+              </>
             )}
-          />
-        </div>
-      </Button>
-    </PopoverTrigger>
-  );
-});
+            <CaretSortIcon
+              className={cn(
+                "text-muted-foreground opacity-50 flex-none",
+                !isUnselected &&
+                  "group-hover:opacity-0 group-focus-within:opacity-0 transition-opacity duration-300 group-hover:delay-0 delay-100"
+              )}
+            />
+          </div>
+        </Button>
+      </PopoverTrigger>
+    );
+  }
+);
 EsiSelectPopoverTrigger.displayName = "EsiSelectPopoverTrigger";
 
 /**
@@ -646,11 +882,18 @@ EsiSelectPopoverTrigger.displayName = "EsiSelectPopoverTrigger";
  * Manages refs for CMDK's internal filtering state!
  */
 const EsiSelectListOptions: React.FC = () => {
-  const { options, selectedValues, toggleOption, updateSelection, itemRefs } =
-    useEsiSelect();
-  const { renderOption, optionItemClassName } = React.useContext(
-    OptionCustomizationContext
-  );
+  const {
+    options,
+    selectedValues,
+    toggleOption,
+    updateSelection,
+    itemRefs,
+    mode,
+  } = useEsiSelect();
+  const { renderOption, optionItemClassName, optionItemProps } =
+    React.useContext(OptionCustomizationContext);
+  const isMultiple = mode === "multiple";
+  const isAnySelected = !isMultiple && selectedValues.length > 0;
 
   // Group options by the `group` field
   const groupedOptions = useMemo(() => {
@@ -685,13 +928,13 @@ const EsiSelectListOptions: React.FC = () => {
             matchingValueSet,
             hasActiveSearch
           );
-          const groupChecked = computeGroupCheckedState(
-            visibleGroupValues,
-            selectedValues
-          );
+          const groupChecked = isMultiple
+            ? computeGroupCheckedState(visibleGroupValues, selectedValues)
+            : false;
           const areAllInGroupSelected = groupChecked === true;
 
           const toggleGroupSelection = () => {
+            if (!isMultiple) return;
             const next = computeSelectionAfterGroupToggle(
               selectedValues,
               visibleGroupValues,
@@ -715,24 +958,46 @@ const EsiSelectListOptions: React.FC = () => {
               "
               key={groupName}
               heading={
-                <GroupHeading
-                  groupName={groupName}
-                  checked={groupChecked}
-                  hasActiveSearch={hasActiveSearch}
-                  onToggle={toggleGroupSelection}
-                />
+                isMultiple ? (
+                  <GroupHeading
+                    groupName={groupName}
+                    checked={groupChecked}
+                    hasActiveSearch={hasActiveSearch}
+                    onToggle={toggleGroupSelection}
+                  />
+                ) : (
+                  <div className="px-1 py-0.5 bg-background">
+                    <div className="px-2 py-1 flex items-center gap-2">
+                      <span className="flex items-center gap-1">
+                        {groupName}
+                      </span>
+                    </div>
+                  </div>
+                )
               }
             >
               {groupOptions.map((option) => {
                 const isSelected = selectedValues.includes(option.value);
+                const resolvedItemProps = (() => {
+                  const base =
+                    typeof optionItemProps === "function"
+                      ? optionItemProps({ option, isSelected })
+                      : optionItemProps ?? {};
+                  // merge className with optionItemClassName
+                  const cls = cn(
+                    "cursor-pointer data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground transition-all",
+                    optionItemClassName,
+                    base?.className
+                  );
+                  return { ...base, className: cls } as Partial<
+                    React.ComponentProps<typeof CommandItem>
+                  >;
+                })();
                 return (
                   <CommandItem
                     key={option.value}
                     onSelect={() => toggleOption(option.value)}
-                    className={cn(
-                      "cursor-pointer data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground transition-all",
-                      optionItemClassName
-                    )}
+                    {...resolvedItemProps}
                     value={option.value}
                     data-state={isSelected ? "checked" : undefined}
                     ref={(element) => {
@@ -751,9 +1016,9 @@ const EsiSelectListOptions: React.FC = () => {
                       renderOption({
                         option,
                         isSelected,
-                        checkboxNode: (
+                        checkboxNode: isMultiple ? (
                           <Checkbox tabIndex={-1} checked={isSelected} />
-                        ),
+                        ) : null,
                         iconNode: option.icon ? (
                           <option.icon className="text-muted-foreground" />
                         ) : undefined,
@@ -761,7 +1026,20 @@ const EsiSelectListOptions: React.FC = () => {
                       })
                     ) : (
                       <>
-                        <Checkbox tabIndex={-1} checked={isSelected} />
+                        {isMultiple ? (
+                          <Checkbox tabIndex={-1} checked={isSelected} />
+                        ) : (
+                          isAnySelected && (
+                            <span
+                              aria-hidden
+                              className="inline-flex w-4 justify-center"
+                            >
+                              <LucideCheck
+                                className={cn(!isSelected && "invisible")}
+                              />
+                            </span>
+                          )
+                        )}
                         {option.icon && (
                           <option.icon className="text-muted-foreground" />
                         )}
@@ -778,11 +1056,25 @@ const EsiSelectListOptions: React.FC = () => {
         <CommandGroup className="[&_[cmdk-group-items]]:flex [&_[cmdk-group-items]]:flex-col [&_[cmdk-group-items]]:gap-px">
           {groupedOptions["Other"].map((option) => {
             const isSelected = selectedValues.includes(option.value);
+            const resolvedItemProps = (() => {
+              const base =
+                typeof optionItemProps === "function"
+                  ? optionItemProps({ option, isSelected })
+                  : optionItemProps ?? {};
+              const cls = cn(
+                "cursor-pointer data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground transition-all",
+                optionItemClassName,
+                base?.className
+              );
+              return { ...base, className: cls } as Partial<
+                React.ComponentProps<typeof CommandItem>
+              >;
+            })();
             return (
               <CommandItem
                 key={option.value}
                 onSelect={() => toggleOption(option.value)}
-                className="cursor-pointer data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground transition-all"
+                {...resolvedItemProps}
                 value={option.value}
                 data-state={isSelected ? "checked" : undefined}
                 ref={(element) => {
@@ -797,7 +1089,12 @@ const EsiSelectListOptions: React.FC = () => {
                   }
                 }}
               >
-                <Checkbox tabIndex={-1} checked={isSelected} />
+                {isMultiple && <Checkbox tabIndex={-1} checked={isSelected} />}
+                {!isMultiple && isAnySelected && (
+                  <span aria-hidden className="inline-flex w-5 justify-center">
+                    <LucideCheck className={cn(!isSelected && "invisible")} />
+                  </span>
+                )}
                 {option.icon && (
                   <option.icon className="text-muted-foreground" />
                 )}
@@ -815,12 +1112,14 @@ const EsiSelectListOptions: React.FC = () => {
  * Footer component with Clear and Close actions.
  */
 const EsiSelectFooterOptions: React.FC = () => {
-  const { selectedValues, handleClear, setIsOpen, disabled } = useEsiSelect();
+  const { selectedValues, handleClear, setIsOpen, disabled, mode } =
+    useEsiSelect();
   const hasSelectedValues = selectedValues.length > 0;
+  const isMultiple = mode === "multiple";
 
   return (
     <div className="flex items-center justify-between gap-0.5">
-      {hasSelectedValues && !disabled && (
+      {isMultiple && hasSelectedValues && !disabled && (
         <>
           <CommandItem
             onSelect={handleClear}
@@ -991,7 +1290,6 @@ function useFilteredSelection(matchingOptions: Option[]) {
   return { areAllMatchingOptionsSelected, toggleAllMatchingOptions };
 }
 
-// Label renderer for selection toggle actions (reused for group and global toggles)
 function renderSelectionToggleLabel(
   isAllSelected: boolean,
   hasActiveSearch: boolean
@@ -1029,8 +1327,16 @@ type GroupHeadingProps = {
  * Renders an interactive, pointer-only group heading for CMDK's CommandGroup.
  * Displays a tri-state checkbox and a hover-only action hint (Select/Deselect All/Filtered).
  */
-const GroupHeading: React.FC<GroupHeadingProps> = ({ groupName, checked, hasActiveSearch, onToggle }) => {
-  const actionNode = renderSelectionToggleLabel(checked === true, hasActiveSearch);
+const GroupHeading: React.FC<GroupHeadingProps> = ({
+  groupName,
+  checked,
+  hasActiveSearch,
+  onToggle,
+}) => {
+  const actionNode = renderSelectionToggleLabel(
+    checked === true,
+    hasActiveSearch
+  );
   return (
     <div className="px-1 py-0.5 bg-background group">
       <div
@@ -1061,14 +1367,15 @@ const GroupHeading: React.FC<GroupHeadingProps> = ({ groupName, checked, hasActi
             className="text-xs text-muted-foreground opacity-0 translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 delay-0 group-hover:delay-200 pointer-events-none select-none"
             aria-hidden
           >
-            <span className="flex ml-2 items-center gap-1 font-normal text-muted-foreground/50">{actionNode}</span>
+            <span className="flex ml-2 items-center gap-1 font-normal text-muted-foreground/50">
+              {actionNode}
+            </span>
           </span>
         </span>
       </div>
     </div>
   );
 };
-// Helper utilities (kept at end of file with hooks)
 function computeVisibleGroupValues(
   groupOptions: Option[],
   matchingValueSet: Set<string>,
