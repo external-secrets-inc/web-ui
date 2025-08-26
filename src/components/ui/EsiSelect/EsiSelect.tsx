@@ -79,6 +79,22 @@ export interface Option {
   group?: string;
 }
 
+/**
+ * Context object provided to EsiSelect render props.
+ * Supplies selection state and imperative actions so overrides can integrate safely
+ * without re-implementing internal wiring.
+ */
+export type EsiSelectRenderContext = {
+  selectedValues: string[];
+  options: Option[];
+  mode: "single" | "multiple";
+  isOpen: boolean;
+  disabled: boolean;
+  clear: () => void;
+  toggleOption: (value: string) => void;
+  setIsOpen: (open: boolean) => void;
+};
+
 type CommandItemRef = {
   id: string;
   value: string;
@@ -139,6 +155,28 @@ export type BaseEsiSelectProps = Omit<
 
   /** Disable trigger interaction and focus. */
   disabled?: boolean;
+
+  /**
+   * Override the inner content of the trigger while preserving the trigger chrome
+   * (combobox role, caret icon, keyboard interactions).
+   * Return `null` or `undefined` to fall back to the default trigger rendering.
+   */
+  renderTrigger?: (ctx: EsiSelectRenderContext) => React.ReactNode;
+
+  /**
+   * Override the scrollable list area content inside the popover while keeping
+   * the search bar and (in multiple mode) the footer. Useful to render loading,
+   * error, or empty states. Return `null`/`undefined` to use the default list.
+   */
+  renderListContent?: (ctx: EsiSelectRenderContext) => React.ReactNode;
+
+  /**
+   * Customizes the message displayed when no items match (or when there are no items).
+   * Applies to the built-in empty state from CMDK. If `renderListContent` returns
+   * a node, that takes precedence and the built-in empty state is suppressed.
+   * Defaults to "No results found.".
+   */
+  emptyState?: React.ReactNode;
 
   /**
    * Customize how each option row renders inside the command list.
@@ -284,6 +322,9 @@ export const EsiSelect = React.forwardRef<HTMLDivElement, EsiSelectProps>(
       optionItemClassName,
       optionItemProps,
       disabled,
+      renderTrigger,
+      renderListContent,
+      emptyState,
       // Extract only the DOM props we explicitly want to pass through
       id,
       style,
@@ -478,6 +519,25 @@ export const EsiSelect = React.forwardRef<HTMLDivElement, EsiSelectProps>(
 
     const listboxId = React.useId();
 
+    // Render-prop context (stable object shape for overrides)
+    const renderCtx = React.useMemo<EsiSelectRenderContext>(
+      () => ({
+        selectedValues,
+        options,
+        mode,
+        isOpen,
+        disabled: Boolean(disabled),
+        clear: handleClear,
+        toggleOption,
+        setIsOpen: (open) => handleOpenChange(open),
+      }),
+      [selectedValues, options, mode, isOpen, disabled, handleClear, toggleOption, handleOpenChange]
+    );
+
+    // If a custom list content is provided, we use it to replace the default list.
+    // This also disables the Select-All control, while keeping Search and Footer intact.
+    const customListContent = renderListContent?.(renderCtx);
+
     return (
       <EsiSelectContext.Provider value={contextValue}>
         <SelectedBadgeCustomizationContext.Provider
@@ -509,6 +569,8 @@ export const EsiSelect = React.forwardRef<HTMLDivElement, EsiSelectProps>(
                   disabled={disabled}
                   listboxId={listboxId}
                   className={cn(className)}
+                  renderTrigger={renderTrigger}
+                  renderCtx={renderCtx}
                 />
                 <PopoverContent
                   id={listboxId}
@@ -546,8 +608,13 @@ export const EsiSelect = React.forwardRef<HTMLDivElement, EsiSelectProps>(
                        */}
                       <div className="flex flex-col min-h-0">
                         <ScrollArea className="max-h-96" type="always">
-                          <EsiSelectListOptions />
+                          {customListContent ?? <EsiSelectListOptions />}
                         </ScrollArea>
+                        {!customListContent && (
+                          <CommandEmpty>
+                            {emptyState ?? "No results found"}
+                          </CommandEmpty>
+                        )}
                         {isMultiple && (
                           <CommandGroup
                             forceMount
@@ -556,13 +623,12 @@ export const EsiSelect = React.forwardRef<HTMLDivElement, EsiSelectProps>(
                             <EsiSelectFooterOptions />
                           </CommandGroup>
                         )}
-                        <div className="order-first h-9 flex flex-none pl-2.5 items-center border-b [&_[cmdk-input-wrapper]]:border-none [&_[cmdk-input-wrapper]]:p-0 [&_[cmdk-input-wrapper]]:flex-1 [&_[cmdk-input-wrapper]>svg]:order-last [&_[cmdk-input-wrapper]>svg]:mx-2.5">
-                          {isMultiple && (
-                            <EsiSelectToggleAllOptions className="flex -ml-1 p-0 items-center justify-center order-first flex-none" />
+                        <div className="order-first h-9 flex flex-none pl-3 items-center border-b [&_[cmdk-input-wrapper]]:border-none [&_[cmdk-input-wrapper]]:p-0 [&_[cmdk-input-wrapper]]:flex-1 [&_[cmdk-input-wrapper]>svg]:order-last [&_[cmdk-input-wrapper]>svg]:mx-2.5">
+                          {isMultiple && !customListContent && (
+                            <EsiSelectToggleAllOptions className="flex -ml-1.5 p-0 items-center justify-center order-first flex-none" />
                           )}
                           <CommandInput className="" placeholder="Search..." />
                         </div>
-                        <CommandEmpty>No results found.</CommandEmpty>
                       </div>
                     </CommandList>
                   </Command>
@@ -617,30 +683,35 @@ const EsiSelectCurrentBadges: React.FC = () => {
           // Compose default label/icon from BadgeGroup or allow custom render
           children: ({ labelNode, iconNode }) => {
             const defaultRemoveNode = !disabled ? (
-              <Button
-                size="icon"
-                className="size-5 -my-2 -ml-1.5 -mr-2 hover:bg-destructive/25 focus-visible:bg-destructive/25 focus-visible:opacity-100 opacity-50 hover:opacity-100 transition-all"
-                variant="ghost"
-                asChild
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleOption(opt.value);
-                }}
-                aria-label={`Remove ${opt.label}`}
-              >
-                <div
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="icon"
+                    className="size-5 -my-2 -ml-1.5 -mr-2 hover:bg-destructive/25 focus-visible:bg-destructive/25 focus-visible:opacity-100 opacity-50 hover:opacity-100 transition-all"
+                    variant="ghost"
+                    asChild
+                    onClick={(e) => {
+                      e.stopPropagation();
                       toggleOption(opt.value);
-                    }
-                  }}
-                >
-                  <LucideX className="size-3" />
-                </div>
-              </Button>
+                    }}
+                    aria-label={`Remove ${opt.label}`}
+                  >
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          toggleOption(opt.value);
+                        }
+                      }}
+                    >
+                      <LucideX className="size-3" />
+                    </div>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Remove</TooltipContent>
+              </Tooltip>
             ) : null;
             if (renderSelectedBadge) {
               return renderSelectedBadge({
@@ -736,6 +807,15 @@ interface EsiSelectPopoverTriggerProps {
   // Only allow specific DOM props we explicitly want to pass through
   id?: string;
   style?: React.CSSProperties;
+  /**
+   * Render-prop override for the trigger inner content. If it returns `null`/`undefined`,
+   * the default trigger UI is rendered.
+   */
+  renderTrigger?: (ctx: EsiSelectRenderContext) => React.ReactNode;
+  /**
+   * Context passed to `renderTrigger`.
+   */
+  renderCtx?: EsiSelectRenderContext;
 }
 
 /**
@@ -752,7 +832,7 @@ const EsiSelectPopoverTrigger = React.forwardRef<
     ref
   ) => {
     // Extract only the DOM props we explicitly want to pass through
-    const { id, style } = props;
+    const { id, style, renderTrigger, renderCtx } = props;
 
     // Only pass through explicitly allowed DOM props
     const domProps = {
@@ -840,6 +920,8 @@ const EsiSelectPopoverTrigger = React.forwardRef<
       onKeyUp?.(e);
     };
 
+    const customTrigger = renderTrigger?.(renderCtx as EsiSelectRenderContext);
+
     return (
       <PopoverTrigger asChild>
         <Button
@@ -865,7 +947,7 @@ const EsiSelectPopoverTrigger = React.forwardRef<
             onKeyUp={isDisabled ? undefined : handleKeyUp}
             {...domProps}
           >
-            {isUnselected ? (
+            {customTrigger ?? (isUnselected ? (
               <span className="text-sm text-muted-foreground font-normal truncate">
                 {placeholder}
               </span>
@@ -903,20 +985,26 @@ const EsiSelectPopoverTrigger = React.forwardRef<
                   </span>
                 )}
                 {!isDisabled && (
-                  <Button
-                    className="size-8 opacity-0 group-hover:opacity-50 hover:!opacity-100 hover:bg-destructive/25 focus-visible:bg-destructive/25 focus-visible:!opacity-100 group-focus-within:opacity-50 absolute right-px rounded-sm translate-x-full group-hover:translate-x-0 group-focus-within:translate-x-0 transition-all duration-300 z-10"
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleClear();
-                    }}
-                  >
-                    <LucideX />
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        className="size-8 opacity-0 group-hover:opacity-50 hover:!opacity-100 hover:bg-destructive/25 focus-visible:bg-destructive/25 focus-visible:!opacity-100 group-focus-within:opacity-50 absolute right-px rounded-sm translate-x-full group-hover:translate-x-0 group-focus-within:translate-x-0 transition-all duration-300 z-10"
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleClear();
+                        }}
+                        aria-label="Clear selection"
+                      >
+                        <LucideX />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Clear selection</TooltipContent>
+                  </Tooltip>
                 )}
               </>
-            )}
+            ))}
             <CaretSortIcon
               className={cn(
                 "text-muted-foreground opacity-50 flex-none",
