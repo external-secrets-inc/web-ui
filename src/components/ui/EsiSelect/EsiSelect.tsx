@@ -519,12 +519,25 @@ export const EsiSelect = React.forwardRef<HTMLDivElement, EsiSelectProps>(
                     filter={fuzzyFilterOptionsByLabels}
                     loop
                   >
-                    <CommandInput placeholder="Search..." />
                     <CommandList
                       aria-multiselectable={isMultiple}
                       className="max-h-[unset] overflow-clip min-h-0 [&_[cmdk-list-sizer]]:min-h-0 grid grid-cols-1 [&_[cmdk-list-sizer]]:flex [&_[cmdk-list-sizer]]:flex-col"
                     >
-                      <CommandEmpty>No results found.</CommandEmpty>
+                      {/**
+                       * !!The markup order here is crucial!!
+                       *
+                       * - The `<Command />` component focuses on the first item during filtering.
+                       *   Therefore, list options must be rendered before ToggleAll, which uses
+                       *   `forceMount` to always display. This ensures that the focus remains on
+                       *   the list options rather than the ToggleAll if it were to be rendered first.
+                       *
+                       * - CSS `order` properties adjust visual positions without changing markup.
+                       *
+                       * - The `loop` prop on `<Command />` enables cycling through options
+                       *   in the expected visual order via keyboard navigation.
+                       *
+                       * - ToggleAll is conditionally rendered only when filtered options exist.
+                       */}
                       <div className="flex flex-col min-h-0">
                         <ScrollArea className="max-h-96" type="always">
                           <EsiSelectListOptions />
@@ -537,9 +550,13 @@ export const EsiSelect = React.forwardRef<HTMLDivElement, EsiSelectProps>(
                             <EsiSelectFooterOptions />
                           </CommandGroup>
                         )}
-                        {isMultiple && (
-                          <EsiSelectToggleAllOptions className="p-0 border-b order-first flex-none" />
-                        )}
+                        <div className="order-first h-9 flex flex-none pl-2.5 items-center border-b [&_[cmdk-input-wrapper]]:border-none [&_[cmdk-input-wrapper]]:p-0 [&_[cmdk-input-wrapper]]:flex-1 [&_[cmdk-input-wrapper]>svg]:order-last [&_[cmdk-input-wrapper]>svg]:mx-2.5">
+                          {isMultiple && (
+                            <EsiSelectToggleAllOptions className="flex -ml-1 p-0 items-center justify-center order-first flex-none" />
+                          )}
+                          <CommandInput className="" placeholder="Search..." />
+                        </div>
+                        <CommandEmpty>No results found.</CommandEmpty>
                       </div>
                     </CommandList>
                   </Command>
@@ -609,7 +626,7 @@ const EsiSelectCurrentBadges: React.FC = () => {
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
+                    if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
                       toggleOption(opt.value);
                     }
@@ -682,7 +699,7 @@ const EsiSelectCurrentBadges: React.FC = () => {
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
+                    if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
                       clearExtraOptions();
                     }
@@ -748,7 +765,9 @@ const EsiSelectPopoverTrigger = React.forwardRef<
     } = useEsiSelect();
 
     // Get single mode trigger customization context
-    const { renderSelectedTrigger, selectedTriggerProps } = React.useContext(SingleTriggerCustomizationContext);
+    const { renderSelectedTrigger, selectedTriggerProps } = React.useContext(
+      SingleTriggerCustomizationContext
+    );
 
     const isUnselected = selectedValues.length === 0;
     const isDisabled = Boolean(disabled);
@@ -820,7 +839,7 @@ const EsiSelectPopoverTrigger = React.forwardRef<
         <Button
           variant="outline"
           className={cn(
-            "w-full min-w-24 py-1.5 px-3 min-h-9 h-auto gap-3 items-center justify-between hover:bg-inherit relative overflow-clip cursor-pointer group",
+            "w-full min-w-24 py-1.5 px-3 min-h-9 h-auto gap-3 items-center justify-between hover:bg-inherit relative overflow-clip cursor-pointer group font-normal",
             className
           )}
           disabled={isDisabled}
@@ -848,28 +867,34 @@ const EsiSelectPopoverTrigger = React.forwardRef<
               <>
                 {isMultiple ? (
                   <EsiSelectCurrentBadges />
+                ) : renderSelectedTrigger && selectedSingle ? (
+                  renderSelectedTrigger({
+                    option: selectedSingle,
+                    selectedValue: selectedValues[0],
+                    labelNode: (
+                      <span className="text-sm truncate flex-1 text-foreground">
+                        {selectedSingle.label}
+                      </span>
+                    ),
+                    iconNode: selectedSingle.icon && (
+                      <selectedSingle.icon className="text-muted-foreground" />
+                    ),
+                  })
                 ) : (
-                  renderSelectedTrigger && selectedSingle ? (
-                    renderSelectedTrigger({
-                      option: selectedSingle,
-                      selectedValue: selectedValues[0],
-                      labelNode: (
-                        <span className="text-sm truncate flex-1 text-foreground">
-                          {selectedSingle.label}
-                        </span>
-                      ),
-                      iconNode: selectedSingle.icon && (
-                        <selectedSingle.icon className="w-4 h-4 text-muted-foreground" />
-                      ),
-                    })
-                  ) : (
-                    <span
-                      className={cn("text-sm truncate flex-1 text-foreground", triggerSurfaceProps.className)}
-                      {...triggerSurfaceProps}
-                    >
+                  <span
+                    className={cn(
+                      "text-sm truncate flex-1 text-foreground inline-flex items-center gap-2",
+                      triggerSurfaceProps.className
+                    )}
+                    {...triggerSurfaceProps}
+                  >
+                    {selectedSingle?.icon && (
+                      <selectedSingle.icon className="text-muted-foreground" />
+                    )}
+                    <span className="truncate">
                       {selectedSingle?.label ?? selectedValues[0]}
                     </span>
-                  )
+                  </span>
                 )}
                 {!isDisabled && (
                   <Button
@@ -1009,7 +1034,7 @@ const EsiSelectListOptions: React.FC = () => {
                       : optionItemProps ?? {};
                   // merge className with optionItemClassName
                   const cls = cn(
-                    "cursor-pointer data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground transition-all",
+                    "cursor-pointer [&:where([data-state=checked])]:bg-accent/40 transition-all",
                     optionItemClassName,
                     base?.className
                   );
@@ -1059,7 +1084,10 @@ const EsiSelectListOptions: React.FC = () => {
                               className="inline-flex w-4 justify-center"
                             >
                               <LucideCheck
-                                className={cn(!isSelected && "invisible")}
+                                className={cn(
+                                  "text-primary-muted",
+                                  !isSelected && "invisible"
+                                )}
                               />
                             </span>
                           )
@@ -1196,21 +1224,29 @@ const EsiSelectToggleAllOptions: React.FC<{ className?: string }> = ({
 
   return (
     <CommandGroup className={cn(className)} forceMount>
-      <CommandItem
-        onSelect={toggleAllMatchingOptions}
-        className="cursor-pointer rounded-none px-3"
-        value="toggle-all"
-      >
-        <Checkbox
-          className="opacity-70 mx-0.5"
-          tabIndex={-1}
-          checked={checked}
-          size="xs"
-        />
-        <span className="text-muted-foreground text-xs inline-flex items-center gap-1">
-          {toggleAllActionText}
-        </span>
-      </CommandItem>
+      <Tooltip delayDuration={200}>
+        <TooltipTrigger asChild>
+          <DataStateEventBridge>
+            <CommandItem
+              className="cursor-pointer size-7 mr-0.5 flex items-center justify-center"
+              onSelect={toggleAllMatchingOptions}
+              value="toggle-all"
+            >
+              <Checkbox
+                className="opacity-70 mx-0.5"
+                tabIndex={-1}
+                checked={checked}
+                size="xs"
+              />
+            </CommandItem>
+          </DataStateEventBridge>
+        </TooltipTrigger>
+        <TooltipContent side="left">
+          <span className="text-xs inline-flex items-center gap-1">
+            {toggleAllActionText}
+          </span>
+        </TooltipContent>
+      </Tooltip>
     </CommandGroup>
   );
 };

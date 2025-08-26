@@ -159,7 +159,7 @@ const createSharedCustomizations = () => ({
     <>
       {option.group && (
         <Badge
-          className="text-[10px] leading-none font-medium opacity-70 px-1.5 -ml-2 -my-0.5 flex items-center gap-1"
+          className="text-[10px] leading-none font-medium px-1.5 -ml-2 -my-0.5 flex items-center gap-1"
           variant="outline"
         >
           {React.cloneElement(iconNode as React.ReactElement, {
