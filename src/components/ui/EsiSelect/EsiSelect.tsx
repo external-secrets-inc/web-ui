@@ -41,6 +41,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { A11yDivButton } from "@/components/ui/A11yDivButton";
 import { DataStateEventBridge } from "@/components/ui/DataStateEventBridge";
 
 /**
@@ -333,7 +334,7 @@ type OptionCustomization = {
 };
 const OptionCustomizationContext = React.createContext<OptionCustomization>({});
 
-export const EsiSelect = React.forwardRef<HTMLDivElement, EsiSelectProps>(
+export const EsiSelect = React.forwardRef<HTMLButtonElement, EsiSelectProps>(
   (props, ref) => {
     const {
       options,
@@ -355,7 +356,14 @@ export const EsiSelect = React.forwardRef<HTMLDivElement, EsiSelectProps>(
       style,
     } = props;
 
-    // Only pass through explicitly allowed DOM props
+    // Pass through allowed DOM props and forward ARIA attributes from FormControl
+    const ariaAttributes = React.useMemo(() => {
+      const entries = Object.entries(props as Record<string, unknown>).filter(
+        ([key]) => key.startsWith("aria-")
+      );
+      return Object.fromEntries(entries) as Record<string, string | number | boolean>;
+    }, [props]);
+
     const domProps = {
       ...(id && { id }),
       ...(style && { style }),
@@ -595,6 +603,7 @@ export const EsiSelect = React.forwardRef<HTMLDivElement, EsiSelectProps>(
                 <EsiSelectPopoverTrigger
                   ref={ref}
                   {...domProps}
+                  ariaAttributes={ariaAttributes}
                   disabled={disabled}
                   listboxId={listboxId}
                   className={cn(className)}
@@ -714,30 +723,15 @@ const EsiSelectCurrentBadges: React.FC = () => {
             const defaultRemoveNode = !disabled ? (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
+                  <A11yDivButton
                     size="icon"
                     className="size-5 -my-2 -ml-1.5 -mr-2 hover:bg-destructive/25 focus-visible:bg-destructive/25 focus-visible:opacity-100 opacity-50 hover:opacity-100 transition-all"
                     variant="ghost"
-                    asChild
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleOption(opt.value);
-                    }}
+                    onPress={() => toggleOption(opt.value)}
                     aria-label={`Remove ${opt.label}`}
                   >
-                    <div
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          toggleOption(opt.value);
-                        }
-                      }}
-                    >
-                      <LucideX className="size-3" />
-                    </div>
-                  </Button>
+                    <LucideX className="size-3" />
+                  </A11yDivButton>
                 </TooltipTrigger>
                 <TooltipContent>Remove</TooltipContent>
               </Tooltip>
@@ -791,29 +785,14 @@ const EsiSelectCurrentBadges: React.FC = () => {
               ? selectedExtraBadge.children(countNode)
               : countNode}
             {!disabled && (
-              <Button
+              <A11yDivButton
                 size="icon"
                 className="size-5 -my-2 -mx-0.5 hover:bg-destructive/25 opacity-50 hover:opacity-100 transition-all"
                 variant="ghost"
-                asChild
-                onClick={(e) => {
-                  e.stopPropagation();
-                  clearExtraOptions();
-                }}
+                onPress={clearExtraOptions}
               >
-                <div
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      clearExtraOptions();
-                    }
-                  }}
-                >
-                  <LucideX className="size-3" />
-                </div>
-              </Button>
+                <LucideX className="size-3" />
+              </A11yDivButton>
             )}
           </>
         ),
@@ -827,15 +806,16 @@ const EsiSelectCurrentBadges: React.FC = () => {
  */
 interface EsiSelectPopoverTriggerProps {
   className?: string;
-  onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
-  onKeyDown?: (e: React.KeyboardEvent<HTMLDivElement>) => void;
-  onKeyUp?: (e: React.KeyboardEvent<HTMLDivElement>) => void;
   children?: React.ReactNode;
   disabled?: boolean;
   listboxId?: string;
   // Only allow specific DOM props we explicitly want to pass through
   id?: string;
   style?: React.CSSProperties;
+  /**
+   * Additional ARIA attributes forwarded from FormControl (aria-invalid, aria-describedby, etc.).
+   */
+  ariaAttributes?: Record<string, string | number | boolean>;
   /**
    * Render-prop override for the trigger inner content. If it returns `null`/`undefined`,
    * the default trigger UI is rendered.
@@ -850,18 +830,17 @@ interface EsiSelectPopoverTriggerProps {
 /**
  * The trigger button for the EsiSelect popover.
  * Displays selected options as badges and can handle clearing all selections.
- * Uses role="combobox" on a div to avoid button nesting while maintaining accessibility.
  */
 const EsiSelectPopoverTrigger = React.forwardRef<
-  HTMLDivElement,
+  HTMLButtonElement,
   EsiSelectPopoverTriggerProps
 >(
   (
-    { className, onClick, onKeyDown, onKeyUp, disabled, listboxId, ...props },
+    { className, disabled, listboxId, ...props },
     ref
   ) => {
     // Extract only the DOM props we explicitly want to pass through
-    const { id, style, renderTrigger, renderCtx } = props;
+    const { id, style, renderTrigger, renderCtx, ariaAttributes } = props;
 
     // Only pass through explicitly allowed DOM props
     const domProps = {
@@ -906,47 +885,9 @@ const EsiSelectPopoverTrigger = React.forwardRef<
       return selectedTriggerProps;
     }, [selectedSingle, selectedValues, selectedTriggerProps]);
 
-    /**
-     * WHY: Trigger is a div via Button(asChild) with role="combobox" to avoid
-     * nested buttons. Radix does not add button-like keyboard behavior to
-     * non-buttons, so we wire keys:
-     * - Enter/Space/ArrowDown: open list from trigger (combobox affordance)
-     * - Escape: close when focus stayed on trigger
-     *
-     * It's easier to do this on the trigger rather than on any buttons within the
-     * content, as there may be multiple buttons inside it.
-     */
-    const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const handleClick = () => {
       if (isDisabled) return;
       setIsOpen((prev) => !prev);
-      onClick?.(e);
-    };
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-      if (isDisabled) return;
-      // Non-button trigger needs explicit open on activation/navigation keys
-      if (e.key === "Enter" || e.key === "ArrowDown" || e.key === "ArrowUp") {
-        e.preventDefault();
-        setIsOpen(true);
-      }
-      // Space should activate on keyup to mirror native button behavior
-      if (e.key === " ") {
-        e.preventDefault();
-      }
-      // Allow closing from trigger when focus has not moved into content yet
-      if (e.key === "Escape") {
-        setIsOpen(false);
-      }
-      onKeyDown?.(e);
-    };
-
-    const handleKeyUp = (e: React.KeyboardEvent<HTMLDivElement>) => {
-      if (isDisabled) return;
-      if (e.key === " ") {
-        e.preventDefault();
-        setIsOpen(true);
-      }
-      onKeyUp?.(e);
     };
 
     const customTrigger = renderTrigger?.(renderCtx as EsiSelectRenderContext);
@@ -954,28 +895,20 @@ const EsiSelectPopoverTrigger = React.forwardRef<
     return (
       <PopoverTrigger asChild>
         <Button
+          ref={ref}
           variant="outline"
           className={cn(
             "w-full min-w-24 py-1.5 px-3 min-h-9 h-auto gap-3 items-center justify-between hover:bg-inherit relative overflow-clip cursor-pointer group font-normal",
             className
           )}
           disabled={isDisabled}
-          asChild
+          aria-haspopup="listbox"
+          aria-expanded={isOpen}
+          aria-controls={listboxId}
+          onClick={handleClick}
+          {...ariaAttributes}
+          {...domProps}
         >
-          {/* Render a div as the trigger to avoid button-inside-button. Use combobox role on it */}
-          <div
-            ref={ref}
-            role="combobox"
-            aria-haspopup="listbox"
-            aria-expanded={isOpen}
-            aria-controls={listboxId}
-            aria-disabled={isDisabled || undefined}
-            tabIndex={isDisabled ? -1 : 0}
-            onClick={isDisabled ? undefined : handleClick}
-            onKeyDown={isDisabled ? undefined : handleKeyDown}
-            onKeyUp={isDisabled ? undefined : handleKeyUp}
-            {...domProps}
-          >
             {customTrigger ?? (isUnselected ? (
               <span className="text-sm text-muted-foreground font-normal truncate">
                 {placeholder}
@@ -1016,18 +949,15 @@ const EsiSelectPopoverTrigger = React.forwardRef<
                 {!isDisabled && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button
+                      <A11yDivButton
                         className="size-8 opacity-0 group-hover:opacity-50 hover:!opacity-100 hover:bg-destructive/25 focus-visible:bg-destructive/25 focus-visible:!opacity-100 group-focus-within:opacity-50 absolute right-px rounded-sm translate-x-full group-hover:translate-x-0 group-focus-within:translate-x-0 transition-all duration-300 z-10"
                         variant="ghost"
                         size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleClear();
-                        }}
+                        onPress={handleClear}
                         aria-label="Clear selection"
                       >
                         <LucideX />
-                      </Button>
+                      </A11yDivButton>
                     </TooltipTrigger>
                     <TooltipContent>Clear selection</TooltipContent>
                   </Tooltip>
@@ -1041,7 +971,6 @@ const EsiSelectPopoverTrigger = React.forwardRef<
                   "group-hover:opacity-0 group-focus-within:opacity-0 transition-opacity duration-300 group-hover:delay-0 delay-100"
               )}
             />
-          </div>
         </Button>
       </PopoverTrigger>
     );

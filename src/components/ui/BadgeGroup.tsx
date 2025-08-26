@@ -1,3 +1,4 @@
+import { A11yDivButton } from "@/components/ui/A11yDivButton";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
 import {
   Tooltip,
@@ -260,7 +261,9 @@ function HiddenBadgesTooltip({
 }) {
   return (
     <Tooltip delayDuration={0}>
-      <TooltipTrigger>{children}</TooltipTrigger>
+      <TooltipTrigger asChild>
+        <A11yDivButton variant="unstyled">{children}</A11yDivButton>
+      </TooltipTrigger>
       <TooltipContent className="max-h-64 overflow-auto p-2">
         <div className="flex flex-col gap-1 items-start">
           {hiddenBadges.map((hidden) => (
