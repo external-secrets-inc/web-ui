@@ -111,7 +111,6 @@ export function FieldSecretSelect({
                 loading={loading}
                 error={error}
                 emptyMessage="No secrets available. Create secrets in your cluster first."
-                allowClear={false}
                 disabled={disabled}
               />
             </div>
