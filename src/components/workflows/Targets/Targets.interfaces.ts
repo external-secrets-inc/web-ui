@@ -1,7 +1,10 @@
+import { Status } from "../Common.interfaces";
+
 export interface TargetTableData {
   name: string;
   namespace: string;
   kind: string;
+  status: Status
 }
 
 export interface CreateTargetPayload {
