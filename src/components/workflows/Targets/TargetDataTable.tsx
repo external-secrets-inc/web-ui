@@ -24,6 +24,7 @@ import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureI
 import { useNavigate } from "react-router-dom";
 import useOrgLink from "@/hooks/useOrgLink";
 import { Badge } from "@/components/ui/badge";
+import { TargetStatusBadge } from "./TargetStatusBadge";
 
 interface TargetTableMeta {
   renderRowActions?: (row: TargetTableData) => React.ReactNode;
@@ -42,6 +43,13 @@ export function TargetDataTable() {
         columnHelper.accessor("kind", {
           header: "Type",
           cell: (info) => <Badge variant="secondary">{info.getValue()}</Badge>,
+        }),
+        columnHelper.accessor("status", {
+          header: "Status",
+          cell: (info) => {
+            const statusData = info.row.original.status;
+            return <TargetStatusBadge statusData={statusData} />
+          },
         }),
         columnHelper.display({
           id: "actions",
@@ -137,7 +145,7 @@ export function TargetDataTable() {
           <DataSearch />
           <Button
             variant="outline"
-            onClick={() => navigate(getOrgLink("/workflows/targets/create"))}
+            onClick={() => navigate(getOrgLink("/resources/targets/create"))}
           >
             <LucidePlus />
             Add Target
