@@ -251,16 +251,41 @@ interface BadgeCustomization {
 
 export type EsiSelectSingleProps = BaseEsiSelectProps & {
   mode?: "single"; // default
+  /**
+   * Controlled value in single mode.
+   * - undefined: uncontrolled (component manages selection internally)
+   * - null: controlled empty (clears selection)
+   * - string (including ""): controlled selected value (empty string is allowed as a real option)
+   */
   value?: string | null;
+  /**
+   * Initial value in single mode (uncontrolled). Ignored when `value` is provided.
+   * Accepts `null` for empty or a string (including "") to preselect an option.
+   */
   defaultValue?: string | null;
+  /**
+   * Change handler in single mode. Called with `null` when the selection is cleared.
+   */
   onValueChange: (value: string | null) => void;
 };
 
 export type EsiSelectMultipleProps = BaseEsiSelectProps &
   BadgeCustomization & {
     mode: "multiple";
+    /**
+     * Controlled values in multiple mode.
+     * - undefined: uncontrolled (component manages selection internally)
+     * - []: controlled empty (clears all selections)
+     * - [..]: controlled selected values
+     */
     value?: string[];
+    /**
+     * Initial values in multiple mode (uncontrolled). Ignored when `value` is provided.
+     */
     defaultValue?: string[];
+    /**
+     * Change handler in multiple mode. Called with an empty array when the selection is cleared.
+     */
     onValueChange?: (value: string[]) => void;
     /**
      * Maximum number of items to display. Extra selected items will be summarized.
@@ -351,10 +376,14 @@ export const EsiSelect = React.forwardRef<HTMLDivElement, EsiSelectProps>(
 
     const controlledArrayValue = React.useMemo(() => {
       if (isMultiple) return multipleProps?.value;
-      if (singleProps?.value != null && singleProps?.value !== "") {
-        return [singleProps.value as string];
-      }
-      return undefined;
+      const v = singleProps?.value;
+      // Controlled single-value cases:
+      // - undefined => uncontrolled
+      // - null => controlled empty selection
+      // - string (including empty string) => controlled selected value
+      if (v === undefined) return undefined;
+      if (v === null) return [];
+      return [v as string];
     }, [isMultiple, multipleProps?.value, singleProps?.value]);
     const defaultArrayValue = isMultiple
       ? multipleProps?.defaultValue ?? []

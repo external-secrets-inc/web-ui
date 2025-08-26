@@ -23,6 +23,7 @@ import React from "react";
 import { Loader } from "@/components/ui/Loader";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Wrapper, Field } from "./stories.utils";
+import { Button } from "@/components/ui/button";
 
 // Utility function for shared customizations to keep code DRY
 const createSharedCustomizations = () => ({
@@ -692,6 +693,81 @@ export const SingleTriggerLoadingSkeleton: Story = {
         </Field>
       </Wrapper>
     </div>
+  ),
+};
+
+const ControlledNormalizationSemanticsComponent: React.FC<{
+  options: React.ComponentProps<typeof EsiSelect>["options"];
+}> = ({ options }) => {
+  // Single-mode: undefined => uncontrolled; null => controlled empty; "" and other strings => controlled selected
+  const [singleValue, setSingleValue] = React.useState<string | null | undefined>(undefined);
+  const [singleLastChange, setSingleLastChange] = React.useState<string | null>(null);
+
+  // Multiple-mode: undefined => uncontrolled; [] => controlled empty; [..] => controlled selected
+  const [multiValue, setMultiValue] = React.useState<string[] | undefined>(undefined);
+  const [multiLastChange, setMultiLastChange] = React.useState<string[]>([]);
+
+  const first = options[0]?.value ?? "alpha-1";
+  const second = options[1]?.value ?? "beta-2";
+
+  return (
+    <div className="flex flex-col gap-8">
+      <Wrapper>
+        <Field label="Single mode - Controlled vs Uncontrolled">
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant="secondary" onClick={() => setSingleValue(undefined)}>Prop: value undefined (uncontrolled)</Button>
+            <Button size="sm" variant="secondary" onClick={() => setSingleValue(null)}>Prop: value null (clear)</Button>
+            <Button size="sm" variant="secondary" onClick={() => setSingleValue("")}>Prop: value "" (empty string)</Button>
+            <Button size="sm" variant="secondary" onClick={() => setSingleValue(first)}>Prop: value first option</Button>
+          </div>
+          <div className="mt-3" />
+          <EsiSelect
+            mode="single"
+            options={options}
+            placeholder="Pick an item"
+            {...(singleValue !== undefined ? { value: singleValue } : {})}
+            onValueChange={(v) => setSingleLastChange(v)}
+          />
+          <div className="text-xs text-muted-foreground mt-2 space-y-1">
+            <div>Prop value: {singleValue === undefined ? "undefined" : singleValue === null ? "null" : `"${singleValue}"`}</div>
+            <div>onValueChange last: {singleLastChange === null ? "null" : `"${singleLastChange}"`}</div>
+            <div className="opacity-70">Normalization: undefined ⇒ uncontrolled; null ⇒ internal [] (cleared); string (incl. empty) ⇒ internal [string]</div>
+          </div>
+        </Field>
+      </Wrapper>
+
+      <Wrapper>
+        <Field label="Multiple mode - Controlled vs Uncontrolled">
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant="secondary" onClick={() => setMultiValue(undefined)}>Prop: value undefined (uncontrolled)</Button>
+            <Button size="sm" variant="secondary" onClick={() => setMultiValue([])}>Prop: value [] (clear)</Button>
+            <Button size="sm" variant="secondary" onClick={() => setMultiValue([first])}>Prop: value [first]</Button>
+            <Button size="sm" variant="secondary" onClick={() => setMultiValue([first, second])}>Prop: value [first, second]</Button>
+          </div>
+          <div className="mt-3" />
+          <EsiSelect
+            mode="multiple"
+            options={options}
+            placeholder="Pick items"
+            {...(multiValue !== undefined ? { value: multiValue } : {})}
+            onValueChange={(v) => setMultiLastChange(v)}
+          />
+          <div className="text-xs text-muted-foreground mt-2 space-y-1">
+            <div>Prop value: {multiValue === undefined ? "undefined" : JSON.stringify(multiValue)}</div>
+            <div>onValueChange last: {JSON.stringify(multiLastChange)}</div>
+            <div className="opacity-70">Normalization: undefined ⇒ uncontrolled; [] ⇒ internal [] (cleared); [..] ⇒ internal same array</div>
+          </div>
+        </Field>
+      </Wrapper>
+    </div>
+  );
+};
+
+export const ControlledNormalizationSemantics: Story = {
+  name: "Controlled vs Uncontrolled (Normalization)",
+  args: singleBaseStoryArgs,
+  render: (args) => (
+    <ControlledNormalizationSemanticsComponent options={args.options} />
   ),
 };
 

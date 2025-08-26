@@ -272,3 +272,32 @@ In `auto` mode, a resize observer determines how many badges fit without wrappin
   selectedTriggerProps={{ className: "bg-green-50 border-green-200" }}
 />
 ```
+
+## Controlled Single Value: null vs empty string
+
+- In single mode, the `value` prop has three distinct meanings:
+  - `undefined`: uncontrolled (component manages its own selection)
+  - `null`: controlled empty (clears the selection)
+  - `""` (empty string): a valid selected value (useful when your domain treats empty as a real option)
+
+See the "Controlled vs Uncontrolled (Normalization)" story below to see these behaviors in action.
+
+## Controlled vs Uncontrolled (Normalization)
+
+Internally, EsiSelect normalizes selection state to an array of strings (`selectedValues: string[]`) to keep behavior consistent across modes:
+
+- Multiple mode
+  - `value === undefined` → uncontrolled (component manages selection)
+  - `value === []` → controlled empty (cleared)
+  - `value === [..]` → controlled selected values
+- Single mode
+  - `value === undefined` → uncontrolled
+  - `value === null` → controlled empty (cleared)
+  - `value === string` (including `""`) → controlled selected value
+
+See the "Controlled vs Uncontrolled (Normalization)" story for hands-on examples.
+
+
+### Live examples
+
+<Canvas of={EsiSelectStories.ControlledNormalizationSemantics} />
