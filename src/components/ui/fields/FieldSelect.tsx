@@ -1,16 +1,14 @@
-import { EsiSelect } from "@/components/ui/EsiSelect";
-import { FieldBase } from "./FieldBase";
-import { useController } from "react-hook-form";
-import { FieldHeader } from "./FieldHeader";
-// tooltip imports kept intentionally unused previously are no longer needed here
-import { Loader } from "@/components/ui/Loader";
-import { useMemo, useState } from "react";
 import type {
-  UISchemaField,
-  SelectOption,
   SelectFieldOptions,
+  SelectOption,
+  UISchemaField,
 } from "@/components/EsiSchemaForm/EsiSchemaForm.interfaces";
+import { EsiSelect } from "@/components/ui/EsiSelect";
+import { Loader } from "@/components/ui/Loader";
 import { useGetEsiSchemaOptionsFromApi } from "@/services/esi-schemas/queries/useGetEsiSchemaOptionsFromApi";
+import { useMemo, useState } from "react";
+import { useController } from "react-hook-form";
+import { FieldBase } from "./FieldBase";
 
 /**
  * Prefix used to serialize complex object values into strings for UI components.
@@ -28,6 +26,7 @@ import { useGetEsiSchemaOptionsFromApi } from "@/services/esi-schemas/queries/us
  * @see stringifiedValue - Serializes current value for UI display
  */
 const VALUE_PREFIX = "__object_value__";
+const FALLBACK_EMPTY_MESSAGE = "No options available";
 
 export interface FieldSelectProps {
   name: string;
@@ -58,7 +57,7 @@ export function FieldSelect({
   defaultValue,
   loading = false,
   error = null,
-  emptyMessage = "No options available",
+  emptyMessage = "",
   onValueChange,
   descriptionInline,
   disabled,
@@ -82,7 +81,6 @@ export function FieldSelect({
 
   const normalizedOptions: SelectOption[] = useMemo(() => {
     const allOptions = apiOptions.length > 0 ? apiOptions : options;
-
     return Array.isArray(allOptions)
       ? allOptions
           .map((option) => {
@@ -146,63 +144,61 @@ export function FieldSelect({
       ? controllerField.value
       : `${VALUE_PREFIX}${JSON.stringify(controllerField.value)}`;
 
+  const computedEmptyMessage = useMemo(() => {
+    if (emptyMessage) return emptyMessage;
+    if (field.label) return `No ${field.label} found`;
+    return FALLBACK_EMPTY_MESSAGE;
+  }, [field.label, emptyMessage]);
+
   return (
     <FieldBase
       name={name}
+      label={label}
+      description={description}
+      required={required}
       rules={rules}
       defaultValue={defaultValue ?? ""}
-      renderCustomLayout
+      descriptionInline={descriptionInline}
     >
-      <>
-        <FieldHeader
-          label={label}
-          description={description}
-          required={required}
-          descriptionInline={descriptionInline}
-        />
-        <div className="relative">
-          <EsiSelect
-            value={stringifiedValue || null}
-            onValueChange={(v) => handleValueChange(v)}
-            options={normalizedOptions.map((option) => ({
-              ...option,
-              value:
-                typeof option.value === "string"
-                  ? option.value
-                  : `${VALUE_PREFIX}${JSON.stringify(option.value)}`,
-            }))}
-            placeholder={placeholder}
-            onOpenChange={(open) => {
-              if (open && !isOpen) {
-                setIsOpen(true);
-              }
-            }}
-            disabled={disabled}
-            renderListContent={() => {
-              if (isLoading) {
-                return (
-                  <div className="flex items-center justify-center py-4 text-sm text-muted-foreground" aria-busy>
-                    <Loader />
-                  </div>
-                );
-              }
-              if (combinedError) {
-                return (
-                  <div className="flex items-center justify-center py-4 text-sm text-destructive">
-                    {combinedError}
-                  </div>
-                );
-              }
-              return undefined;
-            }}
-            emptyState={
-              <div className="flex items-center justify-center text-sm text-muted-foreground">
-                {emptyMessage}
+      <EsiSelect
+        value={stringifiedValue || null}
+        options={normalizedOptions.map((option) => ({
+          ...option,
+          value:
+            typeof option.value === "string"
+              ? option.value
+              : `${VALUE_PREFIX}${JSON.stringify(option.value)}`,
+        }))}
+        onValueChange={(v) => handleValueChange(v)}
+        placeholder={placeholder}
+        onOpenChange={(open) => {
+          if (open && !isOpen) {
+            setIsOpen(true);
+          }
+        }}
+        disabled={disabled}
+        renderListContent={() => {
+          if (isLoading) {
+            return (
+              <div
+                className="flex items-center justify-center py-4 text-sm text-muted-foreground"
+                aria-busy
+              >
+                <Loader />
               </div>
-            }
-          />
-        </div>
-      </>
+            );
+          }
+          if (combinedError) {
+            return (
+              <div className="flex items-center justify-center py-4 text-sm text-destructive">
+                {combinedError}
+              </div>
+            );
+          }
+          return undefined;
+        }}
+        emptyState={computedEmptyMessage}
+      />
     </FieldBase>
   );
 }
