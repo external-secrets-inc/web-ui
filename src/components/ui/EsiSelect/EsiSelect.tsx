@@ -36,6 +36,12 @@ import {
   type BadgeItem,
   type BadgeGroupProps,
 } from "@/components/ui/BadgeGroup";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { DataStateEventBridge } from "@/components/ui/DataStateEventBridge";
 
 /**
  * Context for EsiSelect component
@@ -1298,17 +1304,16 @@ function useFilteredOptions() {
   const { options, itemRefs } = useEsiSelect();
   const { filteredState, hasMatchingResults, hasActiveSearch } =
     useCommandFiltering();
-  const matchingOptions = React.useMemo(() => {
-    if (!hasActiveSearch) return options;
-    return options.filter((option) => {
-      // Get the Radix-generated ID for this option through our refs, because
-      // CMDK uses these IDs for filtering instead of our values (dumb, I know)
-      const ref = itemRefs.current.get(option.value);
-      // Check if CMDK considers this option a match. They basically set a score
-      // in the items Map and if it is above 0, is a fuzzy match!
-      return ref?.id && (filteredState.items.get(ref.id) ?? 0) > 0;
-    });
-  }, [options, filteredState.items, itemRefs, hasActiveSearch]);
+  const matchingOptions = !hasActiveSearch
+    ? options
+    : options.filter((option) => {
+        // Get the Radix-generated ID for this option through our refs, because
+        // CMDK uses these IDs for filtering instead of our values (dumb, I know)
+        const ref = itemRefs.current.get(option.value);
+        // Check if CMDK considers this option a match. They basically set a score
+        // in the items Map and if it is above 0, is a fuzzy match!
+        return ref?.id && (filteredState.items.get(ref.id) ?? 0) > 0;
+      });
 
   return { hasMatchingResults, matchingOptions, hasActiveSearch };
 }
