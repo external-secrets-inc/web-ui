@@ -160,6 +160,9 @@ export const createSingleStoryRender = (
       | "disabled"
       | "renderSelectedTrigger"
       | "selectedTriggerProps"
+      | "renderListContent"
+      | "renderTrigger"
+      | "emptyState"
     >;
     const passThrough = args as unknown as Partial<SingleStoryArgs>;
     const passAdditional = additionalProps as Partial<SingleStoryArgs> | undefined;
@@ -176,6 +179,9 @@ export const createSingleStoryRender = (
             disabled={passAdditional?.disabled ?? passThrough?.disabled}
             renderSelectedTrigger={passAdditional?.renderSelectedTrigger ?? passThrough?.renderSelectedTrigger}
             selectedTriggerProps={passAdditional?.selectedTriggerProps ?? passThrough?.selectedTriggerProps}
+            renderListContent={passAdditional?.renderListContent ?? passThrough?.renderListContent}
+            renderTrigger={passAdditional?.renderTrigger ?? passThrough?.renderTrigger}
+            emptyState={passAdditional?.emptyState ?? passThrough?.emptyState}
             defaultValue={startDefault}
             onValueChange={setValue}
           />

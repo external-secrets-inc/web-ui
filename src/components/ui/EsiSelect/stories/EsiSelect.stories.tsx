@@ -20,6 +20,9 @@ import { LucideAtom, LucideCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import React from "react";
+import { Loader } from "@/components/ui/Loader";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Wrapper, Field } from "./stories.utils";
 
 // Utility function for shared customizations to keep code DRY
 const createSharedCustomizations = () => ({
@@ -492,4 +495,203 @@ export const SingleCombinedCustomizations: Story = {
   render: createSingleStoryRender("Both trigger and option customizations working together"),
 };
 
+export const CustomEmptyState: Story = {
+  name: "Custom Empty State",
+  args: { options: [], placeholder: "Nothing to pick" },
+  render: (args) => (
+    <div className="flex flex-col gap-6">
+      <Wrapper>
+        <Field label="Single mode (emptyState)">
+          <EsiSelect
+            mode="single"
+            options={args.options}
+            placeholder={args.placeholder}
+            emptyState={
+              <div className="flex flex-col items-center justify-center text-center gap-3 text-muted-foreground">
+                <div className="size-12 rounded-full bg-muted flex items-center justify-center">
+                  <span className="text-lg">🙂</span>
+                </div>
+                <div className="text-base font-medium text-foreground">
+                  Nothing here yet
+                </div>
+                <div className="text-xs max-w-xs">
+                  Try adjusting your filters or come back later when items are
+                  available.
+                </div>
+              </div>
+            }
+            defaultValue={null}
+            onValueChange={() => {}}
+          />
+        </Field>
+      </Wrapper>
+      <Wrapper>
+        <Field label="Multiple mode (emptyState)">
+          <EsiSelect
+            mode="multiple"
+            options={args.options}
+            placeholder={args.placeholder}
+            emptyState={
+              <div className="flex flex-col items-center justify-center text-center gap-3 text-muted-foreground">
+                <div className="size-12 rounded-full bg-muted flex items-center justify-center">
+                  <span className="text-lg">🗂️</span>
+                </div>
+                <div className="text-base font-medium text-foreground">
+                  No options to select
+                </div>
+                <div className="text-xs max-w-xs">
+                  Start by adding data or choose a different source.
+                </div>
+              </div>
+            }
+            defaultValue={[]}
+            onValueChange={() => {}}
+          />
+        </Field>
+      </Wrapper>
+    </div>
+  ),
+};
+
+export const SingleListOverrideLoading: Story = {
+  name: "List Override - Loading",
+  args: singleBaseStoryArgs,
+  render: (args) => (
+    <div className="flex flex-col gap-6">
+      <Wrapper>
+        <Field label="Single mode (renderListContent)">
+          <EsiSelect
+            mode="single"
+            options={args.options}
+            placeholder="Fetching..."
+            renderListContent={() => (
+              <div className="flex items-center justify-center py-4 text-sm text-muted-foreground" aria-busy>
+                <Loader />
+              </div>
+            )}
+            defaultValue={null}
+            onValueChange={() => {}}
+          />
+        </Field>
+      </Wrapper>
+      <Wrapper>
+        <Field label="Multiple mode (renderListContent)">
+          <EsiSelect
+            mode="multiple"
+            options={args.options}
+            placeholder="Fetching..."
+            renderListContent={() => (
+              <div className="flex items-center justify-center py-4 text-sm text-muted-foreground" aria-busy>
+                <Loader />
+              </div>
+            )}
+            defaultValue={[]}
+            onValueChange={() => {}}
+          />
+        </Field>
+      </Wrapper>
+    </div>
+  ),
+};
+
+export const SingleListOverrideError: Story = {
+  name: "List Override - Error",
+  args: singleBaseStoryArgs,
+  render: (args) => (
+    <div className="flex flex-col gap-6">
+      <Wrapper>
+        <Field label="Single mode (renderListContent)">
+          <EsiSelect
+            mode="single"
+            options={args.options}
+            placeholder="Select an option"
+            renderListContent={() => (
+              <div className="flex items-center justify-center py-4 text-sm text-destructive">
+                Failed to load options: Something went wrong
+              </div>
+            )}
+            defaultValue={null}
+            onValueChange={() => {}}
+          />
+        </Field>
+      </Wrapper>
+      <Wrapper>
+        <Field label="Multiple mode (renderListContent)">
+          <EsiSelect
+            mode="multiple"
+            options={args.options}
+            placeholder="Select an option"
+            renderListContent={() => (
+              <div className="flex items-center justify-center py-4 text-sm text-destructive">
+                Failed to load options: Something went wrong
+              </div>
+            )}
+            defaultValue={[]}
+            onValueChange={() => {}}
+          />
+        </Field>
+      </Wrapper>
+    </div>
+  ),
+};
+
+export const SingleTriggerLoadingSkeleton: Story = {
+  name: "Trigger Override - Loading Skeleton",
+  args: singleBaseStoryArgs,
+  render: (args) => (
+    <div className="flex flex-col gap-6">
+      <Wrapper>
+        <Field label="Single mode (renderTrigger)">
+          <EsiSelect
+            mode="single"
+            options={args.options}
+            placeholder="Pick an item"
+            renderTrigger={({ selectedValues }) =>
+              selectedValues.length === 0 ? (
+                <span className="flex items-center gap-2 w-full">
+                  <Skeleton className="w-4 h-4 rounded-full" />
+                  <Skeleton className="h-4 w-40" />
+                </span>
+              ) : (
+                <span className="text-sm truncate flex-1 text-foreground inline-flex items-center gap-2">
+                  Loaded value
+                </span>
+              )
+            }
+            disabled
+            defaultValue={null}
+            onValueChange={() => {}}
+          />
+        </Field>
+      </Wrapper>
+      <Wrapper>
+        <Field label="Multiple mode (renderTrigger)">
+          <EsiSelect
+            mode="multiple"
+            options={args.options}
+            placeholder="Pick items"
+            renderTrigger={({ selectedValues }) =>
+              selectedValues.length === 0 ? (
+                <span className="flex items-center gap-2 w-full">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-5 w-14 rounded-full" />
+                    <Skeleton className="h-5 w-12 rounded-full" />
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                  </div>
+                </span>
+              ) : (
+                <span className="text-sm truncate flex-1 text-foreground inline-flex items-center gap-2">
+                  Loaded values
+                </span>
+              )
+            }
+            disabled
+            defaultValue={[]}
+            onValueChange={() => {}}
+          />
+        </Field>
+      </Wrapper>
+    </div>
+  ),
+};
 
