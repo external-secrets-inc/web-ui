@@ -1,190 +1,147 @@
-import * as React from "react";
-import { Button, type ButtonProps } from "@/components/ui/button";
-import { useButton } from "react-aria";
-import { cn } from "@/lib/utils";
-import mergeRefs from "merge-refs";
+import * as React from "react"
+import { useButton, mergeProps } from "react-aria"
+import { filterDOMProps, useObjectRef } from "@react-aria/utils"
+import type { AriaButtonProps } from "react-aria"
+import type { DOMProps, AriaLabelingProps, LinkDOMProps, GlobalDOMAttributes } from "@react-types/shared"
+
+import { Button } from "@/components/ui/button"
+import type { ButtonProps } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+
+type ButtonVariant = NonNullable<ButtonProps["variant"]>
+type ButtonSize = NonNullable<ButtonProps["size"]>
 
 /**
- * Props for A11yDivButton component.
+ * Props for `A11yDivButton`.
+ *
+ * A `div` that behaves like a button for flexible `asChild` composition while preserving
+ * accessibility and cross-input behavior via React Aria.
  */
-export type A11yDivButtonProps = Pick<
-  ButtonProps,
-  "size" | "disabled"
-> & {
-  /** Button variant, including custom 'unstyled' option */
-  variant?: ButtonProps["variant"] | "unstyled";
-} &
-  Omit<
-    React.HTMLAttributes<HTMLDivElement>,
-    | "onClick"
-    | "onKeyDown"
-    | "onKeyUp"
-    | "onFocus"
-    | "onBlur"
-    | "onMouseDown"
-    | "onMouseUp"
-  > & {
-    children?: React.ReactNode;
-    /** Callback fired when button is activated (click, Enter, or Space) */
-    onPress?: () => void;
-    /** Callback fired when press interaction starts */
-    onPressStart?: () => void;
-    /** Callback fired when press interaction ends */
-    onPressEnd?: () => void;
-    /** Callback fired when press state changes */
-    onPressChange?: (isPressed: boolean) => void;
-  };
+export interface A11yDivButtonProps
+  extends Omit<AriaButtonProps<"div">, "elementType"> {
+  /** Visual style to apply. Use `"unstyled"` to render a plain div with button semantics. */
+  variant?: ButtonVariant | "unstyled"
+  /** Size to apply (only used when variant is not `"unstyled"`). */
+  size?: ButtonSize
+  /** Optional class to merge into the underlying div. */
+  className?: string
+}
 
 /**
- * Accessible div-based button component.
+ * Accessible div-based button built on React Aria's useButton.
  *
- * Provides button accessibility and behavior for div elements using React Aria's useButton hook.
- * Useful for avoiding nested native button elements.
- *
- * ## Event Handling (IMPORTANT PLEASE READ)
- *
- * This component uses React Aria's normalized event system, which **replaces** standard DOM events
- * with unified, accessible alternatives. You cannot mix standard DOM events (onClick, onKeyDown)
- * with React Aria events - use only the events provided by this component.
- *
- * **React Aria Events (use these):**
- * - `onPress`: Main interaction (replaces onClick)
- * - `onPressStart`: When press interaction begins
- * - `onPressEnd`: When press interaction ends
- * - `onPressChange`: When press state changes
- *
- * **Standard DOM Events (avoid these):**
- * - `onClick`, `onKeyDown`, `onKeyUp`, `onFocus`, `onBlur`, `onMouseDown`, `onMouseUp`
- *
- * ## When to use
- * - Button behavior in a div element
- * - To avoid nested native button elements (e.g., buttons inside other buttons)
- * - Custom button implementations with full accessibility
+ * Provides button accessibility and behavior for `div` elements using React Aria's `useButton`.
+ * Useful when you want button semantics without rendering a native `<button>` (e.g., to avoid
+ * nesting buttons or to compose with `asChild` primitives while keeping a `div` in the DOM).
  *
  * ## Features
- * - Full button accessibility (keyboard, screen readers, focus management)
- * - Leverages existing Button component styling via `asChild`
- * - Accepts all div props (ARIA, className, style, etc.)
- * - **className merging**: Custom classes are merged with button variants using `cn()` utility
+ * - Normalized press interactions (mouse, touch, keyboard, screen reader) via `useButton`/`usePress`.
+ * - Optional design-system styles by rendering our `Button` with `asChild` (keeps the `div`).
+ * - Forwards valid DOM/ARIA props and events; preserves all `data-*` and `aria-*` attributes.
  *
- * @example
+ * ## Event handling quirks
+ * - Prefer React Aria press handlers (`onPress`, `onPressStart`, `onPressEnd`, `onPressUp`, `onPressChange`).
+ *   These are routed to `useButton` and not spread to the DOM.
+ * - Standard DOM events (e.g., pointer/focus) and attributes flow through to support Radix triggers.
+ * - `onClick` is allowed but not recommended; `onPress` is richer and more consistent across inputs.
+ * @see https://react-spectrum.adobe.com/react-aria/usePress.html
+ * @see https://react-spectrum.adobe.com/react-aria/useButton.html
+ *
+ * ## When to use
+ * - You need a button-like element but must keep a `div` in the DOM (e.g., to avoid nested buttons).
+ * - You want to compose with `asChild` components (e.g., Radix) yet retain proper button semantics.
+ * - If chaining multiple `asChild` primitives and `data-state` conflicts arise, wrap with `DataStateEventBridge`.
+ *
+ * @example Unstyled (semantic div)
  * ```tsx
- * <A11yDivButton onPress={handleRemove} aria-label="Remove item">
- *   <LucideX />
- * </A11yDivButton>
+ * <A11yDivButton variant="unstyled" onPress={() => doThing()}>Click me</A11yDivButton>
  * ```
  *
- * @example
+ * @example Styled via Button asChild
  * ```tsx
- * <A11yDivButton variant="ghost" size="icon" onPress={handleAction}>
- *   <LucideSettings />
- * </A11yDivButton>
- * ```
- *
- * @example
- * ```tsx
- * // Advanced: Using press state and timing events
- * <A11yDivButton
- *   onPress={handleAction}
- *   onPressStart={() => console.log('Press started')}
- *   onPressEnd={() => console.log('Press ended')}
- *   onPressChange={(isPressed) => console.log('Press state:', isPressed)}
- * >
- *   Interactive Button
- * </A11yDivButton>
- * ```
- *
- * @example
- * ```tsx
- * // Custom styling with cn() utility
- * <A11yDivButton
- *   variant="outline"
- *   size="sm"
- *   className={cn(
- *     "hover:bg-accent/50",
- *     "focus:ring-2 focus:ring-ring",
- *     "transition-all duration-200"
- *   )}
- *   onPress={handleAction}
- * >
- *   Custom Styled Button
- * </A11yDivButton>
+ * <Tooltip>
+ *   <TooltipTrigger asChild>
+ *     <A11yDivButton variant="secondary" onPress={save}>Save</A11yDivButton>
+ *   </TooltipTrigger>
+ *   <TooltipContent>Save changes</TooltipContent>
+ * </Tooltip>
  * ```
  */
-export const A11yDivButton = React.forwardRef<
-  HTMLDivElement,
-  A11yDivButtonProps
->(
+export const A11yDivButton = React.forwardRef<HTMLDivElement, A11yDivButtonProps>(
   (
     {
-      disabled,
-      variant,
-      size,
+      variant = "default",
+      size = "default",
+      className,
       children,
+      ...rest
+    },
+    forwardedRef
+  ) => {
+    const objectRef = useObjectRef<HTMLDivElement>(forwardedRef)
+
+    const {
       onPress,
       onPressStart,
       onPressEnd,
       onPressChange,
-      className,
-      ...props
-    },
-    ref
-  ) => {
-    const divRef = React.useRef<HTMLDivElement | null>(null);
+      onPressUp,
+      isDisabled,
+      ...otherProps
+    } = rest
 
-    const { buttonProps, isPressed } = useButton(
+    const { buttonProps } = useButton(
       {
-        isDisabled: Boolean(disabled),
         onPress,
         onPressStart,
         onPressEnd,
         onPressChange,
+        onPressUp,
+        isDisabled,
+        ...(otherProps as AriaButtonProps<"div">),
         elementType: "div",
-        ...props, // Forward other props including ARIA attributes
       },
-      divRef
-    );
+      objectRef
+    )
 
-    // Handle unstyled variant - render div directly without Button wrapper
+    const domProps = filterDOMProps(
+      otherProps as DOMProps & AriaLabelingProps & LinkDOMProps & GlobalDOMAttributes,
+      {
+        labelable: true,
+        global: true,
+        events: true,
+        propNames: new Set(["data-state"]),
+      }
+    )
+    const dataAndAria: Record<string, unknown> = {}
+    for (const [key, value] of Object.entries(otherProps as Record<string, unknown>)) {
+      if (key.startsWith("data-") || key.startsWith("aria-")) {
+        dataAndAria[key] = value
+      }
+    }
+    const mergedProps = mergeProps(buttonProps, domProps, dataAndAria)
+
+    const computedClassName = cn(className, isDisabled ? "pointer-events-none opacity-50" : undefined)
+
     if (variant === "unstyled") {
       return (
-        <div
-          ref={mergeRefs(divRef, ref)}
-          {...buttonProps}
-          {...props}
-          className={cn(buttonProps.className, className)}
-          data-pressed={isPressed || undefined}
-        >
+        <div ref={objectRef} className={computedClassName} {...mergedProps}>
           {children}
         </div>
-      );
+      )
     }
 
-    // Handle styled variants - use Button component
     return (
-      <Button
-        asChild
-        variant={variant}
-        size={size}
-        disabled={disabled}
-        className={cn(
-          // buttonProps.className contains the base button styles
-          buttonProps.className,
-          // Custom className from props
-          className
-        )}
-        data-pressed={isPressed || undefined}
-      >
-        <div
-          ref={mergeRefs(divRef, ref)}
-          {...buttonProps}
-          {...props} // Forward all props including style, etc.
-        >
+      <Button asChild variant={variant} size={size} className={computedClassName}>
+        <div ref={objectRef} {...mergedProps}>
           {children}
         </div>
       </Button>
-    );
+    )
   }
-);
+)
+A11yDivButton.displayName = "A11yDivButton"
 
-A11yDivButton.displayName = "A11yDivButton";
+export default A11yDivButton
+
+

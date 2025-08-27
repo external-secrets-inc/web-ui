@@ -361,7 +361,10 @@ export const EsiSelect = React.forwardRef<HTMLButtonElement, EsiSelectProps>(
       const entries = Object.entries(props as Record<string, unknown>).filter(
         ([key]) => key.startsWith("aria-")
       );
-      return Object.fromEntries(entries) as Record<string, string | number | boolean>;
+      return Object.fromEntries(entries) as Record<
+        string,
+        string | number | boolean
+      >;
     }, [props]);
 
     const domProps = {
@@ -568,7 +571,16 @@ export const EsiSelect = React.forwardRef<HTMLButtonElement, EsiSelectProps>(
         toggleOption,
         setIsOpen: (open) => handleOpenChange(open),
       }),
-      [selectedValues, options, mode, isOpen, disabled, handleClear, toggleOption, handleOpenChange]
+      [
+        selectedValues,
+        options,
+        mode,
+        isOpen,
+        disabled,
+        handleClear,
+        toggleOption,
+        handleOpenChange,
+      ]
     );
 
     // If a custom list content is provided, we use it to replace the default list.
@@ -834,148 +846,144 @@ interface EsiSelectPopoverTriggerProps {
 const EsiSelectPopoverTrigger = React.forwardRef<
   HTMLButtonElement,
   EsiSelectPopoverTriggerProps
->(
-  (
-    { className, disabled, listboxId, ...props },
-    ref
-  ) => {
-    // Extract only the DOM props we explicitly want to pass through
-    const { id, style, renderTrigger, renderCtx, ariaAttributes } = props;
+>(({ className, disabled, listboxId, ...props }, ref) => {
+  // Extract only the DOM props we explicitly want to pass through
+  const { id, style, renderTrigger, renderCtx, ariaAttributes } = props;
 
-    // Only pass through explicitly allowed DOM props
-    const domProps = {
-      ...(id && { id }),
-      ...(style && { style }),
-    };
+  // Only pass through explicitly allowed DOM props
+  const domProps = {
+    ...(id && { id }),
+    ...(style && { style }),
+  };
 
-    const {
-      selectedValues,
-      placeholder,
-      handleClear,
-      setIsOpen,
-      isOpen,
-      mode,
-      options,
-    } = useEsiSelect();
+  const {
+    selectedValues,
+    placeholder,
+    handleClear,
+    setIsOpen,
+    isOpen,
+    mode,
+    options,
+  } = useEsiSelect();
 
-    // Get single mode trigger customization context
-    const { renderSelectedTrigger, selectedTriggerProps } = React.useContext(
-      SingleTriggerCustomizationContext
-    );
+  // Get single mode trigger customization context
+  const { renderSelectedTrigger, selectedTriggerProps } = React.useContext(
+    SingleTriggerCustomizationContext
+  );
 
-    const isUnselected = selectedValues.length === 0;
-    const isDisabled = Boolean(disabled);
-    const isMultiple = mode === "multiple";
-    const selectedSingle =
-      !isMultiple && selectedValues[0]
-        ? options.find((o) => o.value === selectedValues[0])
-        : undefined;
+  const isUnselected = selectedValues.length === 0;
+  const isDisabled = Boolean(disabled);
+  const isMultiple = mode === "multiple";
+  const selectedSingle =
+    !isMultiple && selectedValues[0]
+      ? options.find((o) => o.value === selectedValues[0])
+      : undefined;
 
-    // Compute surface props for single mode trigger
-    const triggerSurfaceProps = React.useMemo(() => {
-      if (!selectedSingle || !selectedTriggerProps) return {};
+  // Compute surface props for single mode trigger
+  const triggerSurfaceProps = React.useMemo(() => {
+    if (!selectedSingle || !selectedTriggerProps) return {};
 
-      if (typeof selectedTriggerProps === "function") {
-        return selectedTriggerProps({
-          option: selectedSingle,
-          selectedValue: selectedValues[0],
-        });
-      }
+    if (typeof selectedTriggerProps === "function") {
+      return selectedTriggerProps({
+        option: selectedSingle,
+        selectedValue: selectedValues[0],
+      });
+    }
 
-      return selectedTriggerProps;
-    }, [selectedSingle, selectedValues, selectedTriggerProps]);
+    return selectedTriggerProps;
+  }, [selectedSingle, selectedValues, selectedTriggerProps]);
 
-    const handleClick = () => {
-      if (isDisabled) return;
-      setIsOpen((prev) => !prev);
-    };
+  const handleClick = () => {
+    if (isDisabled) return;
+    setIsOpen((prev) => !prev);
+  };
 
-    const customTrigger = renderTrigger?.(renderCtx as EsiSelectRenderContext);
+  const customTrigger = renderTrigger?.(renderCtx as EsiSelectRenderContext);
 
-    return (
-      <PopoverTrigger asChild>
-        <Button
-          ref={ref}
-          variant="outline"
-          className={cn(
-            "w-full min-w-24 py-1.5 px-3 min-h-9 h-auto gap-3 items-center justify-between hover:bg-inherit relative overflow-clip cursor-pointer group font-normal",
-            className
-          )}
-          disabled={isDisabled}
-          aria-haspopup="listbox"
-          aria-expanded={isOpen}
-          aria-controls={listboxId}
-          onClick={handleClick}
-          {...ariaAttributes}
-          {...domProps}
-        >
-            {customTrigger ?? (isUnselected ? (
-              <span className="text-sm text-muted-foreground font-normal truncate">
-                {placeholder}
-              </span>
-            ) : (
-              <>
-                {isMultiple ? (
-                  <EsiSelectCurrentBadges />
-                ) : renderSelectedTrigger && selectedSingle ? (
-                  renderSelectedTrigger({
-                    option: selectedSingle,
-                    selectedValue: selectedValues[0],
-                    labelNode: (
-                      <span className="text-sm truncate flex-1 text-foreground">
-                        {selectedSingle.label}
-                      </span>
-                    ),
-                    iconNode: selectedSingle.icon && (
-                      <selectedSingle.icon className="text-muted-foreground" />
-                    ),
-                  })
-                ) : (
-                  <span
-                    className={cn(
-                      "text-sm truncate flex-1 text-foreground inline-flex items-center gap-2",
-                      triggerSurfaceProps.className
-                    )}
-                    {...triggerSurfaceProps}
-                  >
-                    {selectedSingle?.icon && (
-                      <selectedSingle.icon className="text-muted-foreground" />
-                    )}
-                    <span className="truncate">
-                      {selectedSingle?.label ?? selectedValues[0]}
+  return (
+    <PopoverTrigger asChild>
+      <Button
+        ref={ref}
+        variant="outline"
+        className={cn(
+          "w-full min-w-24 py-1.5 px-3 min-h-9 h-auto gap-3 items-center justify-between hover:bg-inherit relative overflow-clip cursor-pointer group font-normal",
+          className
+        )}
+        disabled={isDisabled}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-controls={listboxId}
+        onClick={handleClick}
+        {...ariaAttributes}
+        {...domProps}
+      >
+        {customTrigger ??
+          (isUnselected ? (
+            <span className="text-sm text-muted-foreground font-normal truncate">
+              {placeholder}
+            </span>
+          ) : (
+            <>
+              {isMultiple ? (
+                <EsiSelectCurrentBadges />
+              ) : renderSelectedTrigger && selectedSingle ? (
+                renderSelectedTrigger({
+                  option: selectedSingle,
+                  selectedValue: selectedValues[0],
+                  labelNode: (
+                    <span className="text-sm truncate flex-1 text-foreground">
+                      {selectedSingle.label}
                     </span>
+                  ),
+                  iconNode: selectedSingle.icon && (
+                    <selectedSingle.icon className="text-muted-foreground" />
+                  ),
+                })
+              ) : (
+                <span
+                  className={cn(
+                    "text-sm truncate flex-1 text-foreground inline-flex items-center gap-2",
+                    triggerSurfaceProps.className
+                  )}
+                  {...triggerSurfaceProps}
+                >
+                  {selectedSingle?.icon && (
+                    <selectedSingle.icon className="text-muted-foreground" />
+                  )}
+                  <span className="truncate">
+                    {selectedSingle?.label ?? selectedValues[0]}
                   </span>
-                )}
-                {!isDisabled && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <A11yDivButton
-                        className="size-8 opacity-0 group-hover:opacity-50 hover:!opacity-100 hover:bg-destructive/25 focus-visible:bg-destructive/25 focus-visible:!opacity-100 group-focus-within:opacity-50 absolute right-px rounded-sm translate-x-full group-hover:translate-x-0 group-focus-within:translate-x-0 transition-all duration-300 z-10"
-                        variant="ghost"
-                        size="icon"
-                        onPress={handleClear}
-                        aria-label="Clear selection"
-                      >
-                        <LucideX />
-                      </A11yDivButton>
-                    </TooltipTrigger>
-                    <TooltipContent>Clear selection</TooltipContent>
-                  </Tooltip>
-                )}
-              </>
-            ))}
-            <CaretSortIcon
-              className={cn(
-                "text-muted-foreground opacity-50 flex-none",
-                !isUnselected &&
-                  "group-hover:opacity-0 group-focus-within:opacity-0 transition-opacity duration-300 group-hover:delay-0 delay-100"
+                </span>
               )}
-            />
-        </Button>
-      </PopoverTrigger>
-    );
-  }
-);
+              {!isDisabled && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <A11yDivButton
+                      className="size-8 opacity-0 group-hover:opacity-50 hover:!opacity-100 hover:bg-destructive/25 focus-visible:bg-destructive/25 focus-visible:!opacity-100 group-focus-within:opacity-50 absolute right-px rounded-sm translate-x-full group-hover:translate-x-0 group-focus-within:translate-x-0 transition-all duration-300 z-10"
+                      variant="ghost"
+                      size="icon"
+                      onPress={() => handleClear()}
+                      aria-label="Clear selection"
+                    >
+                      <LucideX />
+                    </A11yDivButton>
+                  </TooltipTrigger>
+                  <TooltipContent>Clear selection</TooltipContent>
+                </Tooltip>
+              )}
+            </>
+          ))}
+        <CaretSortIcon
+          className={cn(
+            "text-muted-foreground opacity-50 flex-none",
+            !isUnselected &&
+              "group-hover:opacity-0 group-focus-within:opacity-0 transition-opacity duration-300 group-hover:delay-0 delay-100"
+          )}
+        />
+      </Button>
+    </PopoverTrigger>
+  );
+});
 EsiSelectPopoverTrigger.displayName = "EsiSelectPopoverTrigger";
 
 /**
