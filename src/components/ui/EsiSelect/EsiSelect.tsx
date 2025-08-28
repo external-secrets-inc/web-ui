@@ -19,7 +19,15 @@ import {
 } from "lucide-react";
 import * as React from "react";
 
+import { A11yDivButton } from "@/components/ui/A11yDivButton";
+import {
+  BadgeGroup,
+  type BadgeGroupProps,
+  type BadgeItem,
+} from "@/components/ui/BadgeGroup";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { DataStateEventBridge } from "@/components/ui/DataStateEventBridge";
 import {
   Popover,
   PopoverContent,
@@ -27,22 +35,15 @@ import {
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Trimmer } from "@/components/ui/Trimmer";
-import { useMemo } from "react";
-import {
-  BadgeGroup,
-  type BadgeItem,
-  type BadgeGroupProps,
-} from "@/components/ui/BadgeGroup";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { A11yDivButton } from "@/components/ui/A11yDivButton";
-import { DataStateEventBridge } from "@/components/ui/DataStateEventBridge";
+import { Trimmer } from "@/components/ui/Trimmer";
+import { cn } from "@/lib/utils";
+import { useMemo } from "react";
+import mergeRefs from "merge-refs";
 
 /**
  * Context for EsiSelect component
@@ -64,6 +65,7 @@ interface EsiSelectContextValue {
   setAutoVisibleCount: (n: number) => void;
   disabled: boolean;
   mode: "single" | "multiple";
+  triggerButtonRef: React.MutableRefObject<HTMLButtonElement | null>;
 }
 const EsiSelectContext = React.createContext<EsiSelectContextValue | undefined>(
   undefined
@@ -444,6 +446,16 @@ export const EsiSelect = React.forwardRef<HTMLButtonElement, EsiSelectProps>(
     );
 
     const itemRefs = React.useRef<Map<string, CommandItemRef>>(new Map());
+    // Keep a ref to the trigger button so we can anchor the extra-badge popover to it
+    const triggerButtonRef = React.useRef<HTMLButtonElement>(
+      null
+    ) as React.MutableRefObject<HTMLButtonElement | null>;
+
+    // Compose forwarded ref with our trigger ref
+    const composeTriggerRef = React.useMemo(
+      () => mergeRefs<HTMLButtonElement>(triggerButtonRef, ref),
+      [ref]
+    );
 
     const updateSelection = React.useCallback(
       (newValues: string[]) => {
@@ -515,6 +527,7 @@ export const EsiSelect = React.forwardRef<HTMLButtonElement, EsiSelectProps>(
         setAutoVisibleCount,
         disabled: Boolean(disabled),
         mode,
+        triggerButtonRef,
       }),
       [
         selectedValues,
@@ -530,6 +543,7 @@ export const EsiSelect = React.forwardRef<HTMLButtonElement, EsiSelectProps>(
         setAutoVisibleCount,
         disabled,
         mode,
+        triggerButtonRef,
       ]
     );
 
@@ -613,7 +627,7 @@ export const EsiSelect = React.forwardRef<HTMLButtonElement, EsiSelectProps>(
                 modal={modalPopover}
               >
                 <EsiSelectPopoverTrigger
-                  ref={ref}
+                  ref={composeTriggerRef}
                   {...domProps}
                   ariaAttributes={ariaAttributes}
                   disabled={disabled}
@@ -625,7 +639,6 @@ export const EsiSelect = React.forwardRef<HTMLButtonElement, EsiSelectProps>(
                 <PopoverContent
                   id={listboxId}
                   sticky="always"
-                  collisionPadding={8}
                   aria-hidden={disabled || undefined}
                   className={cn(
                     "min-w-[--radix-popover-trigger-width] origin-[--radix-popover-content-transform-origin] max-h-[--radix-popover-content-available-height] flex flex-col p-0",
@@ -705,6 +718,7 @@ const EsiSelectCurrentBadges: React.FC = () => {
     clearExtraOptions,
     setAutoVisibleCount,
     disabled,
+    triggerButtonRef,
   } = useEsiSelect();
   const {
     renderSelectedBadge,
@@ -735,15 +749,17 @@ const EsiSelectCurrentBadges: React.FC = () => {
             const defaultRemoveNode = !disabled ? (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <A11yDivButton
-                    size="icon"
-                    className="size-5 -my-2 -ml-1.5 -mr-2 hover:bg-destructive/25 focus-visible:bg-destructive/25 focus-visible:opacity-100 opacity-50 hover:opacity-100 transition-all"
-                    variant="ghost"
-                    onPress={() => toggleOption(opt.value)}
-                    aria-label={`Remove ${opt.label}`}
-                  >
-                    <LucideX className="size-3" />
-                  </A11yDivButton>
+                  <DataStateEventBridge>
+                    <A11yDivButton
+                      size="icon"
+                      className="size-5 -my-2 -ml-1.5 -mr-2 hover:bg-destructive/25 focus-visible:bg-destructive/25 focus-visible:opacity-100 opacity-50 hover:opacity-100 transition-all"
+                      variant="ghost"
+                      onPress={() => toggleOption(opt.value)}
+                      aria-label={`Remove ${opt.label}`}
+                    >
+                      <LucideX className="size-3" />
+                    </A11yDivButton>
+                  </DataStateEventBridge>
                 </TooltipTrigger>
                 <TooltipContent>Remove</TooltipContent>
               </Tooltip>
@@ -790,6 +806,16 @@ const EsiSelectCurrentBadges: React.FC = () => {
           "pl-1.5 pr-0.5 gap-0",
           disabled && "pr-1.5 pointer-events-auto" // explicitly set pointer-events-auto to ensure users can still open the tooltip to see hidden selected options
         ),
+        // Anchor the hidden-badges popover to the EsiSelect trigger using a virtualRef
+        popoverAnchorVirtualRef: triggerButtonRef.current
+          ? {
+              current: {
+                getBoundingClientRect: () =>
+                  triggerButtonRef.current!.getBoundingClientRect(),
+              },
+            }
+          : undefined,
+        matchPopoverContentWidthToAnchorVirtualRef: true,
         ...(selectedExtraBadge ?? {}),
         children: (countNode) => (
           <>
