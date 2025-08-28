@@ -15,18 +15,25 @@ const preview: Preview = {
     docs: {
       story: {
         inline: true,
-        iframeHeight: 'auto',
+        iframeHeight: "auto",
       },
     },
     options: {
       storySort: {
         order: [
-          'UI',
+          "UI",
           [
-            'DataProvider',
-            ['Documentation', '*', 'DataGrid', 'DataSearch', 'DataSort', 'DataTable']
+            "DataProvider",
+            [
+              "Documentation",
+              "*",
+              "DataGrid",
+              "DataSearch",
+              "DataSort",
+              "DataTable",
+            ],
           ],
-          '*',
+          "*",
         ],
       },
     },
@@ -34,24 +41,27 @@ const preview: Preview = {
   decorators: [
     withThemeByClassName({
       themes: {
-        light: '',
-        dark: 'dark',
+        light: "",
+        dark: "dark",
       },
-      defaultTheme: 'light',
-      parentSelector: 'html',
+      defaultTheme: "light",
+      parentSelector: "html",
     }),
     (Story) => (
       <>
         <style>
           {`
+            #storybook-root {
+              width: 100%;
+              display: grid;
+              justify-items: center;
+            }
             .docs-story {
               background-color: hsl(var(--background)) !important;
             }
           `}
         </style>
-        <div className="p-4">
-          <Story />
-        </div>
+        <Story />
       </>
     ),
   ],

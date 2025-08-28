@@ -71,7 +71,7 @@ export const ungroupedOptions: Option[] = [
 ];
 
 export const Wrapper: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <Card className="p-4 w-[640px] space-y-3">{children}</Card>
+  <Card className="p-4 max-w-[640px] w-full space-y-3">{children}</Card>
 );
 
 export const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
