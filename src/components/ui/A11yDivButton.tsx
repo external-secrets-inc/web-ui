@@ -1,15 +1,20 @@
-import * as React from "react"
-import { useButton, mergeProps } from "react-aria"
-import { filterDOMProps, useObjectRef } from "@react-aria/utils"
-import type { AriaButtonProps } from "react-aria"
-import type { DOMProps, AriaLabelingProps, LinkDOMProps, GlobalDOMAttributes } from "@react-types/shared"
+import { filterDOMProps, useObjectRef } from "@react-aria/utils";
+import type {
+  AriaLabelingProps,
+  DOMProps,
+  GlobalDOMAttributes,
+  LinkDOMProps,
+} from "@react-types/shared";
+import * as React from "react";
+import type { AriaButtonProps } from "react-aria";
+import { mergeProps, useButton } from "react-aria";
 
-import { Button } from "@/components/ui/button"
-import type { ButtonProps } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import type { ButtonProps } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-type ButtonVariant = NonNullable<ButtonProps["variant"]>
-type ButtonSize = NonNullable<ButtonProps["size"]>
+type ButtonVariant = NonNullable<ButtonProps["variant"]>;
+type ButtonSize = NonNullable<ButtonProps["size"]>;
 
 /**
  * Props for `A11yDivButton`.
@@ -20,11 +25,11 @@ type ButtonSize = NonNullable<ButtonProps["size"]>
 export interface A11yDivButtonProps
   extends Omit<AriaButtonProps<"div">, "elementType"> {
   /** Visual style to apply. Use `"unstyled"` to render a plain div with button semantics. */
-  variant?: ButtonVariant | "unstyled"
+  variant?: ButtonVariant | "unstyled";
   /** Size to apply (only used when variant is not `"unstyled"`). */
-  size?: ButtonSize
+  size?: ButtonSize;
   /** Optional class to merge into the underlying div. */
-  className?: string
+  className?: string;
 }
 
 /**
@@ -37,13 +42,15 @@ export interface A11yDivButtonProps
  * ## Features
  * - Normalized press interactions (mouse, touch, keyboard, screen reader) via `useButton`/`usePress`.
  * - Optional design-system styles by rendering our `Button` with `asChild` (keeps the `div`).
- * - Forwards valid DOM/ARIA props and events; preserves all `data-*` and `aria-*` attributes.
+ * - Forwards valid DOM/ARIA props and events preserves all `data-*` and `aria-*` attributes.
  *
  * ## Event handling quirks
  * - Prefer React Aria press handlers (`onPress`, `onPressStart`, `onPressEnd`, `onPressUp`, `onPressChange`).
  *   These are routed to `useButton` and not spread to the DOM.
- * - Standard DOM events (e.g., pointer/focus) and attributes flow through to support Radix triggers.
- * - `onClick` is allowed but not recommended; `onPress` is richer and more consistent across inputs.
+ * - When composing with overlay triggers (e.g., Radix Popover/Tooltip) identified by `aria-haspopup`/`aria-controls`,
+ *   pointer-driven handlers (`onPointerDown`/`onMouseDown`/`onPointerUp`/`onMouseUp`) from `useButton` are removed so
+ *   the overlay library receives the raw pointer events. Keyboard and click semantics remain via React Aria.
+ * - `onClick` is allowed but not recommended `onPress` is richer and more consistent across inputs.
  * @see https://react-spectrum.adobe.com/react-aria/usePress.html
  * @see https://react-spectrum.adobe.com/react-aria/useButton.html
  *
@@ -67,18 +74,15 @@ export interface A11yDivButtonProps
  * </Tooltip>
  * ```
  */
-export const A11yDivButton = React.forwardRef<HTMLDivElement, A11yDivButtonProps>(
+export const A11yDivButton = React.forwardRef<
+  HTMLDivElement,
+  A11yDivButtonProps
+>(
   (
-    {
-      variant = "default",
-      size = "default",
-      className,
-      children,
-      ...rest
-    },
+    { variant = "default", size = "default", className, children, ...rest },
     forwardedRef
   ) => {
-    const objectRef = useObjectRef<HTMLDivElement>(forwardedRef)
+    const objectRef = useObjectRef<HTMLDivElement>(forwardedRef);
 
     const {
       onPress,
@@ -88,7 +92,7 @@ export const A11yDivButton = React.forwardRef<HTMLDivElement, A11yDivButtonProps
       onPressUp,
       isDisabled,
       ...otherProps
-    } = rest
+    } = rest;
 
     const { buttonProps } = useButton(
       {
@@ -102,46 +106,109 @@ export const A11yDivButton = React.forwardRef<HTMLDivElement, A11yDivButtonProps
         elementType: "div",
       },
       objectRef
-    )
+    );
+
+    // Detect overlay triggers (Radix Popover/Tooltip/Select triggers) to prevent pointer event conflicts
+    const isOverlayTrigger =
+      Object.prototype.hasOwnProperty.call(
+        otherProps as Record<string, unknown>,
+        "aria-haspopup"
+      ) ||
+      Object.prototype.hasOwnProperty.call(
+        otherProps as Record<string, unknown>,
+        "aria-controls"
+      );
+
+    const finalButtonProps = React.useMemo(() => {
+      if (!isOverlayTrigger) return buttonProps;
+      const clone: Record<string, unknown> = {
+        ...(buttonProps as Record<string, unknown>),
+      };
+      // Remove pointer handlers to let Radix own pointer events while preserving keyboard semantics
+      delete clone["onPointerDown"];
+      delete clone["onMouseDown"];
+      delete clone["onPointerUp"];
+      delete clone["onMouseUp"];
+      // Preserve any internal onClick from React Aria without affecting overlay/parent behavior
+      const prevOnClick = clone["onClick"] as
+        | React.MouseEventHandler<HTMLDivElement>
+        | undefined;
+      clone["onClick"] = (e: React.MouseEvent<HTMLDivElement>) => {
+        prevOnClick?.(e);
+      };
+      return clone as typeof buttonProps;
+    }, [buttonProps, isOverlayTrigger]);
 
     const domProps = filterDOMProps(
-      otherProps as DOMProps & AriaLabelingProps & LinkDOMProps & GlobalDOMAttributes,
+      otherProps as DOMProps &
+        AriaLabelingProps &
+        LinkDOMProps &
+        GlobalDOMAttributes,
       {
         labelable: true,
         global: true,
         events: true,
-        propNames: new Set(["data-state"]),
+        propNames: new Set(["data-state"]), // Preserve data-state for Radix state management
       }
-    )
-    const dataAndAria: Record<string, unknown> = {}
-    for (const [key, value] of Object.entries(otherProps as Record<string, unknown>)) {
+    );
+
+    const composedDomProps = React.useMemo(() => {
+      if (!isOverlayTrigger) return domProps;
+      const domOnClick = (domProps as unknown as Record<string, unknown>)[
+        "onClick"
+      ] as React.MouseEventHandler<HTMLDivElement> | undefined;
+      return {
+        ...(domProps as object),
+        onClick: (e: React.MouseEvent<HTMLDivElement>) => {
+          // Let Radix run first to open the overlay, then block navigation/parent handlers
+          domOnClick?.(e);
+          e.preventDefault();
+          e.stopPropagation();
+        },
+      } as typeof domProps;
+    }, [domProps, isOverlayTrigger]);
+
+    // Extract data-* and aria-* attributes that filterDOMProps doesn't handle
+    const dataAndAria: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(
+      otherProps as Record<string, unknown>
+    )) {
       if (key.startsWith("data-") || key.startsWith("aria-")) {
-        dataAndAria[key] = value
+        dataAndAria[key] = value;
       }
     }
-    const mergedProps = mergeProps(buttonProps, domProps, dataAndAria)
 
-    const computedClassName = cn(className, isDisabled ? "pointer-events-none opacity-50" : undefined)
+    // Prioritize Radix handlers to maintain proper event ordering
+    const mergedProps = mergeProps(dataAndAria, finalButtonProps, composedDomProps);
+
+
+    const computedClassName = cn(
+      className,
+      isDisabled ? "pointer-events-none opacity-50" : undefined
+    );
 
     if (variant === "unstyled") {
       return (
         <div ref={objectRef} className={computedClassName} {...mergedProps}>
           {children}
         </div>
-      )
+      );
     }
 
     return (
-      <Button asChild variant={variant} size={size} className={computedClassName}>
+      <Button
+        asChild
+        variant={variant}
+        size={size}
+        className={computedClassName}
+      >
         <div ref={objectRef} {...mergedProps}>
           {children}
         </div>
       </Button>
-    )
+    );
   }
-)
-A11yDivButton.displayName = "A11yDivButton"
+);
+A11yDivButton.displayName = "A11yDivButton";
 
-export default A11yDivButton
-
-
+export default A11yDivButton;
