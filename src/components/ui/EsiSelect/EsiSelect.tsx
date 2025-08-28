@@ -57,12 +57,12 @@ interface EsiSelectContextValue {
   placeholder: string;
   isOpen: boolean;
   toggleOption: (value: string) => void;
-  clearExtraOptions: () => void;
+
   handleClear: () => void;
   setIsOpen: (openOrUpdater: boolean | ((prev: boolean) => boolean)) => void;
   updateSelection: (values: string[]) => void;
   itemRefs: React.MutableRefObject<Map<string, CommandItemRef>>;
-  setAutoVisibleCount: (n: number) => void;
+
   disabled: boolean;
   mode: "single" | "multiple";
   triggerButtonRef: React.MutableRefObject<HTMLButtonElement | null>;
@@ -408,9 +408,7 @@ export const EsiSelect = React.forwardRef<HTMLButtonElement, EsiSelectProps>(
       controlledArrayValue ?? defaultArrayValue
     );
     const [internalIsOpen, setInternalIsOpen] = React.useState(defaultOpen);
-    const [autoVisibleCount, setAutoVisibleCount] = React.useState<
-      number | undefined
-    >(undefined);
+
 
     // Keep internal state in sync when value is controlled
     React.useEffect(() => {
@@ -501,15 +499,7 @@ export const EsiSelect = React.forwardRef<HTMLButtonElement, EsiSelectProps>(
       updateSelection([]);
     }, [updateSelection]);
 
-    const clearExtraOptions = React.useCallback(() => {
-      if (maxCount === "auto") {
-        updateSelection(
-          selectedValues.slice(0, autoVisibleCount ?? selectedValues.length)
-        );
-      } else if (typeof maxCount === "number") {
-        updateSelection(selectedValues.slice(0, maxCount)); // In numbered mode, use the maxCount prop directly
-      }
-    }, [selectedValues, maxCount, autoVisibleCount, updateSelection]);
+
 
     const contextValue = React.useMemo(
       () => ({
@@ -519,12 +509,10 @@ export const EsiSelect = React.forwardRef<HTMLButtonElement, EsiSelectProps>(
         placeholder,
         isOpen,
         toggleOption,
-        clearExtraOptions,
         handleClear,
         setIsOpen: handleOpenChange,
         updateSelection,
         itemRefs,
-        setAutoVisibleCount,
         disabled: Boolean(disabled),
         mode,
         triggerButtonRef,
@@ -536,11 +524,9 @@ export const EsiSelect = React.forwardRef<HTMLButtonElement, EsiSelectProps>(
         placeholder,
         isOpen,
         toggleOption,
-        clearExtraOptions,
         handleClear,
         handleOpenChange,
         updateSelection,
-        setAutoVisibleCount,
         disabled,
         mode,
         triggerButtonRef,
@@ -715,8 +701,6 @@ const EsiSelectCurrentBadges: React.FC = () => {
     options,
     maxCount,
     toggleOption,
-    clearExtraOptions,
-    setAutoVisibleCount,
     disabled,
     triggerButtonRef,
   } = useEsiSelect();
@@ -798,12 +782,12 @@ const EsiSelectCurrentBadges: React.FC = () => {
       badges={badges}
       maxCount={maxCount}
       className={cn("w-[stretch] -ml-1.5", selectedBadgeGroupClassName)}
-      onLayoutUpdate={({ visibleCount }) => setAutoVisibleCount(visibleCount)}
+
       extraBadge={{
         id: "extra",
         variant: "outline",
         className: cn(
-          "pl-1.5 pr-0.5 gap-0",
+          "px-1.5 gap-0",
           disabled && "pr-1.5 pointer-events-auto" // explicitly set pointer-events-auto to ensure users can still open the tooltip to see hidden selected options
         ),
         // Anchor the hidden-badges popover to the EsiSelect trigger using a virtualRef
@@ -822,16 +806,6 @@ const EsiSelectCurrentBadges: React.FC = () => {
             {selectedExtraBadge?.children
               ? selectedExtraBadge.children(countNode)
               : countNode}
-            {!disabled && (
-              <A11yDivButton
-                size="icon"
-                className="size-5 -my-2 -mx-0.5 hover:bg-destructive/25 opacity-50 hover:opacity-100 transition-all"
-                variant="ghost"
-                onPress={clearExtraOptions}
-              >
-                <LucideX className="size-3" />
-              </A11yDivButton>
-            )}
           </>
         ),
       }}
