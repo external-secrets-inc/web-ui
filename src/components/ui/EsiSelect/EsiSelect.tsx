@@ -787,7 +787,7 @@ const EsiSelectCurrentBadges: React.FC = () => {
         id: "extra",
         variant: "outline",
         className: cn(
-          "px-1.5 gap-0",
+          "px-1.5 gap-0 hover:bg-accent hover:border-input-accent",
           disabled && "pr-1.5 pointer-events-auto" // explicitly set pointer-events-auto to ensure users can still open the tooltip to see hidden selected options
         ),
         // Anchor the hidden-badges popover to the EsiSelect trigger using a virtualRef
