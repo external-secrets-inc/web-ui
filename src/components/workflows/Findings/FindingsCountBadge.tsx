@@ -16,7 +16,7 @@ export function FindingsCountBadge() {
   if (findingsCount <= 0) return null;
 
   return (
-    <Tooltip>
+    <Tooltip delayDuration={0}>
       <TooltipTrigger asChild>
         <Badge
           variant="secondary"

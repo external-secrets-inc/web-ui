@@ -5,7 +5,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { MultiSelect } from "@/components/ui/MultiSelect";
+import { EsiSelect } from "@/components/ui/EsiSelect";
 import { useState, useMemo, useEffect } from "react";
 import { Loader } from "@/components/ui/Loader";
 import { ProviderTableData } from "./Audit.interfaces";
@@ -59,7 +59,8 @@ export function AssignProvidersDialog({
             <Loader />
           </div>
         ) : (
-          <MultiSelect
+          <EsiSelect
+            mode="multiple"
             options={providerOptions}
             placeholder="Select providers..."
             onValueChange={setSelectedProviders}

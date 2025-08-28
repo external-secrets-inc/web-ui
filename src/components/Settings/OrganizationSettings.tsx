@@ -19,7 +19,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import SettingsSection from './SettingsSection';
 import { Skeleton } from '@/components/ui/skeleton';
-import { LucideCheck, LucideEdit, LucideMoreVertical, LucidePlus, LucideTrash2, LucideX } from "lucide-react";
+import { LucideCheck, LucideEdit, LucideMoreVertical, LucidePlus, LucideShieldCheck, LucideTrash2, LucideX } from "lucide-react";
 import { DataProvider, DataTable, defineColumns } from "@/components/ui/DataProvider";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { FeatureItemDeleteAction } from "../FeatureCollection/FeatureItemDeleteAction";
@@ -28,7 +28,6 @@ import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import useListUsersWithRoles from "@/services/users/queries/useListUsersWithRoles";
 import { CreateUserDataPayload, UpdateUserDataPayload, UserForm } from "@/services/users/Users.interface";
-import { Badge } from "@/components/ui/badge"
 import UserDialogForm from "./UserDialogForm";
 import { AxiosError } from "axios";
 import { ApiHttpError } from "@/types";
@@ -40,6 +39,7 @@ import useDeleteAccountData from "@/services/account/mutations/useDeleteAccountD
 import useUpdateUserData from "@/services/users/mutations/useUpdateUserData";
 import useCreateUserData from "@/services/users/mutations/useCreateUserData";
 import useDeleteUserData from "@/services/users/mutations/useDeleteUserData";
+import { BadgeGroup } from "@/components/ui/BadgeGroup";
 
 const formSchema = z.object({
   contact_email: z.string().email({ message: "Invalid email address" }),
@@ -188,13 +188,17 @@ const OrganizationSettings: React.FC = () => {
         if (!roles || roles.length === 0) return null;
 
         return (
-          <div className="flex flex-wrap gap-2">
-            {roles.map(role => (
-              <Badge key={role} variant="secondary">
-                <p className={!isActive ? 'text-muted-foreground' : ''}>{role}</p>
-              </Badge>
-            ))}
-          </div>
+          <BadgeGroup
+            className="w-56"
+            maxCount="auto"
+            badges={roles.map(role => ({
+              id: `role-${role}`,
+              label: role,
+              variant: "secondary",
+              className: !isActive ? 'text-muted-foreground' : '',
+              icon: <LucideShieldCheck />
+            }))}
+          />
         );
       }
     }),
@@ -478,7 +482,7 @@ const OrganizationSettings: React.FC = () => {
             isLoading={isLoadingUsers}
             meta={usersManagementTableMeta}
           >
-            <DataTable />
+            <DataTable className="max-w-full min-w-0" />
           </DataProvider>
           <Dialog
             open={isAddUserDialogOpen}

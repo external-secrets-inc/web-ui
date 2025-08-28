@@ -26,7 +26,7 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import { MultiSelect } from "@/components/ui/MultiSelect";
+import { EsiSelect } from "@/components/ui/EsiSelect";
 import { AuditSecretData, filterSchema, FilterSchema } from "./Audit.interfaces";
 import useGetAuditProviders from "@/services/audit/queries/useGetAuditProviders";
 import useGetPolicies from "@/services/audit/queries/useGetPolicies";
@@ -159,7 +159,7 @@ const DateRangeFilter = ({
 };
 
 type ArrayKeys = Extract<keyof FilterSchema, "providerIDs" | "secretIDs" | "policyIDs" | "duplicateIDs" | "accessorNames">
-const MultiSelectFilter = ({
+const EsiSelectFilter = ({
   formControl,
   name,
   label,
@@ -181,7 +181,8 @@ const MultiSelectFilter = ({
     render={({ field }) => (
       <FormItem>
         <FormLabel>{label}</FormLabel>
-        <MultiSelect
+        <EsiSelect
+          mode="multiple"
           options={options}
           onValueChange={field.onChange}
           value={field.value}
@@ -350,7 +351,7 @@ const FilterDialogForm = (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="grid gap-4 grid-cols-1">
                 {/* Provider Filter */}
-                <MultiSelectFilter
+                <EsiSelectFilter
                   key={"provider" + resetKey}
                   formControl={form.control}
                   name="providerIDs"
@@ -360,7 +361,7 @@ const FilterDialogForm = (
                 />
 
                 {/* Secret Name Input */}
-                <MultiSelectFilter
+                <EsiSelectFilter
                   key={"secret_id" + resetKey}
                   formControl={form.control}
                   name="secretIDs"
@@ -370,7 +371,7 @@ const FilterDialogForm = (
                 />
 
                 {/* Policy Input */}
-                <MultiSelectFilter
+                <EsiSelectFilter
                   key={"policy_id" + resetKey}
                   formControl={form.control}
                   name="policyIDs"
@@ -404,7 +405,7 @@ const FilterDialogForm = (
 
                   {/* Duplicates specific */}
                   {duplicatesVisible && (
-                    <MultiSelectFilter
+                    <EsiSelectFilter
                       key={"duplicate_id" + resetKey}
                       formControl={form.control}
                       name="duplicateIDs"
@@ -426,7 +427,7 @@ const FilterDialogForm = (
                   />
                   {/* Accessors specific */}
                   {accessorsVisible && (
-                    <MultiSelectFilter
+                    <EsiSelectFilter
                       key={"accessor_id" + resetKey}
                       formControl={form.control}
                       name="accessorNames"

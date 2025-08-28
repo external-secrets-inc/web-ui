@@ -1,0 +1,303 @@
+import { Meta, Canvas, Story, Controls, Primary, Description } from '@storybook/blocks';
+import * as EsiSelectStories from './EsiSelect.stories.tsx';
+
+<Meta of={EsiSelectStories} name="Documentation" />
+
+# EsiSelect Component
+
+<Description of={EsiSelectStories} />
+
+Searchable Select supporting both multiple and single modes. Multiple mode retains grouping, tri-state group toggles that respect the current filter, and badge overflow handling via a compact "+N" counter with tooltip. Single mode removes checkboxes/toggles and shows a right-aligned checkmark on the selected row.
+
+## Context and Design
+
+- **Search behavior**: uses CMDK's `defaultFilter` but matches against option labels only (IDs are used strictly for identity/hover stability).
+- **Group toggles**: each group heading renders a checkbox (checked/indeterminate/unchecked). Toggling affects only items visible under the active search.
+- **Overflow badges**: selected values render as badges; overflow collapses into a counter badge with a tooltip listing hidden selections. Wrap stories/apps with `<TooltipProvider/>`.
+- **Customization**: customize selected badges and option rows without breaking truncation.
+- **Accessibility/UX**: keyboard navigation via CMDK; Tooltip semantics via Radix.
+
+## Import
+
+```tsx
+import { EsiSelect } from '@/components/ui/EsiSelect';
+```
+
+The alias path is exported by a barrel file so downstream imports remain stable if we reorganize internals.
+
+## Primary
+
+<Primary />
+
+<Controls />
+
+## Examples
+
+### Multiple Mode
+
+#### Multiple: Default (Grouped)
+<Canvas of={EsiSelectStories.MultipleDefault} />
+Standard multiple selection with grouped options. Group headings include tri-state checkboxes that respect the current search filter. Checked = all visible selected; indeterminate = partial; unchecked = none.
+
+#### Multiple: With Icons and Groups
+<Canvas of={EsiSelectStories.MultipleWithIconsAndGroups} />
+Demonstrates optional icons per option and confirms that labels are the sole basis for fuzzy matching. Shows how icons enhance visual recognition while maintaining search functionality.
+
+#### Multiple: Default (Ungrouped)
+<Canvas of={EsiSelectStories.MultipleDefaultUngrouped} />
+Ungrouped options behave like a standard searchable Multi Select. The footer exposes "Select/Deselect All" for the current filter, making it easy to manage large lists without grouping.
+
+#### Multiple: Fixed Overflow (maxCount=3)
+<Canvas of={EsiSelectStories.MultipleFixedOverflow} />
+Fixed mode clamps the number of displayed badges to exactly 3. Use when layout predictability is preferred over dynamic measurement. Extra selections are hidden behind a "+N more" counter.
+
+#### Multiple: Overflow (Auto Badge Count)
+<Canvas of={EsiSelectStories.MultipleOverflowAuto} />
+Demonstrates automatic overflow handling with `maxCount="auto"`. The component dynamically calculates how many badges fit in the available space and automatically shows a "+N more" counter for overflow. Perfect for responsive layouts where badge count varies based on container width.
+
+#### Multiple: Large Dataset (200 items, grouped)
+<Canvas of={EsiSelectStories.MultipleLargeDataset} />
+Validates search behavior, group toggles under filtering, and overflow handling with a realistic dataset size. Good for testing performance and user experience with large option sets.
+
+#### Multiple: Form Integration (react-hook-form)
+<Canvas of={EsiSelectStories.MultipleWithForm} />
+Demonstrates integration with `react-hook-form` via project Form wrappers. Shows proper form validation, error handling, and controlled component patterns.
+
+#### Multiple: Custom Badge Styling & Content
+<Canvas of={EsiSelectStories.MultipleCustomBadges} />
+Advanced badge customization with dynamic styling based on option groups, custom badge content including icons and group badges, and enhanced surface properties. The extra badge accepts `id`, `variant`, `className`, optional `icon`, and a render function `children(countNode)` for full control.
+
+#### Multiple: Custom Option Rendering
+<Canvas of={EsiSelectStories.MultipleCustomOptionRenderer} />
+Rich option row customization with enhanced icon backgrounds, group badges, secondary information display, and smooth animations. Use `renderOption` to compose rows while preserving default styling and accessibility. You receive `checkboxNode`, `iconNode`, `labelNode`, and `isSelected` to build sophisticated rows.
+
+#### Multiple: Combined Badge & Option Customizations
+<Canvas of={EsiSelectStories.MultipleCombinedCustomizations} />
+Showcases both badge and option customizations working together seamlessly. Demonstrates how to create a cohesive design system across all parts of the component using shared customization utilities. Perfect example of building professional-grade select components.
+
+### Single Mode
+
+#### Single: Default (Grouped)
+<Canvas of={EsiSelectStories.SingleDefault} />
+Standard single selection with grouped options. Group headings are static (no checkboxes). Clicking an option selects it and automatically closes the popover for immediate feedback.
+
+#### Single: With Icons and Groups
+<Canvas of={EsiSelectStories.SingleWithIcons} />
+Demonstrates single selection with icons and groups. No group toggles or footer actions needed since only one option can be selected. Clean, focused interface perfect for configuration dialogs.
+
+#### Single: Default (Ungrouped)
+<Canvas of={EsiSelectStories.SingleUngrouped} />
+Simple single selection without grouping. Clean, focused interface ideal for simple choice scenarios like selecting a country, language, or preference.
+
+#### Single: Large Dataset (200 items, grouped)
+<Canvas of={EsiSelectStories.SingleLargeDataset} />
+Validates search behavior in single mode with a realistic dataset size. No group toggles or overflow handling needed since only one option can be selected. Good for testing search performance.
+
+#### Single: Form Integration
+<Canvas of={EsiSelectStories.SingleWithForm} />
+Demonstrates integration with `react-hook-form` for single selection. Shows proper form validation, error handling, and controlled component patterns in single mode.
+
+#### Single: Custom Option Rendering
+<Canvas of={EsiSelectStories.SingleCustomOptionRenderer} />
+Advanced option customization with circular icon backgrounds, enhanced typography, custom selection indicators, and smooth transitions. Shows the full flexibility of `renderOption` in single mode while maintaining accessibility and performance.
+
+#### Single: Custom Trigger Display
+<Canvas of={EsiSelectStories.SingleCustomTrigger} />
+Demonstrates single mode trigger customization with enhanced styling, custom icon backgrounds, group badges, and surface props. Shows how to create rich trigger displays that match your design system and provide better user context.
+
+#### Single: Combined Trigger & Option Customizations
+<Canvas of={EsiSelectStories.SingleCombinedCustomizations} />
+Showcases both trigger and option customizations working together harmoniously. Demonstrates how to create a cohesive design system across the trigger display and option rows using the same shared customization utilities. Perfect example of building professional-grade single select components.
+
+## API Highlights
+
+### Core Props
+- `options: { label: string; value: string; icon?: React.ComponentType; group?: string }[]`
+- **Multiple mode**: `mode="multiple"`, `onValueChange(values: string[])`, `defaultValue?: string[]`, `maxCount?: number | 'auto'`
+- **Single mode (default)**: `mode?: 'single'`, `onValueChange(value: string | null)`, `defaultValue?: string | null`
+
+### Customization Props
+
+#### Option Customization
+- `renderOption?(ctx)`: custom row content with full control over layout and styling
+- `optionItemClassName?`: simple className override for option rows
+- `optionItemProps?`: customize option row surface properties (static or per-option function)
+
+#### Badge Customization (Multiple Mode Only)
+- `selectedBadgeProps?`: customize badge appearance (static or per-option function)
+- `renderSelectedBadge?(ctx)`: custom badge content layout with full control
+- `selectedExtraBadge?`: customize the "+N more" counter badge
+- `selectedBadgeGroupClassName?`: customize the BadgeGroup container
+
+#### Trigger Customization (Single Mode Only)
+- `renderSelectedTrigger?(ctx)`: custom single mode trigger display
+- `selectedTriggerProps?`: customize single mode trigger surface properties
+
+### Type Definitions
+
+```ts
+type RenderOptionCtx = {
+  option: { label: string; value: string; icon?: React.ComponentType; group?: string };
+  isSelected: boolean;
+  checkboxNode: React.ReactNode;
+  iconNode?: React.ReactNode;
+  labelNode: React.ReactNode;
+}
+
+type RenderSelectedBadgeCtx = {
+  option: { label: string; value: string; icon?: React.ComponentType; group?: string };
+  resolved: BadgeItem;
+  labelNode: React.ReactNode;
+  iconNode?: React.ReactNode;
+  remove: () => void;
+  removeNode: React.ReactNode;
+}
+
+type RenderSelectedTriggerCtx = {
+  option: { label: string; value: string; icon?: React.ComponentType; group?: string };
+  selectedValue: string;
+  labelNode: React.ReactNode;
+  iconNode?: React.ReactNode;
+}
+```
+
+## Customization Patterns
+
+### Value-or-Function Props
+Many customization props accept either a static value or a function that receives context:
+
+#### Static Values
+```tsx
+selectedBadgeProps={{ variant: "outline", className: "bg-blue-100" }}
+selectedTriggerProps={{ className: "bg-green-50 border-green-200" }}
+optionItemProps={{ className: "hover:bg-blue-50" }}
+```
+
+#### Dynamic Functions
+```tsx
+selectedBadgeProps={(option) => ({
+  className: option.group === "Team" ? "bg-blue-100" : "bg-gray-100"
+})}
+
+selectedTriggerProps={(ctx) => ({
+  className: ctx.option.group === "Engineering" ? "bg-blue-50" : "bg-gray-50"
+})}
+
+optionItemProps={(ctx) => ({
+  className: ctx.isSelected ? "bg-primary/10" : "hover:bg-muted/50"
+})}
+```
+
+### Context-Aware Rendering
+Custom render functions receive rich context for sophisticated customization:
+
+```tsx
+renderSelectedBadge={({ option, labelNode, iconNode, removeNode }) => (
+  <div className="flex items-center gap-2">
+    {iconNode && <div className="w-4 h-4 text-blue-600">{iconNode}</div>}
+    <span className="font-medium">{labelNode}</span>
+    <Badge variant="outline">{option.group}</Badge>
+    {removeNode}
+  </div>
+)}
+
+renderSelectedTrigger={({ option, iconNode }) => (
+  <div className="flex items-center gap-2">
+    {iconNode && <div className="w-5 h-5 bg-blue-100 rounded-full">{iconNode}</div>}
+    <span>{option.label}</span>
+    <Badge>{option.group}</Badge>
+  </div>
+)}
+```
+
+## Filtering Model
+
+Fuzzy matching delegates to CMDK's `defaultFilter`, but it runs against `option.label` exclusively. Option `value` is used for identity and stable selection/hover.
+
+## Group Tri‑State Logic
+
+Group checkbox state is derived from the set of currently visible items in that group under the active search:
+
+- **checked**: all visible group items selected
+- **indeterminate**: some but not all visible group items selected
+- **unchecked**: none of the visible group items selected
+
+Toggling selects/deselects only those visible items.
+
+## Overflow Details
+
+In `auto` mode, a resize observer determines how many badges fit without wrapping; overflow collapses into an extra counter badge with a tooltip. Wrap with `<TooltipProvider/>`.
+
+### Overflow Modes
+- **`maxCount: "auto"`**: Dynamically calculates how many badges fit, shows "+N more" for overflow
+- **`maxCount: number`**: Fixed limit, shows exactly N badges + "+N more" counter
+- **`maxCount: undefined`**: Shows all badges (may wrap to multiple lines)
+
+## Real-World Usage Examples
+
+### Team Member Selection (Multiple Mode)
+```tsx
+<EsiSelect
+  mode="multiple"
+  options={teamMembers}
+  placeholder="Select team members..."
+  maxCount="auto"
+  renderSelectedBadge={({ option, labelNode, iconNode, removeNode }) => (
+    <div className="flex items-center gap-2">
+      {iconNode && <div className="w-4 h-4 text-blue-600">{iconNode}</div>}
+      <span className="font-medium">{labelNode}</span>
+      <Badge variant="outline">{option.role}</Badge>
+      {removeNode}
+    </div>
+  )}
+  selectedBadgeProps={(option) => ({
+    className: option.department === "Engineering" ? "bg-blue-100" : "bg-gray-100"
+  })}
+/>
+```
+
+### Environment Selection (Single Mode)
+```tsx
+<EsiSelect
+  mode="single"
+  options={environments}
+  placeholder="Choose environment..."
+  renderSelectedTrigger={({ option, iconNode }) => (
+    <div className="flex items-center gap-2">
+      {iconNode && <div className="w-5 h-5 bg-green-100 rounded-full">{iconNode}</div>}
+      <span className="font-medium">{option.label}</span>
+      <Badge variant="outline">{option.environment}</Badge>
+    </div>
+  )}
+  selectedTriggerProps={{ className: "bg-green-50 border-green-200" }}
+/>
+```
+
+## Controlled Single Value: null vs empty string
+
+- In single mode, the `value` prop has three distinct meanings:
+  - `undefined`: uncontrolled (component manages its own selection)
+  - `null`: controlled empty (clears the selection)
+  - `""` (empty string): a valid selected value (useful when your domain treats empty as a real option)
+
+See the "Controlled vs Uncontrolled (Normalization)" story below to see these behaviors in action.
+
+## Controlled vs Uncontrolled (Normalization)
+
+Internally, EsiSelect normalizes selection state to an array of strings (`selectedValues: string[]`) to keep behavior consistent across modes:
+
+- Multiple mode
+  - `value === undefined` → uncontrolled (component manages selection)
+  - `value === []` → controlled empty (cleared)
+  - `value === [..]` → controlled selected values
+- Single mode
+  - `value === undefined` → uncontrolled
+  - `value === null` → controlled empty (cleared)
+  - `value === string` (including `""`) → controlled selected value
+
+See the "Controlled vs Uncontrolled (Normalization)" story for hands-on examples.
+
+
+### Live examples
+
+<Canvas of={EsiSelectStories.ControlledNormalizationSemantics} />

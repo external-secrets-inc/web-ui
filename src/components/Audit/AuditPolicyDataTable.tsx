@@ -18,7 +18,7 @@ import PolicyDialogForm from "./PolicyDialogForm";
 import { AssignProvidersDialog } from "./AssignProvidersDialog";
 import useAssignProviderPolicy from "@/services/audit/mutations/useAssignProviderPolicy";
 import useUnassignProviderPolicy from "@/services/audit/mutations/useUnassignProviderPolicy";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import useEditPolicy, { EditPolicyVariables } from "@/services/audit/mutations/useEditPolicy";
 import { AUDIT_QUERY_STALE_TIME, POLICY_TRIGGER_CONDITIONS_MAP } from "@/components/Audit/Audit.constants";
 import useGetDestinations from "@/services/audit/queries/useGetDestinations";
@@ -99,24 +99,22 @@ export default function AuditPolicyDataTable({ tenantID, listenerID }: { tenantI
         }
 
         return (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex items-center gap-2">
-                  <span>
-                    {triggers.length} trigger{triggers.length > 1 ? 's' : ''}
-                  </span>
-                  <LucideCircleHelp className="h-4 w-4 text-warning" />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs whitespace-pre-wrap text-left">
-                {triggers?.map((trigger) => {
-                  const destinationLabels = trigger.destinationIdentifiers.map(id => destinationsMap[id]?.label || id);
-                  return `• ${destinationLabels.join(", ")} → ${POLICY_TRIGGER_CONDITIONS_MAP[trigger.condition]?.label || trigger.condition}`;
-                }).join("\n")}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-2">
+                <span>
+                  {triggers.length} trigger{triggers.length > 1 ? 's' : ''}
+                </span>
+                <LucideCircleHelp className="h-4 w-4 text-warning" />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-xs whitespace-pre-wrap text-left">
+              {triggers?.map((trigger) => {
+                const destinationLabels = trigger.destinationIdentifiers.map(id => destinationsMap[id]?.label || id);
+                return `• ${destinationLabels.join(", ")} → ${POLICY_TRIGGER_CONDITIONS_MAP[trigger.condition]?.label || trigger.condition}`;
+              }).join("\n")}
+            </TooltipContent>
+          </Tooltip>
         );
       }
     }),

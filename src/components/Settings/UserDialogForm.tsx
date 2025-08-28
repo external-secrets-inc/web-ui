@@ -20,7 +20,7 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import { MultiSelect } from "@/components/ui/MultiSelect";
+import { EsiSelect } from "@/components/ui/EsiSelect";
 import InputPassword from "@/components/ui/InputPassword";
 
 const getSchema = (selectedUserId: string | null) => {
@@ -131,7 +131,8 @@ const UserDialogForm = ({ selectedUserId, userForm, onSubmit, onCancel }: {
                 <FormItem>
                   <FormLabel>Roles</FormLabel>
                   <FormControl>
-                    <MultiSelect
+                    <EsiSelect
+                      mode="multiple"
                       options={rolesOptions}
                       onValueChange={field.onChange}
                       defaultValue={field.value}

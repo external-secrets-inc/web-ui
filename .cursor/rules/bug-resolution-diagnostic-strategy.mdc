@@ -1,0 +1,276 @@
+---
+description: Enforce diagnostic-first discipline: enumerate 5–7 plausible sources, narrow to 1–2 most likely, and add targeted logs to validate assumptions before any code fix.
+alwaysApply: false
+---
+<bug_resolution_diagnostic_first>
+
+  <interpretation_of_terms>
+    <term_definition_source>
+    Capitalized imperative keywords (MUST, SHOULD, etc.) used in this rule follow the definitions outlined in `.cursor/rules/writing-llm-rules.mdc`.
+    </term_definition_source>
+  </interpretation_of_terms>
+
+  <objective>
+  Enforce a diagnostic-first discipline when resolving bugs: enumerate 5–7 plausible sources, narrow to the 1–2 most likely, and add targeted logs to validate assumptions before implementing any code fix.
+  </objective>
+
+  <scope_and_triggers>
+    <summary>When This Rule Applies</summary>
+    <details>
+    - Applies whenever a bug is reported, reproduced, or suspected across app layers (UI, services, backend).
+    - Triggers at the start of a bug task and repeats if initial hypotheses are falsified.
+    - This rule MUST be followed before any code changes are made to fix the bug.
+    </details>
+  </scope_and_triggers>
+
+  <core_principles>
+    <principle name="breadth_before_depth">
+      <summary>Generate 5–7 Distinct, Plausible Sources</summary>
+      <details>
+      - MUST list 5–7 plausible sources before narrowing down.
+      - Consider diverse categories: UI state, data fetching, API contracts, concurrency, auth, environment, side effects, backend invariants.
+      - Each hypothesis MUST be distinct and address a different potential root cause.
+      </details>
+    </principle>
+
+    <principle name="evidence_before_edits">
+      <summary>Validate Hypotheses with Instrumentation Before Changing Logic</summary>
+      <details>
+      - MUST add targeted diagnostic logs to falsify/confirm the top hypotheses.
+      - Code changes to fix the bug MUST NOT be implemented until hypotheses are validated.
+      - Logs MUST be designed to unambiguously confirm or falsify each hypothesis.
+      </details>
+    </principle>
+
+    <principle name="sensitivity_aware_logging">
+      <summary>Never Log Secrets/PII; Follow Console Log Policies</summary>
+      <details>
+      - MUST follow Console Log Management Guidelines for sensitive data handling.
+      - MUST redact or omit sensitive fields; prefer whitelisting safe fields.
+      - MUST use correlation/session IDs to tie flows together without exposing sensitive data.
+      </details>
+    </principle>
+
+    <principle name="cleanup_discipline">
+      <summary>Remove Temporary Logs Once Validated or When Task Nears Completion</summary>
+      <details>
+      - Temporary diagnostic logs MUST be removed when the diagnostic objective is achieved.
+      - MUST follow Console Log Management Guidelines for removal timing.
+      - Only structured warnings/errors that are long-term useful SHOULD be preserved.
+      </details>
+    </principle>
+  </core_principles>
+
+  <process>
+    <step name="reproduce_and_baseline">
+      <summary>Step 1: Establish Reliable Reproduction</summary>
+      <details>
+      - MUST reproduce the bug and capture minimal steps, environment, and baseline observations.
+      - MUST document errors, network traces, inputs/outputs, and any error signatures.
+      - If not reproducible, MUST first establish a reliable reproduction before proceeding.
+      </details>
+    </step>
+
+    <step name="hypothesize_broadly">
+      <summary>Step 2: List 5–7 Plausible Sources</summary>
+      <details>
+      - MUST generate 5–7 distinct hypotheses covering:
+        1. UI state/prop flow and memoization
+        2. Data fetching layer (query keys, caching, staleness)
+        3. API contract mismatches (shape, status codes, timeouts)
+        4. Concurrency/race conditions (effects, debounced handlers)
+        5. Auth/permissions/feature flags/tenancy
+        6. Environment/config differences (dev/prod, region, time zone)
+        7. Side effects: local storage, retries, re-renders
+        8. Backend invariants/data quality, pagination, sorting
+        9. Error handling and edge-case branching
+      - Each hypothesis MUST be specific and address a different potential root cause.
+      </details>
+    </step>
+
+    <step name="converge_to_most_likely">
+      <summary>Step 3: Select 1–2 Most Likely Hypotheses</summary>
+      <details>
+      - MUST prioritize 1–2 hypotheses based on:
+        - Proximity to recent changes
+        - Error signatures/stack traces
+        - Boundary crossings (client/server, async boundaries)
+        - Data flow chokepoints (selectors, transformations, adapters)
+        - Similar prior incidents
+      - MUST provide rationale for why these hypotheses are most likely.
+      </details>
+    </step>
+
+    <step name="instrument_before_fix">
+      <summary>Step 4: Add Targeted Diagnostic Logs</summary>
+      <details>
+      - MUST add logs designed to falsify/confirm the top hypotheses.
+      - MUST follow Console Log Management Guidelines (sensitive data, grouping, tidy formatting).
+      - MUST use:
+        - Clear prefixes: [ComponentOrModule] [Hypothesis-ID]
+        - console.groupCollapsed / groupEnd to scope sessions
+        - Logging raw inputs/outputs at boundaries
+        - Correlation/session IDs to tie flows together
+      - MUST pause after instrumentation; DO NOT implement the fix yet.
+      </details>
+    </step>
+
+    <step name="validate_hypotheses">
+      <summary>Step 5: Confirm or Falsify Hypotheses</summary>
+      <details>
+      - MUST re-run the reproduction and examine logs.
+      - MUST determine if each hypothesis is confirmed or falsified.
+      - If falsified, MUST iterate: promote next hypothesis(es) and repeat instrumentation.
+      - If confirmed, proceed to implement minimal fix (outside this rule's scope).
+      </details>
+    </step>
+
+    <step name="cleanup_and_document">
+      <summary>Step 6: Remove Temporary Logs and Document Findings</summary>
+      <details>
+      - MUST remove temporary diagnostic logs when objective is achieved.
+      - MUST summarize validated hypothesis and evidence in PR description.
+      - MUST ensure no sensitive data remains in logs.
+      </details>
+    </step>
+  </process>
+
+  <checklists>
+    <checklist name="hypothesis_generation">
+      <summary>Hypothesis Checklist (Generate 5–7)</summary>
+      <items>
+        - UI state/props/memoization
+        - Data fetching/query key/cache/staleness
+        - API contract/transport/timeout
+        - Concurrency/race conditions/effect ordering
+        - Auth/permissions/feature flags/tenancy
+        - Environment/config/time zone/build differences
+        - Data integrity/invariants/pagination/sorting
+        - Error handling/edge branches
+        - Side effects (local storage, retries, re-renders)
+        - Backend service state/configuration
+      </items>
+    </checklist>
+
+    <checklist name="instrumentation_quality">
+      <summary>Instrumentation Checklist</summary>
+      <items>
+        - Have I created a short, unique Hypothesis-ID?
+        - Are logs grouped and clearly prefixed?
+        - Am I logging both inputs and outputs at key boundaries?
+        - Am I avoiding secrets/PII and redacting where necessary?
+        - Do I have a correlation/session ID to follow the flow?
+        - Do I know exactly what observation will confirm or falsify?
+        - Are logs designed to be unambiguous in their interpretation?
+      </items>
+    </checklist>
+
+    <checklist name="cleanup_verification">
+      <summary>Cleanup Checklist</summary>
+      <items>
+        - Remove console.log/console.debug added for diagnostics
+        - Keep only structured warnings/errors that are long-term useful
+        - Note validated hypothesis and evidence in the PR
+        - Ensure no sensitive data remains in logs
+        - Verify logs are removed from all relevant files
+      </items>
+    </checklist>
+  </checklists>
+
+  <templates>
+    <template name="diagnostic_plan">
+      <summary>Diagnostic Plan Template (Use in Task/PR)</summary>
+      <content>
+      - Bug: <one-line summary>
+      - Repro: <steps/env>
+      - Hypotheses (5–7):
+        1) …
+        2) …
+        3) …
+        4) …
+        5) …
+        6) …
+        7) …
+      - Prioritized (1–2): H1, H3
+      - Instrumentation Plan:
+        - Hypothesis-ID(s): H1, H3
+        - Where to log: <files/functions/components>
+        - What to log: <inputs/outputs/flags/state>
+        - Sensitive data handling: <redaction strategy>
+      - Validation Criteria:
+        - Confirmed if …
+        - Falsified if …
+      - Cleanup Plan: Remove temporary logs once confirmed/falsified.
+      </content>
+    </template>
+  </templates>
+
+  <examples>
+    <good_example title="TypeScript (web-ui) - Stale Query Key Hypothesis">
+      ```typescript
+      // Hypothesis-ID: H1 (stale query key causing outdated data)
+      console.groupCollapsed(`[UserList][H1] session=${sessionId}`);
+      console.debug(`[UserList][H1] props`, { orgId, filters });
+      console.debug(`[UserList][H1] queryKey`, getUsersQueryKey({ orgId, filters }));
+      console.debug(`[UserList][H1] data-before-render`, users?.length);
+      console.groupEnd();
+      ```
+    </good_example>
+
+    <good_example title="TypeScript (web-ui) - Race Condition Hypothesis">
+      ```typescript
+      // Hypothesis-ID: H2 (race between search debounce and navigation)
+      console.groupCollapsed(`[Search][H2] session=${sessionId}`);
+      console.debug(`[Search][H2] debouncedTerm`, debouncedTerm);
+      console.debug(`[Search][H2] route`, location.pathname);
+      console.debug(`[Search][H2] inFlightReqIds`, inFlightRequestIds.current);
+      console.groupEnd();
+      ```
+    </good_example>
+
+    <good_example title="Go (backend) - Pagination Boundary Hypothesis">
+      ```go
+      // Hypothesis-ID: H3 (pagination off-by-one at boundary)
+      log := logger.With("hypothesis", "H3", "session", sessionID, "route", r.URL.Path)
+      log.Debug("incoming params", "page", page, "size", size)
+      items, next, err := svc.List(ctx, page, size)
+      log.Debug("service result", "items_len", len(items), "next", next, "err", err)
+      ```
+    </good_example>
+  </examples>
+
+  <sensitive_data_policy>
+    <summary>Handling Sensitive Information in Logs</summary>
+    <details>
+    - MUST NOT log secrets, tokens, passwords, PII.
+    - MUST redact or omit sensitive fields; prefer whitelisting safe fields.
+    - MUST adhere to Console Log Management Guidelines for addition and removal.
+    - MUST use correlation IDs that don't expose sensitive information.
+    </details>
+  </sensitive_data_policy>
+
+  <anti_patterns>
+    <summary>Behaviors to Avoid</summary>
+    <items>
+      - Skipping hypothesis breadth (listing fewer than 5) before jumping to a fix
+      - Changing code without any validating instrumentation
+      - Logging without structure/prefixes/groups/correlation IDs
+      - Leaving temporary logs in code after diagnosis
+      - Implementing fixes before validating hypotheses
+      - Logging sensitive data even temporarily
+    </items>
+  </anti_patterns>
+
+  <exit_criteria>
+    <summary>When This Diagnostic Phase is Complete</summary>
+    <details>
+    - At least 5–7 plausible sources listed with rationale
+    - 1–2 prioritized hypotheses identified with clear reasoning
+    - Instrumentation added that can unambiguously confirm/falsify
+    - One validation cycle completed, or iteration plan documented
+    - Temporary logs scheduled for removal post-validation
+    - Ready to proceed with minimal, targeted code fix
+    </details>
+  </exit_criteria>
+
+</bug_resolution_diagnostic_first>

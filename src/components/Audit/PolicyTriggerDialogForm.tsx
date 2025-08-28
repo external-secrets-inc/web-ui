@@ -18,7 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
-import { MultiSelect } from "@/components/ui/MultiSelect";
+import { EsiSelect } from "@/components/ui/EsiSelect";
 import { z } from "zod";
 import { PolicyTriggerTableData, PolicyTriggerConditionEnum } from "./Audit.interfaces";
 import { POLICY_TRIGGER_CONDITIONS_MAP } from "@/components/Audit/Audit.constants";
@@ -83,7 +83,8 @@ const PolicyTriggerDialogForm = ({
               <FormItem>
                 <FormLabel>Destinations</FormLabel>
                 <FormControl>
-                  <MultiSelect
+                  <EsiSelect
+                    mode="multiple"
                     options={destinationOptions}
                     onValueChange={field.onChange}
                     value={field.value}

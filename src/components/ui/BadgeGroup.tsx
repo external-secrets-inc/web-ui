@@ -1,4 +1,12 @@
+import { A11yDivButton } from "@/components/ui/A11yDivButton";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
+import { DataStateEventBridge } from "@/components/ui/DataStateEventBridge";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  PopoverAnchor,
+} from "@/components/ui/popover";
 import {
   Tooltip,
   TooltipContent,
@@ -7,6 +15,7 @@ import {
 import { Trimmer } from "@/components/ui/Trimmer";
 import { cn } from "@/lib/utils";
 import * as React from "react";
+import type { Measurable } from "@radix-ui/rect";
 
 /**
  * Global resize observer for all BadgeGroup instances.
@@ -82,6 +91,18 @@ export interface BadgeItem extends Omit<BadgeProps, "children"> {
       }) => React.ReactNode);
 }
 
+function renderIconNode(icon?: BadgeItem["icon"]): React.ReactNode | undefined {
+  if (!icon) return undefined;
+  if (React.isValidElement(icon)) {
+    const el = icon as React.ReactElement<{ className?: string }>;
+    return React.cloneElement(el, {
+      className: cn("text-muted-foreground", el.props.className),
+    });
+  }
+  const IconComp = icon as React.ComponentType<{ className?: string }>;
+  return <IconComp className="text-muted-foreground" />;
+}
+
 export interface BadgeGroupProps {
   /** Array of badge items to display, in visual order (left → right). */
   badges: BadgeItem[];
@@ -106,7 +127,12 @@ export interface BadgeGroupProps {
    */
   extraBadge?: Omit<BadgeItem, "children"> & {
     children?: (count: React.ReactNode) => React.ReactNode;
+    /** Optional virtual anchor (e.g., EsiSelect trigger) to position the popover content against. */
+    popoverAnchorVirtualRef?: MeasurableRef;
+    /** When true, the popover content width matches the anchor element's width. */
+    matchPopoverContentWidthToAnchorVirtualRef?: boolean;
   };
+
   /**
    * Optional callback that is invoked whenever the layout (visible/hidden split)
    * is recalculated. Useful for consumers that need to react to the computed
@@ -138,14 +164,20 @@ function formatExtraCountNode({
 }) {
   return (
     /**
-     * The monospace font and a minimum width of 2 characters is used to ensure
+     * The monospace font and the invisible `+` sign is used to ensure
      * the badge is always a stable width when we remove the `+` sign. This is
      * very important to avoid constantly triggering the resize observer when we
      * wrap ALL the badges on auto max count mode when the parent dimensions are
      * at the threshold of wrapping.
      */
-    <span className="font-mono min-w-[2ch] text-center inline-block">
-      {showPlus ? `+${count}` : count}
+    <span
+      className={cn(
+        "font-mono text-center inline-block",
+        !showPlus && "-ml-[0.5ch] pr-[0.5ch]"
+      )}
+    >
+      <span className={cn(!showPlus && "invisible")}>+</span>
+      <span>{count}</span>
     </span>
   );
 }
@@ -195,15 +227,7 @@ function BadgeGroupItem({
     <span className="flex-1 min-w-0 truncate">{resolved.label}</span>
   );
 
-  const iconNode =
-    icon &&
-    (typeof icon === "function"
-      ? React.createElement(icon, {
-          className: "text-muted-foreground",
-        })
-      : React.cloneElement(icon, {
-          className: "text-muted-foreground",
-        }));
+  const iconNode = renderIconNode(icon);
 
   const defaultContent =
     typeof resolved.children === "function"
@@ -245,24 +269,55 @@ function BadgeGroupItem({
  * Tooltip listing hidden/wrapped badges.
  * Wraps a trigger (typically the extra counter badge) and shows the hidden items.
  */
+type MeasurableRef = React.RefObject<Measurable>;
+
 function HiddenBadgesTooltip({
   hiddenBadges,
   children,
+  popoverAnchorVirtualRef,
+  matchPopoverContentWidthToAnchorVirtualRef,
 }: {
   /** Hidden portion of the badge list. */
   hiddenBadges: BadgeItem[];
   /** Trigger to open the tooltip. */
   children: React.ReactNode;
+  /** Optional virtual anchor to position content against another element. */
+  popoverAnchorVirtualRef?: MeasurableRef;
+  /** When true, overlay content width matches the anchor element's width. */
+  matchPopoverContentWidthToAnchorVirtualRef?: boolean;
 }) {
   return (
-    <Tooltip>
-      <TooltipTrigger>{children}</TooltipTrigger>
-      <TooltipContent className="max-h-64 overflow-auto p-2">
-        <div className="flex flex-col gap-1 items-start">
+    <Popover>
+      {popoverAnchorVirtualRef ? (
+        <PopoverAnchor virtualRef={popoverAnchorVirtualRef} />
+      ) : null}
+      <Tooltip delayDuration={200}>
+        <PopoverTrigger asChild>
+          <TooltipTrigger asChild>
+            <DataStateEventBridge>
+              <A11yDivButton variant="unstyled">{children}</A11yDivButton>
+            </DataStateEventBridge>
+          </TooltipTrigger>
+        </PopoverTrigger>
+        <TooltipContent>View more</TooltipContent>
+      </Tooltip>
+      <PopoverContent
+        sticky="always"
+        align="end"
+        className={cn(
+          "min-w-full w-max max-w-[min(calc(100dvw-theme(spacing.4)),512px)] max-h-[min(456px,var(--radix-popover-content-available-height))] overflow-auto p-2 origin-[--radix-popover-content-transform-origin] shadow-lg",
+          matchPopoverContentWidthToAnchorVirtualRef &&
+            "min-w-[--radix-popover-trigger-width]"
+        )}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        onCloseAutoFocus={(e) => e.stopPropagation()}
+      >
+        <div className="flex flex-wrap gap-0.5 items-start">
           {hiddenBadges.map((hidden) => (
             <BadgeGroupItem
               key={hidden.id}
               item={hidden}
+              useTrimmer={true}
               defaults={{
                 variant: "secondary",
                 className: "min-w-0 max-w-full",
@@ -270,8 +325,8 @@ function HiddenBadgesTooltip({
             />
           ))}
         </div>
-      </TooltipContent>
-    </Tooltip>
+      </PopoverContent>
+    </Popover>
   );
 }
 
@@ -308,14 +363,7 @@ function ExtraBadge({
         config.children(countNode)
       ) : (
         <>
-          {config?.icon &&
-            (typeof config.icon === "function"
-              ? React.createElement(config.icon, {
-                  className: "text-muted-foreground",
-                })
-              : React.cloneElement(config.icon, {
-                  className: "text-muted-foreground",
-                }))}
+          {renderIconNode(config?.icon)}
           {countNode}
         </>
       )}
@@ -324,7 +372,13 @@ function ExtraBadge({
 
   if (hiddenBadges && hiddenBadges.length > 0) {
     return (
-      <HiddenBadgesTooltip hiddenBadges={hiddenBadges}>
+      <HiddenBadgesTooltip
+        hiddenBadges={hiddenBadges}
+        popoverAnchorVirtualRef={config?.popoverAnchorVirtualRef}
+        matchPopoverContentWidthToAnchorVirtualRef={
+          config?.matchPopoverContentWidthToAnchorVirtualRef
+        }
+      >
         {badgeContent}
       </HiddenBadgesTooltip>
     );
@@ -508,11 +562,11 @@ export const BadgeGroup = React.forwardRef<HTMLDivElement, BadgeGroupProps>(
         {/* Visible list */}
         <div
           className={cn(
-            "flex gap-1 min-w-0 flex-wrap",
+            "flex gap-x-0.5 gap-y-1 min-w-0 flex-wrap",
             isAutoMaxCount && "h-[--badge-height]"
           )}
         >
-          <div className="flex gap-1 min-w-0 flex-wrap flex-1 max-w-fit">
+          <div className="flex gap-x-0.5 gap-y-1 min-w-0 flex-wrap flex-1 max-w-fit">
             <BadgeList
               badges={visibleBadges}
               withTrimmerOnlyOnFirstItem={isAutoMaxCount}
@@ -550,11 +604,11 @@ export const BadgeGroup = React.forwardRef<HTMLDivElement, BadgeGroupProps>(
          */}
         {isAutoMaxCount && (
           <div
-            className="max-w-full flex min-w-0 gap-1 items-end flex-wrap-reverse absolute top-0 invisible pointer-events-none [&>*]:pointer-events-none"
+            className="max-w-full flex min-w-0 gap-x-0.5 gap-y-1 items-end flex-wrap-reverse absolute top-0 invisible pointer-events-none [&>*]:pointer-events-none"
             aria-hidden
           >
             <div
-              className="flex gap-1 flex-1 flex-wrap min-w-12"
+              className="flex gap-x-0.5 gap-y-1 flex-1 flex-wrap min-w-12"
               ref={observedMirroredBadgeListRef}
             >
               <BadgeList badges={badges} setBadgeRef={setBadgeRef} />
