@@ -310,6 +310,7 @@ function HiddenBadgesTooltip({
             "min-w-[--radix-popover-trigger-width]"
         )}
         onOpenAutoFocus={(e) => e.preventDefault()}
+        onCloseAutoFocus={(e) => e.stopPropagation()}
       >
         <div className="flex flex-wrap gap-0.5 items-start">
           {hiddenBadges.map((hidden) => (
