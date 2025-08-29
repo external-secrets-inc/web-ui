@@ -18,6 +18,7 @@ import {
   LucideShieldCheck,
   LucideUserCog,
   LucideWorkflow,
+  LucideComputer,
 } from "lucide-react";
 
 export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
@@ -70,6 +71,11 @@ export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
           url: "/findings/reused-secrets",
           icon: LucideSquareStack,
           renderAppendContent: <FindingsCountBadge />,
+        },
+        {
+          label: "Consumers",
+          url: "/findings/consumers",
+          icon: LucideComputer,
         },
       ],
     },

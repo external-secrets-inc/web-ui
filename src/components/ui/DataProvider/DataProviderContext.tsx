@@ -7,6 +7,7 @@ import {
   type SortingState,
   type ColumnSizingState,
   type RowData,
+  ColumnFiltersState,
 } from "@tanstack/react-table";
 import { type ProviderConfig, type DataProviderProps, type ProviderContextValue } from "./DataProvider.interfaces";
 
@@ -42,6 +43,7 @@ function useDataProvider<TData extends RowData>({
   const [sorting, setSorting] = React.useState<SortingState>([initialSort]);
   const [globalFilter, setGlobalFilter] = React.useState('');
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({});
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
 
   // Data validation in useMemo prevents unnecessary re-renders and provides early error detection
   const safeData = React.useMemo((): TData[] => {
@@ -63,12 +65,13 @@ function useDataProvider<TData extends RowData>({
   const table = useReactTable<TData>({
     data: safeData,
     columns,
-    state: { sorting, globalFilter, columnSizing },
+    state: { sorting, globalFilter, columnSizing, columnFilters },
     enableSortingRemoval: false,
     onColumnSizingChange: setColumnSizing,
     columnResizeMode: 'onChange',
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
+    onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -83,13 +86,15 @@ function useDataProvider<TData extends RowData>({
     sorting,
     globalFilter,
     columnSizing,
+    columnFilters,
     isLoading,
     emptyMessage,
     setSorting,
     setGlobalFilter,
     setColumnSizing,
+    setColumnFilters,
     table
-  }), [safeData, columns, sorting, globalFilter, columnSizing, setColumnSizing, isLoading, emptyMessage, table]);
+  }), [safeData, columns, sorting, globalFilter, columnSizing, columnFilters, setColumnSizing, isLoading, emptyMessage, table]);
 }
 
 /**

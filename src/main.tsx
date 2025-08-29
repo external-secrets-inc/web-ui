@@ -23,6 +23,7 @@ import {
   PageAuditInsights,
   PageAuditPolicies,
   PageAuditProviders,
+  PageConsumers,
   PageFindingDetails,
   PageFindings,
   PageGeneratorDetails,
@@ -542,6 +543,23 @@ const router = createBrowserRouter([
                     };
                   },
                 },
+              },
+            ],
+          },
+          {
+            path: "consumers",
+            element: <Outlet />,
+            handle: {
+              breadcrumb: (match: UIMatch) => ({
+                label: "Consumers",
+                path: match.pathname,
+                navigatable: true,
+              }),
+            },
+            children: [
+              {
+                index: true,
+                element: <PageConsumers />,
               },
             ],
           },

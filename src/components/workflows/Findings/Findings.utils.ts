@@ -6,6 +6,15 @@ export interface GroupedLocation {
   properties: string[];
 }
 
+
+export function equalLocation(a: FindingLocation, b: FindingLocation) : boolean {
+  return a.kind === b.kind &&
+  a.apiVersion === b.apiVersion &&
+  a.name === b.name &&
+  a.remoteRef.key === b.remoteRef.key &&
+  a.remoteRef.property === b.remoteRef.property;
+}
+
 /**
  * Determines the most frequently occurring key from a finding's locations.
  * This is used to identify the "main" or "dominant" secret key.
