@@ -1,5 +1,7 @@
 import { LayoutPage } from "@/components/layout";
+import { useSetBreadcrumb } from "@/components/layout/BreadcrumbsContext";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
+import { FindingFingerprintBadge } from "@/components/workflows/Findings/FindingFingerprintBadge";
 import { Loader } from "@/components/ui/Loader";
 import {
   Select,
@@ -12,9 +14,9 @@ import { Finding, FindingDetails, FindingLocation } from "@/components/workflows
 import {
   equalLocation,
   getDominantKey,
+  getPropertyForDominantKey,
   getStoreNames,
 } from "@/components/workflows/Findings/Findings.utils";
-import { useSetBreadcrumb } from "@/components/layout/BreadcrumbsContext";
 import useOrgLink from "@/hooks/useOrgLink";
 import useGetFinding from "@/services/findings/queries/useGetFinding";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
@@ -65,8 +67,10 @@ export function PageFindingDetails() {
     ? getDominantKey(finding) ?? finding.name
     : undefined;
 
-  // The dynamic breadcrumb will be updated once loadedDominantKey is available.
-  useSetBreadcrumb(location.pathname, loadedDominantKey);
+  // Prefer API-provided displayName if available; fallback to dominant key or finding name
+  const breadcrumbLabel = finding?.displayName ?? loadedDominantKey;
+  // The dynamic breadcrumb will be updated once breadcrumbLabel is available.
+  useSetBreadcrumb(location.pathname, breadcrumbLabel);
 
   const dominantKey = immediateDominantKey || loadedDominantKey;
 
@@ -97,15 +101,28 @@ export function PageFindingDetails() {
     );
   };
 
+  // Property associated with dominant key (if any)
+  const dominantProperty = finding
+    ? getPropertyForDominantKey(finding, dominantKey)
+    : undefined;
+
   const title = dominantKey ? (
-    <span className="flex items-center gap-2">
-      <LucideAsteriskSquare className="size-6 text-muted-foreground" />{" "}
-      {dominantKey}
+    <span className="flex items-center gap-2 flex-wrap">
+      <LucideAsteriskSquare className="size-6 text-muted-foreground" />
+      <span className="inline-flex items-baseline">
+        <span>{dominantKey}</span>
+        {dominantProperty && (
+          <span className="leading-none font-bold text-muted-foreground">
+            .{dominantProperty}
+          </span>
+        )}
+      </span>
+      <FindingFingerprintBadge seed={finding?.id} className="text-base [&>svg]:size-5 gap-2 pl-1.5" />
     </span>
   ) : (
     <span className="flex items-center gap-2">
-      <LucideAsteriskSquare className="size-6 text-muted-foreground" />{" "}
-      Reused Secret
+      <LucideAsteriskSquare className="size-6 text-muted-foreground" /> Reused
+      Secret
     </span>
   );
   const description = (

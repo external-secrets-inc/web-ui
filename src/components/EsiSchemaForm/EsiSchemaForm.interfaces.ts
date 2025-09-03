@@ -1,3 +1,5 @@
+import type { UISchemaMetadataRenderer } from "./renderers/renderers.interfaces";
+
 /**
  * Simple string-based option for select fields.
  * Used when the value and display label are the same.
@@ -57,12 +59,30 @@ export interface UISchemaField {
   pattern?: string;
   allowEmpty?: boolean;
   readOnly?: boolean;
+  /**
+   * Optional UI customization metadata provided by the backend schema
+   * to influence how this field should be rendered by the frontend.
+   *
+   * The metadata is intended to be consumed by field-type specific renderers
+   * that can override the default presentation (e.g., for select/multi-select
+   * fields rendering findings-like cards instead of plain labels).
+   */
+  uiMetadata?: UISchemaMetadata;
 }
 
 export interface UISchemaVisibleWhen {
   field: string;
   equal: unknown;
 }
+
+/**
+ * UI metadata contract passed from backend to hint custom renderers.
+ */
+export interface UISchemaMetadata {
+  renderer: UISchemaMetadataRenderer;
+}
+
+
 
 /**
  * Represents the different types of oneOf options supported in UI schemas.

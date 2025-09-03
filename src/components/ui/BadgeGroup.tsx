@@ -353,7 +353,10 @@ function ExtraBadge({
           ? ({
               id: config.id,
               variant: config.variant,
-              className: config.className,
+              className: cn(
+                config.className,
+                "hover:bg-accent hover:border-input-accent"
+              ),
             } as BadgeItem)
           : ({ id: "extra" } as BadgeItem)
       }

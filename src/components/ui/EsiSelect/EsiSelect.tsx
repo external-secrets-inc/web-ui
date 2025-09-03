@@ -42,8 +42,8 @@ import {
 } from "@/components/ui/tooltip";
 import { Trimmer } from "@/components/ui/Trimmer";
 import { cn } from "@/lib/utils";
-import { useMemo } from "react";
 import mergeRefs from "merge-refs";
+import { useMemo } from "react";
 
 /**
  * Context for EsiSelect component
@@ -409,7 +409,6 @@ export const EsiSelect = React.forwardRef<HTMLButtonElement, EsiSelectProps>(
     );
     const [internalIsOpen, setInternalIsOpen] = React.useState(defaultOpen);
 
-
     // Keep internal state in sync when value is controlled
     React.useEffect(() => {
       if (controlledArrayValue) {
@@ -498,8 +497,6 @@ export const EsiSelect = React.forwardRef<HTMLButtonElement, EsiSelectProps>(
     const handleClear = React.useCallback(() => {
       updateSelection([]);
     }, [updateSelection]);
-
-
 
     const contextValue = React.useMemo(
       () => ({
@@ -782,7 +779,6 @@ const EsiSelectCurrentBadges: React.FC = () => {
       badges={badges}
       maxCount={maxCount}
       className={cn("w-[stretch] -ml-1.5", selectedBadgeGroupClassName)}
-
       extraBadge={{
         id: "extra",
         variant: "outline",
@@ -1004,218 +1000,164 @@ const EsiSelectListOptions: React.FC = () => {
   const isMultiple = mode === "multiple";
   const isAnySelected = !isMultiple && selectedValues.length > 0;
 
-  // Group options by the `group` field
-  const groupedOptions = useMemo(() => {
-    const groups: Record<string, typeof options> = {};
+  const groups = useMemo(() => {
+    const named: Record<string, typeof options> = {};
+    const ungrouped: typeof options = [];
     for (const option of options) {
-      const groupName = option.group || "Other"; // default group name
-      if (!groups[groupName]) {
-        groups[groupName] = [];
+      const label = (option.group ?? "").trim();
+      if (label) {
+        if (!named[label]) named[label] = [];
+        named[label].push(option);
+      } else {
+        ungrouped.push(option);
       }
-      groups[groupName].push(option);
     }
-    return groups;
+    return { named, ungrouped };
   }, [options]);
 
-  const groupNames = Object.keys(groupedOptions);
-  const shouldShowGroups = !(
-    groupNames.length === 1 && groupNames[0] === "Other"
-  );
   const { matchingOptions, hasActiveSearch } = useFilteredOptions();
   const matchingValueSet = React.useMemo(
     () => new Set(matchingOptions.map((o) => o.value)),
     [matchingOptions]
   );
 
+  const renderOptionItem = React.useCallback(
+    (option: Option) => {
+      const isSelected = selectedValues.includes(option.value);
+
+      const base =
+        typeof optionItemProps === "function"
+          ? optionItemProps({ option, isSelected })
+          : optionItemProps ?? {};
+      const className = cn(
+        isMultiple
+          ? "cursor-pointer [&:where([data-state=checked])]:bg-accent/40 transition-all"
+          : "cursor-pointer data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground transition-all",
+        optionItemClassName,
+        (base as Partial<React.ComponentProps<typeof CommandItem>>)?.className
+      );
+      const resolvedItemProps = { ...base, className };
+
+      return (
+        <CommandItem
+          key={option.value}
+          onSelect={() => toggleOption(option.value)}
+          {...resolvedItemProps}
+          value={option.value}
+          data-state={isSelected ? "checked" : undefined}
+          ref={(element) => {
+            if (element) {
+              itemRefs.current.set(option.value, {
+                id: element.id,
+                value: option.value,
+                element,
+              });
+            } else {
+              itemRefs.current.delete(option.value);
+            }
+          }}
+        >
+          {renderOption ? (
+            renderOption({
+              option,
+              isSelected,
+              checkboxNode: isMultiple ? (
+                <Checkbox tabIndex={-1} checked={isSelected} />
+              ) : null,
+              iconNode: option.icon ? (
+                <option.icon className="text-muted-foreground" />
+              ) : undefined,
+              labelNode: <Trimmer>{option.label}</Trimmer>,
+            })
+          ) : (
+            <>
+              {isMultiple ? (
+                <Checkbox tabIndex={-1} checked={isSelected} />
+              ) : (
+                isAnySelected && (
+                  <span aria-hidden className="inline-flex w-4 justify-center">
+                    <LucideCheck
+                      className={cn(
+                        "text-primary-muted",
+                        !isSelected && "invisible"
+                      )}
+                    />
+                  </span>
+                )
+              )}
+              {option.icon && <option.icon className="text-muted-foreground" />}
+              <Trimmer>{option.label}</Trimmer>
+            </>
+          )}
+        </CommandItem>
+      );
+    },
+    [
+      optionItemProps,
+      optionItemClassName,
+      isMultiple,
+      isAnySelected,
+      itemRefs,
+      renderOption,
+      selectedValues,
+      toggleOption,
+    ]
+  );
+
   return (
     <>
-      {shouldShowGroups ? (
-        groupNames.map((groupName) => {
-          const groupOptions = groupedOptions[groupName];
-          const visibleGroupValues = computeVisibleGroupValues(
-            groupOptions,
-            matchingValueSet,
-            hasActiveSearch
-          );
-          const groupChecked = isMultiple
-            ? computeGroupCheckedState(visibleGroupValues, selectedValues)
-            : false;
-          const areAllInGroupSelected = groupChecked === true;
-
-          const toggleGroupSelection = () => {
-            if (!isMultiple) return;
-            const next = computeSelectionAfterGroupToggle(
-              selectedValues,
-              visibleGroupValues,
-              areAllInGroupSelected
-            );
-            updateSelection(next);
-          };
-
-          return (
-            <CommandGroup
-              className="
-                overflow-clip py-1 [&:not(:first-child)]:border-t
-                [&_[cmdk-group-items]]:flex [&_[cmdk-group-items]]:flex-col [&_[cmdk-group-items]]:gap-px
-                [&_[cmdk-group-heading]]:sticky [&_[cmdk-group-heading]]:top-0 [&_[cmdk-group-heading]]:z-10
-                [&_[cmdk-group-heading]]:w-[stretch] [&_[cmdk-group-heading]]:-mx-1 [&_[cmdk-group-heading]]:-mt-1.5
-                [&_[cmdk-group-heading]]:bg-background [&_[cmdk-group-heading]]:p-0 [&_[cmdk-group-heading]]:cursor-pointer
-                [&_[cmdk-group-heading]]:select-none [&_[cmdk-group-heading]]:transition-colors
-                before:sticky before:top-7 before:z-10 before:block
-                before:w-[stretch] before:h-px before:mt-0.5 before:-mx-1
-                before:bg-border/40
-              "
-              key={groupName}
-              heading={
-                isMultiple ? (
-                  <GroupHeading
-                    groupName={groupName}
-                    checked={groupChecked}
-                    hasActiveSearch={hasActiveSearch}
-                    onToggle={toggleGroupSelection}
-                  />
-                ) : (
-                  <div className="px-1 py-0.5 bg-background">
-                    <div className="px-2 py-1 flex items-center gap-2">
-                      <span className="flex items-center gap-1">
-                        {groupName}
-                      </span>
-                    </div>
-                  </div>
-                )
-              }
-            >
-              {groupOptions.map((option) => {
-                const isSelected = selectedValues.includes(option.value);
-                const resolvedItemProps = (() => {
-                  const base =
-                    typeof optionItemProps === "function"
-                      ? optionItemProps({ option, isSelected })
-                      : optionItemProps ?? {};
-                  // merge className with optionItemClassName
-                  const cls = cn(
-                    "cursor-pointer [&:where([data-state=checked])]:bg-accent/40 transition-all",
-                    optionItemClassName,
-                    base?.className
-                  );
-                  return { ...base, className: cls } as Partial<
-                    React.ComponentProps<typeof CommandItem>
-                  >;
-                })();
-                return (
-                  <CommandItem
-                    key={option.value}
-                    onSelect={() => toggleOption(option.value)}
-                    {...resolvedItemProps}
-                    value={option.value}
-                    data-state={isSelected ? "checked" : undefined}
-                    ref={(element) => {
-                      if (element) {
-                        itemRefs.current.set(option.value, {
-                          id: element.id,
-                          value: option.value,
-                          element,
-                        });
-                      } else {
-                        itemRefs.current.delete(option.value);
-                      }
-                    }}
-                  >
-                    {renderOption ? (
-                      renderOption({
-                        option,
-                        isSelected,
-                        checkboxNode: isMultiple ? (
-                          <Checkbox tabIndex={-1} checked={isSelected} />
-                        ) : null,
-                        iconNode: option.icon ? (
-                          <option.icon className="text-muted-foreground" />
-                        ) : undefined,
-                        labelNode: <Trimmer>{option.label}</Trimmer>,
-                      })
-                    ) : (
-                      <>
-                        {isMultiple ? (
-                          <Checkbox tabIndex={-1} checked={isSelected} />
-                        ) : (
-                          isAnySelected && (
-                            <span
-                              aria-hidden
-                              className="inline-flex w-4 justify-center"
-                            >
-                              <LucideCheck
-                                className={cn(
-                                  "text-primary-muted",
-                                  !isSelected && "invisible"
-                                )}
-                              />
-                            </span>
-                          )
-                        )}
-                        {option.icon && (
-                          <option.icon className="text-muted-foreground" />
-                        )}
-                        <Trimmer>{option.label}</Trimmer>
-                      </>
-                    )}
-                  </CommandItem>
-                );
-              })}
-            </CommandGroup>
-          );
-        })
-      ) : (
+      {groups.ungrouped.length > 0 && (
         <CommandGroup className="[&_[cmdk-group-items]]:flex [&_[cmdk-group-items]]:flex-col [&_[cmdk-group-items]]:gap-px">
-          {groupedOptions["Other"].map((option) => {
-            const isSelected = selectedValues.includes(option.value);
-            const resolvedItemProps = (() => {
-              const base =
-                typeof optionItemProps === "function"
-                  ? optionItemProps({ option, isSelected })
-                  : optionItemProps ?? {};
-              const cls = cn(
-                "cursor-pointer data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground transition-all",
-                optionItemClassName,
-                base?.className
-              );
-              return { ...base, className: cls } as Partial<
-                React.ComponentProps<typeof CommandItem>
-              >;
-            })();
-            return (
-              <CommandItem
-                key={option.value}
-                onSelect={() => toggleOption(option.value)}
-                {...resolvedItemProps}
-                value={option.value}
-                data-state={isSelected ? "checked" : undefined}
-                ref={(element) => {
-                  if (element) {
-                    itemRefs.current.set(option.value, {
-                      id: element.id,
-                      value: option.value,
-                      element,
-                    });
-                  } else {
-                    itemRefs.current.delete(option.value);
-                  }
-                }}
-              >
-                {isMultiple && <Checkbox tabIndex={-1} checked={isSelected} />}
-                {!isMultiple && isAnySelected && (
-                  <span aria-hidden className="inline-flex w-5 justify-center">
-                    <LucideCheck className={cn(!isSelected && "invisible")} />
-                  </span>
-                )}
-                {option.icon && (
-                  <option.icon className="text-muted-foreground" />
-                )}
-                <Trimmer>{option.label}</Trimmer>
-              </CommandItem>
-            );
-          })}
+          {groups.ungrouped.map(renderOptionItem)}
         </CommandGroup>
       )}
+
+      {Object.entries(groups.named).map(([groupName, groupOptions]) => {
+        const visibleGroupValues = computeVisibleGroupValues(
+          groupOptions,
+          matchingValueSet,
+          hasActiveSearch
+        );
+        const groupChecked = isMultiple
+          ? computeGroupCheckedState(visibleGroupValues, selectedValues)
+          : false;
+        const areAllInGroupSelected = groupChecked === true;
+
+        const toggleGroupSelection = () => {
+          if (!isMultiple) return;
+          const next = computeSelectionAfterGroupToggle(
+            selectedValues,
+            visibleGroupValues,
+            areAllInGroupSelected
+          );
+          updateSelection(next);
+        };
+
+        return (
+          <CommandGroup
+            className={cn(
+              "overflow-clip py-1 [&:not(:first-child)]:border-t",
+              "[&_[cmdk-group-heading]]:sticky [&_[cmdk-group-heading]]:top-0 [&_[cmdk-group-heading]]:z-10",
+              "[&_[cmdk-group-items]]:flex [&_[cmdk-group-items]]:flex-col [&_[cmdk-group-items]]:gap-px",
+              "[&_[cmdk-group-heading]]:w-[stretch] [&_[cmdk-group-heading]]:-mx-1 [&_[cmdk-group-heading]]:-mt-1.5",
+              "[&_[cmdk-group-heading]]:bg-background [&_[cmdk-group-heading]]:p-0 [&_[cmdk-group-heading]]:select-none [&_[cmdk-group-heading]]:transition-colors",
+              "before:sticky before:top-7 before:z-10 before:block before:w-[stretch] before:h-px before:mt-0.5 before:-mx-1 before:bg-border/40",
+              isMultiple && "[&_[cmdk-group-heading]]:cursor-pointer"
+            )}
+            key={groupName}
+            heading={
+              <GroupHeading
+                groupName={groupName}
+                checked={groupChecked}
+                hasActiveSearch={hasActiveSearch}
+                onToggle={toggleGroupSelection}
+              />
+            }
+          >
+            {groupOptions.map(renderOptionItem)}
+          </CommandGroup>
+        );
+      })}
     </>
   );
 };
@@ -1452,6 +1394,19 @@ const GroupHeading: React.FC<GroupHeadingProps> = ({
   hasActiveSearch,
   onToggle,
 }) => {
+  const { mode } = useEsiSelect();
+  const isMultiple = mode === "multiple";
+
+  if (!isMultiple) {
+    return (
+      <div className="px-1 py-0.5 bg-background">
+        <div className="px-2 py-1 flex items-center gap-2">
+          <span className="flex items-center gap-1">{groupName}</span>
+        </div>
+      </div>
+    );
+  }
+
   const actionNode = renderSelectionToggleLabel(
     checked === true,
     hasActiveSearch

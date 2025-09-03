@@ -1,3 +1,5 @@
+import { generateStableColors } from "@/utils/stableColors";
+import { stableHash } from "@/utils/stableHash";
 import type { Finding, FindingLocation } from "./Findings.interfaces";
 
 export interface GroupedLocation {
@@ -80,6 +82,28 @@ export function getDuplicateKeys(locations: FindingLocation[], dominantKey?: str
 }
 
 /**
+ * Returns the first non-empty property associated with the dominant key.
+ */
+export function getPropertyForDominantKey(
+  finding: Finding | { locations?: FindingLocation[] },
+  dominantKey?: string
+): string | undefined {
+  const key = dominantKey ?? getDominantKey(finding);
+  if (!key) return undefined;
+
+  for (const loc of finding.locations ?? []) {
+    const k = loc?.remoteRef?.key;
+    if (k !== key) continue;
+    const propRaw = loc?.remoteRef?.property;
+    const prop = typeof propRaw === "string" ? propRaw.trim() : "";
+    if (prop !== "" && prop !== "-") {
+      return prop;
+    }
+  }
+  return undefined;
+}
+
+/**
  * Groups locations by store name, consolidating duplicate keys and properties.
  */
 export function groupLocationsByStore(locations: FindingLocation[]): GroupedLocation[] {
@@ -102,4 +126,34 @@ export function groupLocationsByStore(locations: FindingLocation[]): GroupedLoca
       properties: [...new Set(properties)],
     };
   });
+}
+
+/**
+ * Derives a short, deterministic 3-character uppercase fingerprint from the
+ * provided identifier. Intended for compact visual identity only; not
+ * cryptographically secure. Stable across sessions for the same input.
+ */
+export function computeFindingFingerprint(finding: Pick<Finding, "id">): string {
+  return stableHash(finding.id, {
+    length: 3,
+  }) as string;
+}
+
+/**
+ * Computes stable CSS variables for fingerprint badge colors.
+ * Uses the generic stable color utility for consistency.
+ */
+export function computeFingerprintCssVars(seed: Finding["id"]): React.CSSProperties {
+  return generateStableColors(seed, [
+    // Border color akin to border-*/60
+    { shade: 500, alpha: 0.6, var: "--color-border" },
+    // Subtle ring color akin to ring-*/15
+    { shade: 500, alpha: 0.15, var: "--color-ring" },
+    // Gradient overlay similar to bg-gradient-to-tr from-*/0 to-*/15 dark:to-*/35
+    { shade: 500, alpha: 0, var: "--color-grad-from" },
+    { shade: 500, alpha: 0.15, var: "--color-grad-to" },
+    { shade: 500, alpha: 0.35, var: "--color-grad-to-dark" },
+    // Text tint
+    { shade: 600, var: "--color-text" }
+  ]);
 }
