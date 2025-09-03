@@ -136,7 +136,15 @@ export function computeFindingFingerprint(finding: Pick<Finding, "id">): string 
  */
 export function computeFingerprintCssVars(seed: Finding["id"]): React.CSSProperties {
   return generateStableColors(seed, [
-    { shade: 500, alpha: 0.1, var: "--color-bg" },
-    { shade: 500, alpha: 0.5, var: "--color-border" }
+    // Border color akin to border-*/60
+    { shade: 500, alpha: 0.6, var: "--color-border" },
+    // Subtle ring color akin to ring-*/15
+    { shade: 500, alpha: 0.15, var: "--color-ring" },
+    // Gradient overlay similar to bg-gradient-to-tr from-*/0 to-*/15 dark:to-*/35
+    { shade: 500, alpha: 0, var: "--color-grad-from" },
+    { shade: 500, alpha: 0.15, var: "--color-grad-to" },
+    { shade: 500, alpha: 0.35, var: "--color-grad-to-dark" },
+    // Text tint
+    { shade: 600, var: "--color-text" }
   ]);
 }

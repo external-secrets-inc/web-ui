@@ -38,12 +38,12 @@ export function FindingFingerprintBadge({
         <Badge
           variant="outline"
           className={cn(
-            "inline-flex items-center pl-1 font-mono text-xs gap-1.5 bg-[var(--color-bg)] border-[var(--color-border)]",
+            "inline-flex items-center pl-1 font-mono text-xs gap-1.5 bg-background border-[var(--color-border)] ring-2 ring-[var(--color-ring)] bg-gradient-to-tr from-[var(--color-grad-from)] to-[var(--color-grad-to)] dark:to-[var(--color-grad-to-dark)] bg-clip-padding text-[var(--color-text)] dark:text-foreground",
             className
           )}
           style={cssVars}
         >
-          <LucideFingerprint className="text-muted-foreground" />
+          <LucideFingerprint className="text-[var(--color-text)] dark:text-foreground" />
           {fingerprint}
         </Badge>
       </TooltipTrigger>
