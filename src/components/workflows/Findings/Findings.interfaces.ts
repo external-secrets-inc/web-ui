@@ -19,8 +19,9 @@ export interface Finding {
   locations: FindingLocation[];
   workflowTemplateCandidates: WorkflowTemplateCandidate[];
   parsedName?: string;
-	kind?: string;
-	key?: string;
+  kind?: string;
+  key?: string;
+  id?: string;
 }
 
 export type FindingsTableData = Pick<Finding, "name" | "namespace" | "locations">;

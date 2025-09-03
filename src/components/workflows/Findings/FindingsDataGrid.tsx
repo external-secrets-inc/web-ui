@@ -1,7 +1,7 @@
-import { Badge } from "@/components/ui/badge";
 import { BadgeGroup } from "@/components/ui/BadgeGroup";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataGrid, useData } from "@/components/ui/DataProvider";
+import { FindingFingerprintBadge } from "@/components/workflows/Findings/FindingFingerprintBadge";
 import {
   Tooltip,
   TooltipContent,
@@ -10,15 +10,15 @@ import {
 import useOrgLink from "@/hooks/useOrgLink";
 import {
   LucideAsteriskSquare,
-  LucideBookKey,
+  LucideAtSign,
   LucideBraces,
-  LucideRadar,
+  LucideLocateFixed,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { Finding } from "./Findings.interfaces";
 import {
   getDominantKey,
-  getPropertyCount,
+  getPropertyForDominantKey,
   getStoreNames,
 } from "./Findings.utils";
 
@@ -35,7 +35,10 @@ export function FindingsDataGrid() {
         const dominantKey = getDominantKey(finding) ?? finding.name;
 
         const storeNames = getStoreNames(locations);
-        const propertyCount = getPropertyCount(locations);
+        const dominantProperty = getPropertyForDominantKey(
+          finding,
+          dominantKey
+        );
 
         return (
           <Link
@@ -47,37 +50,48 @@ export function FindingsDataGrid() {
             className="grid min-w-0"
           >
             <Card className="group flex flex-col min-w-0 relative hover:border-muted-foreground/50 hover:bg-muted/15 transition-all cursor-pointer overflow-clip">
-              <LucideRadar className="size-44 ml-auto text-base-100 dark:text-base-900 absolute -bottom-8 -right-8 stroke-scaling opacity-30 -scale-x-100" />
+              <LucideLocateFixed className="size-44 ml-auto text-base-200 dark:text-base-800 absolute -bottom-5 -right-5 stroke-scaling opacity-30" />
               <CardHeader className="text-left relative">
                 <CardTitle className="flex items-center gap-2">
                   <LucideAsteriskSquare className="size-6 text-muted-foreground" />
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="truncate mr-auto">{dominantKey}</span>
+                      <span className="mr-auto flex flex-wrap min-w-0 max-h-[1em]">
+                        <span className="truncate flex-initial min-w-0">{dominantKey}</span>
+                        {dominantProperty && (
+                          <span className="leading-none font-bold text-muted-foreground truncate flex-initial min-w-0">
+                            .{dominantProperty}
+                          </span>
+                        )}
+                      </span>
                     </TooltipTrigger>
                     <TooltipContent>
-                      Main secret key: {dominantKey}
+                      <div className="flex flex-col gap-1.5">
+                        <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+                          <LucideAsteriskSquare className="size-4 text-muted-foreground" />
+                          <span className="font-medium">
+                            Main secret key:{" "}
+                            <span className="font-medium text-foreground">
+                              {dominantKey}
+                            </span>
+                          </span>
+                        </span>
+                        {dominantProperty && (
+                          <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+                            <LucideBraces className="size-4 text-muted-foreground" />
+                            <span className="font-medium">
+                              Property:{" "}
+                              <span className="font-medium text-foreground">
+                                {dominantProperty}
+                              </span>
+                            </span>
+                          </span>
+                        )}
+                      </div>
                     </TooltipContent>
                   </Tooltip>
-                  <div className="flex items-center gap-1.5">
-                    {propertyCount > 0 && (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Badge
-                            variant="outline"
-                            className="inline-flex items-center gap-1.5 font-mono text-sm"
-                          >
-                            <LucideBraces className="size-4 text-muted-foreground" />
-                            {propertyCount}
-                          </Badge>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          {propertyCount}{" "}
-                          {propertyCount === 1 ? "duplicate" : "duplicates"}{" "}
-                          with a property selector
-                        </TooltipContent>
-                      </Tooltip>
-                    )}
+                  <div className="ml-auto inline-flex items-center">
+                    <FindingFingerprintBadge seed={finding.id} />
                   </div>
                 </CardTitle>
               </CardHeader>
@@ -94,13 +108,12 @@ export function FindingsDataGrid() {
                   badges={storeNames.map((store: string) => ({
                     id: store,
                     label: store,
-                    icon: <LucideBookKey className="text-muted-foreground" />,
+                    icon: <LucideAtSign className="text-muted-foreground" />,
                     className: "text-sm",
                   }))}
                   extraBadge={{
                     id: "extra",
                     className: "text-sm",
-                    icon: <LucideBookKey className="text-muted-foreground" />,
                   }}
                 />
               </CardFooter>

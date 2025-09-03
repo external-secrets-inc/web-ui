@@ -1,4 +1,3 @@
-import { useMemo, useState } from "react";
 import { BadgeGroup, BadgeItem } from "@/components/ui/BadgeGroup";
 import {
   DataProvider,
@@ -6,30 +5,32 @@ import {
   DataSort,
   defineColumns,
 } from "@/components/ui/DataProvider";
+import { FindingFingerprintBadge } from "@/components/workflows/Findings/FindingFingerprintBadge";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Trimmer } from "@/components/ui/Trimmer";
+import type {
+  Finding,
+  FindingsTableData,
+} from "@/components/workflows/Findings";
 import useGetFindings from "@/services/findings/queries/useGetFindings";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import type { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
-import type {
-  FindingsTableData,
-  Finding,
-} from "@/components/workflows/Findings";
-import { FindingsDataGrid } from "./FindingsDataGrid";
-import { FindingsDataTable } from "./FindingsDataTable";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
+  LucideAsteriskSquare,
+  LucideAtSign,
   LucideLayoutGrid,
   LucideTableProperties,
-  LucideAsteriskSquare,
-  LucideBookKey,
-  LucideCopy,
 } from "lucide-react";
+import { useMemo, useState } from "react";
 import {
   getDominantKey,
-  getStoreNames,
   getDuplicateKeys,
+  getPropertyForDominantKey,
+  getStoreNames,
 } from "./Findings.utils";
-import { Trimmer } from "@/components/ui/Trimmer";
+import { FindingsDataGrid } from "./FindingsDataGrid";
+import { FindingsDataTable } from "./FindingsDataTable";
 
 export function FindingsList() {
   const [view, setView] = useState<"grid" | "table">("grid");
@@ -40,20 +41,34 @@ export function FindingsList() {
         columnHelper.accessor("name", {
           header: "Name",
           cell: (info) => {
-            const finding = info.row.original;
+            const finding = info.row.original as Finding;
             const dominantKey = getDominantKey(finding) ?? finding.name;
+
+            const dominantProperty = getPropertyForDominantKey(
+              finding,
+              dominantKey
+            );
 
             return (
               <div className="flex items-center gap-2 min-w-0">
                 <LucideAsteriskSquare className="text-muted-foreground" />
-                <Trimmer className="font-bold">{dominantKey}</Trimmer>
+                <Trimmer className="font-bold">
+                  <span className="inline-flex items-baseline">
+                    <span>{dominantKey}</span>
+                    {dominantProperty && (
+                      <span className="leading-none font-bold text-muted-foreground">
+                        .{dominantProperty}
+                      </span>
+                    )}
+                  </span>
+                </Trimmer>
               </div>
             );
           },
         }),
         columnHelper.display({
           id: "duplicates",
-          header: "Duplicates",
+          header: "Also Named As",
           cell: (info) => {
             const finding = info.row.original;
             const locations = finding.locations ?? [];
@@ -62,12 +77,16 @@ export function FindingsList() {
 
             if (duplicateKeys.length === 0) return null;
 
-            const duplicateItems: BadgeItem[] = duplicateKeys.map((key, index) => ({
-              id: `key-${index}`,
-              label: key,
-              icon: <LucideCopy className="text-muted-foreground" />,
-              className: "text-sm",
-            }));
+            const duplicateItems: BadgeItem[] = duplicateKeys.map(
+              (key, index) => ({
+                id: `key-${index}`,
+                label: key,
+                icon: (
+                  <LucideAsteriskSquare className="text-muted-foreground" />
+                ),
+                className: "text-sm",
+              })
+            );
 
             return (
               <BadgeGroup
@@ -76,7 +95,9 @@ export function FindingsList() {
                 extraBadge={{
                   id: "extra",
                   className: "text-sm",
-                  icon: <LucideCopy className="text-muted-foreground" />,
+                  icon: (
+                    <LucideAsteriskSquare className="text-muted-foreground" />
+                  ),
                 }}
               />
             );
@@ -96,16 +117,25 @@ export function FindingsList() {
                 badges={storeNames.map((store: string) => ({
                   id: store,
                   label: store,
-                  icon: <LucideBookKey className="text-muted-foreground" />,
+                  icon: <LucideAtSign className="text-muted-foreground" />,
                   className: "text-sm",
                 }))}
                 extraBadge={{
                   id: "extra",
                   className: "text-sm",
-                  icon: <LucideBookKey className="text-muted-foreground" />,
+                  icon: <LucideAtSign className="text-muted-foreground" />,
                 }}
               />
             );
+          },
+        }),
+        columnHelper.display({
+          id: "fingerprint",
+          header: "Fingerprint",
+          maxSize: 64,
+          cell: (info) => {
+            const finding = info.row.original as Finding;
+            return <FindingFingerprintBadge seed={finding.id} />;
           },
         }),
       ]),

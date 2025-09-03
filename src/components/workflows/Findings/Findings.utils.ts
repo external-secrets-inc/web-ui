@@ -1,3 +1,5 @@
+import { generateStableColors } from "@/utils/stableColors";
+import { stableHash } from "@/utils/stableHash";
 import type { Finding, FindingLocation } from "./Findings.interfaces";
 
 export interface GroupedLocation {
@@ -71,6 +73,28 @@ export function getDuplicateKeys(locations: FindingLocation[], dominantKey?: str
 }
 
 /**
+ * Returns the first non-empty property associated with the dominant key.
+ */
+export function getPropertyForDominantKey(
+  finding: Finding | { locations?: FindingLocation[] },
+  dominantKey?: string
+): string | undefined {
+  const key = dominantKey ?? getDominantKey(finding);
+  if (!key) return undefined;
+
+  for (const loc of finding.locations ?? []) {
+    const k = loc?.remoteRef?.key;
+    if (k !== key) continue;
+    const propRaw = loc?.remoteRef?.property;
+    const prop = typeof propRaw === "string" ? propRaw.trim() : "";
+    if (prop !== "" && prop !== "-") {
+      return prop;
+    }
+  }
+  return undefined;
+}
+
+/**
  * Groups locations by store name, consolidating duplicate keys and properties.
  */
 export function groupLocationsByStore(locations: FindingLocation[]): GroupedLocation[] {
@@ -93,4 +117,26 @@ export function groupLocationsByStore(locations: FindingLocation[]): GroupedLoca
       properties: [...new Set(properties)],
     };
   });
+}
+
+/**
+ * Derives a short, deterministic 3-character uppercase fingerprint from the
+ * provided identifier. Intended for compact visual identity only; not
+ * cryptographically secure. Stable across sessions for the same input.
+ */
+export function computeFindingFingerprint(finding: Pick<Finding, "id">): string {
+  return stableHash(finding.id, {
+    length: 3,
+  }) as string;
+}
+
+/**
+ * Computes stable CSS variables for fingerprint badge colors.
+ * Uses the generic stable color utility for consistency.
+ */
+export function computeFingerprintCssVars(seed: Finding["id"]): React.CSSProperties {
+  return generateStableColors(seed, [
+    { shade: 500, alpha: 0.1, var: "--color-bg" },
+    { shade: 500, alpha: 0.5, var: "--color-border" }
+  ]);
 }
