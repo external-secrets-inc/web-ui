@@ -53,15 +53,18 @@ function CountsBadge({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Badge variant="secondary" className="flex items-center gap-2 pl-1.5">
+        <Badge
+          variant="secondary"
+          className="flex items-center gap-2 pl-1.5 pointer-events-auto font-mono"
+        >
           {hasLocations && (
-            <span className="inline-flex items-center gap-1 text-primary-muted">
+            <span className="inline-flex items-center gap-1 text-primary-muted font-bold">
               <LucideAsteriskSquare className="size-3 text-muted-foreground" />
               {n}
             </span>
           )}
           {hasStores && (
-            <span className="inline-flex items-center gap-1">
+            <span className="inline-flex items-center gap-1 text-primary-muted font-bold">
               <LucideAtSign className="size-3 text-muted-foreground" />
               {m}
             </span>
@@ -70,8 +73,10 @@ function CountsBadge({
       </TooltipTrigger>
       <TooltipContent>
         <span className="text-muted-foreground">
-          <span className="text-primary-muted">{n}</span> {duplicateWord} found{" "}
-          {preposition} <span className="text-foreground">{m}</span> {storeWord}
+          <span className="text-primary-muted font-bold  font-mono">{n}</span>{" "}
+          {duplicateWord} found {preposition}{" "}
+          <span className="text-primary-muted font-bold  font-mono">{m}</span>{" "}
+          {storeWord}
         </span>
       </TooltipContent>
     </Tooltip>
@@ -100,7 +105,12 @@ function FindingRowMain({
           </span>
         )}
       </span>
-      {fingerprintSeed && <FindingFingerprintBadge seed={fingerprintSeed} />}
+      {fingerprintSeed && (
+        <FindingFingerprintBadge
+          className="pointer-events-auto"
+          seed={fingerprintSeed}
+        />
+      )}
     </div>
   );
 }
