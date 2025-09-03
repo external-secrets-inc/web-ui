@@ -100,7 +100,7 @@ export function PageFindingDetails() {
           </span>
         )}
       </span>
-      <FindingFingerprintBadge seed={finding?.id} />
+      <FindingFingerprintBadge seed={finding?.id} className="text-base [&>svg]:size-5 gap-2 pl-1.5" />
     </span>
   ) : (
     <span className="flex items-center gap-2">
