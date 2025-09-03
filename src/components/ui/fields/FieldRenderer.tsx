@@ -1,23 +1,26 @@
 import type { UISchemaField } from "@/components/EsiSchemaForm/EsiSchemaForm.interfaces";
-import { createFieldValidation } from "@/components/EsiSchemaForm/EsiSchemaForm.utils";
-import { FieldText } from "./FieldText";
-import { FieldTextarea } from "./FieldTextarea";
-import { FieldSelect } from "./FieldSelect";
-import { FieldBoolean } from "./FieldBoolean";
-import { FieldKeyValue } from "./FieldKeyValue";
+import {
+  createFieldValidation,
+  OptionUtils,
+} from "@/components/EsiSchemaForm/EsiSchemaForm.utils";
 import { FieldArray } from "./FieldArray";
-import { FieldObject } from "./FieldObject";
+import { FieldBoolean } from "./FieldBoolean";
+import { FieldDateTime } from "./FieldDateTime";
+import { FieldDuration } from "./FieldDuration";
 import { FieldJson } from "./FieldJson";
+import { FieldKeyValue } from "./FieldKeyValue";
+import { FieldMultiSelect } from "./FieldMultiSelect";
+import { FieldNumber } from "./FieldNumber";
+import { FieldObject } from "./FieldObject";
 import { FieldOneOf } from "./FieldOneOf";
 import { FieldSecretSelect } from "./FieldSecretSelect";
-import { FieldMultiSelect } from "./FieldMultiSelect";
-import { FieldDuration } from "./FieldDuration";
-import { FieldDateTime } from "./FieldDateTime";
-import { FieldNumber } from "./FieldNumber";
-import { OptionUtils } from "@/components/EsiSchemaForm/EsiSchemaForm.utils";
+import { FieldSelect } from "./FieldSelect";
+import { FieldText } from "./FieldText";
+import { FieldTextarea } from "./FieldTextarea";
 
 export interface FieldRendererProps {
   field: UISchemaField;
+  formValues?: Record<string, unknown>;
 }
 
 export function FieldRenderer({ field }: FieldRendererProps) {
@@ -49,6 +52,12 @@ export function FieldRenderer({ field }: FieldRendererProps) {
 
     case "select": {
       const apiOptions = OptionUtils.getOneOfApiOptions(field);
+
+      // if oneOf has no href (static IDs), it's for sub-schema selection handled by FieldOneOf
+      if (field.oneOf && field.oneOf.length > 0 && apiOptions.length === 0) {
+        return <FieldOneOf {...baseProps} field={field} />;
+      }
+
       // if oneOf has href, it's a dynamic select handled by FieldSelect
       if (apiOptions.length > 0) {
         return (
@@ -58,11 +67,6 @@ export function FieldRenderer({ field }: FieldRendererProps) {
             defaultValue={field.default as string}
           />
         );
-      }
-
-      // if oneOf has no href, it's for sub-schema selection handled by FieldOneOf
-      if (field.oneOf && field.oneOf.length > 0) {
-        return <FieldOneOf {...baseProps} field={field} />;
       }
 
       // Otherwise, it's a standard select with static options
@@ -80,10 +84,7 @@ export function FieldRenderer({ field }: FieldRendererProps) {
       // For checkbox fields, we still pass the rules to FieldBoolean
       // The component will handle boolean validation correctly while preserving custom rules
       return (
-        <FieldBoolean
-          {...baseProps}
-          defaultValue={field.default as boolean}
-        />
+        <FieldBoolean {...baseProps} defaultValue={field.default as boolean} />
       );
 
     case "key-password":
