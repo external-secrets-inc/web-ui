@@ -4,20 +4,12 @@ import { ApiHttpError } from "@/types";
 import { getAuthHeaders } from "@/services/auth/authHelpers";
 import { AxiosError } from "axios";
 import { Consumer } from "@/components/workflows/Consumers/Consumers.interfaces";
-import { MOCK_CONSUMERS } from "./mock_consumers";
 
 interface GetConsumersResponse {
   consumers: Consumer[];
 }
 
-// TODO Remove when backend is implemented
-const mock = true;
-
 const getConsumers = async (signal: AbortSignal): Promise<Consumer[]> => {
-  if (mock) {
-    return MOCK_CONSUMERS;
-  }
-
   const headers = await getAuthHeaders();
   const response = await axios.get<GetConsumersResponse>("/api/v1/consumers", {
     headers,
