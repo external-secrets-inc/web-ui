@@ -305,6 +305,17 @@ export const MultipleCombinedCustomizations: Story = {
   render: createStoryRender("Both badge and option customizations together"),
 };
 
+export const MultipleUngroupedCustomOptionRenderer: Story = {
+  name: "Multiple: Custom Option Rendering (Ungrouped)",
+  args: {
+    ...ungroupedStoryArgs,
+    optionItemClassName: "px-3 py-2",
+    renderOption: ({ option, isSelected, iconNode, labelNode }) =>
+      createSharedCustomizations().renderEnhancedOption({ option, isSelected, iconNode, labelNode }),
+  },
+  render: createStoryRender("Ungrouped custom option design"),
+};
+
 // ============================================================================
 // SINGLE MODE STORIES
 // ============================================================================
@@ -425,7 +436,7 @@ export const SingleCustomTrigger: Story = {
         )}
 
         {/* Label with custom styling */}
-        <span className="flex-1 text-sm font-medium text-foreground">
+        <span className="mr-auto text-sm font-medium text-foreground">
           {option.label}
         </span>
 
@@ -467,7 +478,7 @@ export const SingleCombinedCustomizations: Story = {
         )}
 
         {/* Label with custom styling */}
-        <span className="flex-1 text-sm font-medium text-foreground">
+        <span className="mr-auto text-sm font-medium text-foreground">
           {option.label}
         </span>
 
@@ -494,6 +505,16 @@ export const SingleCombinedCustomizations: Story = {
     },
   },
   render: createSingleStoryRender("Both trigger and option customizations working together"),
+};
+
+export const SingleUngroupedCustomOptionRenderer: Story = {
+  name: "Single: Custom Option Rendering (Ungrouped)",
+  args: {
+    ...singleUngroupedStoryArgs,
+    renderOption: ({ option, isSelected, iconNode, labelNode }) =>
+      createSharedCustomizations().renderEnhancedOption({ option, isSelected, iconNode, labelNode }),
+  },
+  render: createSingleStoryRender("Ungrouped custom option design"),
 };
 
 export const CustomEmptyState: Story = {

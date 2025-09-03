@@ -5,7 +5,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import useGetFindings from "@/services/findings/queries/useGetFindings";
-import { LucideRadar } from "lucide-react";
+import { LucideLocateFixed } from "lucide-react";
 export function FindingsCountBadge() {
   const { data, isLoading, isError } = useGetFindings();
 
@@ -19,12 +19,12 @@ export function FindingsCountBadge() {
     <Tooltip delayDuration={0}>
       <TooltipTrigger asChild>
         <Badge
-          variant="secondary"
-          className="inline-flex items-center gap-2 text-[10px] leading-none font-mono font-bold px-1.5 -mr-1"
+          variant="outline"
+          className="inline-flex items-center gap-2 text-xs leading-none font-mono font-bold px-1.5 -mr-1.5"
         >
           {findingsCount > 0 && (
-            <span className="inline-flex items-center gap-0.5">
-              <LucideRadar className="!text-muted-foreground -ml-0.5 my-px size-3" />
+            <span className="inline-flex items-center gap-1">
+              <LucideLocateFixed className="!text-muted-foreground -ml-0.5 my-px" />
               {String(findingsCount)}
             </span>
           )}
@@ -32,7 +32,7 @@ export function FindingsCountBadge() {
       </TooltipTrigger>
       <TooltipContent className="flex flex-col gap-1">
         <div className="flex items-center gap-1">
-          <LucideRadar className="!text-muted-foreground -ml-0.5 my-px" />{" "}
+          <LucideLocateFixed className="size-5 text-muted-foreground -ml-0.5 my-px" />{" "}
           {findingsCount > 0 &&
             `${findingsCount} ${
               findingsCount === 1 ? "unique finding" : "unique findings"
