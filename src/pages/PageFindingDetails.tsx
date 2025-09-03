@@ -50,8 +50,10 @@ export function PageFindingDetails() {
     ? getDominantKey(finding) ?? finding.name
     : undefined;
 
-  // The dynamic breadcrumb will be updated once loadedDominantKey is available.
-  useSetBreadcrumb(location.pathname, loadedDominantKey);
+  // Prefer API-provided displayName if available; fallback to dominant key or finding name
+  const breadcrumbLabel = finding?.displayName ?? loadedDominantKey;
+  // The dynamic breadcrumb will be updated once breadcrumbLabel is available.
+  useSetBreadcrumb(location.pathname, breadcrumbLabel);
 
   const dominantKey = immediateDominantKey || loadedDominantKey;
 

@@ -22,6 +22,7 @@ export interface Finding {
   kind?: string;
   key?: string;
   id?: string;
+  displayName?: string;
 }
 
 export type FindingsTableData = Pick<Finding, "name" | "namespace" | "locations">;
