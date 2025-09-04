@@ -1,4 +1,4 @@
-import { type ColumnDef, type SortingState, type TableOptions, type Table as ReactTableType, type ColumnSizingState, type RowData } from "@tanstack/react-table";
+import { type ColumnDef, type SortingState, type TableOptions, type Table as ReactTableType, type ColumnSizingState, type RowData, ColumnFiltersState } from "@tanstack/react-table";
 import * as React from "react";
 import { type VirtualizerOptions } from "@tanstack/react-virtual";
 
@@ -35,6 +35,7 @@ export type TableState<TData extends RowData> = {
   sorting: SortingState;
   globalFilter: string;
   columnSizing: ColumnSizingState;
+  columnFilters: ColumnFiltersState;
   isLoading?: boolean;
   emptyMessage: React.ReactNode;
 };
@@ -46,6 +47,7 @@ export type TableActions = {
   setSorting: React.Dispatch<React.SetStateAction<SortingState>>;
   setGlobalFilter: React.Dispatch<React.SetStateAction<string>>;
   setColumnSizing: React.Dispatch<React.SetStateAction<ColumnSizingState>>;
+  setColumnFilters: React.Dispatch<React.SetStateAction<ColumnFiltersState>>;
 };
 
 /**

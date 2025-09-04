@@ -3,6 +3,7 @@ export { PageAuditDestinations } from "./PageAuditDestinations";
 export { PageAuditInsights } from "./PageAuditInsights";
 export { PageAuditPolicies } from "./PageAuditPolicies";
 export { PageAuditProviders } from "./PageAuditProviders";
+export { PageConsumers } from "./PageConsumers";
 export { PageFindingDetails } from "./PageFindingDetails";
 export { PageFindings } from "./PageFindings";
 export { PageGeneratorDetails } from "./PageGeneratorDetails";
