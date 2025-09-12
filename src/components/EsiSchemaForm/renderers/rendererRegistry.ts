@@ -23,6 +23,7 @@ const loaders: Partial<
   },
   "multi-select": {
     location: () => import("./multiSelect/MultiSelectLocationRenderer").then((m) => m.default),
+    finding: () => import("./multiSelect/MultiSelectFindingRenderer").then((m) => m.default),
   },
 };
 
