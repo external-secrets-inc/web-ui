@@ -55,7 +55,7 @@ export function ConsumerDataList({ consumers, title } : ConsumerDataListProps) {
           header: "Name",
           cell: (info) => <strong>{info.getValue()}</strong>,
         }),
-        columnHelper.accessor("targetReference", {
+        columnHelper.accessor("targetRef", {
           header: "Target",
           filterFn: targetRefMatch,
           cell: (info) => {
