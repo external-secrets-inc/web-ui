@@ -3,7 +3,7 @@ import {
   FindingLocationsTable,
 } from "@/components/workflows/Findings";
 import { Consumer } from "../Consumers/Consumers.interfaces";
-import { ConsumerDataTable } from "../Consumers";
+import { ConsumerDataList } from "../Consumers";
 
 interface FindingDetailsProps {
   finding: Finding;
@@ -15,7 +15,7 @@ export function FindingDetails({ finding, consumers }: FindingDetailsProps) {
     <div className="flex flex-col gap-4">
       <h2 className="text-xl font-semibold tracking-tight">Locations</h2>
       <FindingLocationsTable locations={finding.locations} />
-      <ConsumerDataTable consumers={consumers} title="Consumers"/>
+      <ConsumerDataList consumers={consumers} title="Consumers"/>
     </div>
   );
 }
