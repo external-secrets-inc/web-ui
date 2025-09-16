@@ -3,7 +3,7 @@ import {
   DataProvider,
   defineColumns,
 } from "@/components/ui/DataProvider";
-import { Consumer, ConsumersTableData, TargetReference } from "./Consumers.interfaces";
+import { Consumer, ConsumersTableData, targetColumnName, TargetReference } from "./Consumers.interfaces";
 import { SetURLSearchParams, useSearchParams } from "react-router-dom";
 import { ConsumerStatusBadge } from "./ConsumerStatusBadge";
 import { FindingLocation } from "../Findings";
@@ -29,7 +29,6 @@ const targetRefMatch: FilterFn<ConsumersTableData> = (row, columnId, filterValue
 };
 
 const applyTargetFilter = (setSearchParams: SetURLSearchParams, ref: TargetReference) => {
-  // 2) sync URL (no navigation)
   setSearchParams(
     (prev) => {
       prev.set("targetName", ref.name);
@@ -55,7 +54,7 @@ export function ConsumerDataList({ consumers, title } : ConsumerDataListProps) {
           header: "Name",
           cell: (info) => <strong>{info.getValue()}</strong>,
         }),
-        columnHelper.accessor("targetRef", {
+        columnHelper.accessor(targetColumnName, {
           header: "Target",
           filterFn: targetRefMatch,
           cell: (info) => {
