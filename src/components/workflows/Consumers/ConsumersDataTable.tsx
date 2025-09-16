@@ -4,7 +4,7 @@ import {
   DataTable,
   useData,
 } from "@/components/ui/DataProvider";
-import { ConsumersTableData } from "./Consumers.interfaces";
+import { ConsumersTableData, targetColumnName } from "./Consumers.interfaces";
 import { TargetFilterChip } from "./TargetFilterChip";
 import { useSearchParams } from "react-router-dom";
 
@@ -21,7 +21,7 @@ export function ConsumerDataTable({ title } : ConsumerDataTableProps) {
     const namespace = params.get("targetNamespace") || undefined;
 
     const hasFilter = Boolean(name || namespace);
-    const col = table.getColumn("targetReference");
+    const col = table.getColumn(targetColumnName);
     if (!col) return;
 
     col.setFilterValue(hasFilter ? { name, namespace } : undefined);

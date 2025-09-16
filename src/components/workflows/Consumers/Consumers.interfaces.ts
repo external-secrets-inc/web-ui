@@ -18,3 +18,5 @@ export interface Consumer {
 }
 
 export type ConsumersTableData = Consumer;
+
+export const targetColumnName = "targetRef"
