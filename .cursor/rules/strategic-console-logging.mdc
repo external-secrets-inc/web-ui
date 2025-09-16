@@ -1,7 +1,6 @@
 ---
 description: Guidelines for strategically using and managing console.log statements for debugging, emphasizing removal before task completion and careful handling of sensitive data
-globs:
-alwaysApply: true
+alwaysApply: false
 ---
 <console_log_management_guidelines>
   <interpretation_of_terms>
