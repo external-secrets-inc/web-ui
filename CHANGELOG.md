@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.27.3](https://github.com/external-secrets-inc/web-ui/compare/v0.27.2...v0.27.3) (2025-09-16)
+
+
+### Bug Fixes
+
+* release ([0672b3d](https://github.com/external-secrets-inc/web-ui/commit/0672b3d29edac35ea98e2bd4cbc37f527530afe4))
+
 ## [0.27.2](https://github.com/external-secrets-inc/web-ui/compare/v0.27.1...v0.27.2) (2025-09-16)
 
 
