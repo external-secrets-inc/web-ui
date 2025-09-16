@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.27.1](https://github.com/external-secrets-inc/web-ui/compare/v0.27.0...v0.27.1) (2025-09-16)
+
+
+### Bug Fixes
+
+* workflow UI nitpicks ([#503](https://github.com/external-secrets-inc/web-ui/issues/503)) ([29f5579](https://github.com/external-secrets-inc/web-ui/commit/29f557904f547a4c1fb4e67fa6aa9ec2af9c783e))
+
 ## [0.27.0](https://github.com/external-secrets-inc/web-ui/compare/v0.26.0...v0.27.0) (2025-09-04)
 
 
