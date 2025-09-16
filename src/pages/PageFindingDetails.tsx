@@ -10,9 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Finding, FindingDetails, FindingLocation } from "@/components/workflows/Findings";
+import { FindingDetails } from "@/components/workflows/Findings";
 import {
-  equalLocation,
   getDominantKey,
   getPropertyForDominantKey,
   getStoreNames,
@@ -24,24 +23,8 @@ import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
 import { LucideAsteriskSquare } from "lucide-react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import useGetConsumers from "@/services/consumers/queries/useGetConsumers";
-import { Consumer } from "@/components/workflows/Consumers";
-import { useMemo } from "react";
 
 const CANDIDATE_SEPARATOR = "__SEPARATOR__";
-
-export function filterConsumersByFinding(
-  finding: Finding,
-  consumers: Consumer[],
-  cmp: (a: FindingLocation, b: FindingLocation) => boolean = equalLocation
-): Consumer[] {
-  const finding_locations = finding.locations ?? [];
-  if (!finding_locations.length) return [];
-
-  return consumers.filter((c) =>
-    (c.locations ?? []).some((cl) => finding_locations.some((fl) => cmp(fl, cl)))
-  );
-}
 
 export function PageFindingDetails() {
   const { findingNamespace = "", findingName = "" } = useParams<{
@@ -148,30 +131,9 @@ export function PageFindingDetails() {
     </>
   );
 
-  const {
-    data: consumersData,
-    isLoading: isLoadingConsumers,
-    isError: isErrorConsumers,
-    isRefetchError: isRefetchErrorConsumers,
-    error: consumersError,
-  } = useGetConsumers();
-
-  const consumers = useMemo(() => {
-    if (!finding || !consumersData) return [];
-
-    return filterConsumersByFinding(finding, consumersData) || [];
-  }, [finding, consumersData]);
-
-  if (isErrorConsumers || isRefetchErrorConsumers) {
-    handleDefaultApiHttpError(
-      consumersError,
-      "Error while fetching Consumers data"
-    );
-  }
-
   return (
     <LayoutPage title={title} description={description}>
-      {isLoading || isLoadingConsumers? (
+      {isLoading ? (
         <div className="flex justify-center items-center h-48">
           <Loader size="lg" />
         </div>
@@ -217,7 +179,7 @@ export function PageFindingDetails() {
               </SelectContent>
             </Select>
           </LayoutPortalTopbarActions>
-          <FindingDetails finding={finding} consumers={consumers}/>
+          <FindingDetails finding={finding} />
         </>
       )}
     </LayoutPage>

@@ -11,7 +11,7 @@ export interface Consumer {
   name: string;
   namespace: string;
   displayName: string;
-  targetReference: TargetReference;
+  targetRef: TargetReference;
 	type: string;
   locations: FindingLocation[];
   status: Status;
