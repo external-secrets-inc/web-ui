@@ -9,7 +9,7 @@ import {
   LucideAsteriskSquare,
   LucideAtSign,
 } from "lucide-react";
-import type { FindingRendererItem } from "../select/SelectFindingRenderer";
+import type { FindingRendererItem } from "./Finding.interfaces";
 
 type Props = {
   /** The finding metadata */

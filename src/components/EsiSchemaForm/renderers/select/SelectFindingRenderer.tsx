@@ -6,23 +6,8 @@ import { LucideLocateFixed } from "lucide-react";
 import { FindingOptionRow } from "../common/FindingOptionRow";
 import { resolveFindingFromValue } from "../common/Finding.utils";
 import type { Renderer } from "../renderers.interfaces";
+import type { FindingRendererItem } from "../common/Finding.interfaces";
 
-/**
- * Metadata for finding renderer items used in select fields.
- * Contains display information and counts for findings.
- */
-export interface FindingRendererItem {
-  /** Display name for the finding */
-  displayName?: string;
-  /** Property name associated with the finding */
-  property?: string;
-  /** Unique identifier for the finding */
-  id?: string;
-  /** Number of locations where this finding appears */
-  locationsCount?: number;
-  /** Number of stores where this finding appears */
-  storesCount?: number;
-}
 
 
 const SelectFindingRenderer: Renderer = ({

@@ -1,4 +1,4 @@
-import type { FindingRendererItem } from "../select/SelectFindingRenderer";
+import type { FindingRendererItem } from "../common/Finding.interfaces";
 
 /**
  * Extracts the finding ID from a field value.
