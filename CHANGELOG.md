@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.27.2](https://github.com/external-secrets-inc/web-ui/compare/v0.27.1...v0.27.2) (2025-09-16)
+
+
+### Bug Fixes
+
+* consumers filter by target ([#505](https://github.com/external-secrets-inc/web-ui/issues/505)) ([4639add](https://github.com/external-secrets-inc/web-ui/commit/4639add13d0fd83604bb329adb86224fea72450f))
+
 ## [0.27.1](https://github.com/external-secrets-inc/web-ui/compare/v0.27.0...v0.27.1) (2025-09-16)
 
 
