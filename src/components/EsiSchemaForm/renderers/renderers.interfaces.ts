@@ -1,5 +1,5 @@
 import type { UISchemaField } from "@/components/EsiSchemaForm/EsiSchemaForm.interfaces";
-import type { FindingRendererItem } from "./select/SelectFindingRenderer";
+import type { FindingRendererItem } from "./common/Finding.interfaces";
 
 /**
  * Field type names as used by UISchemaField.type.
