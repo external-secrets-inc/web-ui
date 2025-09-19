@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.27.3](https://github.com/external-secrets-inc/web-ui/compare/v0.27.2...v0.27.3) (2025-09-16)
+
+
+### Bug Fixes
+
+* release ([0672b3d](https://github.com/external-secrets-inc/web-ui/commit/0672b3d29edac35ea98e2bd4cbc37f527530afe4))
+
+## [0.27.2](https://github.com/external-secrets-inc/web-ui/compare/v0.27.1...v0.27.2) (2025-09-16)
+
+
+### Bug Fixes
+
+* consumers filter by target ([#505](https://github.com/external-secrets-inc/web-ui/issues/505)) ([4639add](https://github.com/external-secrets-inc/web-ui/commit/4639add13d0fd83604bb329adb86224fea72450f))
+
+## [0.27.1](https://github.com/external-secrets-inc/web-ui/compare/v0.27.0...v0.27.1) (2025-09-16)
+
+
+### Bug Fixes
+
+* workflow UI nitpicks ([#503](https://github.com/external-secrets-inc/web-ui/issues/503)) ([29f5579](https://github.com/external-secrets-inc/web-ui/commit/29f557904f547a4c1fb4e67fa6aa9ec2af9c783e))
+
+## [0.27.0](https://github.com/external-secrets-inc/web-ui/compare/v0.26.0...v0.27.0) (2025-09-04)
+
+
+### Features
+
+* add consumers ([#499](https://github.com/external-secrets-inc/web-ui/issues/499)) ([7221d1d](https://github.com/external-secrets-inc/web-ui/commit/7221d1dabb5e072a019e6c14f6d8591559c9c370))
+* improve ux for findings-related pages and dynamic selects  ([#500](https://github.com/external-secrets-inc/web-ui/issues/500)) ([e3d8873](https://github.com/external-secrets-inc/web-ui/commit/e3d8873bf9eb04f2e5da8f3c7816fd820501d06f))
+* replace MultiSelect with enhanced EsiSelect component ([#497](https://github.com/external-secrets-inc/web-ui/issues/497)) ([aceb947](https://github.com/external-secrets-inc/web-ui/commit/aceb9471cf73ee4eeddb49fbb3f4a0dbf0575e0c))
+
 ## [0.26.0](https://github.com/external-secrets-inc/web-ui/compare/v0.25.2...v0.26.0) (2025-08-21)
 
 

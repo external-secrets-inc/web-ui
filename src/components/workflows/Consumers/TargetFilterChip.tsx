@@ -1,19 +1,19 @@
 import { useData } from "@/components/ui/DataProvider";
-import { ConsumersTableData } from "./Consumers.interfaces";
+import { ConsumersTableData, targetColumnName } from "./Consumers.interfaces";
 import { useSearchParams } from "react-router-dom";
 
 export function TargetFilterChip() {
   const { table } = useData<ConsumersTableData>();
   const [ , setSearchParams] = useSearchParams();
 
-  const fv = table.getColumn("targetReference")?.getFilterValue() as
+  const fv = table.getColumn(targetColumnName)?.getFilterValue() as
     | { name?: string; namespace?: string }
     | undefined;
 
   if (!fv?.name && !fv?.namespace) return null;
 
   const clear = () => {
-    table.getColumn("targetReference")?.setFilterValue(undefined);
+    table.getColumn(targetColumnName)?.setFilterValue(undefined);
     setSearchParams((prev) => {
       prev.delete("targetName");
       prev.delete("targetNamespace");

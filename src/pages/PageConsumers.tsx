@@ -1,4 +1,4 @@
-import { ConsumerDataTable } from "@/components/workflows/Consumers";
+import { ConsumerDataList } from "@/components/workflows/Consumers";
 import { LayoutPage } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
@@ -53,7 +53,7 @@ export function PageConsumers() {
         <div className="flex justify-center items-center h-48">
           <Loader size="lg" />
         </div>
-      ) : <ConsumerDataTable consumers={consumers} />
+      ) : <ConsumerDataList consumers={consumers} />
       }
     </LayoutPage>
   );

@@ -1,3 +1,5 @@
+import { Consumer } from "../Consumers";
+
 export interface FindingLocation {
   name: string;
   apiVersion: string;
@@ -17,6 +19,7 @@ export interface Finding {
   name: string;
   namespace: string;
   locations: FindingLocation[];
+  consumers: Consumer[];
   workflowTemplateCandidates: WorkflowTemplateCandidate[];
   parsedName?: string;
   kind?: string;
