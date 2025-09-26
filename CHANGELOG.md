@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.28.0](https://github.com/external-secrets-inc/web-ui/compare/v0.27.3...v0.28.0) (2025-09-19)
+
+
+### Features
+
+* create new multiselect finding renderer ([#502](https://github.com/external-secrets-inc/web-ui/issues/502)) ([6d98136](https://github.com/external-secrets-inc/web-ui/commit/6d9813698a112d7efea9392d1def56fb3c71591e))
+
 ## [0.27.3](https://github.com/external-secrets-inc/web-ui/compare/v0.27.2...v0.27.3) (2025-09-16)
 
 
