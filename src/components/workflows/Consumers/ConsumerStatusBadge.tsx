@@ -44,7 +44,6 @@ export function ConsumerStatusBadge({ statusData }: ConsumerStatusBadgeProps) {
       statusData={ transformedStatusData }
       map={CONSUMER_STATUS_MAP}
       unknownMessage="No status was retrieved from this consumer"
-      formatFunction={ (msg?) => msg?.replace(/:/g, ":\n") }
     />
   );
 }
