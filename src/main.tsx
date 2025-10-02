@@ -24,6 +24,8 @@ import {
   PageAuditPolicies,
   PageAuditProviders,
   PageConsumers,
+  PageFederations,
+  PageFederationsCreate,
   PageFindingDetails,
   PageFindings,
   PageGeneratorDetails,
@@ -564,6 +566,49 @@ const router = createBrowserRouter([
             ],
           },
         ],
+      },
+      {
+        path: "federation",
+        element: <Outlet />,
+        handle: {
+          breadcrumb: () => ({
+            label: "Federation",
+            navigatable: false,
+          }),
+        },
+        children: [
+          {
+            index: true,
+            element: <NavigateWithOrg to="federation/identity-providers" replace />,
+          },
+          {
+            path: "identity-providers",
+            element: <Outlet />,
+            handle: {
+              breadcrumb: (match: UIMatch) => ({
+                label: "Identity Providers",
+                path: match.pathname,
+                navigatable: true,
+              }),
+            },
+            children: [
+              {
+                index: true,
+                element: <PageFederations />,
+              },
+              {
+                path: "create",
+                element: <PageFederationsCreate />,
+                handle: {
+                  breadcrumb: () => ({
+                    label: "New Identity Provider",
+                    navigatable: false,
+                  }),
+                },
+              },
+            ],
+          }
+        ]
       },
       {
         path: "reloaders",

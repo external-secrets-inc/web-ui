@@ -4,6 +4,8 @@ export { PageAuditInsights } from "./PageAuditInsights";
 export { PageAuditPolicies } from "./PageAuditPolicies";
 export { PageAuditProviders } from "./PageAuditProviders";
 export { PageConsumers } from "./PageConsumers";
+export { PageFederations } from "./PageFederations";
+export { PageFederationsCreate } from "./PageFederationsCreate";
 export { PageFindingDetails } from "./PageFindingDetails";
 export { PageFindings } from "./PageFindings";
 export { PageGeneratorDetails } from "./PageGeneratorDetails";
