@@ -23,6 +23,9 @@ import {
   PageAuditInsights,
   PageAuditPolicies,
   PageAuditProviders,
+  PageAuthorizationDetails,
+  PageAuthorizations,
+  PageAuthorizationsCreate,
   PageConsumers,
   PageFederations,
   PageFederationsCreate,
@@ -603,6 +606,44 @@ const router = createBrowserRouter([
                   breadcrumb: () => ({
                     label: "New Identity Provider",
                     navigatable: false,
+                  }),
+                },
+              },
+            ],
+          },
+          {
+            path: "authorizations",
+            element: <Outlet />,
+            handle: {
+              breadcrumb: (match: UIMatch) => ({
+                label: "Authorizations",
+                path: match.pathname,
+                navigatable: true,
+              }),
+            },
+            children: [
+              {
+                index: true,
+                element: <PageAuthorizations />,
+              },
+              {
+                path: "create",
+                element: <PageAuthorizationsCreate />,
+                handle: {
+                  breadcrumb: () => ({
+                    label: "New Authorization",
+                    navigatable: false,
+                  }),
+                },
+              },
+              {
+                path: ":authorizationNamespace/:authorizationName",
+                element: <PageAuthorizationDetails />,
+                handle: {
+                  breadcrumb: (match: UIMatch) => ({
+                    label: `${match.params.authorizationName}`,
+                    path: match.pathname,
+                    navigatable: true,
                   }),
                 },
               },

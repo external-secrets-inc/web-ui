@@ -20,6 +20,7 @@ import {
   LucideWorkflow,
   LucideComputer,
   LucideIdCard,
+  LucideLockKeyhole,
 } from "lucide-react";
 
 export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
@@ -61,6 +62,11 @@ export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
           label: "Identity Providers",
           url: "/federation/identity-providers",
           icon: LucideIdCard,
+        },
+        {
+          label: "Authorizations",
+          url: "/federation/authorizations",
+          icon: LucideLockKeyhole,
         },
       ],
     },

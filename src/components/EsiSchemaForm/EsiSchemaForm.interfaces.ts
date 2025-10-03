@@ -194,7 +194,8 @@ export type KubernetesResourceType =
   | 'workflowtemplate'
   | 'workflowrun'
   | 'workflowruntemplate'
-  | 'federations';
+  | 'federations'
+  | "authorizations";
 
 export interface EsiSchemaFormProps {
   resourceType: KubernetesResourceType;
