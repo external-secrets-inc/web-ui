@@ -20,7 +20,6 @@ export interface AuthorizationData {
   allowedClusterSecretStores: string[];
   allowedGenerators: AllowedGenerator[];
   allowedGeneratorStates: AllowedGeneratorState[];
-  spiffe?: FederationSpiffe;
   subject?: FederationSubject;
 }
 
@@ -32,6 +31,7 @@ export interface AllowedGenerator {
   name: string;
   kind: string;
   namespace: string;
+  apiVersion: string;
 }
 
 export interface FederationRef {
@@ -40,6 +40,11 @@ export interface FederationRef {
 }
 
 export interface FederationSubject {
+  oidc?: FederationOIDC;
+  spiffe?: FederationSpiffe;
+}
+
+export interface FederationOIDC {
   issuer: string;
   subject: string;
 }

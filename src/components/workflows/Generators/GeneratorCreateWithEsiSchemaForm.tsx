@@ -33,7 +33,7 @@ export function GeneratorCreateWithEsiSchemaForm() {
   const generatorTypeOptions = generatorTypesSchema?.fields?.find(field => field.id === "generators")?.options || [];
 
   // Get specific generator schema when a type is selected
-  const resourcePath = selectedGeneratorType ? `generators/${selectedGeneratorType}` : "";
+  const resourcePath = selectedGeneratorType ? `${selectedGeneratorType}` : "";
   const { data: schema, isLoading: isLoadingSchema, error: schemaError } = useGetUISchema(resourcePath, {
     enabled: !!selectedGeneratorType,
   });

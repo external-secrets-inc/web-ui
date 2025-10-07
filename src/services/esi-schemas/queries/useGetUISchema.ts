@@ -9,21 +9,6 @@ const getUISchema = async (
   resourceType: string,
   signal?: AbortSignal
 ): Promise<UISchema> => {
-  if (resourceType === "federations") {
-    return {
-      fields: [
-        {
-          id: "federations",
-          label: "Federations",
-          type: "object",
-          required: false,
-          description: "Available federations kinds",
-          options: ["kubernetes", "spiffe"],
-        },
-      ],
-    };
-  }
-
   const headers = await getAuthHeaders();
   const response = await axiosInstance.get(
     `/api/v1/ui-schemas/${resourceType}`,

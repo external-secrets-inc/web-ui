@@ -203,7 +203,7 @@ export function FederationDataTable() {
   if (typesError) {
     return (
       <div className="text-red-500 py-4">
-        Failed to load federation types. Please try again.
+        Failed to load identity provider types. Please try again.
       </div>
     );
   }

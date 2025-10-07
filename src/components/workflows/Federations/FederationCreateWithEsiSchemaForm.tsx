@@ -33,7 +33,7 @@ export function FederationCreateWithEsiSchemaForm() {
   const federationTypeOptions = federationTypesSchema?.fields?.find(field => field.id === "federations")?.options || [];
 
   // Get specific federation schema when a type is selected
-  const resourcePath = selectedFederationType ? `federations/${selectedFederationType}` : "";
+  const resourcePath = selectedFederationType ? `${selectedFederationType}` : "";
   const { data: schema, isLoading: isLoadingSchema, error: schemaError } = useGetUISchema(resourcePath, {
     enabled: !!selectedFederationType,
   });
@@ -133,11 +133,11 @@ export function FederationCreateWithEsiSchemaForm() {
           <FieldSelect
             field={mockField}
             name="federationType"
-            label="Federation Type"
-            description="Choose the type of federation you want to create. This will determine the available configuration options."
+            label="Identity Provider Type"
+            description="Choose the type of identity provider you want to create. This will determine the available configuration options."
             required
             options={federationTypeOptions}
-            placeholder="Select a federation type..."
+            placeholder="Select a identity provider type..."
             onValueChange={handleFederationTypeChange}
             descriptionInline
           />

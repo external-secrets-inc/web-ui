@@ -7,6 +7,12 @@ import {
 } from "@/components/ui/accordion";
 import { CodeTextarea } from "@/components/ui/CodeTextarea";
 
+function isNonEmptyObject<T extends object>(
+  obj: T | null | undefined
+): obj is T {
+  return !!obj && Object.keys(obj).length > 0;
+}
+
 export function AuthorizationDetails({
   authorization,
   yamlString,
@@ -26,13 +32,11 @@ export function AuthorizationDetails({
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {/* Cluster Secret Stores */}
             <div className="space-y-1">
-              <div className="font-bold text-base">
-                Cluster Secret Stores
-              </div>
+              <div className="font-bold text-base">Cluster Secret Stores</div>
               {authorization.allowedClusterSecretStores?.length ? (
                 <ul className="space-y-1">
                   {authorization.allowedClusterSecretStores.map((name) => (
-                    <li key={name} className="truncate pl-4">
+                    <li key={name} className="pl-4">
                       <span>{name}</span>
                     </li>
                   ))}
@@ -44,15 +48,13 @@ export function AuthorizationDetails({
 
             {/* Generators */}
             <div className="space-y-1">
-              <div className="font-bold text-base">
-                Generators
-              </div>
+              <div className="font-bold text-base">Generators</div>
               {authorization.allowedGenerators?.length ? (
                 <ul className="space-y-1">
                   {authorization.allowedGenerators.map((g) => {
                     const key = `${g.namespace}/${g.kind}/${g.name}`;
                     return (
-                      <li key={key} className="truncate pl-4">
+                      <li key={key} className="pl-4">
                         <span>{g.name}</span>{" "}
                         <span className="text-muted-foreground">
                           ({g.kind})
@@ -68,13 +70,11 @@ export function AuthorizationDetails({
 
             {/* Generator States */}
             <div className="space-y-1">
-              <div className="font-bold text-base">
-                Generator States
-              </div>
+              <div className="font-bold text-base">Generator States</div>
               {authorization.allowedGeneratorStates?.length ? (
                 <ul className="space-y-1">
                   {authorization.allowedGeneratorStates.map((s) => (
-                    <li key={s.namespace} className="truncate pl-4">
+                    <li key={s.namespace} className="pl-4">
                       <span>{s.namespace}</span>
                     </li>
                   ))}
@@ -86,44 +86,54 @@ export function AuthorizationDetails({
           </div>
         </div>
 
-        {(authorization.subject || authorization.spiffe) && (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 border-b pb-4">
-  {/* Federation Subject */}
-  {authorization.subject && (
-    <div
-      className={`min-w-0 ${
-        authorization.spiffe ? "" : "md:col-span-2"
-      }`}
-    >
-      <div className="mb-1 font-bold text-base">Federation Subject</div>
+        {authorization.subject &&
+          (isNonEmptyObject(authorization.subject.oidc) ||
+            isNonEmptyObject(authorization.subject.spiffe)) && (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 border-b pb-4">
+              {/* OIDC */}
+              {isNonEmptyObject(authorization.subject.oidc) && (
+                <div
+                  className={`min-w-0 ${
+                    isNonEmptyObject(authorization.subject.spiffe) ? "" : "md:col-span-2"
+                  }`}
+                >
+                  <div className="mb-1 font-bold text-base">
+                    Federation Subject
+                  </div>
 
-      <div className="pl-4 flex items-baseline gap-1 min-w-0">
-        <span className="text-muted-foreground shrink-0">Issuer:</span>
-        <span className="break-all flex-1">
-          {authorization.subject.issuer}
-        </span>
-      </div>
+                  <div className="pl-4 flex items-baseline gap-1 min-w-0">
+                    <span className="text-muted-foreground shrink-0">
+                      Issuer:
+                    </span>
+                    <span className="break-all flex-1">
+                      {authorization.subject.oidc.issuer}
+                    </span>
+                  </div>
 
-      <div className="pl-4 flex items-baseline gap-1 min-w-0">
-        <span className="text-muted-foreground shrink-0">Subject:</span>
-        <span className="break-all flex-1">
-          {authorization.subject.subject}
-        </span>
-      </div>
-    </div>
-  )}
+                  <div className="pl-4 flex items-baseline gap-1 min-w-0">
+                    <span className="text-muted-foreground shrink-0">
+                      Subject:
+                    </span>
+                    <span className="break-all flex-1">
+                      {authorization.subject.oidc.subject}
+                    </span>
+                  </div>
+                </div>
+              )}
 
-  {/* Spiffe ID */}
-  {authorization.spiffe && (
-    <div className="min-w-0">
-      <div className="mb-1 font-bold text-base">Spiffe ID</div>
-      <div className="pl-4">
-        <span className="break-all">{authorization.spiffe.spiffeID}</span>
-      </div>
-    </div>
-  )}
-</div>
-        )}
+              {/* Spiffe */}
+              {isNonEmptyObject(authorization.subject.spiffe) && (
+                <div className="min-w-0">
+                  <div className="mb-1 font-bold text-base">Spiffe ID</div>
+                  <div className="pl-4">
+                    <span className="break-all">
+                      {authorization.subject?.spiffe.spiffeID}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
       </div>
       <div className="mb-4">
         <Accordion className="mb-4" type="single" collapsible>
