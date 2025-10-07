@@ -8,7 +8,9 @@ type TimeZoneOptions = string;
 
 /**
  * Formats a date/time to UTC or local format.
- * @param dateInput - The date input (ISO string, number, or Date object).
+ * Handles Go's time.String() format by stripping monotonic clock readings.
+ * 
+ * @param dateInput - The date input (ISO string, number, Date object, or Go time string).
  * @param options - Formatting options.
  * @returns The formatted date string.
  */
@@ -17,12 +19,21 @@ export const formatDate = (
   options: { format: FormatOptions; timeZone?: TimeZoneOptions } = { format: 'isoUTC' }
 ): string => {
   if (dateInput === null || dateInput === undefined || (typeof dateInput === 'string' && dateInput.trim() === '')) {
-    return 'Loading...';  // Empty or null-like inputs return fallback
+    return 'Loading...';
   }
 
-  const date = new Date(dateInput);
+  let parsedInput = dateInput;
+  
+  if (typeof dateInput === 'string') {
+    const monotonicIndex = dateInput.indexOf(' m=');
+    if (monotonicIndex !== -1) {
+      parsedInput = dateInput.substring(0, monotonicIndex).trim();
+    }
+  }
+
+  const date = new Date(parsedInput);
   if (isNaN(date.getTime())) {
-    console.error('Invalid date input');
+    console.error('Invalid date input:', dateInput);
     return 'Invalid date';
   }
 
