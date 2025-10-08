@@ -1,6 +1,9 @@
 import { useData } from "@/components/ui/DataProvider";
 import { ConsumersTableData, targetColumnName } from "./Consumers.interfaces";
 import { useSearchParams } from "react-router-dom";
+import { LucideX } from "lucide-react";
+import { Trimmer } from "@/components/ui/Trimmer";
+import { Badge } from "@/components/ui/badge";
 
 export function TargetFilterChip() {
   const { table } = useData<ConsumersTableData>();
@@ -9,7 +12,6 @@ export function TargetFilterChip() {
   const fv = table.getColumn(targetColumnName)?.getFilterValue() as
     | { name?: string; namespace?: string }
     | undefined;
-
   if (!fv?.name && !fv?.namespace) return null;
 
   const clear = () => {
@@ -22,11 +24,12 @@ export function TargetFilterChip() {
   };
 
   return (
-    <div className="flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-sm">
-      <span>
-        Target: {fv.namespace ? `${fv.namespace}/` : ""}{fv.name ?? "*"}
-      </span>
-      <button onClick={clear} className="text-xs underline">clear</button>
-    </div>
+    <Badge variant="secondary" className="text-sm min-w-0 flex-shrink">
+      <span className="font-normal text-foreground">Target:</span>
+      <Trimmer className="pl-1">
+        {fv.namespace ? `${fv.namespace}/` : ""}{fv.name ?? "*"}
+      </Trimmer>
+      <button onClick={clear} className="pl-2 underline"><LucideX /></button>
+    </Badge>
   );
 }

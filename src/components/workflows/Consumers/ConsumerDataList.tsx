@@ -1,18 +1,28 @@
-import { useMemo } from "react";
-import {
-  DataProvider,
-  defineColumns,
-} from "@/components/ui/DataProvider";
-import { Consumer, ConsumersTableData, targetColumnName, TargetReference } from "./Consumers.interfaces";
-import { SetURLSearchParams, useSearchParams } from "react-router-dom";
-import { ConsumerStatusBadge } from "./ConsumerStatusBadge";
-import { FindingLocation } from "../Findings";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { BadgeGroup, BadgeItem } from "@/components/ui/BadgeGroup";
+import { DataProvider, defineColumns } from "@/components/ui/DataProvider";
 import { FilterFn } from "@tanstack/react-table";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  LucideAsteriskSquare,
+  LucideCrosshair
+} from "lucide-react";
+import { useMemo } from "react";
+import { FindingLocation } from "../Findings";
+import {
+  Consumer,
+  ConsumersTableData,
+  targetColumnName,
+  TargetReference,
+} from "./Consumers.interfaces";
 import { ConsumerDataTable } from "./ConsumersDataTable";
+import { ConsumerStatusBadge } from "./ConsumerStatusBadge";
+import { Trimmer } from "@/components/ui/Trimmer";
 
-const targetRefMatch: FilterFn<ConsumersTableData> = (row, columnId, filterValue) =>{
+const targetRefMatch: FilterFn<ConsumersTableData> = (
+  row,
+  columnId,
+  filterValue
+) => {
   const ref = row.getValue(columnId) as TargetReference | undefined;
   if (!ref) return false;
 
@@ -21,32 +31,20 @@ const targetRefMatch: FilterFn<ConsumersTableData> = (row, columnId, filterValue
   const wantName = fv.name?.trim();
   const wantNs = fv.namespace?.trim();
 
-  if (!wantName && !wantNs) return true;           // nothing to filter by
+  if (!wantName && !wantNs) return true; // nothing to filter by
   if (wantName && ref.name !== wantName) return false;
   if (wantNs && ref.namespace !== wantNs) return false;
 
   return true;
 };
 
-const applyTargetFilter = (setSearchParams: SetURLSearchParams, ref: TargetReference) => {
-  setSearchParams(
-    (prev) => {
-      prev.set("targetName", ref.name);
-      prev.set("targetNamespace", ref.namespace);
-      return prev;
-    },
-    { replace: true }
-  );
-};
 
 interface ConsumerDataListProps {
   consumers: Consumer[];
-  title?: string,
+  title?: string;
 }
 
-export function ConsumerDataList({ consumers, title } : ConsumerDataListProps) {
-  const [ , setSearchParams] = useSearchParams();
-
+export function ConsumerDataList({ consumers, title }: ConsumerDataListProps) {
   const columns = useMemo(
     () =>
       defineColumns<ConsumersTableData>((columnHelper) => [
@@ -60,19 +58,10 @@ export function ConsumerDataList({ consumers, title } : ConsumerDataListProps) {
           cell: (info) => {
             const ref = info.getValue() as TargetReference;
             return (
-              <Tooltip delayDuration={0}>
-                <TooltipTrigger asChild>
-                    <Button
-                      onClick={() => { applyTargetFilter(setSearchParams, ref) }}
-                      variant='link'
-                    >
-                      {ref.name}
-                    </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <span className="whitespace-pre-line">{`Filter by target ${ref.namespace}/${ref.name}`}</span>
-                </TooltipContent>
-              </Tooltip >
+              <Badge variant="secondary" className="inline-flex gap-1.5 text-sm px-2">
+                <LucideCrosshair className="text-muted-foreground" />
+                <Trimmer>{ref.name}</Trimmer>
+              </Badge>
             );
           },
         }),
@@ -80,26 +69,42 @@ export function ConsumerDataList({ consumers, title } : ConsumerDataListProps) {
           header: "Used secrets",
           cell: (info) => {
             const locations = info.getValue();
-            const locationNames = locations.map(
-              (loc: FindingLocation) => {
-                if(loc.remoteRef.property) {
-                  return `${loc.remoteRef.key}.${loc.remoteRef.property}`
-                }
-                return loc.remoteRef.key
-              }
-            ).join(", ");
-            return locationNames
+
+            const locationNames: BadgeItem[] = locations.map(
+              (loc: FindingLocation) => ({
+                id: `key-${loc.remoteRef.key}.${loc.remoteRef.property}`,
+                label: `${loc.remoteRef.key}.${loc.remoteRef.property}`,
+                icon: (
+                  <LucideAsteriskSquare className="text-muted-foreground" />
+                ),
+                className: "text-sm",
+              })
+            );
+
+            return (
+              <BadgeGroup
+                maxCount="auto"
+                badges={locationNames}
+                extraBadge={{
+                  id: "extra",
+                  className: "text-sm",
+                  icon: (
+                    <LucideAsteriskSquare className="text-muted-foreground" />
+                  ),
+                }}
+              />
+            );
           },
         }),
         columnHelper.accessor("status", {
           header: "Status",
           cell: (info) => {
             const statusData = info.row.original.status;
-            return <ConsumerStatusBadge statusData={statusData} />
+            return <ConsumerStatusBadge statusData={statusData} />;
           },
         }),
       ]),
-    [setSearchParams]
+    []
   );
 
   return (
@@ -111,7 +116,7 @@ export function ConsumerDataList({ consumers, title } : ConsumerDataListProps) {
         getRowId={(row) => `${row.namespace}/${row.name}`}
         emptyMessage={"No consumers found"}
       >
-        <ConsumerDataTable title={title}/>
+        <ConsumerDataTable title={title} />
       </DataProvider>
     </div>
   );
