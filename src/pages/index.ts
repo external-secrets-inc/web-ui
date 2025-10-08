@@ -6,6 +6,8 @@ export { PageAuditProviders } from "./PageAuditProviders";
 export { PageAuthorizationDetails } from "./PageAuthorizationDetails";
 export { PageAuthorizations } from "./PageAuthorizations";
 export { PageAuthorizationsCreate } from "./PageAuthorizationsCreate";
+export { PageAuthorizedIdentities } from "./PageAuthorizedIdentities";
+export { PageAuthorizedIdentityDetails } from "./PageAuthorizedIdentityDetails";
 export { PageConsumers } from "./PageConsumers";
 export { PageFederations } from "./PageFederations";
 export { PageFederationsCreate } from "./PageFederationsCreate";
@@ -30,3 +32,4 @@ export { PageWorkflowRunTemplatesCreate } from "./PageWorkflowRunTemplatesCreate
 export { PageWorkflowTemplateDetails } from "./PageWorkflowTemplateDetails";
 export { PageWorkflowTemplates } from "./PageWorkflowTemplates";
 export { PageWorkflowTemplatesCreate } from "./PageWorkflowTemplatesCreate";
+
