@@ -11,7 +11,6 @@ function createDefaultYamlTemplate(): string {
     kind: "KubernetesFederation",
     metadata: {
       name: "",
-      namespace: "default",
     },
     spec: {
       url: "https://kubeapi.client-alpha.example.com ",

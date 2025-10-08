@@ -7,7 +7,7 @@ import { FederationData, GetFederationPayload } from "@/components/workflows/Fed
 
 const getFederation = async (signal: AbortSignal, payload: GetFederationPayload,): Promise<FederationData> => {
   const headers = await getAuthHeaders();
-  const response = await axiosInstance.get(`/api/v1/federations/${payload.kind}/${payload.namespace}/${payload.name}`, {
+  const response = await axiosInstance.get(`/api/v1/federations/${payload.kind}/${payload.name}`, {
     headers,
     signal,
     backend: 'ESO_SERVER'
@@ -20,7 +20,7 @@ const useGetFederation = (
   options?: Omit<UseQueryOptions<FederationData, AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
 ) => {
   return useQuery({
-    queryKey: ["federations", "useGetFederation", `useGetFederation/${payload.kind}/${payload.namespace}/${payload.name}`],
+    queryKey: ["federations", "useGetFederation", `useGetFederation/${payload.kind}/${payload.name}`],
     queryFn: ({ signal }) => getFederation(signal, payload),
     ...options,
   });

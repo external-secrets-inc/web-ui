@@ -15,7 +15,7 @@ export function PageAuthorizations() {
   return (
     <LayoutPage
       title="Authorizations"
-      description="Authorizations define which subjects are permitted to access resources within a federation."
+      description="Authorizations define which subjects are permitted to access resources within a identity provider."
     >
       <LayoutPortalTopbarActions>
         <Button

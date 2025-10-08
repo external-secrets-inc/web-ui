@@ -7,7 +7,7 @@ import { DeleteFederationPayload } from "@/components/workflows/Federations/Fede
 
 const deleteFederation = async (payload: DeleteFederationPayload): Promise<void> => {
   const headers = await getAuthHeaders();
-  await axiosInstance.delete(`/api/v1/federations/${payload.kind}/${payload.namespace}/${payload.name}`, {
+  await axiosInstance.delete(`/api/v1/federations/${payload.kind}/${payload.name}`, {
     headers,
     backend: 'ESO_SERVER'
   });

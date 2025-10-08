@@ -32,14 +32,14 @@ function parseManifest(manifest?: string): any {
 
 export function PageAuthorizationDetails() {
   const queryClient = useQueryClient();
-  const { authorizationNamespace, authorizationName } = useParams();
+  const { authorizationName } = useParams();
 
   const handleRefresh = () => {
     queryClient.invalidateQueries({
       queryKey: [
         "authorizations",
         "useGetAuthorizations",
-        `useGetAuthorizations/${authorizationNamespace}/${authorizationName}`,
+        `useGetAuthorizations/${authorizationName}`,
       ],
     });
   };
@@ -50,11 +50,10 @@ export function PageAuthorizationDetails() {
     error: authorizationError,
   } = useGetAuthorization(
     {
-      namespace: authorizationNamespace ?? "",
       name: authorizationName ?? "",
     },
     {
-      enabled: !!authorizationNamespace && !!authorizationName,
+      enabled: !!authorizationName,
     }
   );
 
@@ -71,7 +70,6 @@ export function PageAuthorizationDetails() {
     if (!authorizationData)
       return {
         name: authorizationName ?? "",
-        namespace: authorizationNamespace ?? "",
         manifest: "",
         federationRef: { name: "", kind: ""},
         allowedClusterSecretStores: [],
@@ -80,7 +78,7 @@ export function PageAuthorizationDetails() {
       } as AuthorizationData;
 
     return authorizationData;
-  }, [authorizationData, authorizationName, authorizationNamespace]);
+  }, [authorizationData, authorizationName]);
 
   const yamlString = useMemo(() => {
     try {

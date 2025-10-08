@@ -4,13 +4,13 @@ import { ApiHttpError } from "@/types";
 import { FederationData, GenericFederation } from "@/components/workflows/Federations/Federations.interfaces";
 import { getFederations } from "./useGetFederations";
 
-const KNOWN_KEYS = new Set(["name", "namespace", "manifest"]);
+const KNOWN_KEYS = new Set(["name", "manifest"]);
 
 export function toFederationData(
   item: GenericFederation,
   kind: string
 ): FederationData {
-  const { name, namespace, manifest } = item;
+  const { name, manifest } = item;
 
   const detailsEntries = Object.entries(item)
     .filter(([k]) => !KNOWN_KEYS.has(k))
@@ -18,7 +18,7 @@ export function toFederationData(
 
   const details = detailsEntries.length ? Object.fromEntries(detailsEntries) : undefined;
 
-  return { name, namespace, manifest, kind, details };
+  return { name, manifest, kind, details };
 }
 
 type FederationsResult = {

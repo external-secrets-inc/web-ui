@@ -3,18 +3,15 @@ export interface CreateAuthorizationPayload {
 }
 
 export interface DeleteAuthorizationPayload {
-  namespace: string;
   name: string;
 }
 
 export interface GetAuthorizationPayload {
-  namespace: string;
   name: string;
 }
 
 export interface AuthorizationData {
   name: string;
-  namespace: string;
   manifest: string;
   federationRef: FederationRef;
   allowedClusterSecretStores: string[];
@@ -54,4 +51,4 @@ export interface FederationSpiffe {
 }
 
 
-export type AuthorizationTableData = Pick<AuthorizationData, "name" | "namespace" | "federationRef">;
+export type AuthorizationTableData = Pick<AuthorizationData, "name" | "federationRef">;

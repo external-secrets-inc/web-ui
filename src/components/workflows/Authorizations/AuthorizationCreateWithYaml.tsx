@@ -11,7 +11,6 @@ function createDefaultYamlTemplate(): string {
     kind: "Authorization",
     metadata: {
       name: "allow-alpha-monitoring",
-      namespace: "default",
     },
     spec: {
       federationRef: {

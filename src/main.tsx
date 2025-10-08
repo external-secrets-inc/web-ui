@@ -637,7 +637,7 @@ const router = createBrowserRouter([
                 },
               },
               {
-                path: ":authorizationNamespace/:authorizationName",
+                path: ":authorizationName",
                 element: <PageAuthorizationDetails />,
                 handle: {
                   breadcrumb: (match: UIMatch) => ({

@@ -7,7 +7,7 @@ import { AuthorizationData, GetAuthorizationPayload } from "@/components/workflo
 
 const getAuthorization = async (signal: AbortSignal, payload: GetAuthorizationPayload,): Promise<AuthorizationData> => {
   const headers = await getAuthHeaders();
-  const response = await axiosInstance.get(`/api/v1/authorizations/${payload.namespace}/${payload.name}`, {
+  const response = await axiosInstance.get(`/api/v1/authorizations/${payload.name}`, {
     headers,
     signal,
     backend: 'ESO_SERVER'
@@ -20,7 +20,7 @@ const useGetAuthorization = (
   options?: Omit<UseQueryOptions<AuthorizationData, AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
 ) => {
   return useQuery({
-    queryKey: ["authorizations", "useGetAuthorization", `useGetAuthorization/${payload.namespace}/${payload.name}`],
+    queryKey: ["authorizations", "useGetAuthorization", `useGetAuthorization/${payload.name}`],
     queryFn: ({ signal }) => getAuthorization(signal, payload),
     ...options,
   });

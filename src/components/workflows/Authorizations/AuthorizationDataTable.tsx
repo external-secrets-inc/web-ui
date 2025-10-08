@@ -80,10 +80,10 @@ export function AuthorizationDataTable() {
           >
             <FeatureItemDeleteAction
               featureType={"Authorization"}
-              featureID={`${row.namespace}/${row.name}`}
+              featureID={`${row.name}`}
               featureName={row.name}
               onDelete={() => {
-                performDelete(row.namespace, row.name);
+                performDelete(row.name);
               }}
             >
               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -122,8 +122,8 @@ export function AuthorizationDataTable() {
     },
   });
 
-  const performDelete = (namespace: string, name: string) => {
-    deleteAuthorization({ namespace, name });
+  const performDelete = (name: string) => {
+    deleteAuthorization({ name });
   };
 
   if (isErrorAuthorizations || isRefetchErrorAuthorizations) {
@@ -137,7 +137,7 @@ export function AuthorizationDataTable() {
         columns={columns}
         initialSort={{ id: "name", desc: false }}
         isLoading={isLoadingAuthorizations}
-        getRowId={(row) => `${row.namespace}/${row.name}`}
+        getRowId={(row) => `${row.name}`}
         meta={authorizationTableMeta}
       >
         <div className="flex justify-end gap-4 items-center">
@@ -157,7 +157,7 @@ export function AuthorizationDataTable() {
                     const typedRow = row as AuthorizationTableData;
                     navigate(
                       getOrgLink(
-                        `/federation/authorizations/${typedRow.namespace}/${typedRow.name}`
+                        `/federation/authorizations/${typedRow.name}`
                       )
                     );
                   }}

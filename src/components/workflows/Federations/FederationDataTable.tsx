@@ -122,10 +122,10 @@ export function FederationDataTable() {
           >
             <FeatureItemDeleteAction
               featureType={"Federation"}
-              featureID={`${row.kind}/${row.namespace}/${row.name}`}
+              featureID={`${row.kind}/${row.name}`}
               featureName={row.name}
               onDelete={() => {
-                performDelete(row.kind, row.namespace, row.name);
+                performDelete(row.kind, row.name);
               }}
             >
               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -180,8 +180,8 @@ export function FederationDataTable() {
     },
   });
 
-  const performDelete = (kind: string, namespace: string, name: string) => {
-    deleteFederation({ kind, namespace, name });
+  const performDelete = (kind: string, name: string) => {
+    deleteFederation({ kind, name });
   };
 
   if (isErrorFederations || isRefetchErrorFederations) {
@@ -215,7 +215,7 @@ export function FederationDataTable() {
         columns={columns}
         initialSort={{ id: "name", desc: false }}
         isLoading={isLoadingFederations}
-        getRowId={(row) => `${row.kind}/${row.namespace}/${row.name}`}
+        getRowId={(row) => `${row.kind}/${row.name}`}
         meta={federationTableMeta}
       >
         <div className="flex justify-end gap-4 items-center">

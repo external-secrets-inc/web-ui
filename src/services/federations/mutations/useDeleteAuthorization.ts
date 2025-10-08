@@ -7,7 +7,7 @@ import { DeleteAuthorizationPayload } from "@/components/workflows/Authorization
 
 const deleteAuthorization = async (payload: DeleteAuthorizationPayload): Promise<void> => {
   const headers = await getAuthHeaders();
-  await axiosInstance.delete(`/api/v1/authorizations/${payload.namespace}/${payload.name}`, {
+  await axiosInstance.delete(`/api/v1/authorizations/${payload.name}`, {
     headers,
     backend: 'ESO_SERVER'
   });
