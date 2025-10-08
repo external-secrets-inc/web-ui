@@ -31,7 +31,7 @@ export interface StatusBadgeProps {
 
   /**
    * Fallback message text when status is unmapped.
-   * @default "Unmapped status retrieved"
+   * @default "Status information not available"
    */
   defaultMessage?: string;
 
@@ -52,7 +52,7 @@ function resolveText(
   map: StatusMap,
   unknownMessage: string,
   defaultDisplay = "Not Informed",
-  defaultMessage = "Unmapped status retrieved",
+  defaultMessage = "Status information not available",
   formatFunction?: (msg?: string) => React.ReactNode
 ) {
   if (!statusData) {
@@ -91,7 +91,7 @@ function resolveText(
 
   return {
     variant: "default" as BadgeProps["variant"],
-    displayText: status ?? defaultDisplay,
+    displayText: (status && status.trim()) ? status.trim() : defaultDisplay,
     messageText: (reason ?? defaultMessage) as React.ReactNode,
   };
 }
@@ -101,7 +101,7 @@ export function StatusBadge({
   map,
   unknownMessage,
   defaultDisplay = "Not Informed",
-  defaultMessage = "Unmapped status retrieved",
+  defaultMessage = "Status information not available",
   className,
   formatFunction,
 }: StatusBadgeProps) {

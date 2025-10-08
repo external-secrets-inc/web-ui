@@ -23,7 +23,12 @@ import {
   PageAuditInsights,
   PageAuditPolicies,
   PageAuditProviders,
+  PageAuthorizationDetails,
+  PageAuthorizations,
+  PageAuthorizationsCreate,
   PageConsumers,
+  PageFederations,
+  PageFederationsCreate,
   PageFindingDetails,
   PageFindings,
   PageGeneratorDetails,
@@ -564,6 +569,87 @@ const router = createBrowserRouter([
             ],
           },
         ],
+      },
+      {
+        path: "federation",
+        element: <Outlet />,
+        handle: {
+          breadcrumb: () => ({
+            label: "Federation",
+            navigatable: false,
+          }),
+        },
+        children: [
+          {
+            index: true,
+            element: <NavigateWithOrg to="federation/identity-providers" replace />,
+          },
+          {
+            path: "identity-providers",
+            element: <Outlet />,
+            handle: {
+              breadcrumb: (match: UIMatch) => ({
+                label: "Identity Providers",
+                path: match.pathname,
+                navigatable: true,
+              }),
+            },
+            children: [
+              {
+                index: true,
+                element: <PageFederations />,
+              },
+              {
+                path: "create",
+                element: <PageFederationsCreate />,
+                handle: {
+                  breadcrumb: () => ({
+                    label: "New Identity Provider",
+                    navigatable: false,
+                  }),
+                },
+              },
+            ],
+          },
+          {
+            path: "authorizations",
+            element: <Outlet />,
+            handle: {
+              breadcrumb: (match: UIMatch) => ({
+                label: "Authorizations",
+                path: match.pathname,
+                navigatable: true,
+              }),
+            },
+            children: [
+              {
+                index: true,
+                element: <PageAuthorizations />,
+              },
+              {
+                path: "create",
+                element: <PageAuthorizationsCreate />,
+                handle: {
+                  breadcrumb: () => ({
+                    label: "New Authorization",
+                    navigatable: false,
+                  }),
+                },
+              },
+              {
+                path: ":authorizationName",
+                element: <PageAuthorizationDetails />,
+                handle: {
+                  breadcrumb: (match: UIMatch) => ({
+                    label: `${match.params.authorizationName}`,
+                    path: match.pathname,
+                    navigatable: true,
+                  }),
+                },
+              },
+            ],
+          }
+        ]
       },
       {
         path: "reloaders",

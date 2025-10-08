@@ -7,7 +7,7 @@ import {
   type KubernetesManifest,
 } from "@/components/EsiSchemaForm";
 import { FieldSelect } from "@/components/ui/fields/FieldSelect";
-import useCreateGenerator from "@/services/workflows/mutations/useCreateGenerator";
+import useCreateFederation from "@/services/federations/mutations/useCreateFederation";
 import useGetUISchema from "@/services/esi-schemas/queries/useGetUISchema";
 import { Link, useNavigate } from "react-router-dom";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
@@ -16,61 +16,61 @@ import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import type { UISchemaField } from "@/components/EsiSchemaForm/EsiSchemaForm.interfaces";
 
-export function GeneratorCreateWithEsiSchemaForm() {
+export function FederationCreateWithEsiSchemaForm() {
   const navigate = useNavigate();
-  const [selectedGeneratorType, setSelectedGeneratorType] = useState<string>("");
+  const [selectedFederationType, setSelectedFederationType] = useState<string>("");
 
   const form = useForm({
     defaultValues: {
-      generatorType: "",
+      federationType: "",
     },
   });
 
-  // Get generator types selection schema
-  const { data: generatorTypesSchema, isLoading: isLoadingTypes, error: typesError } = useGetUISchema("generators");
+  // Get federation types selection schema
+  const { data: federationTypesSchema, isLoading: isLoadingTypes, error: typesError } = useGetUISchema("federations");
 
-  // Extract options from the generator types schema
-  const generatorTypeOptions = generatorTypesSchema?.fields?.find(field => field.id === "generators")?.options || [];
+  // Extract options from the federation types schema
+  const federationTypeOptions = federationTypesSchema?.fields?.find(field => field.id === "federations")?.options || [];
 
-  // Get specific generator schema when a type is selected
-  const resourcePath = selectedGeneratorType ? `${selectedGeneratorType}` : "";
+  // Get specific federation schema when a type is selected
+  const resourcePath = selectedFederationType ? `${selectedFederationType}` : "";
   const { data: schema, isLoading: isLoadingSchema, error: schemaError } = useGetUISchema(resourcePath, {
-    enabled: !!selectedGeneratorType,
+    enabled: !!selectedFederationType,
   });
 
-  const { mutateAsync: createGenerator, isPending } = useCreateGenerator();
+  const { mutateAsync: createFederation, isPending } = useCreateFederation();
 
-  const formId = "generator-form";
+  const formId = "federation-form";
 
   const handleSubmit = async (manifest: KubernetesManifest) => {
     const yamlContent = YAML.stringify(manifest);
-    await createGenerator({ manifest: yamlContent });
+    await createFederation({ manifest: yamlContent });
   };
 
   const handleSuccess = () => {
     navigate("..");
   };
 
-  const handleGeneratorTypeChange = (value: string | Record<string, unknown>) => {
+  const handleFederationTypeChange = (value: string | Record<string, unknown>) => {
     const stringValue = typeof value === 'string' ? value : '';
-    setSelectedGeneratorType(stringValue);
-    form.setValue("generatorType", stringValue);
+    setSelectedFederationType(stringValue);
+    form.setValue("federationType", stringValue);
   };
 
   /**
-   * Mock UISchemaField for the generator type selection.
+   * Mock UISchemaField for the federation type selection.
    *
-   * This component uses a hybrid approach: a standalone FieldSelect for generator
-   * type selection, followed by a full EsiSchemaForm for the specific generator
+   * This component uses a hybrid approach: a standalone FieldSelect for federation
+   * type selection, followed by a full EsiSchemaForm for the specific federation
    * configuration. The mock field enables the FieldSelect to use the same
    * interface and logic as schema-driven fields while remaining independent.
    *
    * @see FieldSelect - Requires a field prop of type UISchemaField
-   * @see EsiSchemaForm - Used for the actual generator configuration after type selection
+   * @see EsiSchemaForm - Used for the actual federation configuration after type selection
    */
   const mockField: UISchemaField = useMemo(() => ({
-    id: "generatorType",
-    label: "Generator Type",
+    id: "federationType",
+    label: "Federation Type",
     type: "select",
     required: true,
   }), []);
@@ -86,15 +86,15 @@ export function GeneratorCreateWithEsiSchemaForm() {
   if (typesError) {
     return (
       <div className="text-red-500 py-4">
-        Failed to load generator types. Please try again.
+        Failed to load federation types. Please try again.
       </div>
     );
   }
 
-  if (selectedGeneratorType && schemaError) {
+  if (selectedFederationType && schemaError) {
     return (
       <div className="text-red-500 py-4">
-        Failed to load form schema for {selectedGeneratorType}. Please try again.
+        Failed to load form schema for {selectedFederationType}. Please try again.
       </div>
     );
   }
@@ -117,12 +117,12 @@ export function GeneratorCreateWithEsiSchemaForm() {
             type="submit"
             size="sm"
             form={formId}
-            disabled={isPending || !selectedGeneratorType || !schema}
+            disabled={isPending || !selectedFederationType || !schema}
             className="grid place-items-center"
           >
             {isPending && <Loader className="[grid-area:1/1]" />}
             <span className={cn(isPending && "invisible", "[grid-area:1/1]")}>
-              Create Generator
+              Create Federation
             </span>
           </Button>
         </div>
@@ -132,18 +132,18 @@ export function GeneratorCreateWithEsiSchemaForm() {
         <FormProvider {...form}>
           <FieldSelect
             field={mockField}
-            name="generatorType"
-            label="Generator Type"
-            description="Choose the type of generator you want to create. This will determine the available configuration options."
+            name="federationType"
+            label="Identity Provider Type"
+            description="Choose the type of identity provider you want to create. This will determine the available configuration options."
             required
-            options={generatorTypeOptions}
-            placeholder="Select a generator type..."
-            onValueChange={handleGeneratorTypeChange}
+            options={federationTypeOptions}
+            placeholder="Select a identity provider type..."
+            onValueChange={handleFederationTypeChange}
             descriptionInline
           />
         </FormProvider>
 
-        {selectedGeneratorType && (
+        {selectedFederationType && (
           <>
             <Separator />
             <div className="space-y-4">
@@ -157,7 +157,7 @@ export function GeneratorCreateWithEsiSchemaForm() {
               {schema && !isLoadingSchema && (
                 <EsiSchemaForm
                   schema={schema}
-                  resourceType="generators"
+                  resourceType="federations"
                   onSubmit={handleSubmit}
                   formId={formId}
                   disabled={isPending}

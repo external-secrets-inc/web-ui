@@ -5,19 +5,28 @@ import { ApiHttpError } from "@/types";
 import { AxiosError } from "axios";
 import { UISchema } from "@/components/EsiSchemaForm/EsiSchemaForm.interfaces";
 
-const getUISchema = async (resourceType: string, signal?: AbortSignal): Promise<UISchema> => {
+const getUISchema = async (
+  resourceType: string,
+  signal?: AbortSignal
+): Promise<UISchema> => {
   const headers = await getAuthHeaders();
-  const response = await axiosInstance.get(`/api/v1/ui-schemas/${resourceType}`, {
-    headers,
-    signal,
-    backend: 'ESO_SERVER'
-  });
+  const response = await axiosInstance.get(
+    `/api/v1/ui-schemas/${resourceType}`,
+    {
+      headers,
+      signal,
+      backend: "ESO_SERVER",
+    }
+  );
   return response.data;
 };
 
 const useGetUISchema = (
   resourceType: string,
-  options?: Omit<UseQueryOptions<UISchema, AxiosError<ApiHttpError>>, 'queryKey' | 'queryFn'>
+  options?: Omit<
+    UseQueryOptions<UISchema, AxiosError<ApiHttpError>>,
+    "queryKey" | "queryFn"
+  >
 ) => {
   return useQuery({
     queryKey: ["esi-schemas", "useGetUISchema", resourceType],

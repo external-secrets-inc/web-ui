@@ -13,12 +13,14 @@ import {
   LucideComputer,
   LucideCrosshair,
   LucideFolderKey,
+  LucideIdCard,
+  LucideLockKeyhole,
   LucideRotateCcwKey,
   LucideSettings,
   LucideShieldCheck,
   LucideSquareStack,
   LucideUserCog,
-  LucideWorkflow
+  LucideWorkflow,
 } from "lucide-react";
 
 export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
@@ -50,6 +52,21 @@ export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
           label: "Targets",
           url: "/resources/targets",
           icon: LucideCrosshair,
+        },
+      ],
+    },
+    {
+      label: "Federation",
+      items: [
+        {
+          label: "Identity Providers",
+          url: "/federation/identity-providers",
+          icon: LucideIdCard,
+        },
+        {
+          label: "Authorizations",
+          url: "/federation/authorizations",
+          icon: LucideLockKeyhole,
         },
       ],
     },

@@ -33,7 +33,7 @@ export function TargetCreateWithEsiSchemaForm() {
   const targetTypeOptions = targetTypesSchema?.fields?.find(field => field.id === "targets")?.options || [];
 
   // Get specific target schema when a type is selected
-  const resourcePath = selectedTargetType ? `targets/${selectedTargetType}` : "";
+  const resourcePath = selectedTargetType ? `${selectedTargetType}` : "";
   const { data: schema, isLoading: isLoadingSchema, error: schemaError } = useGetUISchema(resourcePath, {
     enabled: !!selectedTargetType,
   });
