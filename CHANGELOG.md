@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.29.0](https://github.com/external-secrets-inc/web-ui/compare/v0.28.1...v0.29.0) (2025-10-08)
+
+
+### Features
+
+* federation screens ([#514](https://github.com/external-secrets-inc/web-ui/issues/514)) ([1f55a2f](https://github.com/external-secrets-inc/web-ui/commit/1f55a2fec81df72e3f53b77cf8a59990f64ca4af))
+
+
+### Bug Fixes
+
+* improve consumers data table ([#516](https://github.com/external-secrets-inc/web-ui/issues/516)) ([472ad3e](https://github.com/external-secrets-inc/web-ui/commit/472ad3e7127e590826beadbf0e88ae0e71380fd4))
+
 ## [0.28.1](https://github.com/external-secrets-inc/web-ui/compare/v0.28.0...v0.28.1) (2025-10-08)
 
 
