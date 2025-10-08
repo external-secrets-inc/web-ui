@@ -88,6 +88,16 @@ const KUBERNETES_RESOURCE_CONFIG: Record<KubernetesResourceType, {
     kind: 'WorkflowRunTemplate',
     displayName: 'Run Template',
   },
+  federations: {
+    apiVersion: 'identity.federation.external-secrets.io/v1alpha1',
+    kind: 'Federation',
+    displayName: 'Federation',
+  },
+  authorizations: {
+    apiVersion: 'federation.external-secrets.io/v1alpha1',
+    kind: 'Authorization',
+    displayName: 'Authorization',
+  },
 };
 
 
