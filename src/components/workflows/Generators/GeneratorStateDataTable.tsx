@@ -9,7 +9,7 @@ import {
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import { GeneratorStateTableData } from "./Generators.interfaces";
 import { AxiosError } from "axios";
-import { ApiHttpError } from "@/types";
+import type { ApiHttpError } from "@/types";
 import { toast } from "sonner";
 import useDeleteGeneratorState from "@/services/workflows/mutations/useDeleteGeneratorState";
 import useGetGeneratorStatesByResource from "@/services/workflows/queries/useGetGeneratorStatesByResource";
@@ -20,11 +20,83 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction";
-import { Badge, BadgeProps } from "@/components/ui/badge";
 import { useParams } from "react-router-dom";
+import { StatusBadge } from "../StatusBadge";
+import type { StatusMap } from "../Common.interfaces";
+import { formatDate } from "@/utils/dateUtils";
 
 interface GeneratorStateTableMeta {
   renderRowActions?: (row: GeneratorStateTableData) => React.ReactNode;
+}
+
+const GENERATOR_STATE_STATUS_MAP: StatusMap = {
+  Ready: {
+    variant: "success",
+    display: "In Use",
+  },
+  "Deletion Scheduled": {
+    variant: "warning",
+    display: "Deletion Scheduled",
+  },
+  Terminating: {
+    variant: "destructive",
+    display: "Terminating",
+  },
+  "Pending Deletion": {
+    variant: "destructive",
+    display: "Pending Deletion",
+  },
+};
+
+function formatGeneratorStateMessage(message?: string): React.ReactNode {
+  if (!message) {
+    return message;
+  }
+
+  const deletionPrefix = "Deletion scheduled to: ";
+  const nextCheckPrefix = "State still active. Next check in ";
+  
+  if (message.startsWith(deletionPrefix)) {
+    try {
+      const dateTimeStr = message.substring(deletionPrefix.length).trim();
+      const formatted = formatDate(dateTimeStr, { format: "readableDate" });
+      
+      if (formatted !== "Invalid date") {
+        return (
+          <div className="flex flex-col gap-1">
+            <span className="text-muted-foreground text-xs">Deletion scheduled to:</span>
+            <span className="font-medium">{formatted}</span>
+          </div>
+        );
+      }
+    } catch {
+      // Parsing failed, return original message
+    }
+  }
+  
+  if (message.startsWith(nextCheckPrefix)) {
+    const duration = message.substring(nextCheckPrefix.length).trim();
+    return (
+      <div className="flex flex-col gap-1">
+        <span className="text-muted-foreground text-xs">State still active.</span>
+        <span className="font-medium">Next check in {duration}</span>
+      </div>
+    );
+  }
+  
+  const colonIndex = message.indexOf(": ");
+  if (colonIndex !== -1) {
+    const label = message.substring(0, colonIndex);
+    const value = message.substring(colonIndex + 2).trim();
+    return (
+      <div className="flex flex-col gap-1">
+        <span className="text-muted-foreground text-xs">{label}:</span>
+        <span className="font-medium">{value}</span>
+      </div>
+    );
+  }
+  
+  return message;
 }
 
 export function GeneratorStateDataTable() {
@@ -38,28 +110,16 @@ export function GeneratorStateDataTable() {
         }),
         columnHelper.accessor("status", {
           header: "Status",
-          cell: (info) => {
-            const statusData = info.row.original.status;
-            if (!statusData) {
-              return <Badge variant="secondary">Unknown</Badge>;
-            }
-
-            const { status } = statusData;
-            let variantClass: BadgeProps["variant"] = "default";
-            let displayText = "Not Informed";
-
-            if (status === "Deletion Scheduled") {
-              variantClass = "warning";
-              displayText = "Deletion Scheduled";
-            } else if (status === "Ready") {
-              displayText = "In Use";
-              variantClass = "success";
-            } else if (status === "Pending Deletion") {
-              displayText = "Pending Deletion";
-              variantClass = "destructive";
-            }
-            return <Badge variant={variantClass}>{displayText}</Badge>;
-          },
+          cell: (info) => (
+            <StatusBadge
+              statusData={info.row.original.status}
+              map={GENERATOR_STATE_STATUS_MAP}
+              unknownMessage="GeneratorState status information is not available"
+              defaultDisplay="Not Informed"
+              defaultMessage="Status not mapped"
+              formatFunction={formatGeneratorStateMessage}
+            />
+          ),
         }),
         columnHelper.display({
           id: "actions",

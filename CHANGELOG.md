@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.28.1](https://github.com/external-secrets-inc/web-ui/compare/v0.28.0...v0.28.1) (2025-10-08)
+
+
+### Bug Fixes
+
+* consumer status badge ([#510](https://github.com/external-secrets-inc/web-ui/issues/510)) ([d35138b](https://github.com/external-secrets-inc/web-ui/commit/d35138b711a291ad0a306212b86395a5b228c57e))
+
 ## [0.28.0](https://github.com/external-secrets-inc/web-ui/compare/v0.27.3...v0.28.0) (2025-09-19)
 
 
