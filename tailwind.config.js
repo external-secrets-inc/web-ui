@@ -244,6 +244,14 @@ module.exports = {
             opacity: 0,
           },
         },
+        "flash-pulse": {
+          "0%, 100%": {
+            backgroundColor: "transparent",
+          },
+          "50%": {
+            backgroundColor: "hsl(var(--primary-muted) / 0.2)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.4s ease-in-out",
@@ -257,6 +265,7 @@ module.exports = {
         "fade-out": "fade-out 0.4s ease-in-out",
         "collapsible-down": "collapsible-down 0.15s ease-in",
         "collapsible-up": "collapsible-up 0.15s ease-in",
+        "flash-pulse": "flash-pulse 1s ease-in-out 2",
       },
     },
   },

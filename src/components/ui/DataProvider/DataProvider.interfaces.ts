@@ -163,6 +163,10 @@ export interface DataTableProps<TData extends RowData> {
   onRowClick?: (rowData: TData) => void;
   /** Custom elements to append after the data rows (not virtualized) */
   rowsAppend?: React.ReactNode;
+  /** Row ID to programmatically flash with pulse animation */
+  flashRowId?: string;
+  /** Callback fired when flash animation completes */
+  onFlashComplete?: () => void;
   /**
    * Determines the row height strategy for virtualization.
    * - 'off': Disables virtualization.

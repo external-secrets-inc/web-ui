@@ -3,6 +3,8 @@ import {
   type RefObject,
   forwardRef,
   useRef,
+  useState,
+  useEffect,
 } from "react";
 import { flexRender } from "@tanstack/react-table";
 import { type RowData } from "@tanstack/react-table";
@@ -45,13 +47,41 @@ export const DataTable = forwardRef(
       virtualizationContainer = "table",
       rowHeight = 40,
       virtualizerOptions,
+      flashRowId,
+      onFlashComplete,
     }: DataTableProps<TData>,
     ref: ForwardedRef<HTMLDivElement>
   ) => {
     const { table, isLoading, emptyMessage } = useData<TData>();
+    const [flashingRowId, setFlashingRowId] = useState<string | null>(
+      null
+    );
+    const flashingRowRef = useRef<HTMLTableRowElement | null>(null);
     const internalScrollElementRef = useRef<HTMLDivElement>(null);
     const scrollElementRef = (ref ||
       internalScrollElementRef) as RefObject<HTMLDivElement>;
+
+    useEffect(() => {
+      if (flashRowId) {
+        setFlashingRowId(flashRowId);
+        const timer = setTimeout(() => {
+          setFlashingRowId(null);
+          onFlashComplete?.();
+        }, 2000);
+
+        return () => clearTimeout(timer);
+      }
+    }, [flashRowId, onFlashComplete]);
+
+    useEffect(() => {
+      if (flashingRowId && flashingRowRef.current) {
+        const scrollTimer = setTimeout(() => {
+          flashingRowRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 100);
+
+        return () => clearTimeout(scrollTimer);
+      }
+    }, [flashingRowId]);
 
     const rows = table.getRowModel().rows;
     const columns = table.getAllColumns();
@@ -175,13 +205,15 @@ export const DataTable = forwardRef(
                     key={row.id}
                     ref={measureElementRefCallback}
                     data-index={virtualRow.index}
+                    data-row-id={row.id}
                     style={{
                       height:
                         virtualizationMode === "static" ? rowHeight : undefined,
                     }}
                     onClick={() => onRowClick?.(row.original)}
                     className={cn(
-                      onRowClick && "cursor-pointer [&:not(:has(button:hover,a:hover))]:hover:bg-muted/50"
+                      onRowClick && "cursor-pointer [&:not(:has(button:hover,a:hover))]:hover:bg-muted/50",
+                      flashingRowId === row.id && "animate-flash-pulse"
                     )}
                   >
                     {row.getVisibleCells().map((cell) => (
@@ -217,9 +249,12 @@ export const DataTable = forwardRef(
               {rows.map((row) => (
                 <TableRow
                   key={row.id}
+                  data-row-id={row.id}
+                  ref={flashingRowId === row.id ? flashingRowRef : null}
                   onClick={() => onRowClick?.(row.original)}
                   className={cn(
-                    onRowClick && "cursor-pointer [&:not(:has(button:hover,a:hover))]:hover:bg-muted/50"
+                    onRowClick && "cursor-pointer [&:not(:has(button:hover,a:hover))]:hover:bg-muted/50",
+                    flashingRowId === row.id && "animate-flash-pulse"
                   )}
                 >
                   {row.getVisibleCells().map((cell) => (

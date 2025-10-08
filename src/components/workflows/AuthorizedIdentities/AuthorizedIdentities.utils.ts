@@ -56,22 +56,22 @@ export function formatWorkloadBinding(
 
 export function getUniqueWorkloadBindings(
   identity: AuthorizedIdentity
-): Array<{ kind: string; namespace: string; name: string }> {
+): Array<{ kind: string; namespace: string; name: string; uid: string }> {
   if (!identity.issuedCredentials) return [];
 
   const uniqueBindings = new Map<
     string,
-    { kind: string; namespace: string; name: string }
+    { kind: string; namespace: string; name: string; uid: string }
   >();
 
   identity.issuedCredentials.forEach((cred) => {
-    if (cred.workloadBinding) {
-      const key = `${cred.workloadBinding.kind}/${cred.workloadBinding.namespace}/${cred.workloadBinding.name}`;
-      if (!uniqueBindings.has(key)) {
-        uniqueBindings.set(key, {
+    if (cred.workloadBinding?.uid) {
+      if (!uniqueBindings.has(cred.workloadBinding.uid)) {
+        uniqueBindings.set(cred.workloadBinding.uid, {
           kind: cred.workloadBinding.kind,
           namespace: cred.workloadBinding.namespace,
           name: cred.workloadBinding.name,
+          uid: cred.workloadBinding.uid,
         });
       }
     }

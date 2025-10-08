@@ -1,5 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DetailsCard } from "@/components/ui/DetailsCard";
+import useOrgLink from "@/hooks/useOrgLink";
 import { LucideCalendar, LucideNetwork, LucideShieldUser } from "lucide-react";
+import { Link } from "react-router-dom";
 import type { AuthorizedIdentity } from "./AuthorizedIdentities.interfaces";
 import {
   getFederationName,
@@ -16,10 +18,13 @@ interface AuthorizedIdentityDetailsProps {
 export function AuthorizedIdentityDetails({
   identity,
 }: AuthorizedIdentityDetailsProps) {
+  const getOrgLink = useOrgLink();
   const federationType = getFederationType(identity);
   const federationName = getFederationName(identity);
   const subjectIssuer = getSubjectIssuer(identity);
   const subjectFull = getSubjectFull(identity);
+
+  const federationRowId = `${federationType.toLowerCase()}s/${federationName}`;
 
   const createdAt = identity.createdAt
     ? new Date(identity.createdAt).toLocaleString()
@@ -30,59 +35,46 @@ export function AuthorizedIdentityDetails({
 
   return (
     <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <LucideShieldUser className="h-5 w-5" />
-            Authorized Identity Details
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <div className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                <LucideNetwork className="h-4 w-4" />
-                Federation Reference
-              </div>
-              <div className="text-sm">
+      <DetailsCard
+        icon={LucideShieldUser}
+        title="Authorized Identity Details"
+        fields={[
+          {
+            icon: LucideNetwork,
+            label: "Federation Reference",
+            value: (
+              <Link
+                to={getOrgLink("/federation/identity-providers")}
+                state={{ flashFederation: federationRowId }}
+                className="inline-flex items-center gap-1.5 hover:underline text-link"
+              >
                 <span className="font-mono">{federationType}</span>
                 <span className="text-muted-foreground"> / </span>
                 <span className="font-semibold">{federationName}</span>
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <div className="text-sm font-medium text-muted-foreground">
-                Subject Issuer
-              </div>
-              <div className="text-sm font-mono break-all">{subjectIssuer}</div>
-            </div>
-
-            <div className="space-y-1 md:col-span-2">
-              <div className="text-sm font-medium text-muted-foreground">
-                Subject
-              </div>
-              <div className="text-sm font-mono break-all">{subjectFull}</div>
-            </div>
-
-            <div className="space-y-1">
-              <div className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                <LucideCalendar className="h-4 w-4" />
-                Created At
-              </div>
-              <div className="text-sm font-mono">{createdAt}</div>
-            </div>
-
-            <div className="space-y-1">
-              <div className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                <LucideCalendar className="h-4 w-4" />
-                Updated At
-              </div>
-              <div className="text-sm font-mono">{updatedAt}</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+              </Link>
+            ),
+          },
+          {
+            label: "Subject Issuer",
+            value: <span className="font-mono break-all">{subjectIssuer}</span>,
+          },
+          {
+            label: "Subject",
+            value: <span className="font-mono break-all">{subjectFull}</span>,
+            className: "md:col-span-2",
+          },
+          {
+            icon: LucideCalendar,
+            label: "Created At",
+            value: <span className="font-mono">{createdAt}</span>,
+          },
+          {
+            icon: LucideCalendar,
+            label: "Updated At",
+            value: <span className="font-mono">{updatedAt}</span>,
+          },
+        ]}
+      />
 
       <div className="space-y-2">
         <h2 className="text-xl font-semibold tracking-tight">
@@ -95,5 +87,3 @@ export function AuthorizedIdentityDetails({
     </div>
   );
 }
-
-
