@@ -1,6 +1,6 @@
 import { AuditListenerStatusBadge } from "@/components/Audit/AuditListenerStatusBadge";
-import { FindingsCountBadge } from "@/components/workflows/Findings/FindingsCountBadge";
 import { AppSidebarNavigationConfig } from "@/components/layout";
+import { FindingsCountBadge } from "@/components/workflows/Findings/FindingsCountBadge";
 import { DOCS_DOMAIN } from "@/constants";
 import {
   LucideArrowDownToDot,
@@ -10,17 +10,17 @@ import {
   LucideBookKey,
   LucideBookOpen,
   LucideBot,
-  LucideFolderKey,
-  LucideLocateFixed,
-  LucideRotateCcwKey,
-  LucideSquareStack,
-  LucideSettings,
-  LucideShieldCheck,
-  LucideUserCog,
-  LucideWorkflow,
   LucideComputer,
+  LucideCrosshair,
+  LucideFolderKey,
   LucideIdCard,
   LucideLockKeyhole,
+  LucideRotateCcwKey,
+  LucideSettings,
+  LucideShieldCheck,
+  LucideSquareStack,
+  LucideUserCog,
+  LucideWorkflow,
 } from "lucide-react";
 
 export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
@@ -51,7 +51,7 @@ export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
         {
           label: "Targets",
           url: "/resources/targets",
-          icon: LucideLocateFixed,
+          icon: LucideCrosshair,
         },
       ],
     },
