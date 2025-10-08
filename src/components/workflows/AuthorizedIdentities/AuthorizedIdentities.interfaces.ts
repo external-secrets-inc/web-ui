@@ -31,10 +31,16 @@ export interface WorkloadBinding {
   uid: string;
 }
 
+export interface RemoteRef {
+  remoteKey: string;
+  property: string;
+}
+
 export interface IssuedCredential {
   lastIssuedAt: string;
   sourceRef: SourceRef;
-  stateRef: SourceRef;
+  remoteRef?: RemoteRef;
+  stateRef?: SourceRef;
   workloadBinding: WorkloadBinding;
 }
 
