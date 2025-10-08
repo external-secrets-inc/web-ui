@@ -54,4 +54,34 @@ export function formatWorkloadBinding(
   return `${binding.kind}/${binding.namespace}/${binding.name}`;
 }
 
+export function getUniqueWorkloadBindings(
+  identity: AuthorizedIdentity
+): Array<{ kind: string; namespace: string; name: string }> {
+  if (!identity.issuedCredentials) return [];
+
+  const uniqueBindings = new Map<
+    string,
+    { kind: string; namespace: string; name: string }
+  >();
+
+  identity.issuedCredentials.forEach((cred) => {
+    if (cred.workloadBinding) {
+      const key = `${cred.workloadBinding.kind}/${cred.workloadBinding.namespace}/${cred.workloadBinding.name}`;
+      if (!uniqueBindings.has(key)) {
+        uniqueBindings.set(key, {
+          kind: cred.workloadBinding.kind,
+          namespace: cred.workloadBinding.namespace,
+          name: cred.workloadBinding.name,
+        });
+      }
+    }
+  });
+
+  return Array.from(uniqueBindings.values());
+}
+
+export function getWorkloadBindingsCount(identity: AuthorizedIdentity): number {
+  return getUniqueWorkloadBindings(identity).length;
+}
+
 

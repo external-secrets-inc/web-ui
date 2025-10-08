@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { BadgeGroup } from "@/components/ui/BadgeGroup";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataGrid, useData } from "@/components/ui/DataProvider";
@@ -7,7 +8,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import useOrgLink from "@/hooks/useOrgLink";
-import { LucideIdCard, LucideKey, LucideNetwork, LucideShieldCheck } from "lucide-react";
+import { LucideIdCard, LucideKey, LucideNetwork, LucideShieldCheck, LucideServer } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { AuthorizedIdentity } from "./AuthorizedIdentities.interfaces";
 import {
@@ -15,6 +16,7 @@ import {
   getFederationName,
   getFederationType,
   getUniqueSourceKinds,
+  getWorkloadBindingsCount,
 } from "./AuthorizedIdentities.utils";
 
 export function AuthorizedIdentitiesDataGrid() {
@@ -29,6 +31,7 @@ export function AuthorizedIdentitiesDataGrid() {
         const federationType = getFederationType(identity);
         const federationName = getFederationName(identity);
         const sourceKinds = getUniqueSourceKinds(identity);
+        const workloadCount = getWorkloadBindingsCount(identity);
 
         return (
           <Link
@@ -46,7 +49,7 @@ export function AuthorizedIdentitiesDataGrid() {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <span className="mr-auto flex flex-wrap min-w-0 max-h-[1em]">
-                        <span className="truncate flex-initial min-w-0">
+                        <span className="line-clamp-2 flex-initial min-w-0">
                           {identity.name}
                         </span>
                       </span>
@@ -74,6 +77,25 @@ export function AuthorizedIdentitiesDataGrid() {
                       </div>
                     </TooltipContent>
                   </Tooltip>
+                  {workloadCount > 0 && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Badge
+                          variant="secondary"
+                          className="ml-auto gap-1.5 px-2 text-sm"
+                        >
+                          <LucideServer />
+                          {workloadCount}
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <span className="text-sm">
+                          {workloadCount} unique{" "}
+                          {workloadCount === 1 ? "workload" : "workloads"} bound
+                        </span>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
                 </CardTitle>
               </CardHeader>
 
@@ -96,10 +118,12 @@ export function AuthorizedIdentitiesDataGrid() {
                     id: kind,
                     label: kind,
                     icon: <LucideKey className="size-3.5" />,
+                    className: "text-sm",
                   }))}
                   extraBadge={{
                     id: "extra",
                     icon: <LucideKey className="size-3.5" />,
+                    className: "text-sm",
                   }}
                 />
               </CardFooter>

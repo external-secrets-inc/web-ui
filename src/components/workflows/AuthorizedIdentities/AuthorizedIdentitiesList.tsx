@@ -19,6 +19,7 @@ import {
   LucideLayoutGrid,
   LucideNetwork,
   LucideTableProperties,
+  LucideServer,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import {
@@ -26,6 +27,7 @@ import {
   getFederationType,
   getSubjectDisplay,
   getUniqueSourceKinds,
+  getUniqueWorkloadBindings,
 } from "./AuthorizedIdentities.utils";
 import { AuthorizedIdentitiesDataGrid } from "./AuthorizedIdentitiesDataGrid";
 import { AuthorizedIdentitiesDataTable } from "./AuthorizedIdentitiesDataTable";
@@ -44,7 +46,7 @@ export function AuthorizedIdentitiesList() {
             return (
               <div className="flex items-center gap-2 min-w-0">
                 <LucideIdCard className="text-muted-foreground" />
-                <Trimmer className="font-bold">{identity.name}</Trimmer>
+                <Trimmer lineClamp={3} className="font-bold">{identity.name}</Trimmer>
               </div>
             );
           },
@@ -101,6 +103,31 @@ export function AuthorizedIdentitiesList() {
                 extraBadge={{
                   id: "extra",
                   icon: <LucideKey className="size-3.5" />,
+                }}
+              />
+            );
+          },
+        }),
+        columnHelper.display({
+          id: "workloads",
+          header: "Workloads",
+          cell: (info) => {
+            const identity = info.row.original;
+            const workloadBindings = getUniqueWorkloadBindings(identity);
+
+            if (workloadBindings.length === 0) return null;
+
+            return (
+              <BadgeGroup
+                maxCount="auto"
+                badges={workloadBindings.map((binding, index) => ({
+                  id: `${binding.kind}-${binding.namespace}-${binding.name}-${index}`,
+                  label: `${binding.kind}/${binding.name}`,
+                  icon: <LucideServer className="size-3.5" />,
+                }))}
+                extraBadge={{
+                  id: "extra",
+                  icon: <LucideServer className="size-3.5" />,
                 }}
               />
             );
