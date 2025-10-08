@@ -1,11 +1,19 @@
-import { AuthorizationData } from "./Authorizations.interfaces";
+import type { AuthorizationData } from "./Authorizations.interfaces";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import { BadgeGroup, type BadgeItem } from "@/components/ui/BadgeGroup";
 import { CodeTextarea } from "@/components/ui/CodeTextarea";
+import {
+  LucideBookKey,
+  LucideAtom,
+  LucideCaseLower,
+  LucideShieldCheck,
+} from "lucide-react";
 
 function isNonEmptyObject<T extends object>(
   obj: T | null | undefined
@@ -20,137 +28,157 @@ export function AuthorizationDetails({
   authorization: AuthorizationData;
   yamlString: string;
 }) {
+  const clusterSecretStoresBadges: BadgeItem[] =
+    authorization.allowedClusterSecretStores?.map((name) => ({
+      id: name,
+      label: name,
+      icon: LucideBookKey,
+      className: "text-sm",
+    })) ?? [];
+
+  const generatorsBadges: BadgeItem[] =
+    authorization.allowedGenerators?.map((g) => ({
+      id: `${g.namespace}/${g.kind}/${g.name}`,
+      label: g.name,
+      icon: LucideAtom,
+      className: "text-sm",
+      children: ({ iconNode, labelNode }) => (
+        <>
+          {iconNode}
+          {labelNode}
+          <Badge variant="outline" className="text-xs -mr-1.5">
+            {g.kind}
+          </Badge>
+        </>
+      ),
+    })) ?? [];
+
+  const generatorStatesBadges: BadgeItem[] =
+    authorization.allowedGeneratorStates?.map((s) => ({
+      id: s.namespace,
+      label: s.namespace,
+      icon: LucideCaseLower,
+      className: "text-sm",
+    })) ?? [];
+
+  const oidcBadges: BadgeItem[] = [];
+  if (isNonEmptyObject(authorization.subject?.oidc)) {
+    oidcBadges.push(
+      {
+        id: "oidc-issuer",
+        label: authorization.subject.oidc.issuer,
+        icon: LucideShieldCheck,
+        className: "text-sm",
+      },
+      {
+        id: "oidc-subject",
+        label: authorization.subject.oidc.subject,
+        icon: LucideShieldCheck,
+        className: "text-sm",
+      }
+    );
+  }
+
+  const spiffeBadges: BadgeItem[] = isNonEmptyObject(
+    authorization.subject?.spiffe
+  )
+    ? [
+        {
+          id: "spiffe-id",
+          label: authorization.subject.spiffe.spiffeID,
+          icon: LucideShieldCheck,
+          className: "text-sm",
+        },
+      ]
+    : [];
+
   return (
     <div>
-      <div className="space-y-4">
-        {/* Allows */}
-        <div className="border-b pb-4">
+      <div className="space-y-8">
+        <div className="mb-4">
+          <Accordion className="mb-4" type="single" collapsible>
+            <AccordionItem value="manifest">
+              <AccordionTrigger className="font-bold text-base">
+                Manifest Spec
+              </AccordionTrigger>
+              <AccordionContent>
+                <CodeTextarea
+                  className="max-h-72 !overflow-auto"
+                  language="yaml"
+                  value={yamlString}
+                  disabled
+                />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+
+        <div className="pb-4">
           <div className="mb-2 font-semibold tracking-wide text-muted-foreground text-lg">
-            Allows
+            Allowed Resources
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(250px,100%),1fr))] gap-8">
             {/* Cluster Secret Stores */}
-            <div className="space-y-1">
+            <div className="space-y-2">
               <div className="font-bold text-base">Cluster Secret Stores</div>
-              {authorization.allowedClusterSecretStores?.length ? (
-                <ul className="space-y-1">
-                  {authorization.allowedClusterSecretStores.map((name) => (
-                    <li key={name} className="pl-4">
-                      <span>{name}</span>
-                    </li>
-                  ))}
-                </ul>
+              {clusterSecretStoresBadges.length > 0 ? (
+                <BadgeGroup badges={clusterSecretStoresBadges} />
               ) : (
                 <div className="italic text-muted-foreground">—</div>
               )}
             </div>
 
             {/* Generators */}
-            <div className="space-y-1">
+            <div className="space-y-2">
               <div className="font-bold text-base">Generators</div>
-              {authorization.allowedGenerators?.length ? (
-                <ul className="space-y-1">
-                  {authorization.allowedGenerators.map((g) => {
-                    const key = `${g.namespace}/${g.kind}/${g.name}`;
-                    return (
-                      <li key={key} className="pl-4">
-                        <span>{g.name}</span>{" "}
-                        <span className="text-muted-foreground">
-                          ({g.kind})
-                        </span>
-                      </li>
-                    );
-                  })}
-                </ul>
+              {generatorsBadges.length > 0 ? (
+                <BadgeGroup badges={generatorsBadges} />
               ) : (
                 <div className="italic text-muted-foreground">—</div>
               )}
             </div>
 
             {/* Generator States */}
-            <div className="space-y-1">
+            <div className="space-y-2">
               <div className="font-bold text-base">Generator States</div>
-              {authorization.allowedGeneratorStates?.length ? (
-                <ul className="space-y-1">
-                  {authorization.allowedGeneratorStates.map((s) => (
-                    <li key={s.namespace} className="pl-4">
-                      <span>{s.namespace}</span>
-                    </li>
-                  ))}
-                </ul>
+              {generatorStatesBadges.length > 0 ? (
+                <BadgeGroup badges={generatorStatesBadges} />
               ) : (
                 <div className="italic text-muted-foreground">—</div>
               )}
             </div>
+
+            {/* OIDC */}
+            {oidcBadges.length > 0 && (
+              <div className="space-y-2">
+                <div className="font-bold text-base">Federation Subject</div>
+                <div className="space-y-2">
+                  <div>
+                    <div className="text-muted-foreground text-xs mb-1">
+                      Issuer
+                    </div>
+                    <BadgeGroup badges={[oidcBadges[0]]} />
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground text-xs mb-1">
+                      Subject
+                    </div>
+                    <BadgeGroup badges={[oidcBadges[1]]} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Spiffe */}
+            {spiffeBadges.length > 0 && (
+              <div className="space-y-2">
+                <div className="font-bold text-base">Spiffe ID</div>
+                <BadgeGroup badges={spiffeBadges} />
+              </div>
+            )}
           </div>
         </div>
-
-        {authorization.subject &&
-          (isNonEmptyObject(authorization.subject.oidc) ||
-            isNonEmptyObject(authorization.subject.spiffe)) && (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 border-b pb-4">
-              {/* OIDC */}
-              {isNonEmptyObject(authorization.subject.oidc) && (
-                <div
-                  className={`min-w-0 ${
-                    isNonEmptyObject(authorization.subject.spiffe) ? "" : "md:col-span-2"
-                  }`}
-                >
-                  <div className="mb-1 font-bold text-base">
-                    Federation Subject
-                  </div>
-
-                  <div className="pl-4 flex items-baseline gap-1 min-w-0">
-                    <span className="text-muted-foreground shrink-0">
-                      Issuer:
-                    </span>
-                    <span className="break-all flex-1">
-                      {authorization.subject.oidc.issuer}
-                    </span>
-                  </div>
-
-                  <div className="pl-4 flex items-baseline gap-1 min-w-0">
-                    <span className="text-muted-foreground shrink-0">
-                      Subject:
-                    </span>
-                    <span className="break-all flex-1">
-                      {authorization.subject.oidc.subject}
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* Spiffe */}
-              {isNonEmptyObject(authorization.subject.spiffe) && (
-                <div className="min-w-0">
-                  <div className="mb-1 font-bold text-base">Spiffe ID</div>
-                  <div className="pl-4">
-                    <span className="break-all">
-                      {authorization.subject?.spiffe.spiffeID}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-      </div>
-      <div className="mb-4">
-        <Accordion className="mb-4" type="single" collapsible>
-          <AccordionItem value="manifest">
-            <AccordionTrigger className="font-bold text-base">
-              Manifest Spec
-            </AccordionTrigger>
-            <AccordionContent>
-              <CodeTextarea
-                className="max-h-72 !overflow-auto"
-                language="yaml"
-                value={yamlString}
-                disabled
-              />
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
       </div>
     </div>
   );
