@@ -5,6 +5,7 @@ import {
   LucideAtom,
   LucideBookKey,
   LucideCaseLower,
+  LucideIdCard,
   LucideListChecks,
   LucideShieldCheck,
   LucideSquareCode,
@@ -45,9 +46,33 @@ export function AuthorizationDetails({
             title="Authorization Details"
             fields={[
               {
+                icon: LucideIdCard,
                 label: "Identity Provider",
                 value: `${authorization.federationRef.name} (${authorization.federationRef.kind})`,
               },
+              ...(isNonEmptyObject(authorization.subject?.oidc)
+                ? [
+                    {
+                      icon: LucideShieldCheck,
+                      label: "OIDC Issuer",
+                      value: authorization.subject.oidc.issuer,
+                    },
+                    {
+                      icon: LucideShieldCheck,
+                      label: "OIDC Subject",
+                      value: authorization.subject.oidc.subject,
+                    },
+                  ]
+                : []),
+              ...(isNonEmptyObject(authorization.subject?.spiffe)
+                ? [
+                    {
+                      icon: LucideShieldCheck,
+                      label: "Spiffe ID",
+                      value: authorization.subject.spiffe.spiffeID,
+                    },
+                  ]
+                : []),
             ]}
             sections={[
               {
@@ -85,29 +110,6 @@ export function AuthorizationDetails({
                       <span className="text-muted-foreground italic">None</span>
                     ),
                   },
-                  ...(isNonEmptyObject(authorization.subject?.oidc)
-                    ? [
-                        {
-                          icon: LucideShieldCheck,
-                          label: "OIDC Issuer",
-                          value: authorization.subject.oidc.issuer,
-                        },
-                        {
-                          icon: LucideShieldCheck,
-                          label: "OIDC Subject",
-                          value: authorization.subject.oidc.subject,
-                        },
-                      ]
-                    : []),
-                  ...(isNonEmptyObject(authorization.subject?.spiffe)
-                    ? [
-                        {
-                          icon: LucideShieldCheck,
-                          label: "Spiffe ID",
-                          value: authorization.subject.spiffe.spiffeID,
-                        },
-                      ]
-                    : []),
                 ],
               },
             ]}
