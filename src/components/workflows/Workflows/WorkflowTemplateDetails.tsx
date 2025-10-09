@@ -1,27 +1,24 @@
+import { LayoutPortalHeaderActions } from "@/components/layout";
+import { CodeViewerSheet } from "@/components/ui/CodeViewerSheet";
+import { DetailsCard } from "@/components/ui/DetailsCard";
+import { LucideInfo, LucideSettings2, LucideSquareCode } from "lucide-react";
+import { WorkflowRunTemplateDataTable } from "./WorkflowRunTemplateDataTable";
 import {
   WorkflowTemplateData,
   WorkflowTemplateParameter,
 } from "./Workflows.interfaces";
-import { WorkflowRunTemplateDataTable } from "./WorkflowRunTemplateDataTable";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { CodeTextarea } from "@/components/ui/CodeTextarea";
-import { DetailsCard } from "@/components/ui/DetailsCard";
-import { LucideSettings2 } from "lucide-react";
 
 export function WorkflowTemplateDetails({
   workflowTemplate,
   yamlString,
+  specVersion,
 }: {
   workflowTemplate: WorkflowTemplateData;
   yamlString: string;
+  specVersion: string;
 }) {
-  const parameterFields = workflowTemplate.parameters?.map(
-    (param: WorkflowTemplateParameter) => ({
+  const parameterFields =
+    workflowTemplate.parameters?.map((param: WorkflowTemplateParameter) => ({
       label: `${param.name}${param.required ? " (Required)" : ""}`,
       value: (
         <div className="space-y-1">
@@ -33,45 +30,60 @@ export function WorkflowTemplateDetails({
           )}
         </div>
       ),
-    })
-  ) || [];
+    })) || [];
 
   return (
-    <div>
-      <div className="space-y-6">
-        {parameterFields.length > 0 ? (
+    <>
+      <LayoutPortalHeaderActions>
+        <CodeViewerSheet
+          code={yamlString}
+          language="yaml"
+          title="Manifest Spec"
+          icon={<LucideSquareCode />}
+          triggerLabel="View Manifest Spec"
+          triggerIcon={<LucideSquareCode />}
+          triggerVariant="secondary"
+        />
+      </LayoutPortalHeaderActions>
+
+      <div>
+        <div className="space-y-10">
           <DetailsCard
-            icon={LucideSettings2}
-            title="Parameters"
-            fields={parameterFields}
-          />
-        ) : (
-          <DetailsCard
-            icon={LucideSettings2}
-            title="Parameters"
+            icon={LucideInfo}
+            title="Workflow Template Details"
+            fields={[
+              {
+                label: "Version",
+                value: specVersion,
+              },
+            ]}
+            sections={
+              parameterFields.length > 0
+                ? [
+                    {
+                      title: "Parameters",
+                      icon: LucideSettings2,
+                      fields: parameterFields,
+                    },
+                  ]
+                : undefined
+            }
           >
-            <div className="text-muted-foreground italic">No parameters defined</div>
+            {parameterFields.length === 0 && (
+              <>
+                <div className="text-sm font-medium text-muted-foreground">
+                  Parameters
+                </div>
+                <div className="text-muted-foreground italic text-sm">
+                  No parameters defined
+                </div>
+              </>
+            )}
           </DetailsCard>
-        )}
 
-        <Accordion type="single" collapsible>
-          <AccordionItem value="manifest">
-            <AccordionTrigger className="font-bold text-base">
-              Manifest Spec
-            </AccordionTrigger>
-            <AccordionContent>
-              <CodeTextarea
-                className="max-h-72 !overflow-auto"
-                language="yaml"
-                value={yamlString}
-                disabled
-              />
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-
-        <WorkflowRunTemplateDataTable />
+          <WorkflowRunTemplateDataTable />
+        </div>
       </div>
-    </div>
+    </>
   );
 }

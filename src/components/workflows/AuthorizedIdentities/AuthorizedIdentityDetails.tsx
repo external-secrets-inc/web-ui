@@ -34,7 +34,7 @@ export function AuthorizedIdentityDetails({
     : "N/A";
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-10">
       <DetailsCard
         icon={LucideShieldUser}
         title="Authorized Identity Details"
@@ -76,9 +76,8 @@ export function AuthorizedIdentityDetails({
       />
 
       <div className="space-y-2">
-        <h2 className="text-xl font-semibold tracking-tight">
-          Issued Credentials
-        </h2>
+        <h2 className="font-bold w-auto">Issued Credentials</h2>
+
         <AuthorizedIdentityIssuedCredentialsTable
           credentials={identity.issuedCredentials}
         />

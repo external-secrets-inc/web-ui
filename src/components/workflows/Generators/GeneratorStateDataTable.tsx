@@ -1,29 +1,29 @@
-import { useMemo } from "react";
-import { LucideMoreVertical, LucideTrash2 } from "lucide-react";
+import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction";
 import { Button } from "@/components/ui/button";
 import {
   DataProvider,
   DataTable,
   defineColumns,
 } from "@/components/ui/DataProvider";
-import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
-import { GeneratorStateTableData } from "./Generators.interfaces";
-import { AxiosError } from "axios";
-import type { ApiHttpError } from "@/types";
-import { toast } from "sonner";
-import useDeleteGeneratorState from "@/services/workflows/mutations/useDeleteGeneratorState";
-import useGetGeneratorStatesByResource from "@/services/workflows/queries/useGetGeneratorStatesByResource";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction";
-import { useParams } from "react-router-dom";
-import { StatusBadge } from "../StatusBadge";
-import type { StatusMap } from "../Common.interfaces";
+import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
+import useDeleteGeneratorState from "@/services/workflows/mutations/useDeleteGeneratorState";
+import useGetGeneratorStatesByResource from "@/services/workflows/queries/useGetGeneratorStatesByResource";
+import type { ApiHttpError } from "@/types";
 import { formatDate } from "@/utils/dateUtils";
+import { AxiosError } from "axios";
+import { LucideMoreVertical, LucideTrash2 } from "lucide-react";
+import { useMemo } from "react";
+import { useParams } from "react-router-dom";
+import { toast } from "sonner";
+import type { StatusMap } from "../Common.interfaces";
+import { StatusBadge } from "../StatusBadge";
+import { GeneratorStateTableData } from "./Generators.interfaces";
 
 interface GeneratorStateTableMeta {
   renderRowActions?: (row: GeneratorStateTableData) => React.ReactNode;
@@ -55,16 +55,18 @@ function formatGeneratorStateMessage(message?: string): React.ReactNode {
 
   const deletionPrefix = "Deletion scheduled to: ";
   const nextCheckPrefix = "State still active. Next check in ";
-  
+
   if (message.startsWith(deletionPrefix)) {
     try {
       const dateTimeStr = message.substring(deletionPrefix.length).trim();
       const formatted = formatDate(dateTimeStr, { format: "readableDate" });
-      
+
       if (formatted !== "Invalid date") {
         return (
           <div className="flex flex-col gap-1">
-            <span className="text-muted-foreground text-xs">Deletion scheduled to:</span>
+            <span className="text-muted-foreground text-xs">
+              Deletion scheduled to:
+            </span>
             <span className="font-medium">{formatted}</span>
           </div>
         );
@@ -73,17 +75,19 @@ function formatGeneratorStateMessage(message?: string): React.ReactNode {
       // Parsing failed, return original message
     }
   }
-  
+
   if (message.startsWith(nextCheckPrefix)) {
     const duration = message.substring(nextCheckPrefix.length).trim();
     return (
       <div className="flex flex-col gap-1">
-        <span className="text-muted-foreground text-xs">State still active.</span>
+        <span className="text-muted-foreground text-xs">
+          State still active.
+        </span>
         <span className="font-medium">Next check in {duration}</span>
       </div>
     );
   }
-  
+
   const colonIndex = message.indexOf(": ");
   if (colonIndex !== -1) {
     const label = message.substring(0, colonIndex);
@@ -95,7 +99,7 @@ function formatGeneratorStateMessage(message?: string): React.ReactNode {
       </div>
     );
   }
-  
+
   return message;
 }
 
@@ -222,9 +226,7 @@ export function GeneratorStateDataTable() {
         getRowId={(row) => `${row.namespace}/${row.name}`}
         meta={generatorTableMeta}
       >
-        <div>
-          <h2 className="font-bold w-auto">Associated Generator States</h2>
-        </div>
+        <h2 className="font-bold w-auto">Associated Generator States</h2>
         <DataTable />
       </DataProvider>
     </div>
