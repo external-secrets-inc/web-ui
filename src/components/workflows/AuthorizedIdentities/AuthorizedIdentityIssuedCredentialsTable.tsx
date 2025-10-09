@@ -4,9 +4,9 @@ import {
   defineColumns,
 } from "@/components/ui/DataProvider";
 import { Trimmer } from "@/components/ui/Trimmer";
-import type { IssuedCredential } from "./AuthorizedIdentities.interfaces";
+import { LucideAtom, LucideKey, LucideServer } from "lucide-react";
 import { useMemo } from "react";
-import { LucideAtom, LucideServer, LucideKey } from "lucide-react";
+import type { IssuedCredential } from "./AuthorizedIdentities.interfaces";
 
 interface AuthorizedIdentityIssuedCredentialsTableProps {
   credentials: IssuedCredential[];
@@ -17,6 +17,11 @@ export function AuthorizedIdentityIssuedCredentialsTable({
 }: AuthorizedIdentityIssuedCredentialsTableProps) {
   const hasRemoteRefs = useMemo(
     () => credentials.some((cred) => cred.remoteRef),
+    [credentials]
+  );
+
+  const hasStateRefs = useMemo(
+    () => credentials.some((cred) => cred.stateRef),
     [credentials]
   );
 
@@ -89,7 +94,10 @@ export function AuthorizedIdentityIssuedCredentialsTable({
                           Key
                         </span>
                       </div>
-                      <Trimmer lineClamp={3} className="text-sm text-foreground">
+                      <Trimmer
+                        lineClamp={3}
+                        className="text-sm text-foreground"
+                      >
                         {remoteRef.remoteKey}
                         {remoteRef.property && (
                           <span className="text-muted-foreground">
@@ -103,22 +111,29 @@ export function AuthorizedIdentityIssuedCredentialsTable({
               }),
             ]
           : []),
-        columnHelper.display({
-          id: "state",
-          header: "Generator State",
-          cell: (info) => {
-            const credential = info.row.original;
-            const stateRef = credential.stateRef;
+        ...(hasStateRefs
+          ? [
+              columnHelper.display({
+                id: "state",
+                header: "Generator State",
+                cell: (info) => {
+                  const credential = info.row.original;
+                  const stateRef = credential.stateRef;
 
-            if (!stateRef) return <span className="text-sm text-muted-foreground">—</span>;
+                  if (!stateRef)
+                    return (
+                      <span className="text-sm text-muted-foreground">—</span>
+                    );
 
-            return (
-              <Trimmer lineClamp={3} className="text-sm text-foreground">
-                {stateRef?.namespace}/{stateRef?.name}
-              </Trimmer>
-            );
-          },
-        }),
+                  return (
+                    <Trimmer lineClamp={3} className="text-sm text-foreground">
+                      {stateRef?.namespace}/{stateRef?.name}
+                    </Trimmer>
+                  );
+                },
+              }),
+            ]
+          : []),
         columnHelper.accessor("lastIssuedAt", {
           header: "Last Issued",
           cell: (info) => {
@@ -136,7 +151,7 @@ export function AuthorizedIdentityIssuedCredentialsTable({
           },
         }),
       ]),
-    [hasRemoteRefs]
+    [hasRemoteRefs, hasStateRefs]
   );
 
   return (

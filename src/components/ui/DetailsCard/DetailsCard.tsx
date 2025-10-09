@@ -47,7 +47,7 @@ export function DetailsCard({
             {(fields && fields.length > 0) && <Separator />}
             {sections.map((section, sectionIndex) => (
               <div key={sectionIndex}>
-                {sectionIndex > 0 && <Separator />}
+                {sectionIndex > 0 && <Separator className="mb-5"/>}
                 <div className="flex flex-col gap-2">
                   <h4 className="font-semibold text-baseZ tracking-tight flex items-center gap-2">
                     {section.icon && <section.icon className="h-4 w-4" />}
@@ -107,4 +107,3 @@ export function DetailsCardField({
 }
 
 DetailsCard.Field = DetailsCardField;
-

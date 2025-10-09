@@ -4,11 +4,11 @@ import { DetailsCard } from "@/components/ui/DetailsCard";
 import {
   LucideAtom,
   LucideBookKey,
-  LucideCaseLower,
+  LucideBrainCircuit,
   LucideIdCard,
   LucideListChecks,
   LucideShieldCheck,
-  LucideSquareCode,
+  LucideSquareCode
 } from "lucide-react";
 import type { AuthorizationData } from "./Authorizations.interfaces";
 
@@ -100,7 +100,7 @@ export function AuthorizationDetails({
                     ),
                   },
                   {
-                    icon: LucideCaseLower,
+                    icon: LucideBrainCircuit,
                     label: "Generator States",
                     value: authorization.allowedGeneratorStates?.length ? (
                       authorization.allowedGeneratorStates

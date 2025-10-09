@@ -1,19 +1,20 @@
+import { DetailsCard } from "@/components/ui/DetailsCard";
 import { Loader } from "@/components/ui/Loader";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
+import useGetWorkflow from "@/services/workflows/queries/useGetWorkflow";
+import useGetWorkflowRun from "@/services/workflows/queries/useGetWorkflowRun";
+import { formatDate, formatDuration } from "@/utils/dateUtils";
+import { LucideClock, LucideInfo, LucideSettings2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
+import { WorkflowJobsDetails } from "./WorkflowJobsDetails";
+import WorkflowJobsGraph from "./WorkflowJobsGraph";
 import {
   WorkflowData,
   WorkflowJob,
   WorkflowRunData,
 } from "./Workflows.interfaces";
-import { useParams } from "react-router-dom";
-import useGetWorkflowRun from "@/services/workflows/queries/useGetWorkflowRun";
-import { WorkflowJobsDetails } from "./WorkflowJobsDetails";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { LayoutPortalHeaderActions } from "@/components/layout";
-import WorkflowJobsGraph from "./WorkflowJobsGraph";
-import useGetWorkflow from "@/services/workflows/queries/useGetWorkflow";
-import { formatDate, formatDuration } from "@/utils/dateUtils";
 
 type BadgeVariant =
   | "default"
@@ -40,22 +41,18 @@ function isSimpleValue(value: unknown): boolean {
   );
 }
 
-function renderValue(
-  value: unknown,
-  renderInline = false,
-  isInsideArray = false
-): React.ReactNode {
+function renderValue(value: unknown, renderInline = false): React.ReactNode {
   if (Array.isArray(value)) {
     if (value.length === 0) {
       return <span className="text-muted-foreground">Empty array</span>;
     }
 
     return (
-      <div className="pl-4">
+      <div>
         {value.map((item, idx) => (
           <div key={idx} className="flex">
             <div className="mr-2">-</div>
-            <div>{renderValue(item, false, true)}</div>
+            <div>{renderValue(item, false)}</div>
           </div>
         ))}
       </div>
@@ -68,11 +65,11 @@ function renderValue(
     }
 
     return (
-      <div className={isInsideArray ? "" : "pl-4"}>
+      <div>
         {Object.entries(value).map(([k, v]) => (
           <div key={k} className={isSimpleValue(v) ? "flex" : ""}>
             <div className="font-medium">{k}:</div>
-            <div className="ml-2">{renderValue(v, true, false)}</div>
+            <div className="ml-2">{renderValue(v, true)}</div>
           </div>
         ))}
       </div>
@@ -218,122 +215,133 @@ export function WorkflowRunDetails() {
         </div>
       ) : (
         <div>
-          <LayoutPortalHeaderActions>
-            <div>
-              <span className="font-medium">Status:</span>
-              <span
-                className={`ml-2 text-${
-                  phaseToColor[workflowRun.phase] ?? "destructive"
-                }`}
-              >
-                {workflowRun.phase}
-              </span>
-            </div>
-          </LayoutPortalHeaderActions>
-          <div className="mb-4">
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Left Column: Status + Times */}
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-bold">Workflow Status:</h3>
-                  <span
-                    className={`text-lg text-${
-                      phaseToColor[workflow.phase] ?? "destructive"
-                    }`}
-                  >
-                    {workflow.phase}
-                  </span>
-                </div>
-                <div className="pl-4">
-                  <span className="font-medium">Started at </span>
-                  <span className="ml-2 font-medium">
-                    {workflow.startTime
-                      ? formatDate(workflow.startTime, { format: "full" })
-                      : "No data available"}
-                  </span>
-                </div>
-                <div className="pl-4">
-                  <span className="font-medium">Completed at </span>
-                  <span className="ml-2 font-medium">
-                    {workflow.completionTime
-                      ? formatDate(workflow.completionTime, { format: "full" })
-                      : "No data available"}
-                  </span>
-                </div>
-                <div className="pl-4">
-                  <span className="font-medium">Executed in </span>
-                  <span className="ml-2 font-medium">
-                    {workflow.executionTimeNanos &&
-                    workflow.executionTimeNanos > 0
-                      ? formatDuration(workflow.executionTimeNanos)
-                      : "No data available"}
-                  </span>
-                </div>
-              </div>
-
-              {/* Right Column: Parameters */}
-              <div>
-                <h3 className="text-lg font-bold">Parameters</h3>
-                <div className="pl-4">
-                  {Object.entries(workflowRun.parameters).length > 0 ? (
-                    Object.entries(workflowRun.parameters).map(
-                      ([key, value]) => {
-                        const primitive = isSimpleValue(value);
-                        return primitive ? (
-                          <div key={key} className="flex">
-                            <div className="font-medium">{key}:</div>
-                            <div className="ml-2">
-                              {renderValue(value, true)}
-                            </div>
-                          </div>
-                        ) : (
-                          <div key={key}>
-                            <div className="font-medium">{key}:</div>
-                            {renderValue(value)}
-                          </div>
-                        );
-                      }
-                    )
-                  ) : (
-                    <p className="text-muted-foreground">No parameters</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
           <div>
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="text-lg font-bold">Jobs</h3>
-              <div className="text-sm">
-                {Object.keys(workflow.jobs).length} job(s)
-              </div>
-            </div>
-            <Tabs
-              defaultValue={defaultTab}
-              onValueChange={onTabChange}
-              value={activeTab}
-            >
-              <TabsList className="mb-2">
-                <TabsTrigger value="details">Details</TabsTrigger>
-                <TabsTrigger value="graph">Graph</TabsTrigger>
-              </TabsList>
-              <TabsContent
-                className="data-[state=active]:grid min-h-0"
-                value="details"
-              >
-                <WorkflowJobsDetails jobs={orderedJobs} />
-              </TabsContent>
-              <TabsContent
-                className="data-[state=active]:grid min-h-0"
-                value="graph"
-              >
-                <div className="bg-card rounded-lg border p-4">
-                  <div className="h-[600px] w-full">
-                    <WorkflowJobsGraph workflow={workflow} jobs={orderedJobs} />
+            <div className="space-y-8">
+              <DetailsCard
+                icon={LucideInfo}
+                title="Workflow Run Details"
+                fields={[
+                  {
+                    label: "Workflow Run Status",
+                    value: (
+                      <span
+                        className={`text-${
+                          phaseToColor[workflow.phase] ?? "destructive"
+                        }`}
+                      >
+                        {workflow.phase}
+                      </span>
+                    ),
+                  },
+                  {
+                    label: "Workflow Status",
+                    value: (
+                      <span
+                        className={`text-${
+                          phaseToColor[workflow.phase] ?? "destructive"
+                        }`}
+                      >
+                        {workflow.phase}
+                      </span>
+                    ),
+                  },
+                ]}
+                sections={[
+                  {
+                    title: "Chronology",
+                    icon: LucideClock,
+                    fields: [
+                      {
+                        label: "Started at",
+                        value: workflow.startTime
+                          ? formatDate(workflow.startTime, { format: "full" })
+                          : "No data available",
+                      },
+                      {
+                        label: "Completed at",
+                        value: workflow.completionTime
+                          ? formatDate(workflow.completionTime, {
+                              format: "full",
+                            })
+                          : "No data available",
+                      },
+                      {
+                        label: "Executed in",
+                        value:
+                          workflow.executionTimeNanos &&
+                          workflow.executionTimeNanos > 0
+                            ? formatDuration(workflow.executionTimeNanos)
+                            : "No data available",
+                      },
+                    ],
+                  },
+                  {
+                    title: "Parameters",
+                    icon: LucideSettings2,
+                    fields: [
+                      ...(Object.entries(workflowRun.parameters).length > 0
+                        ? Object.entries(workflowRun.parameters).map(
+                            ([key, value]) => {
+                              const primitive = isSimpleValue(value);
+                              return primitive
+                                ? {
+                                    label: key,
+                                    value: renderValue(value, true),
+                                  }
+                                : {
+                                    label: key,
+                                    value: renderValue(value),
+                                  };
+                            }
+                          )
+                        : [
+                            {
+                              label: "No parameters",
+                              value: "",
+                            },
+                          ]),
+                    ],
+                  },
+                ]}
+              />
+              <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="text-lg font-bold">Jobs</h3>
+                    <div className="text-sm">
+                      {Object.keys(workflow.jobs).length} job(s)
+                    </div>
                   </div>
+                  <Tabs
+                    defaultValue={defaultTab}
+                    onValueChange={onTabChange}
+                    value={activeTab}
+                  >
+                    <TabsList className="mb-2">
+                      <TabsTrigger value="details">Details</TabsTrigger>
+                      <TabsTrigger value="graph">Graph</TabsTrigger>
+                    </TabsList>
+                    <TabsContent
+                      className="data-[state=active]:grid min-h-0"
+                      value="details"
+                    >
+                      <WorkflowJobsDetails jobs={orderedJobs} />
+                    </TabsContent>
+                    <TabsContent
+                      className="data-[state=active]:grid min-h-0"
+                      value="graph"
+                    >
+                      <div className="bg-card rounded-lg border p-4">
+                        <div className="h-[600px] w-full">
+                          <WorkflowJobsGraph
+                            workflow={workflow}
+                            jobs={orderedJobs}
+                          />
+                        </div>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
                 </div>
-              </TabsContent>
-            </Tabs>
+            </div>
           </div>
         </div>
       )}
