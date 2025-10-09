@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.30.0](https://github.com/external-secrets-inc/web-ui/compare/v0.29.0...v0.30.0) (2025-10-09)
+
+
+### Features
+
+* add authorized identities and improve general ui consistency ([#518](https://github.com/external-secrets-inc/web-ui/issues/518)) ([0282e22](https://github.com/external-secrets-inc/web-ui/commit/0282e22c4caf6445633344f6c205edc6b197db95))
+
+
+### Bug Fixes
+
+* use fixed ui versions on charts ([#520](https://github.com/external-secrets-inc/web-ui/issues/520)) ([bb74b89](https://github.com/external-secrets-inc/web-ui/commit/bb74b89cf70868d35874d76404271999df43e36b))
+
 ## [0.29.0](https://github.com/external-secrets-inc/web-ui/compare/v0.28.1...v0.29.0) (2025-10-08)
 
 
