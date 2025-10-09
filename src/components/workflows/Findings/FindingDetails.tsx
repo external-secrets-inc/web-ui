@@ -10,9 +10,11 @@ interface FindingDetailsProps {
 
 export function FindingDetails({ finding }: FindingDetailsProps) {
   return (
-    <div className="flex flex-col gap-4">
-      <h2 className="text-xl font-semibold tracking-tight">Locations</h2>
-      <FindingLocationsTable locations={finding.locations} />
+    <div className="flex flex-col gap-10">
+      <div className="flex flex-col gap-4">
+        <h2 className="text-xl font-semibold tracking-tight">Locations</h2>
+        <FindingLocationsTable locations={finding.locations} />
+      </div>
       <ConsumerDataList consumers={finding.consumers} title="Consumers"/>
     </div>
   );
