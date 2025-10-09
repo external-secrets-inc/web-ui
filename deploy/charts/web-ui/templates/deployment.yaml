@@ -45,7 +45,7 @@ spec:
             mountPath: /usr/local/etc/haproxy
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: '{{ .Values.image.repository }}:{{ .Values.image.tag | default "latest" }}'
+          image: '{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion | default "latest"}}'
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
           {{- if .Values.global.ingress.enabled }}
