@@ -11,14 +11,28 @@ All generic, reusable UI components live in this `components/ui/` folder, regard
 - Also live in `components/ui/`
 - Use PascalCase: `DataGrid.tsx`, `DataTable.tsx`
 
-## Structure
+## Multi-File Components
+When a component requires more than one file (e.g., separate interfaces file, utilities, constants):
+- Create a folder using PascalCase: `ComponentName/`
+- Place all related files inside: `ComponentName.tsx`, `ComponentName.interfaces.ts`, etc.
+- Export via barrel file: `index.ts`
+
+Example:
 ```
 components/
 └── ui/
-    ├── button.tsx        # shadcn
-    ├── dialog.tsx        # shadcn
-    ├── DataGrid.tsx      # custom
-    └── DataTable.tsx     # custom
+    ├── button.tsx              # shadcn (single file)
+    ├── dialog.tsx              # shadcn (single file)
+    ├── DataGrid.tsx            # custom (single file)
+    └── CodeViewerSheet/        # custom (multi-file)
+        ├── CodeViewerSheet.tsx
+        ├── CodeViewerSheet.interfaces.ts
+        └── index.ts            # exports component and types
+```
+
+Import stays clean:
+```tsx
+import { CodeViewerSheet } from "@/components/ui/CodeViewerSheet";
 ```
 
 ## Rules

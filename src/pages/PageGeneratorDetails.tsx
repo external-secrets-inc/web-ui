@@ -101,10 +101,7 @@ export function PageGeneratorDetails() {
   }, [generator]);
 
   return (
-    <LayoutPage
-      title={`${generatorName}`}
-      description={"Kind: " + generator.kind}
-    >
+    <LayoutPage title={`${generatorName}`}>
       <LayoutPortalTopbarActions>
         <Button variant="secondary" onClick={handleRefresh}>
           <LucideRefreshCw />
