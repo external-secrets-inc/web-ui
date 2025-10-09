@@ -8,7 +8,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import useOrgLink from "@/hooks/useOrgLink";
-import { LucideIdCard, LucideKey, LucideNetwork, LucideShieldCheck, LucideServer } from "lucide-react";
+import { LucideIdCard, LucideKey, LucideNetwork, LucideServer, LucideShieldUser } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { AuthorizedIdentity } from "./AuthorizedIdentities.interfaces";
 import {
@@ -42,7 +42,7 @@ export function AuthorizedIdentitiesDataGrid() {
             className="grid min-w-0"
           >
             <Card className="group flex flex-col min-w-0 relative hover:border-muted-foreground/50 hover:bg-muted/15 transition-all cursor-pointer overflow-clip">
-              <LucideShieldCheck className="size-44 ml-auto text-base-200 dark:text-base-800 absolute -bottom-5 -right-5 stroke-scaling opacity-30" />
+              <LucideShieldUser className="size-44 ml-auto text-base-200 dark:text-base-800 absolute -bottom-5 -right-5 stroke-scaling opacity-30" />
               <CardHeader className="text-left relative">
                 <CardTitle className="flex items-center gap-2">
                   <LucideIdCard className="size-6 text-muted-foreground" />

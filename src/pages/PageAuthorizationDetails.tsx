@@ -92,10 +92,7 @@ export function PageAuthorizationDetails() {
   }, [authorization]);
 
   return (
-    <LayoutPage
-      title={`${authorizationName}`}
-      description={`Identity Provider: ${authorization.federationRef.name} (${authorization.federationRef.kind})`}
-    >
+    <LayoutPage title={`${authorizationName}`}>
       <LayoutPortalTopbarActions>
         <Button variant="secondary" onClick={handleRefresh}>
           <LucideRefreshCw />

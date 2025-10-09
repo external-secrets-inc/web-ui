@@ -32,81 +32,65 @@ export function AuthorizationDetails({
     <div>
       <div className="space-y-8">
         <DetailsCard
-          icon={LucideListChecks}
-          title="Allowed Resources"
+          icon={LucideShieldCheck}
+          title="Authorization Details"
           fields={[
             {
-              icon: LucideBookKey,
-              label: "Cluster Secret Stores",
-              value: authorization.allowedClusterSecretStores?.length ? (
-                <span className="font-mono break-all">
-                  {authorization.allowedClusterSecretStores.join(", ")}
-                </span>
-              ) : (
-                <span className="text-muted-foreground italic">None</span>
-              ),
+              label: "Identity Provider",
+              value: `${authorization.federationRef.name} (${authorization.federationRef.kind})`,
             },
+          ]}
+          sections={[
             {
-              icon: LucideAtom,
-              label: "Generators",
-              value: authorization.allowedGenerators?.length ? (
-                <span className="font-mono break-all">
-                  {authorization.allowedGenerators
-                    .map((g) => `${g.kind}/${g.name}`)
-                    .join(", ")}
-                </span>
-              ) : (
-                <span className="text-muted-foreground italic">None</span>
-              ),
+              title: "Allowed Resources",
+              icon: LucideListChecks,
+              fields: [
+                {
+                  icon: LucideBookKey,
+                  label: "Cluster Secret Stores",
+                  value: authorization.allowedClusterSecretStores?.length
+                    ? authorization.allowedClusterSecretStores.join(", ")
+                    : <span className="text-muted-foreground italic">None</span>,
+                },
+                {
+                  icon: LucideAtom,
+                  label: "Generators",
+                  value: authorization.allowedGenerators?.length
+                    ? authorization.allowedGenerators.map((g) => `${g.kind}/${g.name}`).join(", ")
+                    : <span className="text-muted-foreground italic">None</span>,
+                },
+                {
+                  icon: LucideCaseLower,
+                  label: "Generator States",
+                  value: authorization.allowedGeneratorStates?.length
+                    ? authorization.allowedGeneratorStates.map((s) => s.namespace).join(", ")
+                    : <span className="text-muted-foreground italic">None</span>,
+                },
+                ...(isNonEmptyObject(authorization.subject?.oidc)
+                  ? [
+                      {
+                        icon: LucideShieldCheck,
+                        label: "OIDC Issuer",
+                        value: authorization.subject.oidc.issuer,
+                      },
+                      {
+                        icon: LucideShieldCheck,
+                        label: "OIDC Subject",
+                        value: authorization.subject.oidc.subject,
+                      },
+                    ]
+                  : []),
+                ...(isNonEmptyObject(authorization.subject?.spiffe)
+                  ? [
+                      {
+                        icon: LucideShieldCheck,
+                        label: "Spiffe ID",
+                        value: authorization.subject.spiffe.spiffeID,
+                      },
+                    ]
+                  : []),
+              ],
             },
-            {
-              icon: LucideCaseLower,
-              label: "Generator States",
-              value: authorization.allowedGeneratorStates?.length ? (
-                <span className="font-mono break-all">
-                  {authorization.allowedGeneratorStates
-                    .map((s) => s.namespace)
-                    .join(", ")}
-                </span>
-              ) : (
-                <span className="text-muted-foreground italic">None</span>
-              ),
-            },
-            ...(isNonEmptyObject(authorization.subject?.oidc)
-              ? [
-                  {
-                    icon: LucideShieldCheck,
-                    label: "OIDC Issuer",
-                    value: (
-                      <span className="font-mono break-all">
-                        {authorization.subject.oidc.issuer}
-                      </span>
-                    ),
-                  },
-                  {
-                    icon: LucideShieldCheck,
-                    label: "OIDC Subject",
-                    value: (
-                      <span className="font-mono break-all">
-                        {authorization.subject.oidc.subject}
-                      </span>
-                    ),
-                  },
-                ]
-              : []),
-            ...(isNonEmptyObject(authorization.subject?.spiffe)
-              ? [
-                  {
-                    icon: LucideShieldCheck,
-                    label: "Spiffe ID",
-                    value: (
-                      <span className="font-mono break-all">
-                        {authorization.subject.spiffe.spiffeID}
-                      </span>
-                    ),
-                  },
-                ]
-              : []),
           ]}
         />
       </div>

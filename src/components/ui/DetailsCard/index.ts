@@ -3,5 +3,6 @@ export type {
   DetailsCardField as DetailsCardFieldType,
   DetailsCardFieldProps,
   DetailsCardProps,
+  DetailsCardSection,
 } from "./DetailsCard.interfaces";
 

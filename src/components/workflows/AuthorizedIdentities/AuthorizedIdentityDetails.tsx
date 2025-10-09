@@ -56,22 +56,21 @@ export function AuthorizedIdentityDetails({
           },
           {
             label: "Subject Issuer",
-            value: <span className="font-mono break-all">{subjectIssuer}</span>,
+            value: subjectIssuer,
           },
           {
             label: "Subject",
-            value: <span className="font-mono break-all">{subjectFull}</span>,
-            className: "md:col-span-2",
+            value: subjectFull,
           },
           {
             icon: LucideCalendar,
             label: "Created At",
-            value: <span className="font-mono">{createdAt}</span>,
+            value: createdAt,
           },
           {
             icon: LucideCalendar,
             label: "Updated At",
-            value: <span className="font-mono">{updatedAt}</span>,
+            value: updatedAt,
           },
         ]}
       />
