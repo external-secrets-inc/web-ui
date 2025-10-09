@@ -1,30 +1,30 @@
-import { LayoutPage, LayoutPortalHeaderActions } from "@/components/layout";
-import { Button } from "@/components/ui/button";
-import { useQueryClient } from "@tanstack/react-query";
-import { LucideRefreshCw } from "lucide-react";
+import { LayoutPage } from "@/components/layout";
 import { LayoutPortalTopbarActions } from "@/components/layout/LayoutPortalTopbarActions";
-import { useParams } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Loader } from "@/components/ui/Loader";
 import {
   WorkflowTemplateData,
   WorkflowTemplateDetails,
 } from "@/components/workflows/Workflows";
-import { useEffect, useMemo } from "react";
 import { handleDefaultApiHttpError } from "@/services/servicesHelpers";
 import useGetWorkflowTemplate from "@/services/workflows/queries/useGetWorkflowTemplate";
+import { useQueryClient } from "@tanstack/react-query";
+import { LucideRefreshCw } from "lucide-react";
+import { useEffect, useMemo } from "react";
+import { useParams } from "react-router-dom";
 import YAML from "yaml";
-import { Loader } from "@/components/ui/Loader";
 
 // TODO[iurisevero]: Define Workflow manifest type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseManifest(manifest?: string): any {
-  const raw = manifest || '{}';
+  const raw = manifest || "{}";
   try {
     return JSON.parse(raw);
   } catch {
     try {
       return YAML.parse(raw);
     } catch (e) {
-      console.error('Failed to parse manifest as JSON or YAML:', e);
+      console.error("Failed to parse manifest as JSON or YAML:", e);
       return {};
     }
   }
@@ -107,19 +107,25 @@ export function PageWorkflowTemplateDetails() {
   }, [workflowTemplate]);
 
   return (
-    <LayoutPage title={`${templateName}`} description={workflowTemplate.description}>
+    <LayoutPage
+      title={`${templateName}`}
+      description={workflowTemplate.description}
+    >
       <LayoutPortalTopbarActions>
         <Button variant="secondary" onClick={handleRefresh}>
           <LucideRefreshCw />
           Refresh Data
         </Button>
       </LayoutPortalTopbarActions>
-      <LayoutPortalHeaderActions>
-        <div>
-          <span className="font-medium">Version: {specVersion}</span>
-        </div>
-      </LayoutPortalHeaderActions>
-      {isLoadingWorkflowTemplate ? <Loader /> : <WorkflowTemplateDetails workflowTemplate={workflowTemplate} yamlString={yamlString}/>}
+      {isLoadingWorkflowTemplate ? (
+        <Loader />
+      ) : (
+        <WorkflowTemplateDetails
+          workflowTemplate={workflowTemplate}
+          yamlString={yamlString}
+          specVersion={specVersion}
+        />
+      )}
     </LayoutPage>
   );
 }

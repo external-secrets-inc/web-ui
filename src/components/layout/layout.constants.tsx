@@ -14,13 +14,13 @@ import {
   LucideCrosshair,
   LucideFolderKey,
   LucideIdCard,
-  LucideLockKeyhole,
   LucideRotateCcwKey,
   LucideSettings,
   LucideShieldCheck,
+  LucideShieldUser,
   LucideSquareStack,
   LucideUserCog,
-  LucideWorkflow,
+  LucideWorkflow
 } from "lucide-react";
 
 export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
@@ -66,7 +66,12 @@ export const appSidebarNavigationConfig: AppSidebarNavigationConfig = {
         {
           label: "Authorizations",
           url: "/federation/authorizations",
-          icon: LucideLockKeyhole,
+          icon: LucideShieldCheck,
+        },
+        {
+          label: "Authorized Identities",
+          url: "/federation/authorized-identities",
+          icon: LucideShieldUser,
         },
       ],
     },

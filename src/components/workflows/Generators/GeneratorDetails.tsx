@@ -1,14 +1,9 @@
-import {
-  GeneratorData,
-} from "./Generators.interfaces";
+import { LayoutPortalHeaderActions } from "@/components/layout";
+import { CodeViewerSheet } from "@/components/ui/CodeViewerSheet";
+import { DetailsCard } from "@/components/ui/DetailsCard";
+import { LucideFileOutput, LucideInfo, LucideSquareCode } from "lucide-react";
+import type { GeneratorData } from "./Generators.interfaces";
 import { GeneratorStateDataTable } from "./GeneratorStateDataTable";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { CodeTextarea } from "@/components/ui/CodeTextarea";
 
 export function GeneratorDetails({
   generator,
@@ -17,47 +12,56 @@ export function GeneratorDetails({
   generator: GeneratorData;
   yamlString: string;
 }) {
+  const outputFields =
+    generator.status.output &&
+    Object.entries(generator.status.output).length > 0
+      ? Object.entries(generator.status.output).map(([key, value]) => ({
+          label: key,
+          value,
+        }))
+      : [];
+
   return (
-    <div>
-      <div className="mb-4">
-        <Accordion className="mb-4" type="single" collapsible>
-          <AccordionItem value="details" className="space-y-4 text-sm">
-            <AccordionTrigger className="font-bold text-base">
-              Output
-            </AccordionTrigger>
-            <AccordionContent>
-              {generator.status.output && Object.entries(generator.status.output).length > 0 ? (
-                Object.entries(generator.status.output).map(([key, value]) => (
-                  <div key={key} className="mb-4">
-                    <div className="font-semibold mb-2">{key}</div>
-                    <div className="text-muted-foreground pl-4 border-l py-2 ml-4">
-                      {value}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-muted-foreground">
-                  No output defined
-                </div>
-              )}
-            </AccordionContent>
-          </AccordionItem>
-          <AccordionItem value="manifest">
-            <AccordionTrigger className="font-bold text-base">
-              Manifest Spec
-            </AccordionTrigger>
-            <AccordionContent>
-              <CodeTextarea
-                className="max-h-72 !overflow-auto"
-                language="yaml"
-                value={yamlString}
-                disabled
-              />
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-        <GeneratorStateDataTable />
+    <>
+      <LayoutPortalHeaderActions>
+        <CodeViewerSheet
+          code={yamlString}
+          language="yaml"
+          title="Manifest Spec"
+          icon={<LucideSquareCode />}
+          triggerLabel="View Manifest Spec"
+          triggerIcon={<LucideSquareCode />}
+          triggerVariant="secondary"
+        />
+      </LayoutPortalHeaderActions>
+
+      <div>
+        <div className="space-y-10">
+          <DetailsCard
+            icon={LucideInfo}
+            title="Generator Details"
+            fields={[
+              {
+                label: "Kind",
+                value: generator.kind,
+              },
+            ]}
+            sections={
+              outputFields.length > 0
+                ? [
+                    {
+                      title: "Output",
+                      icon: LucideFileOutput,
+                      fields: outputFields,
+                    },
+                  ]
+                : undefined
+            }
+          />
+
+          <GeneratorStateDataTable />
+        </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { LucideMoreVertical, LucidePlus, LucideTrash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { FeatureItemDeleteAction } from "@/components/FeatureCollection/FeatureItemDeleteAction";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import useOrgLink from "@/hooks/useOrgLink";
 import { Badge } from "@/components/ui/badge";
 import useGetUISchema from "@/services/esi-schemas/queries/useGetUISchema";
@@ -56,6 +56,15 @@ interface FederationTableMeta {
 export function FederationDataTable() {
   const navigate = useNavigate();
   const getOrgLink = useOrgLink();
+  const location = useLocation();
+  const [flashId, setFlashId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (location.state?.flashFederation) {
+      setFlashId(location.state.flashFederation);
+    }
+  }, [location.state?.flashFederation]);
+
   const columns = useMemo(
     () =>
       defineColumns<FederationTableData>((columnHelper) => [
@@ -230,7 +239,10 @@ export function FederationDataTable() {
             Add Federation
           </Button>
         </div>
-        <DataTable />
+        <DataTable
+          flashRowId={flashId ?? undefined}
+          onFlashComplete={() => setFlashId(null)}
+        />
       </DataProvider>
     </div>
   );

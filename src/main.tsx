@@ -26,6 +26,8 @@ import {
   PageAuthorizationDetails,
   PageAuthorizations,
   PageAuthorizationsCreate,
+  PageAuthorizedIdentities,
+  PageAuthorizedIdentityDetails,
   PageConsumers,
   PageFederations,
   PageFederationsCreate,
@@ -527,10 +529,7 @@ const router = createBrowserRouter([
                 path: ":findingNamespace/:findingName",
                 element: <PageFindingDetails />,
                 handle: {
-                  breadcrumb: (
-                    match: UIMatch,
-                    location: Location
-                  ) => {
+                  breadcrumb: (match: UIMatch, location: Location) => {
                     if (location.state?.dominantKey) {
                       return {
                         label: location.state.dominantKey,
@@ -582,7 +581,9 @@ const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <NavigateWithOrg to="federation/identity-providers" replace />,
+            element: (
+              <NavigateWithOrg to="federation/identity-providers" replace />
+            ),
           },
           {
             path: "identity-providers",
@@ -648,8 +649,36 @@ const router = createBrowserRouter([
                 },
               },
             ],
-          }
-        ]
+          },
+          {
+            path: "authorized-identities",
+            element: <Outlet />,
+            handle: {
+              breadcrumb: (match: UIMatch) => ({
+                label: "Authorized Identities",
+                path: match.pathname,
+                navigatable: true,
+              }),
+            },
+            children: [
+              {
+                index: true,
+                element: <PageAuthorizedIdentities />,
+              },
+              {
+                path: ":identityName",
+                element: <PageAuthorizedIdentityDetails />,
+                handle: {
+                  breadcrumb: (match: UIMatch) => ({
+                    label: `${match.params.identityName}`,
+                    path: match.pathname,
+                    navigatable: true,
+                  }),
+                },
+              },
+            ],
+          },
+        ],
       },
       {
         path: "reloaders",
