@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.30.1](https://github.com/external-secrets-inc/web-ui/compare/v0.30.0...v0.30.1) (2025-10-10)
+
+
+### Bug Fixes
+
+* release ([5be0353](https://github.com/external-secrets-inc/web-ui/commit/5be035379a4eef6e2e49b378125701ddbf4d88ec))
+
 ## [0.30.0](https://github.com/external-secrets-inc/web-ui/compare/v0.29.0...v0.30.0) (2025-10-09)
 
 
