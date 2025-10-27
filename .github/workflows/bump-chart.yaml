@@ -43,7 +43,7 @@ jobs:
 
       - name: Check if chart version already bumped
         if: steps.check_release_please.outputs.is_release_please_pr == 'true'
-        uses: actions/github-script@v6
+        uses: actions/github-script@v8
         id: check_chart_version
         with:
           script: |
