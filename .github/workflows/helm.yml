@@ -85,7 +85,7 @@ jobs:
           echo "chart_version=$version" >> $GITHUB_OUTPUT
 
       - name: login to github app
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@v2
         id: app-token
         with:
           app-id: ${{ vars.ESI_BOT_APP_ID }}
