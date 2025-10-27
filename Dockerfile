@@ -16,7 +16,7 @@ COPY . .
 RUN npm install && npm run build:ts-off
 
 # Final stage with HAProxy and Nginx
-FROM haproxy:2.9-alpine
+FROM haproxy:3.2-alpine
 
 USER root
 
