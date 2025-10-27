@@ -69,7 +69,7 @@ jobs:
             private-key: ${{ secrets.ESI_BOT_PRIVATE_KEY }}
       - name: Checkout code
         if: steps.check_chart_version.outputs.chart_version_bumped == 'false'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           token: ${{ steps.app-token.outputs.token }}
           ref: ${{ github.event.pull_request.head.ref }}
