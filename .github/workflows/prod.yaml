@@ -90,7 +90,7 @@ jobs:
         owner: external-secrets-inc
   # Trigger workflow in k8s-flux
     - name: Trigger workflow in k8s-flux
-      uses: peter-evans/repository-dispatch@v2
+      uses: peter-evans/repository-dispatch@v4
       with:
         repository: external-secrets-inc/k8s-flux
         event-type: update-version
