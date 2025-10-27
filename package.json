@@ -99,7 +99,7 @@
     "@types/segment-analytics": "^0.0.38",
     "@typescript-eslint/eslint-plugin": "^8.4.0",
     "@typescript-eslint/parser": "^8.4.0",
-    "@vitejs/plugin-react-swc": "^3.5.0",
+    "@vitejs/plugin-react-swc": "^4.0.0",
     "autoprefixer": "^10.4.20",
     "chromatic": "^13.0.0",
     "eslint": "^9.9.0",
