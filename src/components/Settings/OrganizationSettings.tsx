@@ -86,7 +86,7 @@ const OrganizationSettings: React.FC = () => {
     onSuccess: () => {
       toast('Organization deleted');
       setIsDeleteDialogOpen(false);
-      signOut({ reason: 'account_deleted' });
+      signOut({ reason: 'account_deleted', email: accountData?.contact_email || "", tenant: accountData?.tenant_name || "" });
     }
   });
 

@@ -171,7 +171,8 @@ export function useAuthVerifyFlow() {
   );
 
   const handleSignOut = () => {
-    signOut({ reason: 'manual' });
+    if (!authUser?.email || !authUser?.tenant) return;
+    signOut({ reason: 'manual', email: authUser.email, tenant: authUser.tenant });
   };
 
   return {

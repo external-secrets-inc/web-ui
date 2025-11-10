@@ -11,6 +11,8 @@ export type SignOutReason =
 
 interface SignOutOptions {
   reason: SignOutReason;
+  email: string;
+  tenant: string;
 }
 
 /**
@@ -33,7 +35,10 @@ export const useSignOut = () => {
   const navigate = useNavigate();
 
   // Return a function that can be immediately invoked
-  return ({ reason }: SignOutOptions) => {
+  return async ({ reason, email, tenant }: SignOutOptions) => {
+    await queryClient.cancelQueries({ predicate: () => true });
+    queryClient.getMutationCache().clear();
+
     // Clear all react-query cache
     queryClient.clear();
 
@@ -45,8 +50,10 @@ export const useSignOut = () => {
     trackSignedOut(isManual);
 
     // Clear any sensitive data from localStorage
-    localStorage.removeItem('lastCodeRequestedAt');
-    // Add any other app-specific localStorage cleanup here
+    try {
+      localStorage.removeItem(`lastCodeRequestedAt_${email}_${tenant}`);
+      sessionStorage.clear();
+    } catch { /* ignore */ }
 
     // Navigate to login page
     navigate('/login', { replace: true });
