@@ -88,7 +88,8 @@ export function WorkflowTemplateDataTable() {
               size="icon"
               onClick={(event) => event.stopPropagation()}
             >
-              <LucideMoreVertical />
+              <span className="sr-only">Open menu</span>
+              <LucideMoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -105,7 +106,7 @@ export function WorkflowTemplateDataTable() {
             >
               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                 <LucideTrash2 className="mr-2" />
-                Delete Workflow
+                Delete
               </DropdownMenuItem>
             </FeatureItemDeleteAction>
             <DropdownMenuItem
