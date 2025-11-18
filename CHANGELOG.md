@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.31.0](https://github.com/external-secrets-inc/web-ui/compare/v0.30.1...v0.31.0) (2025-11-18)
+
+
+### Features
+
+* license ([12cc0c6](https://github.com/external-secrets-inc/web-ui/commit/12cc0c603cc9b37ecb63e9e9542c13843c82a584))
+
+
+### Bug Fixes
+
+* **deps:** update dependency @hookform/resolvers to v5 ([#591](https://github.com/external-secrets-inc/web-ui/issues/591)) ([35109b5](https://github.com/external-secrets-inc/web-ui/commit/35109b595dee438c430c208cef36851ce01ca71d))
+* **deps:** update dependency lucide-react to ^0.548.0 ([#571](https://github.com/external-secrets-inc/web-ui/issues/571)) ([996e9c4](https://github.com/external-secrets-inc/web-ui/commit/996e9c4f058152a9074be9b1718338126ddaabf8))
+* **deps:** update dependency merge-refs to v2 ([#592](https://github.com/external-secrets-inc/web-ui/issues/592)) ([1343018](https://github.com/external-secrets-inc/web-ui/commit/13430184043aceb550d77148582c961f032ff6c8))
+* **deps:** update dependency next-themes to ^0.4.0 ([#572](https://github.com/external-secrets-inc/web-ui/issues/572)) ([a09fcdb](https://github.com/external-secrets-inc/web-ui/commit/a09fcdb9aefea06c11c4afe75129d326d91eb138))
+* **deps:** update dependency react-router-dom to v7 ([#593](https://github.com/external-secrets-inc/web-ui/issues/593)) ([cebb4a4](https://github.com/external-secrets-inc/web-ui/commit/cebb4a47877301092f69afcbaeb9147cc921f3c0))
+* **deps:** update dependency recharts to v3 ([#594](https://github.com/external-secrets-inc/web-ui/issues/594)) ([a73c966](https://github.com/external-secrets-inc/web-ui/commit/a73c966b14dde156f41a7fbba3569a3814c3ae92))
+* **deps:** update dependency sonner to v2 ([#595](https://github.com/external-secrets-inc/web-ui/issues/595)) ([97cd19f](https://github.com/external-secrets-inc/web-ui/commit/97cd19f86cf61ac7a0537282148949418c8d67b9))
+* **deps:** update dependency tailwind-merge to v3 ([#596](https://github.com/external-secrets-inc/web-ui/issues/596)) ([b943083](https://github.com/external-secrets-inc/web-ui/commit/b94308334d7cf5c2042ea006d3c4d7473ff40763))
+* **deps:** update dependency zod to v4 ([#597](https://github.com/external-secrets-inc/web-ui/issues/597)) ([3a256c7](https://github.com/external-secrets-inc/web-ui/commit/3a256c70565eee82adff3819fce2824ee8dd043b))
+* sign out cache and components pattern nitpicks ([#608](https://github.com/external-secrets-inc/web-ui/issues/608)) ([335209c](https://github.com/external-secrets-inc/web-ui/commit/335209c640c4fd955a4fd5eb5f44e332f19d8a99))
+* sign out function; workflows tables menu and delete option; authorized identities refresh ([335209c](https://github.com/external-secrets-inc/web-ui/commit/335209c640c4fd955a4fd5eb5f44e332f19d8a99))
+* use common label action ([2e91488](https://github.com/external-secrets-inc/web-ui/commit/2e914884129a81e1ad05ea16eaae66b644d1aca8))
+
 ## [0.30.1](https://github.com/external-secrets-inc/web-ui/compare/v0.30.0...v0.30.1) (2025-10-10)
 
 
