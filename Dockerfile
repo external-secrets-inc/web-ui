@@ -1,5 +1,5 @@
 # Build stage
-FROM node:22.21.0 as builder
+FROM node:24.11.1 as builder
 WORKDIR /web-ui
 
 
